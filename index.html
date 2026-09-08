@@ -997,6 +997,45 @@ input:focus,select:focus,textarea:focus{border-color:#5275a7}
   .edge-filters{grid-template-columns:1fr}
 }
 
+
+.exit-rule-choice{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:9px;
+  margin-bottom:10px;
+}
+.exit-option{
+  display:flex;
+  gap:9px;
+  align-items:flex-start;
+  border:1px solid #1e2938;
+  background:#0b1119;
+  border-radius:12px;
+  padding:11px;
+  cursor:pointer;
+}
+.exit-option:hover{border-color:#35465f}
+.exit-option input{
+  width:16px;
+  height:16px;
+  margin-top:1px;
+  flex:0 0 auto;
+}
+.exit-option strong{
+  display:block;
+  font-size:11px;
+}
+.exit-option span{
+  display:block;
+  margin-top:4px;
+  color:var(--muted);
+  font-size:9px;
+  line-height:1.45;
+}
+@media(max-width:760px){
+  .exit-rule-choice{grid-template-columns:1fr}
+}
+
 /* PLACEHOLDER PAGES */
 .placeholder{
   padding:38px;
@@ -1817,7 +1856,7 @@ textarea{resize:vertical;min-height:90px}
           </div>
 
           <div class="edge-help">
-            <strong>Purpose:</strong> The rating evaluates whether the trade matched the plan. It does not evaluate whether the trade made money.
+            <strong>Purpose:</strong> The rating evaluates whether the trade matched the plan. Only the one applicable exit rule is counted; unused exit rules do not reduce the score.
           </div>
         </aside>
 
@@ -1840,6 +1879,7 @@ textarea{resize:vertical;min-height:90px}
                 <span class="edge-mini-kpi" id="edgeSelectedPnl">P&amp;L: —</span>
                 <span class="edge-mini-kpi" id="edgeSelectedR">R: —</span>
                 <span class="edge-mini-kpi" id="edgeSelectedSetup">Setup: —</span>
+                <span class="edge-mini-kpi" id="edgeSelectedExitRule">Exit: —</span>
               </div>
             </div>
 
@@ -1983,39 +2023,46 @@ textarea{resize:vertical;min-height:90px}
             <div class="edge-section">
               <div class="edge-section-head">
                 <div>
-                  <h4>Exit Rules — 5m → 3m</h4>
-                  <span>Assess management and exit compliance separately from whether the trade won or lost.</span>
+                  <h4>Exit Rule — 5m → 3m</h4>
+                  <span>Select the one exit rule that applied to this trade. The rules are alternatives, not cumulative conditions.</span>
                 </div>
+              </div>
+
+              <div class="exit-rule-choice">
+                <label class="exit-option">
+                  <input type="radio" name="edgeExitRule" value="Exit Rule 1">
+                  <div>
+                    <strong>Exit Rule 1 — Stop Shift</strong>
+                    <span>Use the stop-shift condition when that is the applicable management rule for the trade.</span>
+                  </div>
+                </label>
+
+                <label class="exit-option">
+                  <input type="radio" name="edgeExitRule" value="Exit Rule 2">
+                  <div>
+                    <strong>Exit Rule 2 — Higher-TF Reversal</strong>
+                    <span>Use when a sharp reversal develops around the relevant higher-timeframe support/resistance area.</span>
+                  </div>
+                </label>
+
+                <label class="exit-option">
+                  <input type="radio" name="edgeExitRule" value="Exit Rule 3">
+                  <div>
+                    <strong>Exit Rule 3 — Range Edge Reversal</strong>
+                    <span>Use when the applicable low/high range edge reversal condition is the reason for exit.</span>
+                  </div>
+                </label>
               </div>
 
               <div class="edge-check">
                 <div class="edge-check-main">
-                  <input type="checkbox" class="edge-check-input" data-edge-key="exit_rule_1">
+                  <input type="checkbox" class="edge-check-input" data-edge-key="selected_exit_rule_followed">
                   <div class="edge-check-copy">
-                    <strong>Exit Rule 1 was followed.</strong>
+                    <strong>The selected exit rule was followed correctly.</strong>
+                    <span>Only the rule selected above is evaluated for this trade.</span>
                   </div>
                 </div>
-                <input class="edge-check-comment" data-edge-comment="exit_rule_1" type="text" placeholder="Optional comment / rule-specific observation">
-              </div>
-
-              <div class="edge-check">
-                <div class="edge-check-main">
-                  <input type="checkbox" class="edge-check-input" data-edge-key="exit_rule_2">
-                  <div class="edge-check-copy">
-                    <strong>Exit Rule 2 was followed.</strong>
-                  </div>
-                </div>
-                <input class="edge-check-comment" data-edge-comment="exit_rule_2" type="text" placeholder="Optional comment / rule-specific observation">
-              </div>
-
-              <div class="edge-check">
-                <div class="edge-check-main">
-                  <input type="checkbox" class="edge-check-input" data-edge-key="exit_rule_3">
-                  <div class="edge-check-copy">
-                    <strong>Exit Rule 3 was followed.</strong>
-                  </div>
-                </div>
-                <input class="edge-check-comment" data-edge-comment="exit_rule_3" type="text" placeholder="Optional comment / rule-specific observation">
+                <input class="edge-check-comment" data-edge-comment="selected_exit_rule_followed" type="text" placeholder="Optional exit observation">
               </div>
             </div>
 
@@ -2026,7 +2073,7 @@ textarea{resize:vertical;min-height:90px}
               </div>
 
               <div class="edge-help">
-                <strong>Rating logic:</strong> all 10 conditions = A+; one missed condition = A; two or more missed conditions = B.
+                <strong>Rating logic:</strong> all applicable conditions = A+; one missed condition = A; two or more missed conditions = B.
                 The percentage is retained for deeper statistics later.
               </div>
 
@@ -2172,8 +2219,8 @@ textarea{resize:vertical;min-height:90px}
    NEVER use service_role / secret key in browser code.
 ========================================================= */
 
-const SUPABASE_URL = "https://tmxosoyqflmwqzjgnkez.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_meHq49fLyw8PVNPZxWacnw_SQMj5B-h";
+const SUPABASE_URL = "PASTE_YOUR_SUPABASE_PROJECT_URL_HERE";
+const SUPABASE_PUBLISHABLE_KEY = "PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE";
 
 /* ========================================================= */
 
@@ -3290,22 +3337,10 @@ const EDGE_CRITERIA = [
     sort:7
   },
   {
-    key:'exit_rule_1',
+    key:'selected_exit_rule_followed',
     section:'exit',
-    label:'Exit Rule 1 was followed.',
+    label:'The selected applicable exit rule was followed correctly.',
     sort:8
-  },
-  {
-    key:'exit_rule_2',
-    section:'exit',
-    label:'Exit Rule 2 was followed.',
-    sort:9
-  },
-  {
-    key:'exit_rule_3',
-    section:'exit',
-    label:'Exit Rule 3 was followed.',
-    sort:10
   }
 ];
 
@@ -3405,11 +3440,18 @@ $$('.edge-check-input').forEach(input=>{
   input.addEventListener('change',updateEdgeLiveScore);
 });
 
+$$('input[name="edgeExitRule"]').forEach(input=>{
+  input.addEventListener('change',()=>{
+    $('#edgeSelectedExitRule').textContent=`Exit: ${input.value}`;
+  });
+});
+
 function clearEdgeEditor(){
   $('#edgeMarketState').value='';
   $('#edgeEntryPattern').value='';
   $('#edgeReviewNotes').value='';
 
+  $$('input[name="edgeExitRule"]').forEach(input=>input.checked=false);
   $$('.edge-check-input').forEach(input=>input.checked=false);
   $$('[data-edge-comment]').forEach(input=>input.value='');
 
@@ -3444,6 +3486,11 @@ function loadEdgeReviewIntoEditor(trade){
     $('#edgeEntryPattern').value=review.entry_pattern || '';
     $('#edgeReviewNotes').value=review.review_notes || '';
 
+    if(review.exit_rule){
+      const exitRadio = $(`input[name="edgeExitRule"][value="${review.exit_rule}"]`);
+      if(exitRadio) exitRadio.checked=true;
+    }
+
     const map={};
     checksForReview(review.id).forEach(row=>{
       map[row.criterion_key]=row;
@@ -3458,6 +3505,8 @@ function loadEdgeReviewIntoEditor(trade){
       input.value=row?.comment || '';
     });
   }
+
+  $('#edgeSelectedExitRule').textContent=`Exit: ${review?.exit_rule || '—'}`;
 
   updateEdgeLiveScore();
   renderEdgeTradeList();
@@ -3613,11 +3662,19 @@ async function saveEdgeReview(){
     return;
   }
 
+  const selectedExitRule=document.querySelector('input[name="edgeExitRule"]:checked')?.value || null;
+
+  if(!selectedExitRule){
+    alert('Select the one exit rule that applied to this trade.');
+    return;
+  }
+
   const reviewPayload={
     user_id:currentUser.id,
     trade_id:trade.id,
     market_state:$('#edgeMarketState').value || null,
     entry_pattern:$('#edgeEntryPattern').value || null,
+    exit_rule:selectedExitRule,
     review_notes:$('#edgeReviewNotes').value.trim() || null,
     updated_at:new Date().toISOString()
   };
