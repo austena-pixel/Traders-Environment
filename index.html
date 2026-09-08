@@ -784,7 +784,7 @@ textarea{resize:vertical;min-height:90px}
             <div class="side-row">
               <span>Starting balance</span>
               <div class="settings-row">
-                <span>R</span>
+                <span>$</span>
                 <input id="startingBalance" type="number" step="0.01" value="0">
               </div>
             </div>
@@ -1004,12 +1004,12 @@ textarea{resize:vertical;min-height:90px}
         </div>
 
         <div class="field">
-          <label>Risk Amount (R)</label>
+          <label>Risk Amount ($)</label>
           <input type="number" id="riskAmount" step="0.01" placeholder="e.g. 200">
         </div>
 
         <div class="field">
-          <label>P&amp;L (R)</label>
+          <label>P&amp;L ($)</label>
           <input type="number" id="pnl" step="0.01" placeholder="e.g. 450 or -200" required>
         </div>
 
@@ -1068,8 +1068,8 @@ textarea{resize:vertical;min-height:90px}
    NEVER use service_role / secret key in browser code.
 ========================================================= */
 
-const SUPABASE_URL = "https://tmxosoyqflmwqzjgnkez.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_meHq49fLyw8PVNPZxWacnw_SQMj5B-h";
+const SUPABASE_URL = "PASTE_YOUR_SUPABASE_PROJECT_URL_HERE";
+const SUPABASE_PUBLISHABLE_KEY = "PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE";
 
 /* ========================================================= */
 
@@ -1092,7 +1092,7 @@ const JOURNAL_PAGE_SIZE = 25;
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 
-const money = n => 'R' + Number(n || 0).toLocaleString(undefined,{
+const money = n => '$' + Number(n || 0).toLocaleString(undefined,{
   minimumFractionDigits:2,
   maximumFractionDigits:2
 });
@@ -1239,6 +1239,21 @@ async function ensureTradingAccount(){
 
   if(data && data.length){
     tradingAccount=data[0];
+
+    // Keep this journal account in USD.
+    if(tradingAccount.currency !== 'USD'){
+      const { data:updatedAccount, error:currencyError } = await db
+        .from('trading_accounts')
+        .update({currency:'USD'})
+        .eq('id', tradingAccount.id)
+        .eq('user_id', currentUser.id)
+        .select()
+        .single();
+
+      if(!currencyError && updatedAccount){
+        tradingAccount=updatedAccount;
+      }
+    }
   }else{
     const { data:newAccount, error:createError } = await db
       .from('trading_accounts')
@@ -1246,7 +1261,7 @@ async function ensureTradingAccount(){
         user_id:currentUser.id,
         account_name:'Main Account',
         starting_balance:0,
-        currency:'ZAR'
+        currency:'USD'
       })
       .select()
       .single();
