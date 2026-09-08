@@ -6,6 +6,7 @@
 <title>Traders Environment</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 
 <style>
 :root{
@@ -1036,6 +1037,146 @@ input:focus,select:focus,textarea:focus{border-color:#5275a7}
   .exit-rule-choice{grid-template-columns:1fr}
 }
 
+
+/* STATISTICS */
+.stats-toolbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:14px;
+  flex-wrap:wrap;
+}
+.range-tabs{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+}
+.range-btn{
+  border:1px solid var(--line);
+  background:#0e151f;
+  color:#9facbd;
+  border-radius:10px;
+  padding:8px 11px;
+  font-size:11px;
+}
+.range-btn:hover{
+  color:#fff;
+  border-color:#35465f;
+}
+.range-btn.active{
+  background:#f3f6fb;
+  color:#07090d;
+  border-color:#f3f6fb;
+  font-weight:800;
+}
+.stats-date-range{
+  color:var(--muted);
+  font-size:11px;
+}
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(8,minmax(120px,1fr));
+  gap:10px;
+  margin-bottom:14px;
+}
+.stats-grid .metric{min-height:88px}
+.chart-panel{
+  padding:16px;
+  margin-bottom:14px;
+}
+.chart-panel-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  margin-bottom:12px;
+}
+.chart-panel-head h3{
+  margin:0;
+  font-size:14px;
+}
+.chart-panel-head p{
+  margin:4px 0 0;
+  color:var(--muted);
+  font-size:10px;
+  line-height:1.5;
+}
+.chart-legend-note{
+  color:#96a4b7;
+  font-size:10px;
+  text-align:right;
+  line-height:1.5;
+}
+.equity-canvas-wrap{
+  position:relative;
+  height:420px;
+  width:100%;
+}
+.stats-lower{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+.stats-box{padding:15px}
+.stats-box h3{
+  margin:0 0 12px;
+  font-size:14px;
+}
+.stat-list{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:0 18px;
+}
+.stat-list-row{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  padding:9px 0;
+  border-bottom:1px solid #18212c;
+  font-size:11px;
+}
+.stat-list-row span:first-child{color:var(--muted)}
+.breakdown-table{
+  width:100%;
+  border-collapse:collapse;
+}
+.breakdown-table th,
+.breakdown-table td{
+  text-align:left;
+  border-bottom:1px solid #18212c;
+  padding:9px 8px;
+  font-size:10px;
+}
+.breakdown-table th{
+  color:#8794a7;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+  font-weight:800;
+}
+.breakdown-table td:nth-child(n+2),
+.breakdown-table th:nth-child(n+2){
+  text-align:right;
+}
+.stats-note{
+  margin-top:10px;
+  color:#8794a7;
+  font-size:9px;
+  line-height:1.5;
+}
+@media(max-width:1450px){
+  .stats-grid{grid-template-columns:repeat(4,1fr)}
+}
+@media(max-width:900px){
+  .stats-lower{grid-template-columns:1fr}
+}
+@media(max-width:700px){
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .equity-canvas-wrap{height:330px}
+  .chart-panel-head{flex-direction:column}
+  .chart-legend-note{text-align:left}
+}
+
 /* PLACEHOLDER PAGES */
 .placeholder{
   padding:38px;
@@ -1235,7 +1376,6 @@ textarea{resize:vertical;min-height:90px}
 
       <button class="nav-btn" data-page="statistics">
         <span class="nav-icon">◈</span> Statistics
-        <span class="nav-coming">Soon</span>
       </button>
 
       <button class="nav-btn" data-page="psychology">
@@ -1491,9 +1631,167 @@ textarea{resize:vertical;min-height:90px}
     </section>
 
     <!-- PLACEHOLDERS -->
+
     <section class="page" id="page-statistics">
-      <header class="page-head"><div><h1>Statistics</h1><p>Performance analytics and edge diagnostics.</p></div></header>
-      <section class="panel placeholder"><h2>Statistics is next</h2><p>This section will hold the equity curve, drawdown, setup performance, instrument performance, day-of-week statistics and R distribution.</p></section>
+      <header class="page-head">
+        <div>
+          <h1>Statistics</h1>
+          <p>Account growth, drawdown and performance quality across selectable timeframes.</p>
+        </div>
+      </header>
+
+      <div class="stats-toolbar">
+        <div class="range-tabs">
+          <button class="range-btn active" data-stats-range="7d">7 Days</button>
+          <button class="range-btn" data-stats-range="1m">1 Month</button>
+          <button class="range-btn" data-stats-range="6m">6 Months</button>
+          <button class="range-btn" data-stats-range="1y">1 Year</button>
+          <button class="range-btn" data-stats-range="all">All</button>
+        </div>
+        <div class="stats-date-range" id="statsDateRange">—</div>
+      </div>
+
+      <section class="stats-grid">
+        <div class="metric">
+          <div class="label">Ending Equity</div>
+          <div class="value neutral" id="statEndingEquity">$0.00</div>
+          <div class="sub">End of selected period</div>
+        </div>
+        <div class="metric">
+          <div class="label">Net P&amp;L</div>
+          <div class="value neutral" id="statNetPnl">$0.00</div>
+          <div class="sub">Selected period</div>
+        </div>
+        <div class="metric">
+          <div class="label">Return</div>
+          <div class="value neutral" id="statReturn">0.00%</div>
+          <div class="sub">On opening equity</div>
+        </div>
+        <div class="metric">
+          <div class="label">Max Drawdown</div>
+          <div class="value neutral" id="statMaxDd">$0.00</div>
+          <div class="sub" id="statMaxDdPct">0.00%</div>
+        </div>
+        <div class="metric">
+          <div class="label">Win Rate</div>
+          <div class="value neutral" id="statWinRate">0.0%</div>
+          <div class="sub">Winning trades</div>
+        </div>
+        <div class="metric">
+          <div class="label">Profit Factor</div>
+          <div class="value neutral" id="statProfitFactor">0.00</div>
+          <div class="sub">Gross profit / gross loss</div>
+        </div>
+        <div class="metric">
+          <div class="label">Average R</div>
+          <div class="value neutral" id="statAvgR">0.00R</div>
+          <div class="sub">Per trade</div>
+        </div>
+        <div class="metric">
+          <div class="label">Expectancy</div>
+          <div class="value neutral" id="statExpectancy">$0.00</div>
+          <div class="sub">Average P&amp;L per trade</div>
+        </div>
+      </section>
+
+      <section class="panel chart-panel">
+        <div class="chart-panel-head">
+          <div>
+            <h3>Equity Curve</h3>
+            <p id="equityChartDescription">Daily account equity across the selected period.</p>
+          </div>
+          <div class="chart-legend-note">
+            X-axis = actual calendar days / trading sessions.<br>
+            No-trade days remain flat so time is not compressed.
+          </div>
+        </div>
+
+        <div class="equity-canvas-wrap">
+          <canvas id="equityChart"></canvas>
+        </div>
+      </section>
+
+      <div class="stats-lower">
+        <section class="panel stats-box">
+          <h3>Performance Details</h3>
+
+          <div class="stat-list">
+            <div class="stat-list-row">
+              <span>Trades</span>
+              <strong id="statTrades">0</strong>
+            </div>
+            <div class="stat-list-row">
+              <span>Trading days</span>
+              <strong id="statTradingDays">0</strong>
+            </div>
+            <div class="stat-list-row">
+              <span>Winning days</span>
+              <strong id="statWinningDays">0</strong>
+            </div>
+            <div class="stat-list-row">
+              <span>Losing days</span>
+              <strong id="statLosingDays">0</strong>
+            </div>
+            <div class="stat-list-row">
+              <span>Average win</span>
+              <strong id="statAvgWin">$0.00</strong>
+            </div>
+            <div class="stat-list-row">
+              <span>Average loss</span>
+              <strong id="statAvgLoss">$0.00</strong>
+            </div>
+            <div class="stat-list-row">
+              <span>Largest win</span>
+              <strong id="statLargestWin">$0.00</strong>
+            </div>
+            <div class="stat-list-row">
+              <span>Largest loss</span>
+              <strong id="statLargestLoss">$0.00</strong>
+            </div>
+            <div class="stat-list-row">
+              <span>Best trading day</span>
+              <strong id="statBestDay">—</strong>
+            </div>
+            <div class="stat-list-row">
+              <span>Worst trading day</span>
+              <strong id="statWorstDay">—</strong>
+            </div>
+            <div class="stat-list-row">
+              <span>Average daily P&amp;L</span>
+              <strong id="statAvgDay">$0.00</strong>
+            </div>
+            <div class="stat-list-row">
+              <span>Recovery factor</span>
+              <strong id="statRecoveryFactor">—</strong>
+            </div>
+          </div>
+
+          <div class="stats-note">
+            Recovery factor = net P&amp;L ÷ maximum drawdown. It helps show how efficiently the account recovered relative to the depth of its drawdown.
+          </div>
+        </section>
+
+        <section class="panel stats-box">
+          <h3>Performance by Instrument</h3>
+
+          <div class="table-wrap">
+            <table class="breakdown-table">
+              <thead>
+                <tr>
+                  <th>Instrument</th>
+                  <th>Trades</th>
+                  <th>Win rate</th>
+                  <th>P&amp;L</th>
+                  <th>Avg R</th>
+                </tr>
+              </thead>
+              <tbody id="instrumentStatsBody">
+                <tr><td colspan="5" class="muted">No data</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
     </section>
 
 
@@ -2243,6 +2541,9 @@ let planReviews = [];
 let planChecks = [];
 let selectedEdgeTradeId = null;
 
+let statsRange = '7d';
+let equityChartInstance = null;
+
 let viewDate = new Date();
 let editingTradeId = null;
 
@@ -2562,6 +2863,10 @@ function navigate(page){
 
   if(page==='playbook'){
     renderEdgePlaybook();
+  }
+
+  if(page==='statistics'){
+    renderStatistics();
   }
 
   closeSidebarMobile();
@@ -3287,6 +3592,470 @@ $('#nextMonth').addEventListener('click',()=>{
   renderDashboard();
 });
 
+
+
+
+/* =========================
+   STATISTICS / EQUITY CURVE
+========================= */
+
+function parseLocalDate(dateString){
+  const [y,m,d]=dateString.split('-').map(Number);
+  return new Date(y,m-1,d);
+}
+
+function addStatsDays(date,amount){
+  const d=new Date(date.getFullYear(),date.getMonth(),date.getDate());
+  d.setDate(d.getDate()+amount);
+  return d;
+}
+
+function subtractStatsMonths(date,months){
+  const originalDay=date.getDate();
+  const d=new Date(date.getFullYear(),date.getMonth()-months,1);
+  const lastDay=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+  d.setDate(Math.min(originalDay,lastDay));
+  return d;
+}
+
+function dateRangeForStats(range){
+  const now=new Date();
+  const end=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+
+  if(range==='7d'){
+    return {start:addStatsDays(end,-6),end};
+  }
+
+  if(range==='1m'){
+    return {
+      start:new Date(end.getFullYear(),end.getMonth(),1),
+      end
+    };
+  }
+
+  if(range==='6m'){
+    return {
+      start:subtractStatsMonths(end,6),
+      end
+    };
+  }
+
+  if(range==='1y'){
+    const start=new Date(end);
+    start.setFullYear(start.getFullYear()-1);
+    return {start,end};
+  }
+
+  if(!trades.length){
+    return {start:end,end};
+  }
+
+  const earliest=trades
+    .map(t=>parseLocalDate(t.trade_date))
+    .sort((a,b)=>a-b)[0];
+
+  return {start:earliest,end};
+}
+
+function statsRangeLabel(range){
+  if(range==='7d') return '7-day';
+  if(range==='1m') return 'monthly';
+  if(range==='6m') return '6-month';
+  if(range==='1y') return '1-year';
+  return 'all-time';
+}
+
+function tradesInDateRange(start,end){
+  const startKey=localDateString(start);
+  const endKey=localDateString(end);
+
+  return trades.filter(t=>
+    t.trade_date>=startKey &&
+    t.trade_date<=endKey
+  );
+}
+
+function pnlBeforeDate(start){
+  const startKey=localDateString(start);
+
+  return trades
+    .filter(t=>t.trade_date<startKey)
+    .reduce((sum,t)=>sum+(Number(t.pnl)||0),0);
+}
+
+function buildDailyEquitySeries(start,end){
+  const selected=tradesInDateRange(start,end);
+  const daily={};
+
+  selected.forEach(t=>{
+    daily[t.trade_date]=(daily[t.trade_date]||0)+(Number(t.pnl)||0);
+  });
+
+  const base=Number(tradingAccount?.starting_balance||0);
+  const priorPnl=pnlBeforeDate(start);
+  let equity=base+priorPnl;
+
+  const points=[];
+  const cursor=new Date(start.getFullYear(),start.getMonth(),start.getDate());
+
+  while(cursor<=end){
+    const key=localDateString(cursor);
+    const dayPnl=daily[key]||0;
+
+    equity+=dayPnl;
+
+    points.push({
+      date:key,
+      label:cursor.toLocaleDateString(undefined,{
+        month:'short',
+        day:'numeric'
+      }),
+      equity,
+      dayPnl
+    });
+
+    cursor.setDate(cursor.getDate()+1);
+  }
+
+  return {
+    points,
+    openingEquity:base+priorPnl,
+    selectedTrades:selected
+  };
+}
+
+function maxDrawdownFromEquity(points,openingEquity){
+  let peak=openingEquity;
+  let maxDd=0;
+  let maxDdPct=0;
+
+  points.forEach(point=>{
+    if(point.equity>peak){
+      peak=point.equity;
+    }
+
+    const dd=peak-point.equity;
+    const pct=peak!==0 ? dd/Math.abs(peak)*100 : 0;
+
+    if(dd>maxDd){
+      maxDd=dd;
+      maxDdPct=pct;
+    }
+  });
+
+  return {amount:maxDd,pct:maxDdPct};
+}
+
+function dailyStatsFromTrades(sourceTrades){
+  const map={};
+
+  sourceTrades.forEach(t=>{
+    map[t.trade_date]=(map[t.trade_date]||0)+(Number(t.pnl)||0);
+  });
+
+  return Object.entries(map)
+    .map(([date,pnl])=>({date,pnl}))
+    .sort((a,b)=>a.date.localeCompare(b.date));
+}
+
+function renderEquityChart(series){
+  if(typeof Chart==='undefined'){
+    console.error('Chart.js did not load.');
+    return;
+  }
+
+  const canvas=$('#equityChart');
+
+  if(equityChartInstance){
+    equityChartInstance.destroy();
+    equityChartInstance=null;
+  }
+
+  equityChartInstance=new Chart(canvas.getContext('2d'),{
+    type:'line',
+    data:{
+      labels:series.points.map(p=>p.label),
+      datasets:[{
+        label:'Equity',
+        data:series.points.map(p=>p.equity),
+        borderColor:'#69a8ff',
+        backgroundColor:'rgba(105,168,255,.12)',
+        pointRadius:series.points.length<=35 ? 2.2 : 0,
+        pointHoverRadius:4,
+        borderWidth:2,
+        tension:.22,
+        fill:true
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      animation:{
+        duration:300
+      },
+      interaction:{
+        mode:'index',
+        intersect:false
+      },
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          callbacks:{
+            title:(items)=>{
+              const point=series.points[items[0].dataIndex];
+              return formatDate(point.date);
+            },
+            label:(context)=>{
+              const point=series.points[context.dataIndex];
+
+              return [
+                `Equity: ${money(point.equity)}`,
+                point.dayPnl===0
+                  ? 'Daily P&L: $0.00'
+                  : `Daily P&L: ${signedMoney(point.dayPnl)}`
+              ];
+            }
+          }
+        }
+      },
+      scales:{
+        x:{
+          grid:{color:'rgba(118,136,160,.08)'},
+          ticks:{
+            color:'#7f8da1',
+            autoSkip:true,
+            maxTicksLimit:
+              statsRange==='7d' ? 7 :
+              statsRange==='1m' ? 12 :
+              statsRange==='6m' ? 10 :
+              statsRange==='1y' ? 12 : 12,
+            maxRotation:0
+          }
+        },
+        y:{
+          grid:{color:'rgba(118,136,160,.10)'},
+          ticks:{
+            color:'#7f8da1',
+            callback:value=>'$'+Number(value).toLocaleString()
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderInstrumentStats(sourceTrades){
+  const body=$('#instrumentStatsBody');
+
+  if(!sourceTrades.length){
+    body.innerHTML='<tr><td colspan="5" class="muted">No data in this timeframe.</td></tr>';
+    return;
+  }
+
+  const grouped={};
+
+  sourceTrades.forEach(t=>{
+    const key=(t.instrument||'Unknown').trim() || 'Unknown';
+
+    if(!grouped[key]){
+      grouped[key]={trades:0,wins:0,pnl:0,rTotal:0};
+    }
+
+    grouped[key].trades++;
+    grouped[key].pnl+=Number(t.pnl)||0;
+    grouped[key].rTotal+=Number(t.r_multiple)||0;
+
+    if(Number(t.pnl)>0){
+      grouped[key].wins++;
+    }
+  });
+
+  const rows=Object.entries(grouped)
+    .map(([instrument,data])=>({
+      instrument,
+      ...data,
+      winRate:data.trades ? data.wins/data.trades*100 : 0,
+      avgR:data.trades ? data.rTotal/data.trades : 0
+    }))
+    .sort((a,b)=>b.pnl-a.pnl);
+
+  body.innerHTML='';
+
+  rows.forEach(row=>{
+    const tr=document.createElement('tr');
+
+    tr.innerHTML=`
+      <td><strong>${escapeHtml(row.instrument)}</strong></td>
+      <td>${row.trades}</td>
+      <td>${row.winRate.toFixed(1)}%</td>
+      <td class="${pnlClass(row.pnl)}">${signedMoney(row.pnl)}</td>
+      <td class="${pnlClass(row.avgR)}">${row.avgR>=0?'+':''}${row.avgR.toFixed(2)}R</td>
+    `;
+
+    body.appendChild(tr);
+  });
+}
+
+function renderStatistics(){
+  if(!tradingAccount){
+    return;
+  }
+
+  const {start,end}=dateRangeForStats(statsRange);
+  const series=buildDailyEquitySeries(start,end);
+  const source=series.selectedTrades;
+
+  const netPnl=source.reduce((s,t)=>s+(Number(t.pnl)||0),0);
+
+  const endingEquity=series.points.length
+    ? series.points[series.points.length-1].equity
+    : series.openingEquity;
+
+  const returnPct=series.openingEquity!==0
+    ? netPnl/Math.abs(series.openingEquity)*100
+    : 0;
+
+  const wins=source.filter(t=>Number(t.pnl)>0);
+  const losses=source.filter(t=>Number(t.pnl)<0);
+
+  const grossProfit=wins.reduce((s,t)=>s+(Number(t.pnl)||0),0);
+
+  const grossLoss=Math.abs(
+    losses.reduce((s,t)=>s+(Number(t.pnl)||0),0)
+  );
+
+  const profitFactor=grossLoss
+    ? grossProfit/grossLoss
+    : grossProfit>0 ? Infinity : 0;
+
+  const avgR=source.length
+    ? source.reduce((s,t)=>s+(Number(t.r_multiple)||0),0)/source.length
+    : 0;
+
+  const expectancy=source.length
+    ? netPnl/source.length
+    : 0;
+
+  const drawdown=maxDrawdownFromEquity(
+    series.points,
+    series.openingEquity
+  );
+
+  const dayRows=dailyStatsFromTrades(source);
+  const winningDays=dayRows.filter(x=>x.pnl>0).length;
+  const losingDays=dayRows.filter(x=>x.pnl<0).length;
+
+  const avgWin=wins.length
+    ? wins.reduce((s,t)=>s+Number(t.pnl),0)/wins.length
+    : 0;
+
+  const avgLoss=losses.length
+    ? losses.reduce((s,t)=>s+Number(t.pnl),0)/losses.length
+    : 0;
+
+  const largestWin=wins.length
+    ? Math.max(...wins.map(t=>Number(t.pnl)||0))
+    : 0;
+
+  const largestLoss=losses.length
+    ? Math.min(...losses.map(t=>Number(t.pnl)||0))
+    : 0;
+
+  const bestDay=dayRows.length
+    ? [...dayRows].sort((a,b)=>b.pnl-a.pnl)[0]
+    : null;
+
+  const worstDay=dayRows.length
+    ? [...dayRows].sort((a,b)=>a.pnl-b.pnl)[0]
+    : null;
+
+  const avgDay=dayRows.length
+    ? dayRows.reduce((s,x)=>s+x.pnl,0)/dayRows.length
+    : 0;
+
+  const recoveryFactor=drawdown.amount>0
+    ? netPnl/drawdown.amount
+    : netPnl>0 ? Infinity : 0;
+
+  $('#statsDateRange').textContent=
+    `${formatDate(localDateString(start))} → ${formatDate(localDateString(end))}`;
+
+  $('#equityChartDescription').textContent=
+    `Daily account equity across the ${statsRangeLabel(statsRange)} view.`;
+
+  $('#statEndingEquity').textContent=money(endingEquity);
+
+  $('#statNetPnl').textContent=signedMoney(netPnl);
+  $('#statNetPnl').className='value '+pnlClass(netPnl);
+
+  $('#statReturn').textContent=
+    (returnPct>=0?'+':'')+returnPct.toFixed(2)+'%';
+  $('#statReturn').className='value '+pnlClass(returnPct);
+
+  $('#statMaxDd').textContent=
+    drawdown.amount>0 ? '-'+money(drawdown.amount) : money(0);
+  $('#statMaxDd').className=
+    'value '+(drawdown.amount>0?'neg':'neutral');
+
+  $('#statMaxDdPct').textContent=
+    drawdown.amount>0
+      ? `-${drawdown.pct.toFixed(2)}%`
+      : '0.00%';
+
+  const winRate=source.length
+    ? wins.length/source.length*100
+    : 0;
+
+  $('#statWinRate').textContent=winRate.toFixed(1)+'%';
+
+  $('#statProfitFactor').textContent=
+    profitFactor===Infinity ? '∞' : profitFactor.toFixed(2);
+
+  $('#statAvgR').textContent=
+    (avgR>=0?'+':'')+avgR.toFixed(2)+'R';
+  $('#statAvgR').className='value '+pnlClass(avgR);
+
+  $('#statExpectancy').textContent=signedMoney(expectancy);
+  $('#statExpectancy').className='value '+pnlClass(expectancy);
+
+  $('#statTrades').textContent=source.length;
+  $('#statTradingDays').textContent=dayRows.length;
+  $('#statWinningDays').textContent=winningDays;
+  $('#statLosingDays').textContent=losingDays;
+
+  $('#statAvgWin').textContent=money(avgWin);
+  $('#statAvgLoss').textContent=money(avgLoss);
+  $('#statLargestWin').textContent=signedMoney(largestWin);
+  $('#statLargestLoss').textContent=signedMoney(largestLoss);
+
+  $('#statBestDay').textContent=bestDay
+    ? `${formatDate(bestDay.date)} • ${signedMoney(bestDay.pnl)}`
+    : '—';
+
+  $('#statWorstDay').textContent=worstDay
+    ? `${formatDate(worstDay.date)} • ${signedMoney(worstDay.pnl)}`
+    : '—';
+
+  $('#statAvgDay').textContent=signedMoney(avgDay);
+
+  $('#statRecoveryFactor').textContent=
+    recoveryFactor===Infinity ? '∞' : recoveryFactor.toFixed(2);
+
+  renderEquityChart(series);
+  renderInstrumentStats(source);
+}
+
+$$('.range-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    statsRange=btn.dataset.statsRange;
+
+    $$('.range-btn').forEach(x=>{
+      x.classList.toggle('active',x===btn);
+    });
+
+    renderStatistics();
+  });
+});
 
 
 /* =========================
@@ -4297,6 +5066,7 @@ function renderAll(){
   renderJournal();
   renderPsychology();
   renderEdgePlaybook();
+  renderStatistics();
 }
 
 initializeSupabase();
