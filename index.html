@@ -3771,6 +3771,28 @@ function renderEquityChart(series){
     equityChartInstance=null;
   }
 
+  const negativeZonePlugin={
+    id:'negativeZonePlugin',
+    beforeDatasetsDraw(chart){
+      const {ctx, chartArea, scales}=chart;
+      if(!chartArea || !scales?.y) return;
+
+      const zeroY=scales.y.getPixelForValue(0);
+
+      if(zeroY >= chartArea.top && zeroY <= chartArea.bottom){
+        ctx.save();
+        ctx.fillStyle='rgba(255, 82, 82, 0.12)';
+        ctx.fillRect(
+          chartArea.left,
+          zeroY,
+          chartArea.right - chartArea.left,
+          chartArea.bottom - zeroY
+        );
+        ctx.restore();
+      }
+    }
+  };
+
   equityChartInstance=new Chart(canvas.getContext('2d'),{
     type:'line',
     data:{
@@ -3787,6 +3809,7 @@ function renderEquityChart(series){
         fill:true
       }]
     },
+    plugins:[negativeZonePlugin],
     options:{
       responsive:true,
       maintainAspectRatio:false,
