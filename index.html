@@ -1,1 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Traders Environment — Journal Dashboard</title>
+
+<!-- Supabase browser client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root{
+  --bg:#07090d;
+  --panel:#0d1117;
+  --panel2:#101722;
+  --line:#202a38;
+  --text:#f3f6fb;
+  --muted:#8f9bad;
+  --green:#25d07d;
+  --red:#ff5d68;
+  --blue:#69a8ff;
+  --radius:18px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; min-height:100vh;
+  font-family:Inter,Segoe UI,Arial,sans-serif;
+  background:linear-gradient(180deg,#06080b,#0a0e14 65%,#07090d);
+  color:var(--text);
+}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.pos{color:var(--green)!important}
+.neg{color:var(--red)!important}
+.neutral{color:#d9e1ec!important}
+
+/* LOGIN */
+.auth-screen{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.auth-card{
+  width:min(430px,100%);
+  background:linear-gradient(180deg,#0f141d,#0b1017);
+  border:1px solid var(--line);
+  border-radius:22px;
+  padding:28px;
+  box-shadow:0 30px 80px rgba(0,0,0,.45);
+}
+.auth-brand{
+  width:48px;height:48px;
+  display:grid;place-items:center;
+  background:#f5f7fb;color:#07090d;
+  border-radius:14px;font-weight:900;
+  margin-bottom:18px;
+}
+.auth-card h1{font-size:25px;margin:0 0 7px}
+.auth-card p{color:var(--muted);font-size:13px;line-height:1.55;margin:0 0 22px}
+.auth-field{display:flex;flex-direction:column;gap:7px;margin-bottom:13px}
+label{font-size:11px;color:#a7b3c2;font-weight:700}
+input,select,textarea{
+  width:100%;
+  background:#0a0f16;color:#fff;
+  border:1px solid #253044;
+  border-radius:11px;padding:11px 12px;outline:none;
+}
+input:focus,select:focus,textarea:focus{border-color:#5275a7}
+.auth-message{
+  min-height:20px;
+  color:var(--red);
+  font-size:12px;
+  margin-top:10px;
+}
+.config-warning{
+  margin-top:16px;
+  padding:11px;
+  border:1px solid #55451f;
+  border-radius:10px;
+  background:#211b0e;
+  color:#dfc371;
+  font-size:11px;
+  line-height:1.5;
+}
+
+/* APP */
+.app{max-width:1500px;margin:auto;padding:18px}
+.topbar{
+  display:flex;justify-content:space-between;gap:16px;
+  align-items:center;margin-bottom:18px;
+}
+.brand h1{margin:0;font-size:24px;letter-spacing:.2px}
+.brand p{margin:5px 0 0;color:var(--muted);font-size:13px}
+.top-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.user-pill{
+  border:1px solid var(--line);
+  background:#0d141d;
+  color:#b8c4d2;
+  padding:9px 12px;
+  border-radius:999px;
+  font-size:11px;
+  max-width:230px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.btn{
+  border:1px solid var(--line);
+  background:#121925;color:#fff;
+  padding:10px 14px;border-radius:12px;
+  transition:.2s ease;
+}
+.btn:hover{transform:translateY(-1px);border-color:#34445b}
+.btn.primary{background:#f5f7fb;color:#07090d;border-color:#f5f7fb;font-weight:750}
+.btn.danger{background:#211116;border-color:#4c252c;color:#ff8590}
+
+.metrics{
+  display:grid;
+  grid-template-columns:repeat(7,minmax(125px,1fr));
+  gap:12px;margin-bottom:16px;
+}
+.metric{
+  background:linear-gradient(180deg,#0f141d,#0b1017);
+  border:1px solid var(--line);
+  border-radius:15px;padding:14px;min-height:94px;
+}
+.metric .label{color:var(--muted);font-size:12px;margin-bottom:8px}
+.metric .value{font-size:22px;font-weight:750}
+.metric .sub{font-size:11px;color:var(--muted);margin-top:6px}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px}
+.panel{
+  background:linear-gradient(180deg,#0d1219,#0a0f15);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  overflow:hidden;
+}
+.calendar-head{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:16px;border-bottom:1px solid var(--line);
+}
+.month-nav{display:flex;align-items:center;gap:10px}
+.month-title{font-size:20px;font-weight:750;min-width:180px;text-align:center}
+.icon-btn{
+  width:38px;height:38px;border-radius:11px;
+  border:1px solid var(--line);background:#111823;color:#fff;
+}
+.calendar-wrap{overflow:auto}
+.calendar-grid{
+  min-width:880px;display:grid;
+  grid-template-columns:repeat(7,minmax(110px,1fr)) 150px;
+}
+.dow,.week-label{
+  background:#0e141d;color:#9eabba;
+  font-size:11px;font-weight:800;text-transform:uppercase;
+  letter-spacing:.8px;padding:11px;
+  border-right:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  text-align:center;
+}
+.day{
+  min-height:116px;
+  border-right:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  padding:9px;position:relative;
+  transition:.15s;
+}
+.day:not(.empty){cursor:pointer}
+.day:not(.empty):hover{background:#111722}
+.day.empty{background:#090d12}
+.day.today{box-shadow:inset 0 0 0 1px var(--blue)}
+.date-num{font-size:12px;color:#aeb9c8;font-weight:700}
+.day-pnl{font-weight:800;margin-top:14px;font-size:18px}
+.day-meta{font-size:11px;color:var(--muted);margin-top:5px}
+.tag{
+  display:inline-block;margin-top:9px;font-size:10px;
+  padding:4px 7px;border-radius:999px;
+  border:1px solid var(--line);color:#bec8d6;
+}
+.week-total{
+  min-height:116px;border-bottom:1px solid var(--line);
+  padding:14px 12px;display:flex;flex-direction:column;
+  justify-content:center;background:#0a1017;
+}
+.week-total .label{font-size:11px;color:var(--muted);margin-bottom:8px}
+.week-total .value{font-size:19px;font-weight:800}
+
+.side{display:flex;flex-direction:column;gap:16px}
+.side-section{padding:16px}
+.side h3{margin:0 0 14px;font-size:14px}
+.side-row{
+  display:flex;justify-content:space-between;gap:10px;
+  padding:10px 0;border-bottom:1px solid #18212d;font-size:13px;
+}
+.side-row:last-child{border-bottom:0}
+.side-row span:first-child{color:var(--muted)}
+.settings-row{display:flex;gap:8px;align-items:center}
+.settings-row input{max-width:140px;padding:8px}
+.recent-trades{max-height:360px;overflow:auto}
+.trade-card{
+  border:1px solid #1b2634;background:#0d141d;
+  border-radius:12px;padding:11px;margin-bottom:9px;cursor:pointer;
+}
+.trade-card .t1,.trade-card .t2{
+  display:flex;justify-content:space-between;gap:10px
+}
+.trade-card .t1{font-size:12px}
+.trade-card .t2{margin-top:7px;color:var(--muted);font-size:11px}
+.empty-state{color:var(--muted);font-size:12px;line-height:1.6}
+
+/* MODAL */
+.modal{
+  position:fixed;inset:0;background:rgba(0,0,0,.72);
+  display:none;align-items:center;justify-content:center;
+  padding:18px;z-index:100;
+}
+.modal.open{display:flex}
+.modal-card{
+  width:min(760px,100%);max-height:92vh;overflow:auto;
+  background:#0c1118;border:1px solid #273244;
+  border-radius:20px;box-shadow:0 30px 80px rgba(0,0,0,.5);
+}
+.modal-head{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:16px 18px;border-bottom:1px solid var(--line);
+  position:sticky;top:0;background:#0c1118;z-index:2;
+}
+.modal-head h2{margin:0;font-size:18px}
+.close{
+  width:36px;height:36px;border-radius:10px;
+  border:1px solid var(--line);background:#121925;color:#fff;
+}
+form{padding:18px}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}
+.field{display:flex;flex-direction:column;gap:7px}
+.field.full{grid-column:1/-1}
+textarea{resize:vertical;min-height:90px}
+.form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:17px}
+.day-journal{padding:0 18px 18px}
+.day-journal h4{margin:8px 0 10px}
+.day-trade{
+  display:grid;grid-template-columns:1.2fr .7fr .7fr .7fr auto;
+  gap:8px;align-items:center;border:1px solid #1e2937;
+  border-radius:10px;padding:9px;margin-bottom:8px;font-size:11px;
+}
+.status-bar{
+  position:fixed;right:18px;bottom:18px;
+  background:#111823;border:1px solid var(--line);
+  color:#c9d3df;padding:10px 13px;border-radius:12px;
+  font-size:11px;z-index:150;display:none;
+}
+.status-bar.show{display:block}
+
+@media(max-width:1100px){
+  .metrics{grid-template-columns:repeat(4,1fr)}
+  .layout{grid-template-columns:1fr}
+  .side{display:grid;grid-template-columns:1fr 1fr}
+}
+@media(max-width:700px){
+  .app{padding:10px}
+  .topbar{align-items:flex-start;flex-direction:column}
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .side{display:block}
+  .side .panel{margin-bottom:12px}
+  .form-grid{grid-template-columns:1fr}
+  .field.full{grid-column:auto}
+  .month-title{min-width:140px;font-size:17px}
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN SCREEN -->
+<section class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-brand">TE</div>
+    <h1>Traders Environment</h1>
+    <p>Sign in to your private trading journal. Your trades are stored in Supabase and protected by Row Level Security.</p>
+
+    <form id="loginForm" style="padding:0">
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="loginEmail" autocomplete="email" required>
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input type="password" id="loginPassword" autocomplete="current-password" required>
+      </div>
+      <button class="btn primary" type="submit" style="width:100%;margin-top:5px">Sign In</button>
+      <div class="auth-message" id="authMessage"></div>
+    </form>
+
+    <div class="config-warning" id="configWarning">
+      Before deployment, insert your Supabase Project URL and Publishable Key in the configuration section near the bottom of this HTML file.
+    </div>
+  </div>
+</section>
+
+<!-- DASHBOARD -->
+<div class="app hidden" id="app">
+  <header class="topbar">
+    <div class="brand">
+      <h1>Traders Environment</h1>
+      <p>Journal dashboard • Calendar performance • Supabase connected</p>
+    </div>
+
+    <div class="top-actions">
+      <span class="user-pill" id="userEmail">—</span>
+      <button class="btn" id="exportBtn">Export CSV</button>
+      <button class="btn primary" id="addTradeBtn">+ Add Trade</button>
+      <button class="btn danger" id="logoutBtn">Sign Out</button>
+    </div>
+  </header>
+
+  <section class="metrics">
+    <div class="metric">
+      <div class="label">Monthly P&amp;L</div>
+      <div class="value" id="monthlyPnl">R0.00</div>
+      <div class="sub" id="monthNameMetric">Selected month</div>
+    </div>
+    <div class="metric">
+      <div class="label">Total Trades</div>
+      <div class="value neutral" id="totalTrades">0</div>
+      <div class="sub">This month</div>
+    </div>
+    <div class="metric">
+      <div class="label">Win Rate</div>
+      <div class="value neutral" id="winRate">0%</div>
+      <div class="sub">Winning trades</div>
+    </div>
+    <div class="metric">
+      <div class="label">Average R</div>
+      <div class="value neutral" id="avgR">0.00R</div>
+      <div class="sub">Per trade</div>
+    </div>
+    <div class="metric">
+      <div class="label">Profit Factor</div>
+      <div class="value neutral" id="profitFactor">0.00</div>
+      <div class="sub">Gross profit / loss</div>
+    </div>
+    <div class="metric">
+      <div class="label">Best Day</div>
+      <div class="value neutral" id="bestDay">R0.00</div>
+      <div class="sub" id="bestDayDate">—</div>
+    </div>
+    <div class="metric">
+      <div class="label">Worst Day</div>
+      <div class="value neutral" id="worstDay">R0.00</div>
+      <div class="sub" id="worstDayDate">—</div>
+    </div>
+  </section>
+
+  <main class="layout">
+    <section class="panel">
+      <div class="calendar-head">
+        <div>
+          <div style="font-size:12px;color:var(--muted)">Trading Calendar</div>
+          <div style="font-size:12px;color:#d7dfeb;margin-top:3px">Click any date to add or review trades</div>
+        </div>
+        <div class="month-nav">
+          <button class="icon-btn" id="prevMonth">←</button>
+          <div class="month-title" id="monthTitle"></div>
+          <button class="icon-btn" id="nextMonth">→</button>
+        </div>
+      </div>
+      <div class="calendar-wrap">
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </div>
+    </section>
+
+    <aside class="side">
+      <section class="panel side-section">
+        <h3>Account Overview</h3>
+        <div class="side-row">
+          <span>Starting balance</span>
+          <div class="settings-row">
+            <span>R</span>
+            <input id="startingBalance" type="number" step="0.01" value="0">
+          </div>
+        </div>
+        <div class="side-row"><span>Current equity</span><strong id="currentEquity">R0.00</strong></div>
+        <div class="side-row"><span>All-time P&amp;L</span><strong id="allTimePnl">R0.00</strong></div>
+        <div class="side-row"><span>All-time trades</span><strong id="allTimeTrades">0</strong></div>
+      </section>
+
+      <section class="panel side-section">
+        <h3>Monthly Performance</h3>
+        <div class="side-row"><span>Winning days</span><strong id="winningDays">0</strong></div>
+        <div class="side-row"><span>Losing days</span><strong id="losingDays">0</strong></div>
+        <div class="side-row"><span>Breakeven days</span><strong id="beDays">0</strong></div>
+        <div class="side-row"><span>Best instrument</span><strong id="bestInstrument">—</strong></div>
+        <div class="side-row"><span>Avg execution score</span><strong id="avgExec">—</strong></div>
+      </section>
+
+      <section class="panel side-section">
+        <h3>Recent Trades</h3>
+        <div class="recent-trades" id="recentTrades">
+          <div class="empty-state">No trades recorded yet.</div>
+        </div>
+      </section>
+    </aside>
+  </main>
+</div>
+
+<!-- TRADE MODAL -->
+<div class="modal" id="tradeModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h2 id="modalTitle">Add Trade</h2>
+      <button class="close" id="closeModal">×</button>
+    </div>
+
+    <form id="tradeForm">
+      <div class="form-grid">
+        <div class="field">
+          <label>Date</label>
+          <input type="date" id="tradeDate" required>
+        </div>
+        <div class="field">
+          <label>Instrument / Market</label>
+          <input type="text" id="instrument" placeholder="e.g. NAS100, EURUSD, XAUUSD" required>
+        </div>
+        <div class="field">
+          <label>Direction</label>
+          <select id="direction">
+            <option value="Buy">Buy</option>
+            <option value="Sell">Sell</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Setup / Edge</label>
+          <input type="text" id="setup" placeholder="e.g. Resistance in downtrend">
+        </div>
+        <div class="field">
+          <label>Entry Price</label>
+          <input type="number" id="entry" step="any">
+        </div>
+        <div class="field">
+          <label>Stop Loss</label>
+          <input type="number" id="stop" step="any">
+        </div>
+        <div class="field">
+          <label>Exit Price</label>
+          <input type="number" id="exit" step="any">
+        </div>
+        <div class="field">
+          <label>Risk Amount (R)</label>
+          <input type="number" id="riskAmount" step="0.01" placeholder="e.g. 200">
+        </div>
+        <div class="field">
+          <label>P&amp;L (R)</label>
+          <input type="number" id="pnl" step="0.01" placeholder="e.g. 450 or -200" required>
+        </div>
+        <div class="field">
+          <label>R Multiple</label>
+          <input type="number" id="rMultiple" step="0.01" placeholder="Auto from P&L ÷ risk">
+        </div>
+        <div class="field">
+          <label>Execution Score / 10</label>
+          <input type="number" id="executionScore" min="0" max="10" step="0.5" placeholder="e.g. 9">
+        </div>
+        <div class="field">
+          <label>Psychology</label>
+          <select id="psychology">
+            <option value="">Select</option>
+            <option>Calm</option>
+            <option>Focused</option>
+            <option>Patient</option>
+            <option>Anxious</option>
+            <option>FOMO</option>
+            <option>Revenge impulse</option>
+            <option>Overconfident</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label>Trade Notes</label>
+          <textarea id="notes" placeholder="What did you see? Did you follow the plan? What should be reinforced or corrected?"></textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn" id="cancelBtn">Cancel</button>
+        <button type="submit" class="btn primary" id="saveTradeBtn">Save Trade</button>
+      </div>
+    </form>
+
+    <div class="day-journal">
+      <h4 id="dayTradesTitle">Trades on selected day</h4>
+      <div id="dayTradesList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="status-bar" id="statusBar"></div>
+
+<script>
+/* =========================================================
+   SUPABASE CONFIGURATION
+
+   Replace BOTH values below with:
+   Supabase -> Connect -> Project URL
+   Supabase -> Connect -> Publishable key
+
+   IMPORTANT:
+   Use the PUBLISHABLE / ANON client key only.
+   NEVER put a Secret / service_role key in this file.
+========================================================= */
+
+const SUPABASE_URL = "https://tmxosoyqflmwqzjgnkez.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_meHq49fLyw8PVNPZxWacnw_SQMj5B-h";
+
+/* ========================================================= */
+
+const isConfigured =
+  SUPABASE_URL.startsWith("https://") &&
+  !SUPABASE_URL.includes("PASTE_YOUR") &&
+  SUPABASE_PUBLISHABLE_KEY.length > 20 &&
+  !SUPABASE_PUBLISHABLE_KEY.includes("PASTE_YOUR");
+
+let db = null;
+let currentUser = null;
+let tradingAccount = null;
+let trades = [];
+let viewDate = new Date();
+
+const $ = s => document.querySelector(s);
+const money = n => 'R' + Number(n || 0).toLocaleString(undefined,{
+  minimumFractionDigits:2,
+  maximumFractionDigits:2
+});
+const signedMoney = n => (Number(n)>0?'+':'') + money(n);
+
+function showStatus(text, ms=2200){
+  const el = $('#statusBar');
+  el.textContent = text;
+  el.classList.add('show');
+  clearTimeout(showStatus.timer);
+  showStatus.timer = setTimeout(()=>el.classList.remove('show'), ms);
+}
+
+function pnlClass(v){
+  return v>0?'pos':v<0?'neg':'neutral';
+}
+
+function localDateString(d){
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+function formatDate(s){
+  if(!s) return '—';
+  const [y,m,d]=s.split('-').map(Number);
+  return new Date(y,m-1,d).toLocaleDateString(undefined,{
+    day:'numeric',month:'short',year:'numeric'
+  });
+}
+
+function escapeHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g,c=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+  }[c]));
+}
+
+function setLoggedInUI(loggedIn){
+  $('#authScreen').classList.toggle('hidden', loggedIn);
+  $('#app').classList.toggle('hidden', !loggedIn);
+}
+
+async function initializeSupabase(){
+  if(!isConfigured){
+    $('#authMessage').textContent =
+      'Supabase is not configured yet. Paste the Project URL and Publishable Key into the HTML file first.';
+    $('#configWarning').classList.remove('hidden');
+    return;
+  }
+
+  $('#configWarning').classList.add('hidden');
+
+  db = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+
+  const { data:{ session }, error } = await db.auth.getSession();
+
+  if(error){
+    $('#authMessage').textContent = error.message;
+    return;
+  }
+
+  if(session?.user){
+    await enterApp(session.user);
+  }else{
+    setLoggedInUI(false);
+  }
+
+  db.auth.onAuthStateChange(async (event, session)=>{
+    if(event === 'SIGNED_OUT'){
+      currentUser=null;
+      tradingAccount=null;
+      trades=[];
+      setLoggedInUI(false);
+    }
+  });
+}
+
+$('#loginForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+
+  if(!db){
+    $('#authMessage').textContent='Supabase configuration is missing.';
+    return;
+  }
+
+  const email=$('#loginEmail').value.trim();
+  const password=$('#loginPassword').value;
+  $('#authMessage').textContent='Signing in...';
+
+  const { data, error } = await db.auth.signInWithPassword({ email, password });
+
+  if(error){
+    $('#authMessage').textContent=error.message;
+    return;
+  }
+
+  $('#authMessage').textContent='';
+  await enterApp(data.user);
+});
+
+async function enterApp(user){
+  currentUser=user;
+  $('#userEmail').textContent=user.email || 'Signed in';
+  setLoggedInUI(true);
+
+  showStatus('Loading journal...');
+  await ensureTradingAccount();
+  await loadTrades();
+  renderAll();
+  showStatus('Journal loaded');
+}
+
+async function ensureTradingAccount(){
+  const { data, error } = await db
+    .from('trading_accounts')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('created_at', {ascending:true})
+    .limit(1);
+
+  if(error){
+    console.error(error);
+    showStatus('Could not load trading account',4000);
+    return;
+  }
+
+  if(data && data.length){
+    tradingAccount=data[0];
+  }else{
+    const { data:newAccount, error:createError } = await db
+      .from('trading_accounts')
+      .insert({
+        user_id:currentUser.id,
+        account_name:'Main Account',
+        starting_balance:0,
+        currency:'ZAR'
+      })
+      .select()
+      .single();
+
+    if(createError){
+      console.error(createError);
+      showStatus('Could not create trading account',4000);
+      return;
+    }
+
+    tradingAccount=newAccount;
+  }
+
+  $('#startingBalance').value=Number(tradingAccount?.starting_balance || 0);
+}
+
+async function loadTrades(){
+  const { data, error } = await db
+    .from('trades')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('trade_date', {ascending:false})
+    .order('created_at', {ascending:false});
+
+  if(error){
+    console.error(error);
+    showStatus('Could not load trades',4000);
+    trades=[];
+    return;
+  }
+
+  trades=data || [];
+}
+
+function monthTrades(){
+  const y=viewDate.getFullYear(), m=viewDate.getMonth()+1;
+  return trades.filter(t=>{
+    const [ty,tm]=t.trade_date.split('-').map(Number);
+    return ty===y && tm===m;
+  });
+}
+
+function dayPnlMap(monthTs){
+  const map={};
+
+  monthTs.forEach(t=>{
+    if(!map[t.trade_date]){
+      map[t.trade_date]={pnl:0,count:0,r:0};
+    }
+    map[t.trade_date].pnl += Number(t.pnl)||0;
+    map[t.trade_date].count += 1;
+    map[t.trade_date].r += Number(t.r_multiple)||0;
+  });
+
+  return map;
+}
+
+function renderCalendar(){
+  const grid=$('#calendarGrid');
+  grid.innerHTML='';
+
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>{
+    const e=document.createElement('div');
+    e.className='dow';
+    e.textContent=d;
+    grid.appendChild(e);
+  });
+
+  const wh=document.createElement('div');
+  wh.className='week-label';
+  wh.textContent='Weekly P&L';
+  grid.appendChild(wh);
+
+  const year=viewDate.getFullYear();
+  const month=viewDate.getMonth();
+
+  $('#monthTitle').textContent=viewDate.toLocaleDateString(undefined,{
+    month:'long',year:'numeric'
+  });
+  $('#monthNameMetric').textContent=$('#monthTitle').textContent;
+
+  const first=new Date(year,month,1);
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const startDay=first.getDay();
+
+  const mt=monthTrades();
+  const dMap=dayPnlMap(mt);
+  const today=localDateString(new Date());
+
+  let cells=[];
+  for(let i=0;i<startDay;i++) cells.push(null);
+  for(let d=1;d<=daysInMonth;d++) cells.push(d);
+  while(cells.length%7!==0) cells.push(null);
+
+  for(let row=0;row<cells.length/7;row++){
+    let weekPnl=0;
+
+    for(let col=0;col<7;col++){
+      const dayNum=cells[row*7+col];
+      const el=document.createElement('div');
+
+      if(dayNum===null){
+        el.className='day empty';
+        grid.appendChild(el);
+        continue;
+      }
+
+      const date=localDateString(new Date(year,month,dayNum));
+      const data=dMap[date];
+
+      if(data) weekPnl += data.pnl;
+
+      el.className='day'+(date===today?' today':'');
+      el.dataset.date=date;
+
+      let html=`<div class="date-num">${dayNum}</div>`;
+
+      if(data){
+        html+=`<div class="day-pnl ${pnlClass(data.pnl)}">${signedMoney(data.pnl)}</div>`;
+        html+=`<div class="day-meta">${data.count} trade${data.count===1?'':'s'} • ${data.r>=0?'+':''}${data.r.toFixed(2)}R</div>`;
+        html+=`<div class="tag">${data.pnl>0?'Profit day':data.pnl<0?'Loss day':'Breakeven'}</div>`;
+      }else{
+        html+=`<div class="day-meta" style="margin-top:18px">No trades</div>`;
+      }
+
+      el.innerHTML=html;
+      el.addEventListener('click',()=>openTradeModal(date));
+      grid.appendChild(el);
+    }
+
+    const w=document.createElement('div');
+    w.className='week-total';
+    w.innerHTML=`
+      <div class="label">Week ${row+1}</div>
+      <div class="value ${pnlClass(weekPnl)}">${signedMoney(weekPnl)}</div>
+    `;
+    grid.appendChild(w);
+  }
+}
+
+function renderMetrics(){
+  const mt=monthTrades();
+  const pnl=mt.reduce((s,t)=>s+(Number(t.pnl)||0),0);
+  const wins=mt.filter(t=>Number(t.pnl)>0).length;
+  const avgR=mt.length
+    ? mt.reduce((s,t)=>s+(Number(t.r_multiple)||0),0)/mt.length
+    : 0;
+
+  const grossProfit=mt
+    .filter(t=>Number(t.pnl)>0)
+    .reduce((s,t)=>s+Number(t.pnl),0);
+
+  const grossLoss=Math.abs(
+    mt.filter(t=>Number(t.pnl)<0)
+      .reduce((s,t)=>s+Number(t.pnl),0)
+  );
+
+  const pf=grossLoss ? grossProfit/grossLoss : (grossProfit>0 ? Infinity : 0);
+
+  $('#monthlyPnl').textContent=signedMoney(pnl);
+  $('#monthlyPnl').className='value '+pnlClass(pnl);
+  $('#totalTrades').textContent=mt.length;
+  $('#winRate').textContent=(mt.length?(wins/mt.length*100):0).toFixed(1)+'%';
+
+  $('#avgR').textContent=(avgR>=0?'+':'')+avgR.toFixed(2)+'R';
+  $('#avgR').className='value '+pnlClass(avgR);
+
+  $('#profitFactor').textContent=pf===Infinity?'∞':pf.toFixed(2);
+
+  const dm=dayPnlMap(mt);
+  const days=Object.entries(dm);
+  const sorted=[...days].sort((a,b)=>b[1].pnl-a[1].pnl);
+  const best=sorted[0];
+  const worst=sorted[sorted.length-1];
+
+  $('#bestDay').textContent=best?signedMoney(best[1].pnl):money(0);
+  $('#bestDay').className='value '+(best?pnlClass(best[1].pnl):'neutral');
+  $('#bestDayDate').textContent=best?formatDate(best[0]):'—';
+
+  $('#worstDay').textContent=worst?signedMoney(worst[1].pnl):money(0);
+  $('#worstDay').className='value '+(worst?pnlClass(worst[1].pnl):'neutral');
+  $('#worstDayDate').textContent=worst?formatDate(worst[0]):'—';
+
+  let wd=0,ld=0,be=0;
+  days.forEach(([,x])=>x.pnl>0?wd++:x.pnl<0?ld++:be++);
+  $('#winningDays').textContent=wd;
+  $('#losingDays').textContent=ld;
+  $('#beDays').textContent=be;
+
+  const inst={};
+  mt.forEach(t=>{
+    const k=(t.instrument||'Unknown').trim();
+    inst[k]=(inst[k]||0)+(Number(t.pnl)||0);
+  });
+
+  const bestInst=Object.entries(inst).sort((a,b)=>b[1]-a[1])[0];
+  $('#bestInstrument').textContent=bestInst
+    ? `${bestInst[0]} (${signedMoney(bestInst[1])})`
+    : '—';
+
+  const execs=mt
+    .map(t=>Number(t.execution_score))
+    .filter(n=>Number.isFinite(n) && n>=0);
+
+  $('#avgExec').textContent=execs.length
+    ? (execs.reduce((a,b)=>a+b,0)/execs.length).toFixed(1)+'/10'
+    : '—';
+
+  const allPnl=trades.reduce((s,t)=>s+(Number(t.pnl)||0),0);
+
+  $('#allTimePnl').textContent=signedMoney(allPnl);
+  $('#allTimePnl').className=pnlClass(allPnl);
+
+  const start=Number(tradingAccount?.starting_balance || 0);
+  $('#currentEquity').textContent=money(start+allPnl);
+  $('#allTimeTrades').textContent=trades.length;
+}
+
+function renderRecent(){
+  const box=$('#recentTrades');
+
+  const arr=[...trades]
+    .sort((a,b)=>
+      (b.created_at||'').localeCompare(a.created_at||'')
+    )
+    .slice(0,10);
+
+  if(!arr.length){
+    box.innerHTML='<div class="empty-state">No trades recorded yet. Use <b>+ Add Trade</b> or click a calendar date.</div>';
+    return;
+  }
+
+  box.innerHTML='';
+
+  arr.forEach(t=>{
+    const d=document.createElement('div');
+    d.className='trade-card';
+    d.innerHTML=`
+      <div class="t1">
+        <strong>${escapeHtml(t.instrument||'—')} • ${escapeHtml(t.direction||'')}</strong>
+        <strong class="${pnlClass(Number(t.pnl))}">${signedMoney(Number(t.pnl))}</strong>
+      </div>
+      <div class="t2">
+        <span>${formatDate(t.trade_date)}</span>
+        <span>${Number(t.r_multiple||0)>=0?'+':''}${Number(t.r_multiple||0).toFixed(2)}R</span>
+      </div>
+    `;
+
+    d.addEventListener('click',()=>openTradeModal(t.trade_date));
+    box.appendChild(d);
+  });
+}
+
+function renderAll(){
+  renderCalendar();
+  renderMetrics();
+  renderRecent();
+}
+
+function openTradeModal(date){
+  $('#tradeModal').classList.add('open');
+  $('#tradeDate').value=date || localDateString(new Date());
+  $('#modalTitle').textContent='Trading Journal — '+formatDate($('#tradeDate').value);
+  renderDayTrades($('#tradeDate').value);
+}
+
+function closeModal(){
+  $('#tradeModal').classList.remove('open');
+  $('#tradeForm').reset();
+}
+
+function renderDayTrades(date){
+  $('#dayTradesTitle').textContent='Trades on '+formatDate(date);
+
+  const list=$('#dayTradesList');
+
+  const arr=trades
+    .filter(t=>t.trade_date===date)
+    .sort((a,b)=>(a.created_at||'').localeCompare(b.created_at||''));
+
+  if(!arr.length){
+    list.innerHTML='<div class="empty-state">No trades logged for this day yet.</div>';
+    return;
+  }
+
+  list.innerHTML='';
+
+  arr.forEach(t=>{
+    const row=document.createElement('div');
+    row.className='day-trade';
+
+    row.innerHTML=`
+      <strong>${escapeHtml(t.instrument||'—')} ${escapeHtml(t.direction||'')}</strong>
+      <span>${escapeHtml(t.setup||'No setup')}</span>
+      <span class="${pnlClass(Number(t.pnl))}">${signedMoney(Number(t.pnl))}</span>
+      <span>${Number(t.r_multiple||0)>=0?'+':''}${Number(t.r_multiple||0).toFixed(2)}R</span>
+      <button class="btn danger" style="padding:7px 9px" type="button">Delete</button>
+    `;
+
+    row.querySelector('button').addEventListener('click',async()=>{
+      if(!confirm('Delete this trade permanently?')) return;
+
+      const { error } = await db
+        .from('trades')
+        .delete()
+        .eq('id',t.id)
+        .eq('user_id',currentUser.id);
+
+      if(error){
+        alert(error.message);
+        return;
+      }
+
+      await loadTrades();
+      renderDayTrades(date);
+      renderAll();
+      showStatus('Trade deleted');
+    });
+
+    list.appendChild(row);
+  });
+}
+
+$('#tradeForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+
+  const pnl=Number($('#pnl').value);
+  const risk=Number($('#riskAmount').value);
+
+  let r=$('#rMultiple').value==='' ? NaN : Number($('#rMultiple').value);
+
+  if(!Number.isFinite(r) && risk>0){
+    r=pnl/risk;
+  }
+
+  if(!Number.isFinite(r)){
+    r=0;
+  }
+
+  const newTrade={
+    user_id:currentUser.id,
+    account_id:tradingAccount?.id || null,
+    trade_date:$('#tradeDate').value,
+    instrument:$('#instrument').value.trim(),
+    direction:$('#direction').value,
+    setup:$('#setup').value.trim() || null,
+    entry_price:$('#entry').value==='' ? null : Number($('#entry').value),
+    stop_loss:$('#stop').value==='' ? null : Number($('#stop').value),
+    exit_price:$('#exit').value==='' ? null : Number($('#exit').value),
+    risk_amount:risk || 0,
+    pnl:pnl || 0,
+    r_multiple:r,
+    execution_score:$('#executionScore').value==='' ? null : Number($('#executionScore').value),
+    psychology:$('#psychology').value || null,
+    notes:$('#notes').value.trim() || null
+  };
+
+  const saveBtn=$('#saveTradeBtn');
+  saveBtn.disabled=true;
+  saveBtn.textContent='Saving...';
+
+  const { error } = await db
+    .from('trades')
+    .insert(newTrade);
+
+  saveBtn.disabled=false;
+  saveBtn.textContent='Save Trade';
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  const date=newTrade.trade_date;
+
+  $('#tradeForm').reset();
+  $('#tradeDate').value=date;
+
+  await loadTrades();
+  renderDayTrades(date);
+  renderAll();
+  showStatus('Trade saved to Supabase');
+});
+
+$('#startingBalance').addEventListener('change',async e=>{
+  if(!tradingAccount) return;
+
+  const value=Number(e.target.value)||0;
+
+  const { data, error } = await db
+    .from('trading_accounts')
+    .update({starting_balance:value})
+    .eq('id',tradingAccount.id)
+    .eq('user_id',currentUser.id)
+    .select()
+    .single();
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  tradingAccount=data;
+  renderMetrics();
+  showStatus('Starting balance updated');
+});
+
+$('#logoutBtn').addEventListener('click',async()=>{
+  await db.auth.signOut();
+});
+
+$('#addTradeBtn').addEventListener('click',()=>{
+  openTradeModal(localDateString(new Date()));
+});
+
+$('#closeModal').addEventListener('click',closeModal);
+$('#cancelBtn').addEventListener('click',closeModal);
+
+$('#tradeModal').addEventListener('click',e=>{
+  if(e.target.id==='tradeModal') closeModal();
+});
+
+$('#tradeDate').addEventListener('change',e=>{
+  $('#modalTitle').textContent='Trading Journal — '+formatDate(e.target.value);
+  renderDayTrades(e.target.value);
+});
+
+$('#prevMonth').addEventListener('click',()=>{
+  viewDate=new Date(viewDate.getFullYear(),viewDate.getMonth()-1,1);
+  renderAll();
+});
+
+$('#nextMonth').addEventListener('click',()=>{
+  viewDate=new Date(viewDate.getFullYear(),viewDate.getMonth()+1,1);
+  renderAll();
+});
+
+$('#riskAmount').addEventListener('input',autoR);
+$('#pnl').addEventListener('input',autoR);
+
+function autoR(){
+  const pnl=Number($('#pnl').value);
+  const risk=Number($('#riskAmount').value);
+
+  if(Number.isFinite(pnl) && risk>0){
+    $('#rMultiple').value=(pnl/risk).toFixed(2);
+  }
+}
+
+$('#exportBtn').addEventListener('click',()=>{
+  if(!trades.length){
+    alert('There are no trades to export.');
+    return;
+  }
+
+  const headers=[
+    'trade_date','instrument','direction','setup',
+    'entry_price','stop_loss','exit_price',
+    'risk_amount','pnl','r_multiple',
+    'execution_score','psychology','notes'
+  ];
+
+  const esc=v=>{
+    const s=String(v ?? '');
+    return `"${s.replaceAll('"','""')}"`;
+  };
+
+  const csv=[
+    headers.join(','),
+    ...trades.map(t=>headers.map(h=>esc(t[h])).join(','))
+  ].join('\n');
+
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='traders-environment-trades.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+initializeSupabase();
+</script>
+</body>
+</html>
 
