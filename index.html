@@ -713,6 +713,290 @@ input:focus,select:focus,textarea:focus{border-color:#5275a7}
   .session-card{margin-bottom:9px}
 }
 
+
+/* EDGE / PLAYBOOK */
+.edge-summary{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+  margin-bottom:14px;
+}
+.edge-layout{
+  display:grid;
+  grid-template-columns:330px minmax(0,1fr);
+  gap:16px;
+}
+.edge-browser{
+  padding:14px;
+}
+.edge-browser h3,
+.edge-editor h3{
+  margin:0;
+  font-size:14px;
+}
+.edge-browser-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:11px;
+}
+.edge-filters{
+  display:grid;
+  grid-template-columns:1fr 120px;
+  gap:8px;
+  margin-bottom:11px;
+}
+.edge-trade-list{
+  max-height:720px;
+  overflow:auto;
+  padding-right:2px;
+}
+.edge-trade-card{
+  border:1px solid #1d2938;
+  background:#0b1119;
+  border-radius:13px;
+  padding:11px;
+  margin-bottom:8px;
+  cursor:pointer;
+  transition:.15s ease;
+}
+.edge-trade-card:hover{
+  border-color:#35465f;
+  background:#0f1721;
+}
+.edge-trade-card.active{
+  border-color:#5e83ba;
+  box-shadow:inset 0 0 0 1px #344e70;
+  background:#101925;
+}
+.edge-trade-top,
+.edge-trade-bottom{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+}
+.edge-trade-top strong{
+  font-size:12px;
+}
+.edge-trade-bottom{
+  margin-top:7px;
+  color:var(--muted);
+  font-size:10px;
+}
+.grade-badge{
+  display:inline-flex;
+  justify-content:center;
+  align-items:center;
+  min-width:40px;
+  border:1px solid #2b394d;
+  border-radius:999px;
+  padding:4px 7px;
+  font-size:10px;
+  font-weight:850;
+}
+.grade-aplus{color:var(--green);border-color:#21583e;background:#0d2218}
+.grade-a{color:#92bdff;border-color:#2d4f7d;background:#0d1928}
+.grade-b{color:var(--amber);border-color:#5a4720;background:#221b0c}
+.grade-none{color:var(--muted)}
+.edge-editor{
+  padding:16px;
+}
+.edge-empty{
+  min-height:420px;
+  display:grid;
+  place-items:center;
+  text-align:center;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.7;
+  padding:30px;
+}
+.edge-editor-content.hidden{
+  display:none!important;
+}
+.edge-trade-header{
+  border:1px solid #1f2b3b;
+  background:#0b1119;
+  border-radius:14px;
+  padding:13px;
+  margin-bottom:14px;
+}
+.edge-trade-header-top{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+}
+.edge-trade-header h3{
+  font-size:16px;
+}
+.edge-trade-header p{
+  margin:4px 0 0;
+  color:var(--muted);
+  font-size:11px;
+}
+.edge-trade-kpis{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:10px;
+}
+.edge-mini-kpi{
+  border:1px solid #263348;
+  background:#0e1620;
+  border-radius:9px;
+  padding:6px 8px;
+  font-size:10px;
+}
+.edge-score-board{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+  margin-bottom:14px;
+}
+.edge-score-card{
+  border:1px solid #223044;
+  background:#0b1119;
+  border-radius:13px;
+  padding:12px;
+}
+.edge-score-card span{
+  color:var(--muted);
+  font-size:10px;
+}
+.edge-score-card strong{
+  display:block;
+  margin-top:4px;
+  font-size:22px;
+}
+.plan-flow{
+  border:1px solid #24354b;
+  background:#0c1520;
+  border-radius:13px;
+  padding:11px;
+  margin-bottom:14px;
+  color:#b2bfce;
+  font-size:10px;
+  line-height:1.6;
+}
+.plan-flow strong{color:#fff}
+.edge-section{
+  border-top:1px solid #1b2634;
+  padding-top:15px;
+  margin-top:15px;
+}
+.edge-section:first-of-type{
+  border-top:0;
+  padding-top:0;
+  margin-top:0;
+}
+.edge-section-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:10px;
+}
+.edge-section-head h4{
+  margin:0;
+  font-size:13px;
+}
+.edge-section-head span{
+  color:var(--muted);
+  font-size:10px;
+}
+.edge-context-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.edge-check{
+  border:1px solid #1e2938;
+  background:#0b1119;
+  border-radius:12px;
+  padding:10px;
+  margin-bottom:8px;
+}
+.edge-check-main{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+}
+.edge-check-main input[type="checkbox"]{
+  width:17px;
+  height:17px;
+  flex:0 0 auto;
+  margin-top:1px;
+}
+.edge-check-copy{
+  flex:1;
+  min-width:0;
+}
+.edge-check-copy strong{
+  display:block;
+  font-size:11px;
+  line-height:1.45;
+}
+.edge-check-copy span{
+  display:block;
+  margin-top:3px;
+  color:var(--muted);
+  font-size:9px;
+  line-height:1.45;
+}
+.edge-check-comment{
+  margin-top:8px;
+  padding:7px 8px;
+  font-size:10px;
+}
+.edge-review-notes{
+  min-height:95px;
+}
+.edge-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:15px;
+}
+.edge-unreviewed{
+  display:inline-block;
+  color:#aeb9c7;
+  font-size:9px;
+  border:1px solid #2a374a;
+  border-radius:999px;
+  padding:4px 7px;
+}
+.edge-help{
+  margin-top:12px;
+  border:1px solid #26364b;
+  background:#0d1723;
+  border-radius:12px;
+  padding:11px;
+  color:#a9b7c8;
+  font-size:10px;
+  line-height:1.55;
+}
+.edge-help strong{color:#fff}
+
+@media(max-width:1150px){
+  .edge-layout{grid-template-columns:1fr}
+  .edge-trade-list{
+    max-height:320px;
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:8px;
+  }
+  .edge-trade-card{margin-bottom:0}
+}
+@media(max-width:760px){
+  .edge-summary{grid-template-columns:repeat(2,1fr)}
+  .edge-trade-list{display:block}
+  .edge-trade-card{margin-bottom:8px}
+  .edge-context-grid,.edge-score-board{grid-template-columns:1fr}
+  .edge-filters{grid-template-columns:1fr}
+}
+
 /* PLACEHOLDER PAGES */
 .placeholder{
   padding:38px;
@@ -921,7 +1205,6 @@ textarea{resize:vertical;min-height:90px}
 
       <button class="nav-btn" data-page="playbook">
         <span class="nav-icon">◎</span> Edge / Playbook
-        <span class="nav-coming">Soon</span>
       </button>
 
       <button class="nav-btn" data-page="execution">
@@ -1148,6 +1431,7 @@ textarea{resize:vertical;min-height:90px}
                 <th>R</th>
                 <th>Execution</th>
                 <th>Psychology</th>
+                <th>Edge</th>
                 <th>Notes</th>
                 <th>Actions</th>
               </tr>
@@ -1473,10 +1757,289 @@ textarea{resize:vertical;min-height:90px}
     </section>
 
 
+
     <section class="page" id="page-playbook">
-      <header class="page-head"><div><h1>Edge / Playbook</h1><p>Define and review your trading edge and setups.</p></div></header>
-      <section class="panel placeholder"><h2>Playbook module</h2><p>Your setups, rules, examples, invalidation criteria and screenshots will live here.</p></section>
+      <header class="page-head">
+        <div>
+          <h1>Edge / Playbook</h1>
+          <p>Validate each trade against your technical plan before allowing the financial result to influence your judgment.</p>
+        </div>
+        <div class="top-actions">
+          <button class="btn" id="edgeRefreshBtn">Refresh</button>
+          <button class="btn primary" id="edgeSaveTopBtn">Save Review</button>
+        </div>
+      </header>
+
+      <section class="edge-summary">
+        <div class="metric">
+          <div class="label">Reviewed Trades</div>
+          <div class="value neutral" id="edgeReviewedCount">0</div>
+          <div class="sub">Technical reviews completed</div>
+        </div>
+        <div class="metric">
+          <div class="label">Average Plan Score</div>
+          <div class="value neutral" id="edgeAvgScore">—</div>
+          <div class="sub">Across reviewed trades</div>
+        </div>
+        <div class="metric">
+          <div class="label">A+ Setups</div>
+          <div class="value neutral" id="edgeAPlusCount">0</div>
+          <div class="sub">All conditions satisfied</div>
+        </div>
+        <div class="metric">
+          <div class="label">Unreviewed Trades</div>
+          <div class="value neutral" id="edgeUnreviewedCount">0</div>
+          <div class="sub">Still awaiting validation</div>
+        </div>
+      </section>
+
+      <div class="edge-layout">
+        <aside class="panel edge-browser">
+          <div class="edge-browser-head">
+            <h3>Trades</h3>
+            <span class="pager-text" id="edgeTradeCount">0 trades</span>
+          </div>
+
+          <div class="edge-filters">
+            <input type="text" id="edgeSearch" placeholder="Search instrument or setup">
+            <select id="edgeStatusFilter">
+              <option value="">All</option>
+              <option value="reviewed">Reviewed</option>
+              <option value="unreviewed">Unreviewed</option>
+              <option value="aplus">A+</option>
+              <option value="a">A</option>
+              <option value="b">B</option>
+            </select>
+          </div>
+
+          <div class="edge-trade-list" id="edgeTradeList">
+            <div class="empty-state">No trades recorded yet.</div>
+          </div>
+
+          <div class="edge-help">
+            <strong>Purpose:</strong> The rating evaluates whether the trade matched the plan. It does not evaluate whether the trade made money.
+          </div>
+        </aside>
+
+        <section class="panel edge-editor">
+          <div class="edge-empty" id="edgeEmptyState">
+            Select a trade on the left to review whether its market context, structure, entry and exit corresponded with your trading plan.
+          </div>
+
+          <div class="edge-editor-content hidden" id="edgeEditorContent">
+            <div class="edge-trade-header">
+              <div class="edge-trade-header-top">
+                <div>
+                  <h3 id="edgeSelectedTitle">—</h3>
+                  <p id="edgeSelectedSubtitle">—</p>
+                </div>
+                <span class="grade-badge grade-none" id="edgeHeaderGrade">Unreviewed</span>
+              </div>
+
+              <div class="edge-trade-kpis">
+                <span class="edge-mini-kpi" id="edgeSelectedPnl">P&amp;L: —</span>
+                <span class="edge-mini-kpi" id="edgeSelectedR">R: —</span>
+                <span class="edge-mini-kpi" id="edgeSelectedSetup">Setup: —</span>
+              </div>
+            </div>
+
+            <div class="edge-score-board">
+              <div class="edge-score-card">
+                <span>Live Plan Score</span>
+                <strong id="edgeLiveScore">0.0%</strong>
+              </div>
+              <div class="edge-score-card">
+                <span>Technical Rating</span>
+                <strong id="edgeLiveRating">B</strong>
+              </div>
+            </div>
+
+            <div class="plan-flow">
+              <strong>Plan hierarchy:</strong>
+              4H Market Context → 30m–15m Market Structure → 5m–3m Entry → Exit Management.
+              The lower-timeframe pattern is only meaningful when the larger context and structure support it.
+            </div>
+
+            <div class="edge-section">
+              <div class="edge-section-head">
+                <div>
+                  <h4>Market Context — 4H</h4>
+                  <span>Establish the environment before considering the setup.</span>
+                </div>
+              </div>
+
+              <div class="edge-context-grid">
+                <div class="field">
+                  <label>Market State</label>
+                  <select id="edgeMarketState">
+                    <option value="">Select</option>
+                    <option value="Balance">Balance</option>
+                    <option value="Imbalance">Imbalance</option>
+                  </select>
+                </div>
+
+                <div class="field">
+                  <label>Entry Pattern</label>
+                  <select id="edgeEntryPattern">
+                    <option value="">Select</option>
+                    <option value="Pattern 1">Pattern 1</option>
+                    <option value="Pattern 2">Pattern 2</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="edge-check" data-edge-key="context_identified">
+                <div class="edge-check-main">
+                  <input type="checkbox" class="edge-check-input" data-edge-key="context_identified">
+                  <div class="edge-check-copy">
+                    <strong>4H market context was correctly identified and considered before entry.</strong>
+                    <span>The setup was evaluated within Balance / Imbalance rather than as an isolated lower-timeframe pattern.</span>
+                  </div>
+                </div>
+                <input class="edge-check-comment" data-edge-comment="context_identified" type="text" placeholder="Optional comment">
+              </div>
+            </div>
+
+            <div class="edge-section">
+              <div class="edge-section-head">
+                <div>
+                  <h4>Market Structure — 30m → 15m</h4>
+                  <span>Confirm that the mid-timeframe structure supports the higher-timeframe context.</span>
+                </div>
+              </div>
+
+              <div class="edge-check">
+                <div class="edge-check-main">
+                  <input type="checkbox" class="edge-check-input" data-edge-key="momentum_alignment">
+                  <div class="edge-check-copy">
+                    <strong>Market momentum / direction corresponded with the higher-timeframe context.</strong>
+                  </div>
+                </div>
+                <input class="edge-check-comment" data-edge-comment="momentum_alignment" type="text" placeholder="Optional comment">
+              </div>
+
+              <div class="edge-check">
+                <div class="edge-check-main">
+                  <input type="checkbox" class="edge-check-input" data-edge-key="continuation_range">
+                  <div class="edge-check-copy">
+                    <strong>A valid continuation range was present.</strong>
+                  </div>
+                </div>
+                <input class="edge-check-comment" data-edge-comment="continuation_range" type="text" placeholder="Optional comment">
+              </div>
+
+              <div class="edge-check">
+                <div class="edge-check-main">
+                  <input type="checkbox" class="edge-check-input" data-edge-key="range_touch_structure">
+                  <div class="edge-check-copy">
+                    <strong>The range structure had the required confirmation / touches.</strong>
+                    <span>Use your current plan standard of approximately two confirmed touches on both sides.</span>
+                  </div>
+                </div>
+                <input class="edge-check-comment" data-edge-comment="range_touch_structure" type="text" placeholder="Optional comment">
+              </div>
+
+              <div class="edge-check">
+                <div class="edge-check-main">
+                  <input type="checkbox" class="edge-check-input" data-edge-key="breakout_location">
+                  <div class="edge-check-copy">
+                    <strong>The lower-timeframe setup developed at the relevant continuation breakout / structure location.</strong>
+                  </div>
+                </div>
+                <input class="edge-check-comment" data-edge-comment="breakout_location" type="text" placeholder="Optional comment">
+              </div>
+            </div>
+
+            <div class="edge-section">
+              <div class="edge-section-head">
+                <div>
+                  <h4>Entry — 5m → 3m</h4>
+                  <span>Confirm the entry pattern only after context and structure are valid.</span>
+                </div>
+              </div>
+
+              <div class="edge-check">
+                <div class="edge-check-main">
+                  <input type="checkbox" class="edge-check-input" data-edge-key="volume_condition">
+                  <div class="edge-check-copy">
+                    <strong>The required volume condition was present.</strong>
+                    <span>High-volume activity and the relevant low-volume / temporary structure corresponded with the setup.</span>
+                  </div>
+                </div>
+                <input class="edge-check-comment" data-edge-comment="volume_condition" type="text" placeholder="Optional comment">
+              </div>
+
+              <div class="edge-check">
+                <div class="edge-check-main">
+                  <input type="checkbox" class="edge-check-input" data-edge-key="entry_pattern_formed">
+                  <div class="edge-check-copy">
+                    <strong>The selected entry pattern was fully formed before execution.</strong>
+                  </div>
+                </div>
+                <input class="edge-check-comment" data-edge-comment="entry_pattern_formed" type="text" placeholder="Optional comment">
+              </div>
+            </div>
+
+            <div class="edge-section">
+              <div class="edge-section-head">
+                <div>
+                  <h4>Exit Rules — 5m → 3m</h4>
+                  <span>Assess management and exit compliance separately from whether the trade won or lost.</span>
+                </div>
+              </div>
+
+              <div class="edge-check">
+                <div class="edge-check-main">
+                  <input type="checkbox" class="edge-check-input" data-edge-key="exit_rule_1">
+                  <div class="edge-check-copy">
+                    <strong>Exit Rule 1 was followed.</strong>
+                  </div>
+                </div>
+                <input class="edge-check-comment" data-edge-comment="exit_rule_1" type="text" placeholder="Optional comment / rule-specific observation">
+              </div>
+
+              <div class="edge-check">
+                <div class="edge-check-main">
+                  <input type="checkbox" class="edge-check-input" data-edge-key="exit_rule_2">
+                  <div class="edge-check-copy">
+                    <strong>Exit Rule 2 was followed.</strong>
+                  </div>
+                </div>
+                <input class="edge-check-comment" data-edge-comment="exit_rule_2" type="text" placeholder="Optional comment / rule-specific observation">
+              </div>
+
+              <div class="edge-check">
+                <div class="edge-check-main">
+                  <input type="checkbox" class="edge-check-input" data-edge-key="exit_rule_3">
+                  <div class="edge-check-copy">
+                    <strong>Exit Rule 3 was followed.</strong>
+                  </div>
+                </div>
+                <input class="edge-check-comment" data-edge-comment="exit_rule_3" type="text" placeholder="Optional comment / rule-specific observation">
+              </div>
+            </div>
+
+            <div class="edge-section">
+              <div class="field">
+                <label>Technical Review Notes</label>
+                <textarea class="edge-review-notes" id="edgeReviewNotes" placeholder="What specifically confirmed or invalidated this setup? What technical detail should be reinforced?"></textarea>
+              </div>
+
+              <div class="edge-help">
+                <strong>Rating logic:</strong> all 10 conditions = A+; one missed condition = A; two or more missed conditions = B.
+                The percentage is retained for deeper statistics later.
+              </div>
+
+              <div class="edge-actions">
+                <button class="btn danger" type="button" id="edgeDeleteReviewBtn">Delete Review</button>
+                <button class="btn primary" type="button" id="edgeSaveReviewBtn">Save Review</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
     </section>
+
 
     <section class="page" id="page-execution">
       <header class="page-head"><div><h1>Execution</h1><p>Measure plan-following quality separately from P&amp;L.</p></div></header>
@@ -1629,6 +2192,10 @@ let identityScores = [];
 let ruleChecks = [];
 let editingPsychSessionId = null;
 
+let planReviews = [];
+let planChecks = [];
+let selectedEdgeTradeId = null;
+
 let viewDate = new Date();
 let editingTradeId = null;
 
@@ -1729,6 +2296,11 @@ async function initializeSupabase(){
       identityScores = [];
       ruleChecks = [];
       editingPsychSessionId = null;
+
+      planReviews = [];
+      planChecks = [];
+      selectedEdgeTradeId = null;
+
       setLoggedInUI(false);
     }
   });
@@ -1770,6 +2342,7 @@ async function enterApp(user){
   await ensureTradingAccount();
   await loadTrades();
   await loadPsychologyData();
+  await loadEdgeData();
   renderAll();
   showStatus('Journal loaded');
 }
@@ -1883,6 +2456,41 @@ async function loadPsychologyData(){
   ruleChecks = rulesRes.data || [];
 }
 
+async function loadEdgeData(){
+  const [reviewsRes, checksRes] = await Promise.all([
+    db
+      .from('trade_plan_reviews')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .order('created_at', {ascending:false}),
+
+    db
+      .from('trade_plan_checks')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .order('sort_order', {ascending:true})
+  ]);
+
+  if(reviewsRes.error || checksRes.error){
+    console.error(reviewsRes.error || checksRes.error);
+    showStatus('Could not load edge reviews',4000);
+    planReviews = reviewsRes.data || [];
+    planChecks = checksRes.data || [];
+    return;
+  }
+
+  planReviews = reviewsRes.data || [];
+  planChecks = checksRes.data || [];
+
+  if(selectedEdgeTradeId && !trades.some(t=>t.id===selectedEdgeTradeId)){
+    selectedEdgeTradeId = null;
+  }
+
+  if(!selectedEdgeTradeId && trades.length){
+    selectedEdgeTradeId = trades[0].id;
+  }
+}
+
 /* =========================
    NAVIGATION
 ========================= */
@@ -1903,6 +2511,10 @@ function navigate(page){
 
   if(page==='psychology'){
     renderPsychology();
+  }
+
+  if(page==='playbook'){
+    renderEdgePlaybook();
   }
 
   closeSidebarMobile();
@@ -2261,7 +2873,7 @@ function renderJournal(){
   if(!pageItems.length){
     body.innerHTML=`
       <tr>
-        <td colspan="10">
+        <td colspan="11">
           <div class="empty-state" style="padding:18px">
             No trades match the current filters.
           </div>
@@ -2288,6 +2900,7 @@ function renderJournal(){
         <td class="${pnlClass(r)}">${r>=0?'+':''}${r.toFixed(2)}R</td>
         <td>${t.execution_score==null?'—':Number(t.execution_score).toFixed(1)+'/10'}</td>
         <td>${escapeHtml(t.psychology||'—')}</td>
+        <td>${journalEdgeBadge(t.id)}</td>
         <td title="${escapeHtml(t.notes||'')}">${escapeHtml((t.notes||'—').slice(0,55))}${(t.notes||'').length>55?'…':''}</td>
         <td>
           <div class="table-actions">
@@ -2470,6 +3083,7 @@ async function deleteTrade(trade, dayToRefresh=null){
   }
 
   await loadTrades();
+  await loadEdgeData();
   renderAll();
 
   if(dayToRefresh){
@@ -2625,6 +3239,501 @@ $('#nextMonth').addEventListener('click',()=>{
   viewDate=new Date(viewDate.getFullYear(),viewDate.getMonth()+1,1);
   renderDashboard();
 });
+
+
+
+/* =========================
+   EDGE / TRADING PLAN SYSTEM
+========================= */
+
+const EDGE_CRITERIA = [
+  {
+    key:'context_identified',
+    section:'market_context',
+    label:'4H market context was correctly identified and considered before entry.',
+    sort:1
+  },
+  {
+    key:'momentum_alignment',
+    section:'market_structure',
+    label:'Market momentum / direction corresponded with the higher-timeframe context.',
+    sort:2
+  },
+  {
+    key:'continuation_range',
+    section:'market_structure',
+    label:'A valid continuation range was present.',
+    sort:3
+  },
+  {
+    key:'range_touch_structure',
+    section:'market_structure',
+    label:'The range structure had the required confirmation / touches.',
+    sort:4
+  },
+  {
+    key:'breakout_location',
+    section:'market_structure',
+    label:'The lower-timeframe setup developed at the relevant continuation breakout / structure location.',
+    sort:5
+  },
+  {
+    key:'volume_condition',
+    section:'entry',
+    label:'The required volume condition was present.',
+    sort:6
+  },
+  {
+    key:'entry_pattern_formed',
+    section:'entry',
+    label:'The selected entry pattern was fully formed before execution.',
+    sort:7
+  },
+  {
+    key:'exit_rule_1',
+    section:'exit',
+    label:'Exit Rule 1 was followed.',
+    sort:8
+  },
+  {
+    key:'exit_rule_2',
+    section:'exit',
+    label:'Exit Rule 2 was followed.',
+    sort:9
+  },
+  {
+    key:'exit_rule_3',
+    section:'exit',
+    label:'Exit Rule 3 was followed.',
+    sort:10
+  }
+];
+
+function reviewForTrade(tradeId){
+  return planReviews.find(r=>r.trade_id===tradeId) || null;
+}
+
+function checksForReview(reviewId){
+  return planChecks.filter(c=>c.review_id===reviewId);
+}
+
+function edgeScoreForTrade(tradeId){
+  const review=reviewForTrade(tradeId);
+  if(!review) return null;
+
+  const rows=checksForReview(review.id);
+  const map={};
+  rows.forEach(row=>map[row.criterion_key]=Boolean(row.complied));
+
+  const passed=EDGE_CRITERIA.reduce(
+    (sum,item)=>sum+(map[item.key]?1:0),
+    0
+  );
+
+  return passed/EDGE_CRITERIA.length*100;
+}
+
+function edgeMissedCountForTrade(tradeId){
+  const score=edgeScoreForTrade(tradeId);
+  if(score===null) return null;
+
+  const passed=Math.round(score/100*EDGE_CRITERIA.length);
+  return EDGE_CRITERIA.length-passed;
+}
+
+function edgeRatingForTrade(tradeId){
+  const missed=edgeMissedCountForTrade(tradeId);
+
+  if(missed===null) return null;
+  if(missed===0) return 'A+';
+  if(missed===1) return 'A';
+  return 'B';
+}
+
+function edgeGradeClass(rating){
+  if(rating==='A+') return 'grade-aplus';
+  if(rating==='A') return 'grade-a';
+  if(rating==='B') return 'grade-b';
+  return 'grade-none';
+}
+
+function journalEdgeBadge(tradeId){
+  const rating=edgeRatingForTrade(tradeId);
+  const score=edgeScoreForTrade(tradeId);
+
+  if(!rating){
+    return '<span class="grade-badge grade-none">—</span>';
+  }
+
+  return `<span class="grade-badge ${edgeGradeClass(rating)}" title="${score.toFixed(1)}%">${rating}</span>`;
+}
+
+function currentEdgeScore(){
+  const checks=$$('.edge-check-input');
+  if(!checks.length) return 0;
+
+  const passed=checks.filter(x=>x.checked).length;
+  return passed/checks.length*100;
+}
+
+function ratingFromLiveChecks(){
+  const checks=$$('.edge-check-input');
+  const missed=checks.filter(x=>!x.checked).length;
+
+  if(missed===0) return 'A+';
+  if(missed===1) return 'A';
+  return 'B';
+}
+
+function updateEdgeLiveScore(){
+  const score=currentEdgeScore();
+  const rating=ratingFromLiveChecks();
+
+  $('#edgeLiveScore').textContent=score.toFixed(1)+'%';
+  $('#edgeLiveRating').textContent=rating;
+
+  const header=$('#edgeHeaderGrade');
+  header.textContent=reviewForTrade(selectedEdgeTradeId) ? rating : 'Unreviewed';
+  header.className='grade-badge '+(
+    reviewForTrade(selectedEdgeTradeId)
+      ? edgeGradeClass(rating)
+      : 'grade-none'
+  );
+}
+
+$$('.edge-check-input').forEach(input=>{
+  input.addEventListener('change',updateEdgeLiveScore);
+});
+
+function clearEdgeEditor(){
+  $('#edgeMarketState').value='';
+  $('#edgeEntryPattern').value='';
+  $('#edgeReviewNotes').value='';
+
+  $$('.edge-check-input').forEach(input=>input.checked=false);
+  $$('[data-edge-comment]').forEach(input=>input.value='');
+
+  updateEdgeLiveScore();
+}
+
+function loadEdgeReviewIntoEditor(trade){
+  selectedEdgeTradeId=trade.id;
+
+  const review=reviewForTrade(trade.id);
+
+  $('#edgeEmptyState').classList.add('hidden');
+  $('#edgeEditorContent').classList.remove('hidden');
+
+  $('#edgeSelectedTitle').textContent=
+    `${trade.instrument || '—'} • ${trade.direction || '—'}`;
+
+  $('#edgeSelectedSubtitle').textContent=
+    `${formatDate(trade.trade_date)} • Trade ID ${String(trade.id).slice(0,8)}`;
+
+  $('#edgeSelectedPnl').textContent=`P&L: ${signedMoney(Number(trade.pnl)||0)}`;
+
+  const r=Number(trade.r_multiple)||0;
+  $('#edgeSelectedR').textContent=`R: ${r>=0?'+':''}${r.toFixed(2)}R`;
+
+  $('#edgeSelectedSetup').textContent=`Setup: ${trade.setup || '—'}`;
+
+  clearEdgeEditor();
+
+  if(review){
+    $('#edgeMarketState').value=review.market_state || '';
+    $('#edgeEntryPattern').value=review.entry_pattern || '';
+    $('#edgeReviewNotes').value=review.review_notes || '';
+
+    const map={};
+    checksForReview(review.id).forEach(row=>{
+      map[row.criterion_key]=row;
+    });
+
+    $$('.edge-check-input').forEach(input=>{
+      input.checked=Boolean(map[input.dataset.edgeKey]?.complied);
+    });
+
+    $$('[data-edge-comment]').forEach(input=>{
+      const row=map[input.dataset.edgeComment];
+      input.value=row?.comment || '';
+    });
+  }
+
+  updateEdgeLiveScore();
+  renderEdgeTradeList();
+}
+
+function filteredEdgeTrades(){
+  const q=$('#edgeSearch').value.trim().toLowerCase();
+  const status=$('#edgeStatusFilter').value;
+
+  return trades.filter(trade=>{
+    const review=reviewForTrade(trade.id);
+    const rating=edgeRatingForTrade(trade.id);
+
+    if(status==='reviewed' && !review) return false;
+    if(status==='unreviewed' && review) return false;
+    if(status==='aplus' && rating!=='A+') return false;
+    if(status==='a' && rating!=='A') return false;
+    if(status==='b' && rating!=='B') return false;
+
+    if(q){
+      const haystack=[
+        trade.instrument,
+        trade.direction,
+        trade.setup,
+        trade.notes,
+        trade.trade_date
+      ].join(' ').toLowerCase();
+
+      if(!haystack.includes(q)) return false;
+    }
+
+    return true;
+  }).sort((a,b)=>{
+    if(a.trade_date!==b.trade_date){
+      return b.trade_date.localeCompare(a.trade_date);
+    }
+    return (b.created_at||'').localeCompare(a.created_at||'');
+  });
+}
+
+function renderEdgeSummary(){
+  const reviewedTrades=trades.filter(t=>Boolean(reviewForTrade(t.id)));
+
+  const scores=reviewedTrades
+    .map(t=>edgeScoreForTrade(t.id))
+    .filter(v=>v!==null);
+
+  const avg=scores.length
+    ? scores.reduce((a,b)=>a+b,0)/scores.length
+    : null;
+
+  const aPlus=reviewedTrades.filter(
+    t=>edgeRatingForTrade(t.id)==='A+'
+  ).length;
+
+  $('#edgeReviewedCount').textContent=reviewedTrades.length;
+  $('#edgeAvgScore').textContent=avg===null?'—':avg.toFixed(1)+'%';
+  $('#edgeAPlusCount').textContent=aPlus;
+  $('#edgeUnreviewedCount').textContent=
+    Math.max(0,trades.length-reviewedTrades.length);
+}
+
+function renderEdgeTradeList(){
+  const list=$('#edgeTradeList');
+  const source=filteredEdgeTrades();
+
+  $('#edgeTradeCount').textContent=
+    source.length===1 ? '1 trade' : `${source.length} trades`;
+
+  if(!source.length){
+    list.innerHTML='<div class="empty-state">No trades match the current Edge filters.</div>';
+    return;
+  }
+
+  list.innerHTML='';
+
+  source.forEach(trade=>{
+    const review=reviewForTrade(trade.id);
+    const rating=edgeRatingForTrade(trade.id);
+    const score=edgeScoreForTrade(trade.id);
+    const pnl=Number(trade.pnl)||0;
+
+    const card=document.createElement('div');
+    card.className='edge-trade-card'+(
+      trade.id===selectedEdgeTradeId ? ' active' : ''
+    );
+
+    const ratingHtml=review
+      ? `<span class="grade-badge ${edgeGradeClass(rating)}">${rating}</span>`
+      : '<span class="edge-unreviewed">Unreviewed</span>';
+
+    card.innerHTML=`
+      <div class="edge-trade-top">
+        <strong>${escapeHtml(trade.instrument||'—')} • ${escapeHtml(trade.direction||'—')}</strong>
+        ${ratingHtml}
+      </div>
+
+      <div class="edge-trade-bottom">
+        <span>${formatDate(trade.trade_date)}</span>
+        <span class="${pnlClass(pnl)}">${signedMoney(pnl)}</span>
+      </div>
+
+      ${review ? `
+        <div class="edge-trade-bottom">
+          <span>Plan score</span>
+          <span>${score.toFixed(1)}%</span>
+        </div>
+      ` : ''}
+    `;
+
+    card.addEventListener('click',()=>{
+      loadEdgeReviewIntoEditor(trade);
+    });
+
+    list.appendChild(card);
+  });
+}
+
+function renderSelectedEdgeTrade(){
+  if(!trades.length){
+    selectedEdgeTradeId=null;
+    $('#edgeEditorContent').classList.add('hidden');
+    $('#edgeEmptyState').classList.remove('hidden');
+    return;
+  }
+
+  let trade=trades.find(t=>t.id===selectedEdgeTradeId);
+
+  if(!trade){
+    selectedEdgeTradeId=trades[0].id;
+    trade=trades[0];
+  }
+
+  loadEdgeReviewIntoEditor(trade);
+}
+
+function renderEdgePlaybook(){
+  renderEdgeSummary();
+  renderEdgeTradeList();
+  renderSelectedEdgeTrade();
+}
+
+async function saveEdgeReview(){
+  if(!selectedEdgeTradeId){
+    alert('Select a trade first.');
+    return;
+  }
+
+  const trade=trades.find(t=>t.id===selectedEdgeTradeId);
+
+  if(!trade){
+    alert('The selected trade could not be found.');
+    return;
+  }
+
+  const reviewPayload={
+    user_id:currentUser.id,
+    trade_id:trade.id,
+    market_state:$('#edgeMarketState').value || null,
+    entry_pattern:$('#edgeEntryPattern').value || null,
+    review_notes:$('#edgeReviewNotes').value.trim() || null,
+    updated_at:new Date().toISOString()
+  };
+
+  $('#edgeSaveReviewBtn').disabled=true;
+  $('#edgeSaveTopBtn').disabled=true;
+
+  let review=reviewForTrade(trade.id);
+  let reviewResult;
+
+  if(review){
+    reviewResult=await db
+      .from('trade_plan_reviews')
+      .update(reviewPayload)
+      .eq('id',review.id)
+      .eq('user_id',currentUser.id)
+      .select()
+      .single();
+  }else{
+    reviewResult=await db
+      .from('trade_plan_reviews')
+      .insert(reviewPayload)
+      .select()
+      .single();
+  }
+
+  if(reviewResult.error){
+    $('#edgeSaveReviewBtn').disabled=false;
+    $('#edgeSaveTopBtn').disabled=false;
+    alert(reviewResult.error.message);
+    return;
+  }
+
+  review=reviewResult.data;
+
+  const checkPayload=EDGE_CRITERIA.map(item=>({
+    review_id:review.id,
+    user_id:currentUser.id,
+    section:item.section,
+    criterion_key:item.key,
+    criterion_label:item.label,
+    complied:$(`[data-edge-key="${item.key}"].edge-check-input`).checked,
+    comment:$(`[data-edge-comment="${item.key}"]`).value.trim() || null,
+    sort_order:item.sort
+  }));
+
+  const {error:checkError}=await db
+    .from('trade_plan_checks')
+    .upsert(checkPayload,{onConflict:'review_id,criterion_key'});
+
+  $('#edgeSaveReviewBtn').disabled=false;
+  $('#edgeSaveTopBtn').disabled=false;
+
+  if(checkError){
+    alert(checkError.message);
+    return;
+  }
+
+  await loadEdgeData();
+  renderEdgePlaybook();
+  renderJournal();
+
+  showStatus(
+    `Edge review saved • ${edgeRatingForTrade(trade.id)} • ${edgeScoreForTrade(trade.id).toFixed(1)}%`
+  );
+}
+
+async function deleteEdgeReview(){
+  if(!selectedEdgeTradeId) return;
+
+  const review=reviewForTrade(selectedEdgeTradeId);
+
+  if(!review){
+    alert('This trade does not have a saved Edge review yet.');
+    return;
+  }
+
+  const trade=trades.find(t=>t.id===selectedEdgeTradeId);
+
+  if(!confirm(`Delete the Edge review for ${trade?.instrument || 'this trade'}?`)){
+    return;
+  }
+
+  const {error}=await db
+    .from('trade_plan_reviews')
+    .delete()
+    .eq('id',review.id)
+    .eq('user_id',currentUser.id);
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  await loadEdgeData();
+  renderEdgePlaybook();
+  renderJournal();
+
+  showStatus('Edge review deleted');
+}
+
+$('#edgeSearch').addEventListener('input',renderEdgeTradeList);
+$('#edgeStatusFilter').addEventListener('change',renderEdgeTradeList);
+
+$('#edgeRefreshBtn').addEventListener('click',async()=>{
+  await loadTrades();
+  await loadEdgeData();
+  renderEdgePlaybook();
+  renderJournal();
+  showStatus('Edge data refreshed');
+});
+
+$('#edgeSaveReviewBtn').addEventListener('click',saveEdgeReview);
+$('#edgeSaveTopBtn').addEventListener('click',saveEdgeReview);
+$('#edgeDeleteReviewBtn').addEventListener('click',deleteEdgeReview);
+
 
 
 /* =========================
@@ -3130,6 +4239,7 @@ function renderAll(){
   renderDashboard();
   renderJournal();
   renderPsychology();
+  renderEdgePlaybook();
 }
 
 initializeSupabase();
