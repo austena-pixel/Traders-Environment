@@ -466,6 +466,253 @@ input:focus,select:focus,textarea:focus{border-color:#5275a7}
 .pager{display:flex;gap:7px;align-items:center}
 .pager-text{font-size:11px;color:var(--muted)}
 
+
+/* PSYCHOLOGY / SESSION SYSTEM */
+.psych-summary{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+  margin-bottom:14px;
+}
+.psych-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 340px;
+  gap:16px;
+}
+.psych-editor{
+  padding:16px;
+}
+.psych-section{
+  border-bottom:1px solid #1b2431;
+  padding:0 0 18px;
+  margin-bottom:18px;
+}
+.psych-section:last-child{
+  border-bottom:0;
+  margin-bottom:0;
+  padding-bottom:0;
+}
+.psych-section-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+.psych-section-head h3{
+  margin:0;
+  font-size:14px;
+}
+.psych-section-head p{
+  margin:4px 0 0;
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.5;
+}
+.session-meta-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.check-row{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  border:1px solid #1e2938;
+  background:#0b1119;
+  border-radius:12px;
+  padding:11px;
+  margin-bottom:8px;
+}
+.check-row input[type="checkbox"]{
+  width:17px;
+  height:17px;
+  margin-top:1px;
+  flex:0 0 auto;
+}
+.check-copy{
+  flex:1;
+  min-width:0;
+}
+.check-copy strong{
+  display:block;
+  font-size:12px;
+}
+.check-copy span{
+  display:block;
+  margin-top:4px;
+  color:var(--muted);
+  font-size:10px;
+  line-height:1.5;
+}
+.identity-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:9px;
+}
+.identity-card{
+  border:1px solid #1e2938;
+  background:#0b1119;
+  border-radius:12px;
+  padding:11px;
+}
+.identity-card-top{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+}
+.identity-card strong{
+  font-size:12px;
+}
+.identity-card p{
+  color:var(--muted);
+  font-size:10px;
+  line-height:1.45;
+  margin:6px 0 9px;
+}
+.identity-score-input{
+  max-width:78px;
+  padding:7px 8px;
+  text-align:center;
+}
+.score-chip{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:72px;
+  border:1px solid #2a374a;
+  background:#101722;
+  border-radius:999px;
+  padding:6px 9px;
+  font-size:11px;
+  font-weight:800;
+}
+.rule-row{
+  border:1px solid #1e2938;
+  background:#0b1119;
+  border-radius:12px;
+  padding:11px;
+  margin-bottom:8px;
+}
+.rule-main{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+}
+.rule-main input[type="checkbox"]{
+  width:17px;
+  height:17px;
+  margin-top:1px;
+}
+.rule-text{
+  flex:1;
+  font-size:11px;
+  line-height:1.5;
+}
+.rule-comment{
+  margin-top:8px;
+  padding:8px 9px;
+  font-size:10px;
+}
+.reflection-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.reflection-grid .field textarea{
+  min-height:95px;
+}
+.swot-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.psych-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:9px;
+  margin-top:16px;
+}
+.psych-history{
+  padding:15px;
+}
+.psych-history h3{
+  margin:0 0 12px;
+  font-size:14px;
+}
+.session-card{
+  border:1px solid #1e2938;
+  background:#0b1119;
+  border-radius:13px;
+  padding:12px;
+  margin-bottom:9px;
+}
+.session-card-head{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+}
+.session-card-title{
+  font-size:12px;
+  font-weight:800;
+}
+.session-card-date{
+  color:var(--muted);
+  font-size:10px;
+  margin-top:3px;
+}
+.session-card-stats{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:7px;
+  margin-top:10px;
+}
+.session-stat{
+  border:1px solid #202b3a;
+  border-radius:9px;
+  padding:7px;
+}
+.session-stat span{
+  display:block;
+  color:var(--muted);
+  font-size:9px;
+}
+.session-stat strong{
+  display:block;
+  margin-top:3px;
+  font-size:11px;
+}
+.session-card-actions{
+  display:flex;
+  gap:7px;
+  margin-top:10px;
+}
+.psych-note{
+  padding:10px 12px;
+  border:1px solid #25344a;
+  background:#0d1723;
+  border-radius:11px;
+  color:#aab7c8;
+  font-size:10px;
+  line-height:1.55;
+}
+@media(max-width:1200px){
+  .psych-layout{grid-template-columns:1fr}
+  .psych-history-list{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:9px;
+  }
+  .session-card{margin-bottom:0}
+}
+@media(max-width:760px){
+  .psych-summary{grid-template-columns:repeat(2,1fr)}
+  .identity-grid,.reflection-grid,.swot-grid,.session-meta-grid{grid-template-columns:1fr}
+  .psych-history-list{display:block}
+  .session-card{margin-bottom:9px}
+}
+
 /* PLACEHOLDER PAGES */
 .placeholder{
   padding:38px;
@@ -670,7 +917,6 @@ textarea{resize:vertical;min-height:90px}
 
       <button class="nav-btn" data-page="psychology">
         <span class="nav-icon">◇</span> Psychology
-        <span class="nav-coming">Soon</span>
       </button>
 
       <button class="nav-btn" data-page="playbook">
@@ -927,10 +1173,305 @@ textarea{resize:vertical;min-height:90px}
       <section class="panel placeholder"><h2>Statistics is next</h2><p>This section will hold the equity curve, drawdown, setup performance, instrument performance, day-of-week statistics and R distribution.</p></section>
     </section>
 
+
     <section class="page" id="page-psychology">
-      <header class="page-head"><div><h1>Psychology</h1><p>Track emotions, behavioral patterns and decision quality.</p></div></header>
-      <section class="panel placeholder"><h2>Psychology module</h2><p>This will convert your psychology entries into patterns you can review over time.</p></section>
+      <header class="page-head">
+        <div>
+          <h1>Psychology</h1>
+          <p>Train your trading identity, measure rule compliance and close each session with a structured feedback loop.</p>
+        </div>
+        <div class="top-actions">
+          <button class="btn" id="newPsychSessionBtn">New Session</button>
+          <button class="btn primary" id="savePsychSessionTop">Save Session</button>
+        </div>
+      </header>
+
+      <section class="psych-summary">
+        <div class="metric">
+          <div class="label">Recorded Sessions</div>
+          <div class="value neutral" id="psychTotalSessions">0</div>
+          <div class="sub">All time</div>
+        </div>
+        <div class="metric">
+          <div class="label">Avg Identity</div>
+          <div class="value neutral" id="psychAvgIdentity">—</div>
+          <div class="sub">Expression efficiency</div>
+        </div>
+        <div class="metric">
+          <div class="label">Avg Rule Compliance</div>
+          <div class="value neutral" id="psychAvgRules">—</div>
+          <div class="sub">Six session rules</div>
+        </div>
+        <div class="metric">
+          <div class="label">Affirmation Completion</div>
+          <div class="value neutral" id="psychAffirmationRate">—</div>
+          <div class="sub">Before + after complete</div>
+        </div>
+      </section>
+
+      <div class="psych-layout">
+        <section class="panel psych-editor">
+
+          <div class="psych-section">
+            <div class="psych-section-head">
+              <div>
+                <h3>Session</h3>
+                <p>One record represents one trading session. P&amp;L remains an outcome; the scores below measure your process.</p>
+              </div>
+              <span class="score-chip" id="psychSessionMode">New</span>
+            </div>
+
+            <div class="session-meta-grid">
+              <div class="field">
+                <label>Session Date</label>
+                <input type="date" id="psychSessionDate">
+              </div>
+              <div class="field">
+                <label>Session Label</label>
+                <input type="text" id="psychSessionLabel" placeholder="e.g. Session 12 / New York">
+              </div>
+            </div>
+          </div>
+
+          <div class="psych-section">
+            <div class="psych-section-head">
+              <div>
+                <h3>Affirmations</h3>
+                <p>Use the values as identity rehearsal before the session and reinforcement after the session.</p>
+              </div>
+            </div>
+
+            <label class="check-row">
+              <input type="checkbox" id="affirmationBefore">
+              <span class="check-copy">
+                <strong>Affirmations completed before trading</strong>
+                <span>I consciously reviewed the trader I intend to express before interacting with the market.</span>
+              </span>
+            </label>
+
+            <label class="check-row">
+              <input type="checkbox" id="affirmationAfter">
+              <span class="check-copy">
+                <strong>Affirmations completed after trading</strong>
+                <span>I reinforced the identity after the session regardless of the financial outcome.</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="psych-section">
+            <div class="psych-section-head">
+              <div>
+                <h3>Expression / Identity Scoreboard</h3>
+                <p>Score the degree to which each value was expressed in your actual behaviour, not how profitable the session was.</p>
+              </div>
+              <span class="score-chip" id="identityLiveScore">0.0%</span>
+            </div>
+
+            <div class="identity-grid">
+              <div class="identity-card">
+                <div class="identity-card-top">
+                  <strong>Discipline</strong>
+                  <input class="identity-score-input" data-value-key="discipline" type="number" min="0" max="10" step="0.5" value="0">
+                </div>
+                <p>Keep attention, thoughts and actions aligned with the actual objective; refocus when attention becomes distorted.</p>
+              </div>
+
+              <div class="identity-card">
+                <div class="identity-card-top">
+                  <strong>Patience</strong>
+                  <input class="identity-score-input" data-value-key="patience" type="number" min="0" max="10" step="0.5" value="0">
+                </div>
+                <p>Wait calmly for conditions that are genuinely defined in the trading plan.</p>
+              </div>
+
+              <div class="identity-card">
+                <div class="identity-card-top">
+                  <strong>Consistency</strong>
+                  <input class="identity-score-input" data-value-key="consistency" type="number" min="0" max="10" step="0.5" value="0">
+                </div>
+                <p>Repeat the same high-quality behaviours regardless of recent wins, losses or emotions.</p>
+              </div>
+
+              <div class="identity-card">
+                <div class="identity-card-top">
+                  <strong>Integrity</strong>
+                  <input class="identity-score-input" data-value-key="integrity" type="number" min="0" max="10" step="0.5" value="0">
+                </div>
+                <p>Be honest with yourself about whether your actual expression matches the trader you claim to be.</p>
+              </div>
+
+              <div class="identity-card">
+                <div class="identity-card-top">
+                  <strong>Accountability</strong>
+                  <input class="identity-score-input" data-value-key="accountability" type="number" min="0" max="10" step="0.5" value="0">
+                </div>
+                <p>Take full responsibility for the decisions you make and the consequences of those decisions.</p>
+              </div>
+
+              <div class="identity-card">
+                <div class="identity-card-top">
+                  <strong>Growth</strong>
+                  <input class="identity-score-input" data-value-key="growth" type="number" min="0" max="10" step="0.5" value="0">
+                </div>
+                <p>Improve your expression through reflection, learning and deliberate adjustment.</p>
+              </div>
+
+              <div class="identity-card">
+                <div class="identity-card-top">
+                  <strong>Risk Management</strong>
+                  <input class="identity-score-input" data-value-key="risk_management" type="number" min="0" max="10" step="0.5" value="0">
+                </div>
+                <p>Respect predefined risk on every trade and avoid unnecessary actions that can create excessive drawdown.</p>
+              </div>
+
+              <div class="identity-card">
+                <div class="identity-card-top">
+                  <strong>Objectivity</strong>
+                  <input class="identity-score-input" data-value-key="objectivity" type="number" min="0" max="10" step="0.5" value="0">
+                </div>
+                <p>See the market for what it is and adjust technical and psychological expectations to match reality.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="psych-section">
+            <div class="psych-section-head">
+              <div>
+                <h3>Trading Rules — Applied Per Session</h3>
+                <p>These are observable behaviours. Check a rule only when it was actually followed.</p>
+              </div>
+              <span class="score-chip" id="rulesLiveScore">0.0%</span>
+            </div>
+
+            <div class="rule-row" data-rule="1">
+              <div class="rule-main">
+                <input type="checkbox" class="rule-check" data-rule-number="1">
+                <div class="rule-text"><strong>1.</strong> Perform affirmations before and after the trading session.</div>
+              </div>
+              <input class="rule-comment" data-rule-comment="1" type="text" placeholder="Optional comment">
+            </div>
+
+            <div class="rule-row" data-rule="2">
+              <div class="rule-main">
+                <input type="checkbox" class="rule-check" data-rule-number="2">
+                <div class="rule-text"><strong>2.</strong> Take up to 3 trades per day. Four or more trades is overtrading.</div>
+              </div>
+              <input class="rule-comment" data-rule-comment="2" type="text" placeholder="Optional comment">
+            </div>
+
+            <div class="rule-row" data-rule="3">
+              <div class="rule-main">
+                <input type="checkbox" class="rule-check" data-rule-number="3">
+                <div class="rule-text"><strong>3.</strong> Do not trade when my mind is not aligned with my objectives.</div>
+              </div>
+              <input class="rule-comment" data-rule-comment="3" type="text" placeholder="Optional comment">
+            </div>
+
+            <div class="rule-row" data-rule="4">
+              <div class="rule-main">
+                <input type="checkbox" class="rule-check" data-rule-number="4">
+                <div class="rule-text"><strong>4.</strong> Do not trade when the market is not presenting opportunities aligned with my plan.</div>
+              </div>
+              <input class="rule-comment" data-rule-comment="4" type="text" placeholder="Optional comment">
+            </div>
+
+            <div class="rule-row" data-rule="5">
+              <div class="rule-main">
+                <input type="checkbox" class="rule-check" data-rule-number="5">
+                <div class="rule-text"><strong>5.</strong> Do not trade against higher-timeframe support and resistance levels (4H–24H).</div>
+              </div>
+              <input class="rule-comment" data-rule-comment="5" type="text" placeholder="Optional comment">
+            </div>
+
+            <div class="rule-row" data-rule="6">
+              <div class="rule-main">
+                <input type="checkbox" class="rule-check" data-rule-number="6">
+                <div class="rule-text"><strong>6.</strong> Review the trading rules before every trading session.</div>
+              </div>
+              <input class="rule-comment" data-rule-comment="6" type="text" placeholder="Optional comment">
+            </div>
+          </div>
+
+          <div class="psych-section">
+            <div class="psych-section-head">
+              <div>
+                <h3>Signal : Noise</h3>
+                <p>Separate information and behaviours that genuinely mattered from distractions, impulses and misleading inputs.</p>
+              </div>
+            </div>
+
+            <div class="reflection-grid">
+              <div class="field">
+                <label>Signal</label>
+                <textarea id="psychSignal" placeholder="What actually mattered during this session?"></textarea>
+              </div>
+              <div class="field">
+                <label>Noise</label>
+                <textarea id="psychNoise" placeholder="What distracted, distorted or added no useful information?"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="psych-section">
+            <div class="psych-section-head">
+              <div>
+                <h3>SWOT Reflection</h3>
+                <p>Separate internal behaviour from external market circumstances before deciding what to adjust.</p>
+              </div>
+            </div>
+
+            <div class="swot-grid">
+              <div class="field">
+                <label>Internal Strengths</label>
+                <textarea id="psychStrengths" placeholder="What did I do well?"></textarea>
+              </div>
+              <div class="field">
+                <label>Internal Weaknesses</label>
+                <textarea id="psychWeaknesses" placeholder="What weakened my execution or decision quality?"></textarea>
+              </div>
+              <div class="field">
+                <label>Opportunities</label>
+                <textarea id="psychOpportunities" placeholder="What useful opportunities were present?"></textarea>
+              </div>
+              <div class="field">
+                <label>Threats</label>
+                <textarea id="psychThreats" placeholder="What external conditions threatened performance?"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="psych-section">
+            <div class="field">
+              <label>Adjustments for the Next Session</label>
+              <textarea id="psychAdjustments" placeholder="What specific behaviour or process will I reinforce, change or remove?"></textarea>
+            </div>
+
+            <div class="field" style="margin-top:10px">
+              <label>Additional Comments</label>
+              <textarea id="psychComments" placeholder="Optional additional reflection"></textarea>
+            </div>
+
+            <div class="psych-actions">
+              <button class="btn" type="button" id="clearPsychSessionBtn">Clear</button>
+              <button class="btn primary" type="button" id="savePsychSessionBtn">Save Session</button>
+            </div>
+          </div>
+        </section>
+
+        <aside class="panel psych-history">
+          <h3>Session History</h3>
+
+          <div class="psych-note" style="margin-bottom:12px">
+            Identity score, rule compliance and P&amp;L are intentionally separate. A disciplined loss can still be a high-quality session.
+          </div>
+
+          <div class="psych-history-list" id="psychHistoryList">
+            <div class="empty-state">No psychology sessions recorded yet.</div>
+          </div>
+        </aside>
+      </div>
     </section>
+
 
     <section class="page" id="page-playbook">
       <header class="page-head"><div><h1>Edge / Playbook</h1><p>Define and review your trading edge and setups.</p></div></header>
@@ -1083,6 +1624,11 @@ let db = null;
 let currentUser = null;
 let tradingAccount = null;
 let trades = [];
+let psychologySessions = [];
+let identityScores = [];
+let ruleChecks = [];
+let editingPsychSessionId = null;
+
 let viewDate = new Date();
 let editingTradeId = null;
 
@@ -1179,6 +1725,10 @@ async function initializeSupabase(){
       currentUser = null;
       tradingAccount = null;
       trades = [];
+      psychologySessions = [];
+      identityScores = [];
+      ruleChecks = [];
+      editingPsychSessionId = null;
       setLoggedInUI(false);
     }
   });
@@ -1219,6 +1769,7 @@ async function enterApp(user){
   showStatus('Loading journal...');
   await ensureTradingAccount();
   await loadTrades();
+  await loadPsychologyData();
   renderAll();
   showStatus('Journal loaded');
 }
@@ -1296,6 +1847,42 @@ async function loadTrades(){
   trades=data || [];
 }
 
+async function loadPsychologyData(){
+  const [sessionsRes, scoresRes, rulesRes] = await Promise.all([
+    db
+      .from('trading_sessions')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .order('session_date', {ascending:false})
+      .order('created_at', {ascending:false}),
+
+    db
+      .from('session_identity_scores')
+      .select('*')
+      .eq('user_id', currentUser.id),
+
+    db
+      .from('session_rule_checks')
+      .select('*')
+      .eq('user_id', currentUser.id)
+  ]);
+
+  if(sessionsRes.error || scoresRes.error || rulesRes.error){
+    console.error(
+      sessionsRes.error || scoresRes.error || rulesRes.error
+    );
+    showStatus('Could not load psychology sessions',4000);
+    psychologySessions = sessionsRes.data || [];
+    identityScores = scoresRes.data || [];
+    ruleChecks = rulesRes.data || [];
+    return;
+  }
+
+  psychologySessions = sessionsRes.data || [];
+  identityScores = scoresRes.data || [];
+  ruleChecks = rulesRes.data || [];
+}
+
 /* =========================
    NAVIGATION
 ========================= */
@@ -1312,6 +1899,10 @@ function navigate(page){
   if(page==='journal'){
     journalPage=1;
     renderJournal();
+  }
+
+  if(page==='psychology'){
+    renderPsychology();
   }
 
   closeSidebarMobile();
@@ -2035,6 +2626,436 @@ $('#nextMonth').addEventListener('click',()=>{
   renderDashboard();
 });
 
+
+/* =========================
+   PSYCHOLOGY / SESSION SYSTEM
+========================= */
+
+const IDENTITY_KEYS = [
+  'discipline',
+  'patience',
+  'consistency',
+  'integrity',
+  'accountability',
+  'growth',
+  'risk_management',
+  'objectivity'
+];
+
+function sessionIdentityRows(sessionId){
+  return identityScores.filter(x=>x.session_id===sessionId);
+}
+
+function sessionRuleRows(sessionId){
+  return ruleChecks.filter(x=>x.session_id===sessionId);
+}
+
+function identityPercentForSession(sessionId){
+  const rows=sessionIdentityRows(sessionId);
+  if(!rows.length) return null;
+
+  const map={};
+  rows.forEach(r=>map[r.value_key]=Number(r.score)||0);
+
+  const sum=IDENTITY_KEYS.reduce((s,key)=>s+(Number(map[key])||0),0);
+  return sum/(IDENTITY_KEYS.length*10)*100;
+}
+
+function rulePercentForSession(sessionId){
+  const rows=sessionRuleRows(sessionId);
+  if(!rows.length) return null;
+
+  const map={};
+  rows.forEach(r=>map[r.rule_number]=Boolean(r.complied));
+
+  let complied=0;
+  for(let n=1;n<=6;n++){
+    if(map[n]) complied++;
+  }
+  return complied/6*100;
+}
+
+function dayPnlForDate(date){
+  return trades
+    .filter(t=>t.trade_date===date)
+    .reduce((s,t)=>s+(Number(t.pnl)||0),0);
+}
+
+function currentIdentityPercent(){
+  const inputs=$$('.identity-score-input');
+  const total=inputs.reduce((sum,input)=>{
+    let value=Number(input.value)||0;
+    value=Math.max(0,Math.min(10,value));
+    return sum+value;
+  },0);
+
+  return total/(IDENTITY_KEYS.length*10)*100;
+}
+
+function currentRulePercent(){
+  const checks=$$('.rule-check');
+  if(!checks.length) return 0;
+  const followed=checks.filter(x=>x.checked).length;
+  return followed/checks.length*100;
+}
+
+function updatePsychLiveScores(){
+  $('#identityLiveScore').textContent=currentIdentityPercent().toFixed(1)+'%';
+  $('#rulesLiveScore').textContent=currentRulePercent().toFixed(1)+'%';
+}
+
+$$('.identity-score-input').forEach(input=>{
+  input.addEventListener('input',()=>{
+    let v=Number(input.value);
+    if(v>10) input.value=10;
+    if(v<0) input.value=0;
+    updatePsychLiveScores();
+  });
+});
+
+$$('.rule-check').forEach(input=>{
+  input.addEventListener('change',updatePsychLiveScores);
+});
+
+function clearPsychForm(){
+  editingPsychSessionId=null;
+
+  $('#psychSessionDate').value=localDateString(new Date());
+
+  const suggestedNumber=psychologySessions.length+1;
+  $('#psychSessionLabel').value=`Session ${suggestedNumber}`;
+
+  $('#affirmationBefore').checked=false;
+  $('#affirmationAfter').checked=false;
+
+  $$('.identity-score-input').forEach(input=>input.value=0);
+
+  $$('.rule-check').forEach(input=>input.checked=false);
+  $$('[data-rule-comment]').forEach(input=>input.value='');
+
+  $('#psychSignal').value='';
+  $('#psychNoise').value='';
+  $('#psychStrengths').value='';
+  $('#psychWeaknesses').value='';
+  $('#psychOpportunities').value='';
+  $('#psychThreats').value='';
+  $('#psychAdjustments').value='';
+  $('#psychComments').value='';
+
+  $('#psychSessionMode').textContent='New';
+  $('#savePsychSessionBtn').textContent='Save Session';
+  $('#savePsychSessionTop').textContent='Save Session';
+
+  updatePsychLiveScores();
+}
+
+function loadPsychSessionIntoForm(session){
+  editingPsychSessionId=session.id;
+
+  $('#psychSessionDate').value=session.session_date || '';
+  $('#psychSessionLabel').value=session.session_label || '';
+
+  $('#affirmationBefore').checked=Boolean(session.affirmation_before);
+  $('#affirmationAfter').checked=Boolean(session.affirmation_after);
+
+  const scoresMap={};
+  sessionIdentityRows(session.id).forEach(row=>{
+    scoresMap[row.value_key]=Number(row.score)||0;
+  });
+
+  $$('.identity-score-input').forEach(input=>{
+    input.value=scoresMap[input.dataset.valueKey] ?? 0;
+  });
+
+  const ruleMap={};
+  sessionRuleRows(session.id).forEach(row=>{
+    ruleMap[row.rule_number]=row;
+  });
+
+  $$('.rule-check').forEach(input=>{
+    const n=Number(input.dataset.ruleNumber);
+    input.checked=Boolean(ruleMap[n]?.complied);
+  });
+
+  $$('[data-rule-comment]').forEach(input=>{
+    const n=Number(input.dataset.ruleComment);
+    input.value=ruleMap[n]?.comment || '';
+  });
+
+  $('#psychSignal').value=session.signal || '';
+  $('#psychNoise').value=session.noise || '';
+  $('#psychStrengths').value=session.strengths || '';
+  $('#psychWeaknesses').value=session.weaknesses || '';
+  $('#psychOpportunities').value=session.opportunities || '';
+  $('#psychThreats').value=session.threats || '';
+  $('#psychAdjustments').value=session.adjustments || '';
+  $('#psychComments').value=session.comments || '';
+
+  $('#psychSessionMode').textContent='Editing';
+  $('#savePsychSessionBtn').textContent='Update Session';
+  $('#savePsychSessionTop').textContent='Update Session';
+
+  updatePsychLiveScores();
+
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+async function savePsychSession(){
+  if(!currentUser || !db) return;
+
+  const date=$('#psychSessionDate').value;
+
+  if(!date){
+    alert('Select the session date.');
+    return;
+  }
+
+  const basePayload={
+    user_id:currentUser.id,
+    account_id:tradingAccount?.id || null,
+    session_date:date,
+    session_label:$('#psychSessionLabel').value.trim() || null,
+    affirmation_before:$('#affirmationBefore').checked,
+    affirmation_after:$('#affirmationAfter').checked,
+    signal:$('#psychSignal').value.trim() || null,
+    noise:$('#psychNoise').value.trim() || null,
+    strengths:$('#psychStrengths').value.trim() || null,
+    weaknesses:$('#psychWeaknesses').value.trim() || null,
+    opportunities:$('#psychOpportunities').value.trim() || null,
+    threats:$('#psychThreats').value.trim() || null,
+    adjustments:$('#psychAdjustments').value.trim() || null,
+    comments:$('#psychComments').value.trim() || null,
+    updated_at:new Date().toISOString()
+  };
+
+  $('#savePsychSessionBtn').disabled=true;
+  $('#savePsychSessionTop').disabled=true;
+
+  let sessionId=editingPsychSessionId;
+  let sessionResult;
+
+  if(editingPsychSessionId){
+    sessionResult=await db
+      .from('trading_sessions')
+      .update(basePayload)
+      .eq('id',editingPsychSessionId)
+      .eq('user_id',currentUser.id)
+      .select()
+      .single();
+  }else{
+    sessionResult=await db
+      .from('trading_sessions')
+      .insert(basePayload)
+      .select()
+      .single();
+  }
+
+  if(sessionResult.error){
+    $('#savePsychSessionBtn').disabled=false;
+    $('#savePsychSessionTop').disabled=false;
+    alert(sessionResult.error.message);
+    return;
+  }
+
+  sessionId=sessionResult.data.id;
+
+  const scorePayload=$$('.identity-score-input').map(input=>({
+    session_id:sessionId,
+    user_id:currentUser.id,
+    value_key:input.dataset.valueKey,
+    score:Math.max(0,Math.min(10,Number(input.value)||0))
+  }));
+
+  const rulePayload=[];
+  for(let n=1;n<=6;n++){
+    rulePayload.push({
+      session_id:sessionId,
+      user_id:currentUser.id,
+      rule_number:n,
+      complied:$(`[data-rule-number="${n}"]`).checked,
+      comment:$(`[data-rule-comment="${n}"]`).value.trim() || null
+    });
+  }
+
+  const [scoresResult,rulesResult]=await Promise.all([
+    db
+      .from('session_identity_scores')
+      .upsert(scorePayload,{onConflict:'session_id,value_key'}),
+
+    db
+      .from('session_rule_checks')
+      .upsert(rulePayload,{onConflict:'session_id,rule_number'})
+  ]);
+
+  $('#savePsychSessionBtn').disabled=false;
+  $('#savePsychSessionTop').disabled=false;
+
+  if(scoresResult.error || rulesResult.error){
+    alert((scoresResult.error || rulesResult.error).message);
+    return;
+  }
+
+  await loadPsychologyData();
+  renderPsychology();
+
+  const saved=psychologySessions.find(x=>x.id===sessionId);
+  if(saved){
+    loadPsychSessionIntoForm(saved);
+  }
+
+  showStatus('Psychology session saved');
+}
+
+async function deletePsychSession(session){
+  if(!confirm(`Delete ${session.session_label || 'this session'} on ${formatDate(session.session_date)}?`)){
+    return;
+  }
+
+  const {error}=await db
+    .from('trading_sessions')
+    .delete()
+    .eq('id',session.id)
+    .eq('user_id',currentUser.id);
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  await loadPsychologyData();
+
+  if(editingPsychSessionId===session.id){
+    clearPsychForm();
+  }
+
+  renderPsychology();
+  showStatus('Psychology session deleted');
+}
+
+function renderPsychSummary(){
+  $('#psychTotalSessions').textContent=psychologySessions.length;
+
+  const identityValues=psychologySessions
+    .map(s=>identityPercentForSession(s.id))
+    .filter(v=>v!==null);
+
+  const rulesValues=psychologySessions
+    .map(s=>rulePercentForSession(s.id))
+    .filter(v=>v!==null);
+
+  const affirmationComplete=psychologySessions.filter(
+    s=>s.affirmation_before && s.affirmation_after
+  ).length;
+
+  const avgIdentity=identityValues.length
+    ? identityValues.reduce((a,b)=>a+b,0)/identityValues.length
+    : null;
+
+  const avgRules=rulesValues.length
+    ? rulesValues.reduce((a,b)=>a+b,0)/rulesValues.length
+    : null;
+
+  const affirmationRate=psychologySessions.length
+    ? affirmationComplete/psychologySessions.length*100
+    : null;
+
+  $('#psychAvgIdentity').textContent=
+    avgIdentity===null ? '—' : avgIdentity.toFixed(1)+'%';
+
+  $('#psychAvgRules').textContent=
+    avgRules===null ? '—' : avgRules.toFixed(1)+'%';
+
+  $('#psychAffirmationRate').textContent=
+    affirmationRate===null ? '—' : affirmationRate.toFixed(1)+'%';
+}
+
+function renderPsychHistory(){
+  const box=$('#psychHistoryList');
+
+  if(!psychologySessions.length){
+    box.innerHTML='<div class="empty-state">No psychology sessions recorded yet.</div>';
+    return;
+  }
+
+  box.innerHTML='';
+
+  psychologySessions.forEach((session,index)=>{
+    const identity=identityPercentForSession(session.id);
+    const rules=rulePercentForSession(session.id);
+    const pnl=dayPnlForDate(session.session_date);
+
+    const card=document.createElement('div');
+    card.className='session-card';
+
+    const affirmationText=
+      session.affirmation_before && session.affirmation_after
+        ? 'Complete'
+        : session.affirmation_before || session.affirmation_after
+          ? 'Partial'
+          : 'Not done';
+
+    card.innerHTML=`
+      <div class="session-card-head">
+        <div>
+          <div class="session-card-title">${escapeHtml(session.session_label || `Session ${psychologySessions.length-index}`)}</div>
+          <div class="session-card-date">${formatDate(session.session_date)}</div>
+        </div>
+        <strong class="${pnlClass(pnl)}">${signedMoney(pnl)}</strong>
+      </div>
+
+      <div class="session-card-stats">
+        <div class="session-stat">
+          <span>Identity</span>
+          <strong>${identity===null?'—':identity.toFixed(1)+'%'}</strong>
+        </div>
+        <div class="session-stat">
+          <span>Rules</span>
+          <strong>${rules===null?'—':rules.toFixed(1)+'%'}</strong>
+        </div>
+        <div class="session-stat">
+          <span>Affirmations</span>
+          <strong>${affirmationText}</strong>
+        </div>
+        <div class="session-stat">
+          <span>Day P&amp;L</span>
+          <strong class="${pnlClass(pnl)}">${signedMoney(pnl)}</strong>
+        </div>
+      </div>
+
+      <div class="session-card-actions">
+        <button class="btn small edit-session">Review / Edit</button>
+        <button class="btn small danger delete-session">Delete</button>
+      </div>
+    `;
+
+    card.querySelector('.edit-session').addEventListener('click',()=>{
+      loadPsychSessionIntoForm(session);
+    });
+
+    card.querySelector('.delete-session').addEventListener('click',()=>{
+      deletePsychSession(session);
+    });
+
+    box.appendChild(card);
+  });
+}
+
+function renderPsychology(){
+  renderPsychSummary();
+  renderPsychHistory();
+  updatePsychLiveScores();
+
+  if(!$('#psychSessionDate').value && !editingPsychSessionId){
+    clearPsychForm();
+  }
+}
+
+$('#newPsychSessionBtn').addEventListener('click',clearPsychForm);
+$('#clearPsychSessionBtn').addEventListener('click',clearPsychForm);
+$('#savePsychSessionBtn').addEventListener('click',savePsychSession);
+$('#savePsychSessionTop').addEventListener('click',savePsychSession);
+
+
 /* =========================
    EXPORT
 ========================= */
@@ -2108,6 +3129,7 @@ function renderDashboard(){
 function renderAll(){
   renderDashboard();
   renderJournal();
+  renderPsychology();
 }
 
 initializeSupabase();
