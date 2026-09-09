@@ -1177,6 +1177,241 @@ input:focus,select:focus,textarea:focus{border-color:#5275a7}
   .chart-legend-note{text-align:left}
 }
 
+
+/* EXECUTION QUALITY */
+.execution-summary{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+  margin-bottom:14px;
+}
+.execution-layout{
+  display:grid;
+  grid-template-columns:330px minmax(0,1fr);
+  gap:16px;
+}
+.execution-browser{
+  padding:14px;
+}
+.execution-browser-head{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+  margin-bottom:11px;
+}
+.execution-browser-head h3{
+  margin:0;
+  font-size:14px;
+}
+.execution-filters{
+  display:grid;
+  grid-template-columns:1fr 120px;
+  gap:8px;
+  margin-bottom:11px;
+}
+.execution-trade-list{
+  max-height:720px;
+  overflow:auto;
+}
+.execution-trade-card{
+  border:1px solid #1d2938;
+  background:#0b1119;
+  border-radius:13px;
+  padding:11px;
+  margin-bottom:8px;
+  cursor:pointer;
+  transition:.15s ease;
+}
+.execution-trade-card:hover{
+  border-color:#35465f;
+  background:#0f1721;
+}
+.execution-trade-card.active{
+  border-color:#5e83ba;
+  box-shadow:inset 0 0 0 1px #344e70;
+  background:#101925;
+}
+.execution-card-top,
+.execution-card-bottom{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+}
+.execution-card-top strong{
+  font-size:12px;
+}
+.execution-card-bottom{
+  margin-top:7px;
+  color:var(--muted);
+  font-size:10px;
+}
+.execution-editor{
+  padding:16px;
+}
+.execution-empty{
+  min-height:420px;
+  display:grid;
+  place-items:center;
+  text-align:center;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.7;
+  padding:30px;
+}
+.execution-trade-header{
+  border:1px solid #1f2b3b;
+  background:#0b1119;
+  border-radius:14px;
+  padding:13px;
+  margin-bottom:14px;
+}
+.execution-trade-header-top{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+}
+.execution-trade-header h3{
+  margin:0;
+  font-size:16px;
+}
+.execution-trade-header p{
+  margin:4px 0 0;
+  color:var(--muted);
+  font-size:11px;
+}
+.execution-trade-kpis{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:10px;
+}
+.execution-mini-kpi{
+  border:1px solid #263348;
+  background:#0e1620;
+  border-radius:9px;
+  padding:6px 8px;
+  font-size:10px;
+}
+.execution-score-board{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+  margin-bottom:14px;
+}
+.execution-score-card{
+  border:1px solid #223044;
+  background:#0b1119;
+  border-radius:13px;
+  padding:12px;
+}
+.execution-score-card span{
+  color:var(--muted);
+  font-size:10px;
+}
+.execution-score-card strong{
+  display:block;
+  margin-top:4px;
+  font-size:22px;
+}
+.execution-principle{
+  border:1px solid #26364b;
+  background:#0d1723;
+  border-radius:12px;
+  padding:11px;
+  color:#a9b7c8;
+  font-size:10px;
+  line-height:1.55;
+  margin-bottom:14px;
+}
+.execution-principle strong{color:#fff}
+.execution-check{
+  border:1px solid #1e2938;
+  background:#0b1119;
+  border-radius:12px;
+  padding:10px;
+  margin-bottom:8px;
+}
+.execution-check-main{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+}
+.execution-check-main input{
+  width:17px;
+  height:17px;
+  margin-top:1px;
+  flex:0 0 auto;
+}
+.execution-check-copy{
+  flex:1;
+}
+.execution-check-copy strong{
+  display:block;
+  font-size:11px;
+  line-height:1.45;
+}
+.execution-check-copy span{
+  display:block;
+  margin-top:3px;
+  color:var(--muted);
+  font-size:9px;
+  line-height:1.45;
+}
+.execution-check-comment{
+  margin-top:8px;
+  padding:7px 8px;
+  font-size:10px;
+}
+.execution-review-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:15px;
+}
+.execution-review-grid textarea{
+  min-height:105px;
+}
+.execution-review-grid .field.full{
+  grid-column:1/-1;
+}
+.execution-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:15px;
+}
+.execution-help{
+  margin-top:12px;
+  border:1px solid #26364b;
+  background:#0d1723;
+  border-radius:12px;
+  padding:11px;
+  color:#a9b7c8;
+  font-size:10px;
+  line-height:1.55;
+}
+.execution-help strong{color:#fff}
+@media(max-width:1150px){
+  .execution-layout{grid-template-columns:1fr}
+  .execution-trade-list{
+    max-height:320px;
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:8px;
+  }
+  .execution-trade-card{margin-bottom:0}
+}
+@media(max-width:760px){
+  .execution-summary{grid-template-columns:repeat(2,1fr)}
+  .execution-trade-list{display:block}
+  .execution-trade-card{margin-bottom:8px}
+  .execution-score-board,.execution-review-grid{grid-template-columns:1fr}
+  .execution-review-grid .field.full{grid-column:auto}
+  .execution-filters{grid-template-columns:1fr}
+}
+
 /* PLACEHOLDER PAGES */
 .placeholder{
   padding:38px;
@@ -1388,7 +1623,6 @@ textarea{resize:vertical;min-height:90px}
 
       <button class="nav-btn" data-page="execution">
         <span class="nav-icon">✓</span> Execution
-        <span class="nav-coming">Soon</span>
       </button>
 
       <button class="nav-btn" data-page="goals">
@@ -2386,10 +2620,212 @@ textarea{resize:vertical;min-height:90px}
     </section>
 
 
+
     <section class="page" id="page-execution">
-      <header class="page-head"><div><h1>Execution</h1><p>Measure plan-following quality separately from P&amp;L.</p></div></header>
-      <section class="panel placeholder"><h2>Execution module</h2><p>This will track discipline, process errors, execution score and rule adherence.</p></section>
+      <header class="page-head">
+        <div>
+          <h1>Execution</h1>
+          <p>Measure how accurately you carried out a trade after the opportunity had already been identified.</p>
+        </div>
+        <div class="top-actions">
+          <button class="btn" id="executionRefreshBtn">Refresh</button>
+          <button class="btn primary" id="executionSaveTopBtn">Save Review</button>
+        </div>
+      </header>
+
+      <section class="execution-summary">
+        <div class="metric">
+          <div class="label">Reviewed Trades</div>
+          <div class="value neutral" id="executionReviewedCount">0</div>
+          <div class="sub">Execution reviews completed</div>
+        </div>
+        <div class="metric">
+          <div class="label">Average Execution</div>
+          <div class="value neutral" id="executionAvgScore">—</div>
+          <div class="sub">Process quality</div>
+        </div>
+        <div class="metric">
+          <div class="label">A+ Executions</div>
+          <div class="value neutral" id="executionAPlusCount">0</div>
+          <div class="sub">All execution conditions met</div>
+        </div>
+        <div class="metric">
+          <div class="label">Unreviewed Trades</div>
+          <div class="value neutral" id="executionUnreviewedCount">0</div>
+          <div class="sub">Awaiting execution review</div>
+        </div>
+      </section>
+
+      <div class="execution-layout">
+        <aside class="panel execution-browser">
+          <div class="execution-browser-head">
+            <h3>Trades</h3>
+            <span class="pager-text" id="executionTradeCount">0 trades</span>
+          </div>
+
+          <div class="execution-filters">
+            <input id="executionSearch" type="text" placeholder="Search instrument or setup">
+            <select id="executionStatusFilter">
+              <option value="">All</option>
+              <option value="reviewed">Reviewed</option>
+              <option value="unreviewed">Unreviewed</option>
+              <option value="aplus">A+</option>
+              <option value="a">A</option>
+              <option value="b">B</option>
+            </select>
+          </div>
+
+          <div class="execution-trade-list" id="executionTradeList">
+            <div class="empty-state">No trades recorded yet.</div>
+          </div>
+
+          <div class="execution-help">
+            <strong>Edge asks:</strong> Should this trade have been taken?<br>
+            <strong>Execution asks:</strong> Once I chose to take it, did I carry it out correctly?
+          </div>
+        </aside>
+
+        <section class="panel execution-editor">
+          <div class="execution-empty" id="executionEmptyState">
+            Select a trade on the left to evaluate the quality of its actual execution independently of P&amp;L.
+          </div>
+
+          <div class="hidden" id="executionEditorContent">
+            <div class="execution-trade-header">
+              <div class="execution-trade-header-top">
+                <div>
+                  <h3 id="executionSelectedTitle">—</h3>
+                  <p id="executionSelectedSubtitle">—</p>
+                </div>
+                <span class="grade-badge grade-none" id="executionHeaderGrade">Unreviewed</span>
+              </div>
+
+              <div class="execution-trade-kpis">
+                <span class="execution-mini-kpi" id="executionSelectedPnl">P&amp;L: —</span>
+                <span class="execution-mini-kpi" id="executionSelectedR">R: —</span>
+                <span class="execution-mini-kpi" id="executionSelectedEdge">Edge: —</span>
+              </div>
+            </div>
+
+            <div class="execution-score-board">
+              <div class="execution-score-card">
+                <span>Live Execution Score</span>
+                <strong id="executionLiveScore">0.0%</strong>
+              </div>
+
+              <div class="execution-score-card">
+                <span>Execution Rating</span>
+                <strong id="executionLiveRating">B</strong>
+              </div>
+            </div>
+
+            <div class="execution-principle">
+              <strong>Important:</strong> A profitable trade can still be poorly executed, and a losing trade can still be executed perfectly.
+              This page measures your behaviour after the decision to trade, not the financial result.
+            </div>
+
+            <div class="execution-check">
+              <div class="execution-check-main">
+                <input type="checkbox" class="execution-check-input" data-execution-key="entry_timing">
+                <div class="execution-check-copy">
+                  <strong>Entry timing followed the planned trigger.</strong>
+                  <span>No premature anticipation, chasing, or unnecessary delay after the valid trigger.</span>
+                </div>
+              </div>
+              <input class="execution-check-comment" data-execution-comment="entry_timing" type="text" placeholder="Optional comment">
+            </div>
+
+            <div class="execution-check">
+              <div class="execution-check-main">
+                <input type="checkbox" class="execution-check-input" data-execution-key="entry_accuracy">
+                <div class="execution-check-copy">
+                  <strong>The actual entry/order execution matched the intended trade.</strong>
+                  <span>No accidental order behaviour or avoidable deviation from the planned entry process.</span>
+                </div>
+              </div>
+              <input class="execution-check-comment" data-execution-comment="entry_accuracy" type="text" placeholder="Optional comment">
+            </div>
+
+            <div class="execution-check">
+              <div class="execution-check-main">
+                <input type="checkbox" class="execution-check-input" data-execution-key="stop_placement">
+                <div class="execution-check-copy">
+                  <strong>The initial stop loss was placed according to the plan.</strong>
+                  <span>The stop location was technically justified and was not widened to avoid taking a loss.</span>
+                </div>
+              </div>
+              <input class="execution-check-comment" data-execution-comment="stop_placement" type="text" placeholder="Optional comment">
+            </div>
+
+            <div class="execution-check">
+              <div class="execution-check-main">
+                <input type="checkbox" class="execution-check-input" data-execution-key="risk_sizing">
+                <div class="execution-check-copy">
+                  <strong>Position size and risk stayed within the predefined limit.</strong>
+                  <span>No oversizing or unplanned increase in financial exposure.</span>
+                </div>
+              </div>
+              <input class="execution-check-comment" data-execution-comment="risk_sizing" type="text" placeholder="Optional comment">
+            </div>
+
+            <div class="execution-check">
+              <div class="execution-check-main">
+                <input type="checkbox" class="execution-check-input" data-execution-key="trade_management">
+                <div class="execution-check-copy">
+                  <strong>In-trade management followed the intended process.</strong>
+                  <span>Stop shifts, holding decisions and other adjustments were rule-based rather than impulsive.</span>
+                </div>
+              </div>
+              <input class="execution-check-comment" data-execution-comment="trade_management" type="text" placeholder="Optional comment">
+            </div>
+
+            <div class="execution-check">
+              <div class="execution-check-main">
+                <input type="checkbox" class="execution-check-input" data-execution-key="exit_execution">
+                <div class="execution-check-copy">
+                  <strong>The applicable exit rule was executed correctly.</strong>
+                  <span>The actual exit corresponded with the selected rule in your Edge / Playbook review.</span>
+                </div>
+              </div>
+              <input class="execution-check-comment" data-execution-comment="exit_execution" type="text" placeholder="Optional comment">
+            </div>
+
+            <div class="execution-review-grid">
+              <div class="field">
+                <label>What Went Well</label>
+                <textarea id="executionWentWell" placeholder="Which execution behaviours should be reinforced?"></textarea>
+              </div>
+
+              <div class="field">
+                <label>Execution Errors</label>
+                <textarea id="executionErrors" placeholder="What did I actually do incorrectly, if anything?"></textarea>
+              </div>
+
+              <div class="field full">
+                <label>Next Adjustment</label>
+                <textarea id="executionAdjustment" placeholder="What specific execution behaviour will I adjust on the next opportunity?"></textarea>
+              </div>
+
+              <div class="field full">
+                <label>Additional Notes</label>
+                <textarea id="executionNotes" placeholder="Optional observations"></textarea>
+              </div>
+            </div>
+
+            <div class="execution-help">
+              <strong>Rating logic:</strong> 6/6 = A+; 5/6 = A; 4/6 or less = B.
+              The website also saves the percentage as the trade's execution score.
+            </div>
+
+            <div class="execution-actions">
+              <button class="btn danger" type="button" id="executionDeleteReviewBtn">Delete Review</button>
+              <button class="btn primary" type="button" id="executionSaveReviewBtn">Save Review</button>
+            </div>
+          </div>
+        </section>
+      </div>
     </section>
+
 
     <section class="page" id="page-goals">
       <header class="page-head"><div><h1>Goals</h1><p>Trading phases, targets and weekly execution objectives.</p></div></header>
@@ -2544,6 +2980,10 @@ let selectedEdgeTradeId = null;
 let statsRange = '7d';
 let equityChartInstance = null;
 
+let executionReviews = [];
+let executionChecks = [];
+let selectedExecutionTradeId = null;
+
 let viewDate = new Date();
 let editingTradeId = null;
 
@@ -2649,6 +3089,10 @@ async function initializeSupabase(){
       planChecks = [];
       selectedEdgeTradeId = null;
 
+      executionReviews = [];
+      executionChecks = [];
+      selectedExecutionTradeId = null;
+
       setLoggedInUI(false);
     }
   });
@@ -2691,6 +3135,7 @@ async function enterApp(user){
   await loadTrades();
   await loadPsychologyData();
   await loadEdgeData();
+  await loadExecutionData();
   renderAll();
   showStatus('Journal loaded');
 }
@@ -2839,6 +3284,44 @@ async function loadEdgeData(){
   }
 }
 
+async function loadExecutionData(){
+  const [reviewsRes, checksRes] = await Promise.all([
+    db
+      .from('trade_execution_reviews')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .order('created_at', {ascending:false}),
+
+    db
+      .from('trade_execution_checks')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .order('sort_order', {ascending:true})
+  ]);
+
+  if(reviewsRes.error || checksRes.error){
+    console.error(reviewsRes.error || checksRes.error);
+    showStatus('Could not load execution reviews',4000);
+    executionReviews = reviewsRes.data || [];
+    executionChecks = checksRes.data || [];
+    return;
+  }
+
+  executionReviews = reviewsRes.data || [];
+  executionChecks = checksRes.data || [];
+
+  if(
+    selectedExecutionTradeId &&
+    !trades.some(t=>t.id===selectedExecutionTradeId)
+  ){
+    selectedExecutionTradeId=null;
+  }
+
+  if(!selectedExecutionTradeId && trades.length){
+    selectedExecutionTradeId=trades[0].id;
+  }
+}
+
 /* =========================
    NAVIGATION
 ========================= */
@@ -2867,6 +3350,10 @@ function navigate(page){
 
   if(page==='statistics'){
     renderStatistics();
+  }
+
+  if(page==='execution'){
+    renderExecution();
   }
 
   closeSidebarMobile();
@@ -3250,7 +3737,7 @@ function renderJournal(){
         <td>${escapeHtml(t.setup||'—')}</td>
         <td class="${pnlClass(pnl)}"><strong>${signedMoney(pnl)}</strong></td>
         <td class="${pnlClass(r)}">${r>=0?'+':''}${r.toFixed(2)}R</td>
-        <td>${t.execution_score==null?'—':Number(t.execution_score).toFixed(1)+'/10'}</td>
+        <td>${journalExecutionBadge(t.id,t.execution_score)}</td>
         <td>${escapeHtml(t.psychology||'—')}</td>
         <td>${journalEdgeBadge(t.id)}</td>
         <td title="${escapeHtml(t.notes||'')}">${escapeHtml((t.notes||'—').slice(0,55))}${(t.notes||'').length>55?'…':''}</td>
@@ -3436,6 +3923,7 @@ async function deleteTrade(trade, dayToRefresh=null){
 
   await loadTrades();
   await loadEdgeData();
+  await loadExecutionData();
   renderAll();
 
   if(dayToRefresh){
@@ -3593,6 +4081,597 @@ $('#nextMonth').addEventListener('click',()=>{
 });
 
 
+
+
+
+/* =========================
+   EXECUTION QUALITY SYSTEM
+========================= */
+
+const EXECUTION_CRITERIA = [
+  {
+    key:'entry_timing',
+    label:'Entry timing followed the planned trigger.',
+    sort:1
+  },
+  {
+    key:'entry_accuracy',
+    label:'The actual entry/order execution matched the intended trade.',
+    sort:2
+  },
+  {
+    key:'stop_placement',
+    label:'The initial stop loss was placed according to the plan.',
+    sort:3
+  },
+  {
+    key:'risk_sizing',
+    label:'Position size and risk stayed within the predefined limit.',
+    sort:4
+  },
+  {
+    key:'trade_management',
+    label:'In-trade management followed the intended process.',
+    sort:5
+  },
+  {
+    key:'exit_execution',
+    label:'The applicable exit rule was executed correctly.',
+    sort:6
+  }
+];
+
+function executionReviewForTrade(tradeId){
+  return executionReviews.find(r=>r.trade_id===tradeId) || null;
+}
+
+function executionChecksForReview(reviewId){
+  return executionChecks.filter(c=>c.review_id===reviewId);
+}
+
+function executionScoreForTrade(tradeId){
+  const review=executionReviewForTrade(tradeId);
+  if(!review) return null;
+
+  const rows=executionChecksForReview(review.id);
+  const map={};
+
+  rows.forEach(row=>{
+    map[row.criterion_key]=Boolean(row.complied);
+  });
+
+  const passed=EXECUTION_CRITERIA.reduce(
+    (sum,item)=>sum+(map[item.key]?1:0),
+    0
+  );
+
+  return passed/EXECUTION_CRITERIA.length*100;
+}
+
+function executionRatingForTrade(tradeId){
+  const score=executionScoreForTrade(tradeId);
+
+  if(score===null) return null;
+
+  const passed=Math.round(
+    score/100*EXECUTION_CRITERIA.length
+  );
+
+  if(passed===6) return 'A+';
+  if(passed===5) return 'A';
+  return 'B';
+}
+
+function journalExecutionBadge(tradeId,fallbackScore){
+  const rating=executionRatingForTrade(tradeId);
+  const score=executionScoreForTrade(tradeId);
+
+  if(rating && score!==null){
+    return `<span class="grade-badge ${edgeGradeClass(rating)}" title="${score.toFixed(1)}%">${rating}</span>`;
+  }
+
+  if(fallbackScore==null || fallbackScore===''){
+    return '<span class="grade-badge grade-none">—</span>';
+  }
+
+  const numeric=Number(fallbackScore)||0;
+
+  return `<span class="grade-badge grade-none" title="Legacy execution score">${numeric.toFixed(1)}/10</span>`;
+}
+
+function currentExecutionScore(){
+  const checks=$$('.execution-check-input');
+
+  if(!checks.length){
+    return 0;
+  }
+
+  const passed=checks.filter(x=>x.checked).length;
+  return passed/checks.length*100;
+}
+
+function currentExecutionRating(){
+  const checks=$$('.execution-check-input');
+  const passed=checks.filter(x=>x.checked).length;
+
+  if(passed===6) return 'A+';
+  if(passed===5) return 'A';
+  return 'B';
+}
+
+function updateExecutionLiveScore(){
+  const score=currentExecutionScore();
+  const rating=currentExecutionRating();
+
+  $('#executionLiveScore').textContent=score.toFixed(1)+'%';
+  $('#executionLiveRating').textContent=rating;
+
+  const header=$('#executionHeaderGrade');
+  const review=executionReviewForTrade(selectedExecutionTradeId);
+
+  header.textContent=review ? rating : 'Unreviewed';
+  header.className='grade-badge '+(
+    review ? edgeGradeClass(rating) : 'grade-none'
+  );
+}
+
+$$('.execution-check-input').forEach(input=>{
+  input.addEventListener('change',updateExecutionLiveScore);
+});
+
+function clearExecutionEditor(){
+  $$('.execution-check-input').forEach(input=>{
+    input.checked=false;
+  });
+
+  $$('[data-execution-comment]').forEach(input=>{
+    input.value='';
+  });
+
+  $('#executionWentWell').value='';
+  $('#executionErrors').value='';
+  $('#executionAdjustment').value='';
+  $('#executionNotes').value='';
+
+  updateExecutionLiveScore();
+}
+
+function loadExecutionReviewIntoEditor(trade){
+  selectedExecutionTradeId=trade.id;
+
+  const review=executionReviewForTrade(trade.id);
+
+  $('#executionEmptyState').classList.add('hidden');
+  $('#executionEditorContent').classList.remove('hidden');
+
+  $('#executionSelectedTitle').textContent=
+    `${trade.instrument || '—'} • ${trade.direction || '—'}`;
+
+  $('#executionSelectedSubtitle').textContent=
+    `${formatDate(trade.trade_date)} • Trade ID ${String(trade.id).slice(0,8)}`;
+
+  $('#executionSelectedPnl').textContent=
+    `P&L: ${signedMoney(Number(trade.pnl)||0)}`;
+
+  const r=Number(trade.r_multiple)||0;
+
+  $('#executionSelectedR').textContent=
+    `R: ${r>=0?'+':''}${r.toFixed(2)}R`;
+
+  const edgeRating=edgeRatingForTrade(trade.id);
+  const edgeScore=edgeScoreForTrade(trade.id);
+
+  $('#executionSelectedEdge').textContent=
+    edgeRating && edgeScore!==null
+      ? `Edge: ${edgeRating} • ${edgeScore.toFixed(1)}%`
+      : 'Edge: Unreviewed';
+
+  clearExecutionEditor();
+
+  if(review){
+    const map={};
+
+    executionChecksForReview(review.id).forEach(row=>{
+      map[row.criterion_key]=row;
+    });
+
+    $$('.execution-check-input').forEach(input=>{
+      input.checked=Boolean(
+        map[input.dataset.executionKey]?.complied
+      );
+    });
+
+    $$('[data-execution-comment]').forEach(input=>{
+      const row=map[input.dataset.executionComment];
+      input.value=row?.comment || '';
+    });
+
+    $('#executionWentWell').value=
+      review.what_went_well || '';
+
+    $('#executionErrors').value=
+      review.execution_errors || '';
+
+    $('#executionAdjustment').value=
+      review.next_adjustment || '';
+
+    $('#executionNotes').value=
+      review.notes || '';
+  }
+
+  updateExecutionLiveScore();
+  renderExecutionTradeList();
+}
+
+function filteredExecutionTrades(){
+  const q=$('#executionSearch').value.trim().toLowerCase();
+  const status=$('#executionStatusFilter').value;
+
+  return trades.filter(trade=>{
+    const review=executionReviewForTrade(trade.id);
+    const rating=executionRatingForTrade(trade.id);
+
+    if(status==='reviewed' && !review) return false;
+    if(status==='unreviewed' && review) return false;
+    if(status==='aplus' && rating!=='A+') return false;
+    if(status==='a' && rating!=='A') return false;
+    if(status==='b' && rating!=='B') return false;
+
+    if(q){
+      const haystack=[
+        trade.instrument,
+        trade.direction,
+        trade.setup,
+        trade.notes,
+        trade.trade_date
+      ].join(' ').toLowerCase();
+
+      if(!haystack.includes(q)){
+        return false;
+      }
+    }
+
+    return true;
+  }).sort((a,b)=>{
+    if(a.trade_date!==b.trade_date){
+      return b.trade_date.localeCompare(a.trade_date);
+    }
+
+    return (b.created_at||'').localeCompare(
+      a.created_at||''
+    );
+  });
+}
+
+function renderExecutionSummary(){
+  const reviewed=trades.filter(
+    t=>Boolean(executionReviewForTrade(t.id))
+  );
+
+  const scores=reviewed
+    .map(t=>executionScoreForTrade(t.id))
+    .filter(v=>v!==null);
+
+  const avg=scores.length
+    ? scores.reduce((a,b)=>a+b,0)/scores.length
+    : null;
+
+  const aPlus=reviewed.filter(
+    t=>executionRatingForTrade(t.id)==='A+'
+  ).length;
+
+  $('#executionReviewedCount').textContent=reviewed.length;
+
+  $('#executionAvgScore').textContent=
+    avg===null ? '—' : avg.toFixed(1)+'%';
+
+  $('#executionAPlusCount').textContent=aPlus;
+
+  $('#executionUnreviewedCount').textContent=
+    Math.max(0,trades.length-reviewed.length);
+}
+
+function renderExecutionTradeList(){
+  const list=$('#executionTradeList');
+  const source=filteredExecutionTrades();
+
+  $('#executionTradeCount').textContent=
+    source.length===1 ? '1 trade' : `${source.length} trades`;
+
+  if(!source.length){
+    list.innerHTML=
+      '<div class="empty-state">No trades match the current Execution filters.</div>';
+    return;
+  }
+
+  list.innerHTML='';
+
+  source.forEach(trade=>{
+    const review=executionReviewForTrade(trade.id);
+    const rating=executionRatingForTrade(trade.id);
+    const score=executionScoreForTrade(trade.id);
+    const pnl=Number(trade.pnl)||0;
+
+    const card=document.createElement('div');
+
+    card.className=
+      'execution-trade-card'+(
+        trade.id===selectedExecutionTradeId
+          ? ' active'
+          : ''
+      );
+
+    const ratingHtml=review
+      ? `<span class="grade-badge ${edgeGradeClass(rating)}">${rating}</span>`
+      : '<span class="edge-unreviewed">Unreviewed</span>';
+
+    card.innerHTML=`
+      <div class="execution-card-top">
+        <strong>${escapeHtml(trade.instrument||'—')} • ${escapeHtml(trade.direction||'—')}</strong>
+        ${ratingHtml}
+      </div>
+
+      <div class="execution-card-bottom">
+        <span>${formatDate(trade.trade_date)}</span>
+        <span class="${pnlClass(pnl)}">${signedMoney(pnl)}</span>
+      </div>
+
+      ${review ? `
+        <div class="execution-card-bottom">
+          <span>Execution score</span>
+          <span>${score.toFixed(1)}%</span>
+        </div>
+      ` : ''}
+    `;
+
+    card.addEventListener('click',()=>{
+      loadExecutionReviewIntoEditor(trade);
+    });
+
+    list.appendChild(card);
+  });
+}
+
+function renderSelectedExecutionTrade(){
+  if(!trades.length){
+    selectedExecutionTradeId=null;
+    $('#executionEditorContent').classList.add('hidden');
+    $('#executionEmptyState').classList.remove('hidden');
+    return;
+  }
+
+  let trade=trades.find(
+    t=>t.id===selectedExecutionTradeId
+  );
+
+  if(!trade){
+    selectedExecutionTradeId=trades[0].id;
+    trade=trades[0];
+  }
+
+  loadExecutionReviewIntoEditor(trade);
+}
+
+function renderExecution(){
+  renderExecutionSummary();
+  renderExecutionTradeList();
+  renderSelectedExecutionTrade();
+}
+
+async function saveExecutionReview(){
+  if(!selectedExecutionTradeId){
+    alert('Select a trade first.');
+    return;
+  }
+
+  const trade=trades.find(
+    t=>t.id===selectedExecutionTradeId
+  );
+
+  if(!trade){
+    alert('The selected trade could not be found.');
+    return;
+  }
+
+  const reviewPayload={
+    user_id:currentUser.id,
+    trade_id:trade.id,
+    what_went_well:
+      $('#executionWentWell').value.trim() || null,
+    execution_errors:
+      $('#executionErrors').value.trim() || null,
+    next_adjustment:
+      $('#executionAdjustment').value.trim() || null,
+    notes:
+      $('#executionNotes').value.trim() || null,
+    updated_at:new Date().toISOString()
+  };
+
+  $('#executionSaveReviewBtn').disabled=true;
+  $('#executionSaveTopBtn').disabled=true;
+
+  let review=executionReviewForTrade(trade.id);
+  let reviewResult;
+
+  if(review){
+    reviewResult=await db
+      .from('trade_execution_reviews')
+      .update(reviewPayload)
+      .eq('id',review.id)
+      .eq('user_id',currentUser.id)
+      .select()
+      .single();
+  }else{
+    reviewResult=await db
+      .from('trade_execution_reviews')
+      .insert(reviewPayload)
+      .select()
+      .single();
+  }
+
+  if(reviewResult.error){
+    $('#executionSaveReviewBtn').disabled=false;
+    $('#executionSaveTopBtn').disabled=false;
+    alert(reviewResult.error.message);
+    return;
+  }
+
+  review=reviewResult.data;
+
+  const checksPayload=EXECUTION_CRITERIA.map(item=>({
+    review_id:review.id,
+    user_id:currentUser.id,
+    criterion_key:item.key,
+    criterion_label:item.label,
+    complied:
+      $(`[data-execution-key="${item.key}"]`).checked,
+    comment:
+      $(`[data-execution-comment="${item.key}"]`).value.trim() || null,
+    sort_order:item.sort
+  }));
+
+  const {error:checksError}=await db
+    .from('trade_execution_checks')
+    .upsert(
+      checksPayload,
+      {onConflict:'review_id,criterion_key'}
+    );
+
+  if(checksError){
+    $('#executionSaveReviewBtn').disabled=false;
+    $('#executionSaveTopBtn').disabled=false;
+    alert(checksError.message);
+    return;
+  }
+
+  const scorePct=currentExecutionScore();
+  const scoreOutOf10=scorePct/10;
+
+  const {error:tradeUpdateError}=await db
+    .from('trades')
+    .update({
+      execution_score:Number(scoreOutOf10.toFixed(2)),
+      updated_at:new Date().toISOString()
+    })
+    .eq('id',trade.id)
+    .eq('user_id',currentUser.id);
+
+  $('#executionSaveReviewBtn').disabled=false;
+  $('#executionSaveTopBtn').disabled=false;
+
+  if(tradeUpdateError){
+    alert(tradeUpdateError.message);
+    return;
+  }
+
+  await loadTrades();
+  await loadExecutionData();
+
+  renderExecution();
+  renderDashboard();
+  renderJournal();
+  renderStatistics();
+
+  showStatus(
+    `Execution saved • ${executionRatingForTrade(trade.id)} • ${executionScoreForTrade(trade.id).toFixed(1)}%`
+  );
+}
+
+async function deleteExecutionReview(){
+  if(!selectedExecutionTradeId){
+    return;
+  }
+
+  const review=executionReviewForTrade(
+    selectedExecutionTradeId
+  );
+
+  if(!review){
+    alert('This trade does not have an execution review yet.');
+    return;
+  }
+
+  const trade=trades.find(
+    t=>t.id===selectedExecutionTradeId
+  );
+
+  if(
+    !confirm(
+      `Delete the execution review for ${trade?.instrument || 'this trade'}?`
+    )
+  ){
+    return;
+  }
+
+  const {error}=await db
+    .from('trade_execution_reviews')
+    .delete()
+    .eq('id',review.id)
+    .eq('user_id',currentUser.id);
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  await db
+    .from('trades')
+    .update({
+      execution_score:null,
+      updated_at:new Date().toISOString()
+    })
+    .eq('id',selectedExecutionTradeId)
+    .eq('user_id',currentUser.id);
+
+  await loadTrades();
+  await loadExecutionData();
+
+  renderExecution();
+  renderDashboard();
+  renderJournal();
+  renderStatistics();
+
+  showStatus('Execution review deleted');
+}
+
+$('#executionSearch').addEventListener(
+  'input',
+  renderExecutionTradeList
+);
+
+$('#executionStatusFilter').addEventListener(
+  'change',
+  renderExecutionTradeList
+);
+
+$('#executionRefreshBtn').addEventListener(
+  'click',
+  async()=>{
+    await loadTrades();
+    await loadEdgeData();
+    await loadExecutionData();
+
+    renderExecution();
+    renderJournal();
+
+    showStatus('Execution data refreshed');
+  }
+);
+
+$('#executionSaveReviewBtn').addEventListener(
+  'click',
+  saveExecutionReview
+);
+
+$('#executionSaveTopBtn').addEventListener(
+  'click',
+  saveExecutionReview
+);
+
+$('#executionDeleteReviewBtn').addEventListener(
+  'click',
+  deleteExecutionReview
+);
 
 
 /* =========================
@@ -5089,6 +6168,7 @@ function renderAll(){
   renderJournal();
   renderPsychology();
   renderEdgePlaybook();
+  renderExecution();
   renderStatistics();
 }
 
