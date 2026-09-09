@@ -1412,6 +1412,302 @@ input:focus,select:focus,textarea:focus{border-color:#5275a7}
   .execution-filters{grid-template-columns:1fr}
 }
 
+
+/* GOALS + PHASE ROADMAP */
+.phase-roadmap{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+  margin-bottom:14px;
+}
+.phase-card{
+  border:1px solid var(--line);
+  background:linear-gradient(180deg,#0f141d,#0b1017);
+  border-radius:16px;
+  padding:14px;
+  position:relative;
+  overflow:hidden;
+}
+.phase-card.active-phase{
+  border-color:#4d6e9d;
+  box-shadow:inset 0 0 0 1px #263e60;
+}
+.phase-card.completed-phase{
+  border-color:#24583f;
+}
+.phase-card.locked-phase{
+  opacity:.72;
+}
+.phase-card-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+.phase-number{
+  font-size:10px;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.6px;
+}
+.phase-status{
+  font-size:9px;
+  padding:4px 7px;
+  border-radius:999px;
+  border:1px solid #2a374a;
+  color:#aeb9c7;
+}
+.phase-status.active{color:#9cc6ff;border-color:#2e537d;background:#0d1928}
+.phase-status.completed{color:#66dda0;border-color:#22593e;background:#0d2218}
+.phase-card h3{
+  margin:10px 0 6px;
+  font-size:14px;
+}
+.phase-card p{
+  margin:0;
+  color:var(--muted);
+  font-size:10px;
+  line-height:1.55;
+  min-height:48px;
+}
+.phase-progress-row{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+  margin-top:12px;
+  font-size:10px;
+  color:var(--muted);
+}
+.progress-track{
+  width:100%;
+  height:7px;
+  border-radius:999px;
+  background:#151e2a;
+  overflow:hidden;
+  margin-top:7px;
+}
+.progress-fill{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,#5d9dff,#79d6ae);
+  border-radius:999px;
+  transition:.25s ease;
+}
+.phase-actions{
+  display:flex;
+  gap:6px;
+  margin-top:11px;
+}
+.goal-horizon-summary{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:10px;
+  margin-bottom:14px;
+}
+.horizon-card{
+  border:1px solid var(--line);
+  background:#0d1219;
+  border-radius:14px;
+  padding:12px;
+}
+.horizon-card span{
+  color:var(--muted);
+  font-size:10px;
+}
+.horizon-card strong{
+  display:block;
+  font-size:18px;
+  margin-top:5px;
+}
+.goal-cascade{
+  border:1px solid #233247;
+  background:#0c1520;
+  border-radius:14px;
+  padding:12px 14px;
+  margin-bottom:14px;
+}
+.goal-cascade-flow{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  flex-wrap:wrap;
+  font-size:11px;
+}
+.goal-cascade-node{
+  border:1px solid #2b3b50;
+  background:#101823;
+  border-radius:10px;
+  padding:7px 10px;
+  font-weight:750;
+}
+.goal-cascade-arrow{
+  color:#6e7f95;
+}
+.goals-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 340px;
+  gap:14px;
+}
+.goals-panel{
+  padding:14px;
+}
+.goals-panel-head{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:center;
+  margin-bottom:12px;
+}
+.goals-panel-head h3{
+  margin:0;
+  font-size:14px;
+}
+.goals-filters{
+  display:grid;
+  grid-template-columns:1.2fr repeat(3,minmax(120px,.6fr));
+  gap:8px;
+  margin-bottom:12px;
+}
+.goal-tree{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.goal-card{
+  border:1px solid #1e2938;
+  background:#0b1119;
+  border-radius:13px;
+  padding:11px;
+}
+.goal-card.level-yearly{margin-left:0}
+.goal-card.level-half_year{margin-left:16px}
+.goal-card.level-monthly{margin-left:32px}
+.goal-card.level-weekly{margin-left:48px}
+.goal-card.level-daily{margin-left:64px}
+.goal-card-top{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:flex-start;
+}
+.goal-title{
+  font-size:12px;
+  font-weight:800;
+}
+.goal-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:6px;
+}
+.goal-chip{
+  display:inline-flex;
+  align-items:center;
+  border:1px solid #2a374a;
+  border-radius:999px;
+  padding:3px 6px;
+  color:#98a6b8;
+  font-size:9px;
+}
+.goal-chip.phase{
+  color:#9cc6ff;
+  border-color:#29466b;
+}
+.goal-progress-top{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  margin-top:10px;
+  font-size:10px;
+  color:var(--muted);
+}
+.goal-progress-actions{
+  display:flex;
+  gap:6px;
+  margin-top:9px;
+  flex-wrap:wrap;
+}
+.goal-derived-note{
+  margin-top:8px;
+  font-size:9px;
+  color:#7890aa;
+}
+.goal-notes{
+  margin-top:8px;
+  color:#98a5b6;
+  font-size:10px;
+  line-height:1.5;
+}
+.goal-actions{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+}
+.goal-activity{
+  padding:14px;
+}
+.goal-activity h3{
+  margin:0 0 12px;
+  font-size:14px;
+}
+.activity-item{
+  border-bottom:1px solid #18212c;
+  padding:9px 0;
+}
+.activity-item:last-child{border-bottom:0}
+.activity-item strong{
+  display:block;
+  font-size:10px;
+}
+.activity-item span{
+  display:block;
+  margin-top:3px;
+  color:var(--muted);
+  font-size:9px;
+  line-height:1.45;
+}
+.goal-modal-card{
+  width:min(680px,100%);
+}
+.parent-hint{
+  color:var(--muted);
+  font-size:9px;
+  line-height:1.45;
+}
+.goal-progress-control{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.goal-progress-control input[type="range"]{
+  flex:1;
+}
+.goal-progress-control output{
+  min-width:50px;
+  text-align:right;
+  font-size:11px;
+  font-weight:800;
+}
+@media(max-width:1200px){
+  .phase-roadmap{grid-template-columns:repeat(2,1fr)}
+  .goals-layout{grid-template-columns:1fr}
+}
+@media(max-width:800px){
+  .goal-horizon-summary{grid-template-columns:repeat(2,1fr)}
+  .goals-filters{grid-template-columns:1fr 1fr}
+  .goal-card.level-half_year,
+  .goal-card.level-monthly,
+  .goal-card.level-weekly,
+  .goal-card.level-daily{margin-left:0}
+}
+@media(max-width:560px){
+  .phase-roadmap{grid-template-columns:1fr}
+  .goal-horizon-summary{grid-template-columns:1fr 1fr}
+  .goals-filters{grid-template-columns:1fr}
+}
+
 /* PLACEHOLDER PAGES */
 .placeholder{
   padding:38px;
@@ -1627,7 +1923,6 @@ textarea{resize:vertical;min-height:90px}
 
       <button class="nav-btn" data-page="goals">
         <span class="nav-icon">⚑</span> Goals
-        <span class="nav-coming">Soon</span>
       </button>
 
       <button class="nav-btn" data-page="settings">
@@ -2827,10 +3122,105 @@ textarea{resize:vertical;min-height:90px}
     </section>
 
 
+
     <section class="page" id="page-goals">
-      <header class="page-head"><div><h1>Goals</h1><p>Trading phases, targets and weekly execution objectives.</p></div></header>
-      <section class="panel placeholder"><h2>Goals module</h2><p>This will hold your trading phases, measurable targets and progress scoreboards.</p></section>
+      <header class="page-head">
+        <div>
+          <h1>Goals</h1>
+          <p>Build daily behaviour into weekly, monthly, half-year and yearly achievement while progressing through your four trading phases.</p>
+        </div>
+        <div class="top-actions">
+          <button class="btn" id="goalsRefreshBtn">Refresh</button>
+          <button class="btn primary" id="newGoalBtn">+ New Goal</button>
+        </div>
+      </header>
+
+      <section class="phase-roadmap" id="phaseRoadmap"></section>
+
+      <section class="goal-horizon-summary">
+        <div class="horizon-card">
+          <span>Daily</span>
+          <strong id="dailyGoalProgress">—</strong>
+        </div>
+        <div class="horizon-card">
+          <span>Weekly</span>
+          <strong id="weeklyGoalProgress">—</strong>
+        </div>
+        <div class="horizon-card">
+          <span>Monthly</span>
+          <strong id="monthlyGoalProgress">—</strong>
+        </div>
+        <div class="horizon-card">
+          <span>6-Month</span>
+          <strong id="halfYearGoalProgress">—</strong>
+        </div>
+        <div class="horizon-card">
+          <span>Yearly</span>
+          <strong id="yearlyGoalProgress">—</strong>
+        </div>
+      </section>
+
+      <div class="goal-cascade">
+        <div class="goal-cascade-flow">
+          <span class="goal-cascade-node">Daily actions</span>
+          <span class="goal-cascade-arrow">→</span>
+          <span class="goal-cascade-node">Weekly goals</span>
+          <span class="goal-cascade-arrow">→</span>
+          <span class="goal-cascade-node">Monthly goals</span>
+          <span class="goal-cascade-arrow">→</span>
+          <span class="goal-cascade-node">6-month goals</span>
+          <span class="goal-cascade-arrow">→</span>
+          <span class="goal-cascade-node">Yearly goals</span>
+        </div>
+      </div>
+
+      <div class="goals-layout">
+        <section class="panel goals-panel">
+          <div class="goals-panel-head">
+            <h3>Goal System</h3>
+            <span class="pager-text" id="goalCountText">0 goals</span>
+          </div>
+
+          <div class="goals-filters">
+            <input type="text" id="goalSearch" placeholder="Search goals">
+            <select id="goalPhaseFilter">
+              <option value="">All phases</option>
+            </select>
+            <select id="goalLevelFilter">
+              <option value="">All horizons</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="half_year">6-Month</option>
+              <option value="yearly">Yearly</option>
+            </select>
+            <select id="goalStatusFilter">
+              <option value="">All status</option>
+              <option value="not_started">Not started</option>
+              <option value="in_progress">In progress</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+
+          <div class="goal-tree" id="goalTree">
+            <div class="empty-state">No goals created yet.</div>
+          </div>
+        </section>
+
+        <aside class="panel goal-activity">
+          <h3>Progress Activity</h3>
+
+          <div class="psych-note" style="margin-bottom:12px">
+            Parent progress is calculated from its child goals. This keeps your system aligned with the principle that daily execution produces weekly results, which produce monthly and long-term achievement.
+          </div>
+
+          <div id="goalActivityList">
+            <div class="empty-state">No progress activity yet.</div>
+          </div>
+        </aside>
+      </div>
     </section>
+
 
     <section class="page" id="page-settings">
       <header class="page-head"><div><h1>Settings</h1><p>Account and application preferences.</p></div></header>
@@ -2941,6 +3331,85 @@ textarea{resize:vertical;min-height:90px}
   </div>
 </div>
 
+
+<!-- GOAL MODAL -->
+<div class="modal" id="goalModal">
+  <div class="modal-card goal-modal-card">
+    <div class="modal-head">
+      <h2 id="goalModalTitle">New Goal</h2>
+      <button class="close" id="closeGoalModal">×</button>
+    </div>
+
+    <form id="goalForm" class="trade-form">
+      <div class="form-grid">
+        <div class="field full">
+          <label>Goal</label>
+          <input type="text" id="goalTitle" required placeholder="e.g. Execute every valid setup without timing errors">
+        </div>
+
+        <div class="field">
+          <label>Phase</label>
+          <select id="goalPhase"></select>
+        </div>
+
+        <div class="field">
+          <label>Horizon</label>
+          <select id="goalLevel" required>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+            <option value="half_year">6-Month</option>
+            <option value="yearly">Yearly</option>
+          </select>
+        </div>
+
+        <div class="field full">
+          <label>Parent Goal</label>
+          <select id="goalParent">
+            <option value="">None</option>
+          </select>
+          <div class="parent-hint" id="goalParentHint">
+            Daily goals can contribute to weekly goals; weekly to monthly; monthly to 6-month; 6-month to yearly.
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Start Date</label>
+          <input type="date" id="goalStartDate">
+        </div>
+
+        <div class="field">
+          <label>Target Date</label>
+          <input type="date" id="goalEndDate">
+        </div>
+
+        <div class="field full">
+          <label>Success Criteria</label>
+          <textarea id="goalSuccessCriteria" placeholder="What evidence will prove this goal has actually been achieved?"></textarea>
+        </div>
+
+        <div class="field full">
+          <label>Description / Reason</label>
+          <textarea id="goalDescription" placeholder="Why does this goal matter and how does it support the phase objective?"></textarea>
+        </div>
+
+        <div class="field full">
+          <label>Manual Progress — used when the goal has no child goals</label>
+          <div class="goal-progress-control">
+            <input type="range" id="goalProgress" min="0" max="100" step="5" value="0">
+            <output id="goalProgressOutput">0%</output>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn" id="cancelGoalBtn">Cancel</button>
+        <button type="submit" class="btn primary" id="saveGoalBtn">Save Goal</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div class="status-bar" id="statusBar"></div>
 
 <script>
@@ -2983,6 +3452,12 @@ let equityChartInstance = null;
 let executionReviews = [];
 let executionChecks = [];
 let selectedExecutionTradeId = null;
+
+let tradingPhases = [];
+let goals = [];
+let goalLinks = [];
+let goalProgressLogs = [];
+let editingGoalId = null;
 
 let viewDate = new Date();
 let editingTradeId = null;
@@ -3093,6 +3568,12 @@ async function initializeSupabase(){
       executionChecks = [];
       selectedExecutionTradeId = null;
 
+      tradingPhases = [];
+      goals = [];
+      goalLinks = [];
+      goalProgressLogs = [];
+      editingGoalId = null;
+
       setLoggedInUI(false);
     }
   });
@@ -3136,6 +3617,8 @@ async function enterApp(user){
   await loadPsychologyData();
   await loadEdgeData();
   await loadExecutionData();
+  await ensureDefaultTradingPhases();
+  await loadGoalsData();
   renderAll();
   showStatus('Journal loaded');
 }
@@ -3322,6 +3805,123 @@ async function loadExecutionData(){
   }
 }
 
+
+async function ensureDefaultTradingPhases(){
+  const {data,error}=await db
+    .from('trading_phases')
+    .select('*')
+    .eq('user_id',currentUser.id)
+    .order('phase_number',{ascending:true});
+
+  if(error){
+    console.error(error);
+    showStatus('Could not load trading phases',4000);
+    return;
+  }
+
+  if(data && data.length){
+    tradingPhases=data;
+    return;
+  }
+
+  const defaultPhases=[
+    {
+      user_id:currentUser.id,
+      phase_number:1,
+      name:'Perfect Execution',
+      objective:'Learn to execute the trading process perfectly even before the edge is consistently profitable.',
+      success_criteria:'Demonstrate repeatable, rule-based execution over a meaningful sample without allowing recent P&L to distort behaviour.',
+      status:'active',
+      started_at:new Date().toISOString()
+    },
+    {
+      user_id:currentUser.id,
+      phase_number:2,
+      name:'Winning System',
+      objective:'Develop and implement a positive-expectancy trading system while maintaining the execution standard built in Phase 1.',
+      success_criteria:'Show evidence of positive expectancy over a meaningful sample while execution quality remains consistently high.',
+      status:'locked'
+    },
+    {
+      user_id:currentUser.id,
+      phase_number:3,
+      name:'Awareness & Adaptability',
+      objective:'Increase awareness and learn to adapt when market conditions, structure or the effectiveness of the edge changes.',
+      success_criteria:'Recognize meaningful regime changes and make evidence-based technical or psychological adjustments without abandoning risk discipline.',
+      status:'locked'
+    },
+    {
+      user_id:currentUser.id,
+      phase_number:4,
+      name:'Profit Accumulation',
+      objective:'Accumulate and compound profits while preserving the execution, edge and adaptability developed in the earlier phases.',
+      success_criteria:'Grow capital according to predefined risk and drawdown limits without degrading execution quality.',
+      status:'locked'
+    }
+  ];
+
+  const {data:created,error:createError}=await db
+    .from('trading_phases')
+    .insert(defaultPhases)
+    .select();
+
+  if(createError){
+    console.error(createError);
+    showStatus('Could not create default phases',4000);
+    return;
+  }
+
+  tradingPhases=(created||[]).sort(
+    (a,b)=>a.phase_number-b.phase_number
+  );
+}
+
+async function loadGoalsData(){
+  const [phasesRes,goalsRes,linksRes,logsRes]=await Promise.all([
+    db
+      .from('trading_phases')
+      .select('*')
+      .eq('user_id',currentUser.id)
+      .order('phase_number',{ascending:true}),
+
+    db
+      .from('goals')
+      .select('*')
+      .eq('user_id',currentUser.id)
+      .order('created_at',{ascending:false}),
+
+    db
+      .from('goal_links')
+      .select('*')
+      .eq('user_id',currentUser.id),
+
+    db
+      .from('goal_progress_logs')
+      .select('*')
+      .eq('user_id',currentUser.id)
+      .order('logged_at',{ascending:false})
+      .limit(100)
+  ]);
+
+  const error=
+    phasesRes.error ||
+    goalsRes.error ||
+    linksRes.error ||
+    logsRes.error;
+
+  if(error){
+    console.error(error);
+    showStatus('Could not load goals',4000);
+    return;
+  }
+
+  tradingPhases=phasesRes.data||[];
+  goals=goalsRes.data||[];
+  goalLinks=linksRes.data||[];
+  goalProgressLogs=logsRes.data||[];
+}
+
+
 /* =========================
    NAVIGATION
 ========================= */
@@ -3354,6 +3954,10 @@ function navigate(page){
 
   if(page==='execution'){
     renderExecution();
+  }
+
+  if(page==='goals'){
+    renderGoals();
   }
 
   closeSidebarMobile();
@@ -3924,6 +4528,8 @@ async function deleteTrade(trade, dayToRefresh=null){
   await loadTrades();
   await loadEdgeData();
   await loadExecutionData();
+  await ensureDefaultTradingPhases();
+  await loadGoalsData();
   renderAll();
 
   if(dayToRefresh){
@@ -4082,6 +4688,964 @@ $('#nextMonth').addEventListener('click',()=>{
 
 
 
+
+
+
+/* =========================
+   GOALS + 4-PHASE SYSTEM
+========================= */
+
+const GOAL_LEVEL_ORDER={
+  daily:1,
+  weekly:2,
+  monthly:3,
+  half_year:4,
+  yearly:5
+};
+
+const GOAL_LEVEL_LABELS={
+  daily:'Daily',
+  weekly:'Weekly',
+  monthly:'Monthly',
+  half_year:'6-Month',
+  yearly:'Yearly'
+};
+
+const GOAL_PARENT_LEVEL={
+  daily:'weekly',
+  weekly:'monthly',
+  monthly:'half_year',
+  half_year:'yearly',
+  yearly:null
+};
+
+function phaseForGoal(goal){
+  return tradingPhases.find(p=>p.id===goal.phase_id)||null;
+}
+
+function childIdsForGoal(goalId){
+  return goalLinks
+    .filter(link=>link.parent_goal_id===goalId)
+    .map(link=>link.child_goal_id);
+}
+
+function parentIdForGoal(goalId){
+  return goalLinks.find(
+    link=>link.child_goal_id===goalId
+  )?.parent_goal_id || null;
+}
+
+function effectiveGoalProgress(goalId,visited=new Set()){
+  if(visited.has(goalId)){
+    return 0;
+  }
+
+  visited.add(goalId);
+
+  const goal=goals.find(g=>g.id===goalId);
+  if(!goal){
+    return 0;
+  }
+
+  const childIds=childIdsForGoal(goalId);
+
+  if(!childIds.length){
+    return Math.max(
+      0,
+      Math.min(100,Number(goal.manual_progress)||0)
+    );
+  }
+
+  const childProgress=childIds.map(
+    childId=>effectiveGoalProgress(
+      childId,
+      new Set(visited)
+    )
+  );
+
+  return childProgress.length
+    ? childProgress.reduce((a,b)=>a+b,0)/childProgress.length
+    : 0;
+}
+
+function effectiveGoalStatus(goal){
+  const progress=effectiveGoalProgress(goal.id);
+
+  if(progress>=100){
+    return 'completed';
+  }
+
+  if(progress>0){
+    return 'in_progress';
+  }
+
+  return goal.status || 'not_started';
+}
+
+function topLevelGoalsForPhase(phaseId){
+  const phaseGoals=goals.filter(g=>g.phase_id===phaseId);
+
+  return phaseGoals.filter(
+    goal=>!parentIdForGoal(goal.id)
+  );
+}
+
+function phaseProgress(phaseId){
+  const topGoals=topLevelGoalsForPhase(phaseId);
+
+  if(!topGoals.length){
+    return 0;
+  }
+
+  return topGoals.reduce(
+    (sum,goal)=>sum+effectiveGoalProgress(goal.id),
+    0
+  )/topGoals.length;
+}
+
+function averageLevelProgress(level){
+  const levelGoals=goals.filter(
+    goal=>goal.goal_level===level
+  );
+
+  if(!levelGoals.length){
+    return null;
+  }
+
+  return levelGoals.reduce(
+    (sum,goal)=>sum+effectiveGoalProgress(goal.id),
+    0
+  )/levelGoals.length;
+}
+
+function renderPhaseRoadmap(){
+  const box=$('#phaseRoadmap');
+
+  if(!tradingPhases.length){
+    box.innerHTML=
+      '<div class="empty-state">No phases available.</div>';
+    return;
+  }
+
+  box.innerHTML='';
+
+  tradingPhases
+    .sort((a,b)=>a.phase_number-b.phase_number)
+    .forEach(phase=>{
+      const progress=phaseProgress(phase.id);
+      const card=document.createElement('div');
+
+      card.className=
+        'phase-card '+
+        (
+          phase.status==='active'
+            ? 'active-phase'
+            : phase.status==='completed'
+              ? 'completed-phase'
+              : 'locked-phase'
+        );
+
+      const statusClass=
+        phase.status==='active'
+          ? 'active'
+          : phase.status==='completed'
+            ? 'completed'
+            : '';
+
+      card.innerHTML=`
+        <div class="phase-card-top">
+          <span class="phase-number">Phase ${phase.phase_number}</span>
+          <span class="phase-status ${statusClass}">${escapeHtml(phase.status)}</span>
+        </div>
+
+        <h3>${escapeHtml(phase.name)}</h3>
+        <p>${escapeHtml(phase.objective)}</p>
+
+        <div class="phase-progress-row">
+          <span>Goal progress</span>
+          <strong>${progress.toFixed(1)}%</strong>
+        </div>
+
+        <div class="progress-track">
+          <div class="progress-fill" style="width:${Math.min(100,progress)}%"></div>
+        </div>
+
+        <div class="phase-actions">
+          ${
+            phase.status==='locked'
+              ? `<button class="btn small activate-phase" data-phase-id="${phase.id}">Set Active</button>`
+              : ''
+          }
+          ${
+            phase.status==='active'
+              ? `<button class="btn small complete-phase" data-phase-id="${phase.id}">Complete Phase</button>`
+              : ''
+          }
+        </div>
+      `;
+
+      box.appendChild(card);
+    });
+
+  $$('.activate-phase').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      activatePhase(btn.dataset.phaseId);
+    });
+  });
+
+  $$('.complete-phase').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      completePhase(btn.dataset.phaseId);
+    });
+  });
+}
+
+async function activatePhase(phaseId){
+  const phase=tradingPhases.find(p=>p.id===phaseId);
+  if(!phase) return;
+
+  if(
+    !confirm(
+      `Set Phase ${phase.phase_number}: ${phase.name} as the active phase?`
+    )
+  ){
+    return;
+  }
+
+  const active=tradingPhases.filter(
+    p=>p.status==='active' && p.id!==phaseId
+  );
+
+  for(const current of active){
+    await db
+      .from('trading_phases')
+      .update({
+        status:'locked',
+        updated_at:new Date().toISOString()
+      })
+      .eq('id',current.id)
+      .eq('user_id',currentUser.id);
+  }
+
+  const {error}=await db
+    .from('trading_phases')
+    .update({
+      status:'active',
+      started_at:phase.started_at || new Date().toISOString(),
+      updated_at:new Date().toISOString()
+    })
+    .eq('id',phaseId)
+    .eq('user_id',currentUser.id);
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  await loadGoalsData();
+  renderGoals();
+  showStatus(`Phase ${phase.phase_number} is now active`);
+}
+
+async function completePhase(phaseId){
+  const phase=tradingPhases.find(p=>p.id===phaseId);
+  if(!phase) return;
+
+  const progress=phaseProgress(phase.id);
+
+  if(
+    !confirm(
+      `Complete Phase ${phase.phase_number}: ${phase.name}? Current linked-goal progress is ${progress.toFixed(1)}%.`
+    )
+  ){
+    return;
+  }
+
+  const {error}=await db
+    .from('trading_phases')
+    .update({
+      status:'completed',
+      completed_at:new Date().toISOString(),
+      updated_at:new Date().toISOString()
+    })
+    .eq('id',phase.id)
+    .eq('user_id',currentUser.id);
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  const next=tradingPhases.find(
+    p=>p.phase_number===phase.phase_number+1
+  );
+
+  if(next){
+    await db
+      .from('trading_phases')
+      .update({
+        status:'active',
+        started_at:next.started_at || new Date().toISOString(),
+        updated_at:new Date().toISOString()
+      })
+      .eq('id',next.id)
+      .eq('user_id',currentUser.id);
+  }
+
+  await loadGoalsData();
+  renderGoals();
+
+  showStatus(
+    next
+      ? `Phase ${phase.phase_number} completed • Phase ${next.phase_number} activated`
+      : 'Final phase completed'
+  );
+}
+
+function renderGoalHorizonSummary(){
+  const mapping=[
+    ['daily','#dailyGoalProgress'],
+    ['weekly','#weeklyGoalProgress'],
+    ['monthly','#monthlyGoalProgress'],
+    ['half_year','#halfYearGoalProgress'],
+    ['yearly','#yearlyGoalProgress']
+  ];
+
+  mapping.forEach(([level,selector])=>{
+    const value=averageLevelProgress(level);
+    $(selector).textContent=
+      value===null ? '—' : value.toFixed(1)+'%';
+  });
+}
+
+function filteredGoals(){
+  const q=$('#goalSearch').value.trim().toLowerCase();
+  const phaseId=$('#goalPhaseFilter').value;
+  const level=$('#goalLevelFilter').value;
+  const status=$('#goalStatusFilter').value;
+
+  return goals.filter(goal=>{
+    if(phaseId && goal.phase_id!==phaseId){
+      return false;
+    }
+
+    if(level && goal.goal_level!==level){
+      return false;
+    }
+
+    if(
+      status &&
+      effectiveGoalStatus(goal)!==status
+    ){
+      return false;
+    }
+
+    if(q){
+      const haystack=[
+        goal.title,
+        goal.description,
+        goal.success_criteria
+      ].join(' ').toLowerCase();
+
+      if(!haystack.includes(q)){
+        return false;
+      }
+    }
+
+    return true;
+  });
+}
+
+function goalSortKey(goal){
+  const phase=phaseForGoal(goal);
+
+  return [
+    phase?.phase_number || 99,
+    -(GOAL_LEVEL_ORDER[goal.goal_level]||0),
+    goal.start_date || '',
+    goal.created_at || ''
+  ];
+}
+
+function compareGoalSort(a,b){
+  const ka=goalSortKey(a);
+  const kb=goalSortKey(b);
+
+  for(let i=0;i<ka.length;i++){
+    if(ka[i]<kb[i]) return -1;
+    if(ka[i]>kb[i]) return 1;
+  }
+
+  return 0;
+}
+
+function renderGoalTree(){
+  const source=filteredGoals().sort(compareGoalSort);
+  const box=$('#goalTree');
+
+  $('#goalCountText').textContent=
+    source.length===1 ? '1 goal' : `${source.length} goals`;
+
+  if(!source.length){
+    box.innerHTML=
+      '<div class="empty-state">No goals match the current filters.</div>';
+    return;
+  }
+
+  box.innerHTML='';
+
+  source.forEach(goal=>{
+    const progress=effectiveGoalProgress(goal.id);
+    const status=effectiveGoalStatus(goal);
+    const phase=phaseForGoal(goal);
+    const childCount=childIdsForGoal(goal.id).length;
+
+    const card=document.createElement('div');
+
+    card.className=
+      `goal-card level-${goal.goal_level}`;
+
+    const dates=
+      goal.start_date || goal.end_date
+        ? `${goal.start_date ? formatDate(goal.start_date) : '—'} → ${goal.end_date ? formatDate(goal.end_date) : '—'}`
+        : 'No dates';
+
+    card.innerHTML=`
+      <div class="goal-card-top">
+        <div>
+          <div class="goal-title">${escapeHtml(goal.title)}</div>
+
+          <div class="goal-meta">
+            <span class="goal-chip">${GOAL_LEVEL_LABELS[goal.goal_level] || goal.goal_level}</span>
+            ${
+              phase
+                ? `<span class="goal-chip phase">Phase ${phase.phase_number}</span>`
+                : ''
+            }
+            <span class="goal-chip">${escapeHtml(status.replace('_',' '))}</span>
+            <span class="goal-chip">${escapeHtml(dates)}</span>
+          </div>
+        </div>
+
+        <div class="goal-actions">
+          <button class="btn small edit-goal" data-goal-id="${goal.id}">Edit</button>
+          <button class="btn small danger delete-goal" data-goal-id="${goal.id}">Delete</button>
+        </div>
+      </div>
+
+      ${
+        goal.success_criteria
+          ? `<div class="goal-notes"><strong>Success:</strong> ${escapeHtml(goal.success_criteria)}</div>`
+          : ''
+      }
+
+      <div class="goal-progress-top">
+        <span>${childCount ? `Derived from ${childCount} child goal${childCount===1?'':'s'}` : 'Manual progress'}</span>
+        <strong>${progress.toFixed(1)}%</strong>
+      </div>
+
+      <div class="progress-track">
+        <div class="progress-fill" style="width:${Math.min(100,progress)}%"></div>
+      </div>
+
+      ${
+        childCount
+          ? `<div class="goal-derived-note">Progress updates automatically from the goals beneath this one.</div>`
+          : `
+            <div class="goal-progress-actions">
+              <button class="btn small goal-add-progress" data-goal-id="${goal.id}" data-add="10">+10%</button>
+              <button class="btn small goal-add-progress" data-goal-id="${goal.id}" data-add="25">+25%</button>
+              <button class="btn small goal-complete" data-goal-id="${goal.id}">Complete</button>
+            </div>
+          `
+      }
+    `;
+
+    box.appendChild(card);
+  });
+
+  $$('.edit-goal').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const goal=goals.find(g=>g.id===btn.dataset.goalId);
+      if(goal) openGoalModal(goal);
+    });
+  });
+
+  $$('.delete-goal').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const goal=goals.find(g=>g.id===btn.dataset.goalId);
+      if(goal) deleteGoal(goal);
+    });
+  });
+
+  $$('.goal-add-progress').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      incrementGoalProgress(
+        btn.dataset.goalId,
+        Number(btn.dataset.add)||0
+      );
+    });
+  });
+
+  $$('.goal-complete').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      setGoalProgress(btn.dataset.goalId,100,'Goal completed');
+    });
+  });
+}
+
+function renderGoalActivity(){
+  const box=$('#goalActivityList');
+
+  if(!goalProgressLogs.length){
+    box.innerHTML=
+      '<div class="empty-state">No progress activity yet.</div>';
+    return;
+  }
+
+  box.innerHTML='';
+
+  goalProgressLogs.slice(0,20).forEach(log=>{
+    const goal=goals.find(g=>g.id===log.goal_id);
+
+    const item=document.createElement('div');
+    item.className='activity-item';
+
+    item.innerHTML=`
+      <strong>${escapeHtml(goal?.title || 'Deleted goal')} → ${Number(log.progress).toFixed(0)}%</strong>
+      <span>
+        ${new Date(log.logged_at).toLocaleString()}
+        ${log.note ? ' • '+escapeHtml(log.note) : ''}
+      </span>
+    `;
+
+    box.appendChild(item);
+  });
+}
+
+function populateGoalPhaseControls(){
+  const filter=$('#goalPhaseFilter');
+  const formSelect=$('#goalPhase');
+
+  const filterCurrent=filter.value;
+  const formCurrent=formSelect.value;
+
+  filter.innerHTML='<option value="">All phases</option>';
+  formSelect.innerHTML='';
+
+  tradingPhases
+    .sort((a,b)=>a.phase_number-b.phase_number)
+    .forEach(phase=>{
+      const label=
+        `Phase ${phase.phase_number} — ${phase.name}`;
+
+      const f=document.createElement('option');
+      f.value=phase.id;
+      f.textContent=label;
+      filter.appendChild(f);
+
+      const g=document.createElement('option');
+      g.value=phase.id;
+      g.textContent=label;
+      formSelect.appendChild(g);
+    });
+
+  if(
+    [...filter.options].some(o=>o.value===filterCurrent)
+  ){
+    filter.value=filterCurrent;
+  }
+
+  if(
+    [...formSelect.options].some(o=>o.value===formCurrent)
+  ){
+    formSelect.value=formCurrent;
+  }else{
+    const active=tradingPhases.find(
+      p=>p.status==='active'
+    );
+
+    if(active){
+      formSelect.value=active.id;
+    }
+  }
+}
+
+function populateGoalParentOptions(
+  level=$('#goalLevel').value,
+  phaseId=$('#goalPhase').value,
+  selectedParentId=null
+){
+  const select=$('#goalParent');
+  select.innerHTML='<option value="">None</option>';
+
+  const requiredParentLevel=GOAL_PARENT_LEVEL[level];
+
+  if(!requiredParentLevel){
+    $('#goalParentHint').textContent=
+      'Yearly goals are top-level goals and do not require a parent.';
+    return;
+  }
+
+  const candidates=goals
+    .filter(goal=>
+      goal.goal_level===requiredParentLevel &&
+      (!phaseId || goal.phase_id===phaseId) &&
+      goal.id!==editingGoalId
+    )
+    .sort((a,b)=>a.title.localeCompare(b.title));
+
+  candidates.forEach(goal=>{
+    const option=document.createElement('option');
+    option.value=goal.id;
+    option.textContent=
+      `${GOAL_LEVEL_LABELS[goal.goal_level]} — ${goal.title}`;
+
+    select.appendChild(option);
+  });
+
+  if(
+    selectedParentId &&
+    [...select.options].some(
+      option=>option.value===selectedParentId
+    )
+  ){
+    select.value=selectedParentId;
+  }
+
+  $('#goalParentHint').textContent=
+    candidates.length
+      ? `${GOAL_LEVEL_LABELS[level]} goals can contribute to a ${GOAL_LEVEL_LABELS[requiredParentLevel]} goal.`
+      : `No ${GOAL_LEVEL_LABELS[requiredParentLevel]} goal exists in this phase yet. You can save without a parent and link it later.`;
+}
+
+function openGoalModal(goal=null){
+  editingGoalId=goal?.id || null;
+
+  populateGoalPhaseControls();
+
+  if(goal){
+    $('#goalModalTitle').textContent='Edit Goal';
+    $('#goalTitle').value=goal.title || '';
+    $('#goalPhase').value=goal.phase_id || '';
+    $('#goalLevel').value=goal.goal_level || 'daily';
+    $('#goalStartDate').value=goal.start_date || '';
+    $('#goalEndDate').value=goal.end_date || '';
+    $('#goalSuccessCriteria').value=goal.success_criteria || '';
+    $('#goalDescription').value=goal.description || '';
+    $('#goalProgress').value=Number(goal.manual_progress)||0;
+    $('#goalProgressOutput').textContent=
+      `${Number(goal.manual_progress||0).toFixed(0)}%`;
+
+    populateGoalParentOptions(
+      goal.goal_level,
+      goal.phase_id,
+      parentIdForGoal(goal.id)
+    );
+  }else{
+    $('#goalModalTitle').textContent='New Goal';
+    $('#goalForm').reset();
+
+    const active=tradingPhases.find(
+      p=>p.status==='active'
+    );
+
+    if(active){
+      $('#goalPhase').value=active.id;
+    }
+
+    $('#goalLevel').value='daily';
+    $('#goalStartDate').value=localDateString(new Date());
+    $('#goalProgress').value=0;
+    $('#goalProgressOutput').textContent='0%';
+
+    populateGoalParentOptions(
+      $('#goalLevel').value,
+      $('#goalPhase').value
+    );
+  }
+
+  $('#goalModal').classList.add('open');
+}
+
+function closeGoalModal(){
+  $('#goalModal').classList.remove('open');
+  editingGoalId=null;
+  $('#goalForm').reset();
+}
+
+$('#goalProgress').addEventListener('input',()=>{
+  $('#goalProgressOutput').textContent=
+    `${Number($('#goalProgress').value).toFixed(0)}%`;
+});
+
+$('#goalLevel').addEventListener('change',()=>{
+  populateGoalParentOptions(
+    $('#goalLevel').value,
+    $('#goalPhase').value
+  );
+});
+
+$('#goalPhase').addEventListener('change',()=>{
+  populateGoalParentOptions(
+    $('#goalLevel').value,
+    $('#goalPhase').value
+  );
+});
+
+$('#newGoalBtn').addEventListener('click',()=>{
+  openGoalModal();
+});
+
+$('#closeGoalModal').addEventListener(
+  'click',
+  closeGoalModal
+);
+
+$('#cancelGoalBtn').addEventListener(
+  'click',
+  closeGoalModal
+);
+
+$('#goalModal').addEventListener('click',e=>{
+  if(e.target.id==='goalModal'){
+    closeGoalModal();
+  }
+});
+
+$('#goalForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+
+  const level=$('#goalLevel').value;
+  const progress=Math.max(
+    0,
+    Math.min(100,Number($('#goalProgress').value)||0)
+  );
+
+  const payload={
+    user_id:currentUser.id,
+    phase_id:$('#goalPhase').value || null,
+    goal_level:level,
+    title:$('#goalTitle').value.trim(),
+    description:
+      $('#goalDescription').value.trim() || null,
+    success_criteria:
+      $('#goalSuccessCriteria').value.trim() || null,
+    start_date:$('#goalStartDate').value || null,
+    end_date:$('#goalEndDate').value || null,
+    manual_progress:progress,
+    status:
+      progress>=100
+        ? 'completed'
+        : progress>0
+          ? 'in_progress'
+          : 'not_started',
+    updated_at:new Date().toISOString()
+  };
+
+  $('#saveGoalBtn').disabled=true;
+
+  let goalResult;
+
+  if(editingGoalId){
+    goalResult=await db
+      .from('goals')
+      .update(payload)
+      .eq('id',editingGoalId)
+      .eq('user_id',currentUser.id)
+      .select()
+      .single();
+  }else{
+    goalResult=await db
+      .from('goals')
+      .insert(payload)
+      .select()
+      .single();
+  }
+
+  if(goalResult.error){
+    $('#saveGoalBtn').disabled=false;
+    alert(goalResult.error.message);
+    return;
+  }
+
+  const savedGoal=goalResult.data;
+
+  await db
+    .from('goal_links')
+    .delete()
+    .eq('child_goal_id',savedGoal.id)
+    .eq('user_id',currentUser.id);
+
+  const parentId=$('#goalParent').value;
+
+  if(parentId){
+    const {error:linkError}=await db
+      .from('goal_links')
+      .insert({
+        user_id:currentUser.id,
+        parent_goal_id:parentId,
+        child_goal_id:savedGoal.id
+      });
+
+    if(linkError){
+      $('#saveGoalBtn').disabled=false;
+      alert(linkError.message);
+      return;
+    }
+  }
+
+  if(
+    !editingGoalId ||
+    Number(savedGoal.manual_progress)!==progress
+  ){
+    await db
+      .from('goal_progress_logs')
+      .insert({
+        user_id:currentUser.id,
+        goal_id:savedGoal.id,
+        progress,
+        note:editingGoalId
+          ? 'Goal updated'
+          : 'Goal created'
+      });
+  }
+
+  $('#saveGoalBtn').disabled=false;
+
+  await loadGoalsData();
+  closeGoalModal();
+  renderGoals();
+
+  showStatus('Goal saved');
+});
+
+async function setGoalProgress(
+  goalId,
+  progress,
+  note='Progress updated'
+){
+  const goal=goals.find(g=>g.id===goalId);
+
+  if(!goal){
+    return;
+  }
+
+  if(childIdsForGoal(goalId).length){
+    alert(
+      'This goal has child goals, so its progress is calculated automatically from them.'
+    );
+    return;
+  }
+
+  const value=Math.max(
+    0,
+    Math.min(100,Number(progress)||0)
+  );
+
+  const {error}=await db
+    .from('goals')
+    .update({
+      manual_progress:value,
+      status:
+        value>=100
+          ? 'completed'
+          : value>0
+            ? 'in_progress'
+            : 'not_started',
+      updated_at:new Date().toISOString()
+    })
+    .eq('id',goalId)
+    .eq('user_id',currentUser.id);
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  await db
+    .from('goal_progress_logs')
+    .insert({
+      user_id:currentUser.id,
+      goal_id:goalId,
+      progress:value,
+      note
+    });
+
+  await loadGoalsData();
+  renderGoals();
+
+  showStatus(`${goal.title} → ${value.toFixed(0)}%`);
+}
+
+function incrementGoalProgress(goalId,amount){
+  const goal=goals.find(g=>g.id===goalId);
+
+  if(!goal){
+    return;
+  }
+
+  setGoalProgress(
+    goalId,
+    (Number(goal.manual_progress)||0)+amount,
+    `Progress increased by ${amount}%`
+  );
+}
+
+async function deleteGoal(goal){
+  if(
+    !confirm(
+      `Delete "${goal.title}"? Any child links and progress history attached to this goal will also be removed.`
+    )
+  ){
+    return;
+  }
+
+  const {error}=await db
+    .from('goals')
+    .delete()
+    .eq('id',goal.id)
+    .eq('user_id',currentUser.id);
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  await loadGoalsData();
+  renderGoals();
+
+  showStatus('Goal deleted');
+}
+
+function renderGoals(){
+  populateGoalPhaseControls();
+  renderPhaseRoadmap();
+  renderGoalHorizonSummary();
+  renderGoalTree();
+  renderGoalActivity();
+}
+
+[
+  '#goalSearch',
+  '#goalPhaseFilter',
+  '#goalLevelFilter',
+  '#goalStatusFilter'
+].forEach(selector=>{
+  $(selector).addEventListener(
+    selector==='#goalSearch' ? 'input' : 'change',
+    renderGoalTree
+  );
+});
+
+$('#goalsRefreshBtn').addEventListener(
+  'click',
+  async()=>{
+    await loadGoalsData();
+    renderGoals();
+    showStatus('Goals refreshed');
+  }
+);
 
 
 /* =========================
@@ -6170,6 +7734,7 @@ function renderAll(){
   renderEdgePlaybook();
   renderExecution();
   renderStatistics();
+  renderGoals();
 }
 
 initializeSupabase();
