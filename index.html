@@ -2546,6 +2546,223 @@ input:focus,select:focus,textarea:focus{border-color:#5275a7}
   }
 }
 
+
+/* =========================================================
+   ACCOUNT SWITCHER + DERIV MT5 CONNECTIONS
+========================================================= */
+.account-switcher{
+  margin:12px 0 8px;
+  padding:10px;
+  border:1px solid #1d2938;
+  background:#0b1119;
+  border-radius:12px;
+}
+.account-switcher label{
+  display:block;
+  color:#74869b;
+  font-size:8px;
+  text-transform:uppercase;
+  letter-spacing:.6px;
+  margin-bottom:5px;
+}
+.account-switcher select{
+  width:100%;
+  font-size:9px;
+  padding:7px 8px;
+}
+.account-switcher-status{
+  margin-top:5px;
+  color:#7e90a6;
+  font-size:8px;
+}
+.settings-connection-grid{
+  display:grid;
+  grid-template-columns:1.1fr .9fr;
+  gap:14px;
+  margin-bottom:14px;
+}
+.connection-panel{
+  padding:15px;
+  margin-bottom:14px;
+}
+.settings-connection-grid .connection-panel{
+  margin-bottom:0;
+}
+.connection-panel-head{
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  align-items:flex-start;
+  margin-bottom:12px;
+}
+.connection-panel-head h3{
+  margin:0;
+  font-size:14px;
+}
+.connection-panel-head p{
+  margin:4px 0 0;
+  color:var(--muted);
+  font-size:9px;
+  line-height:1.5;
+}
+.connection-security{
+  border:1px solid #24533d;
+  background:#0d2218;
+  color:#6cdda4;
+  border-radius:999px;
+  padding:5px 8px;
+  font-size:8px;
+  white-space:nowrap;
+}
+.connection-note,
+.connection-warning{
+  margin-top:10px;
+  border:1px solid #27374b;
+  background:#0c1621;
+  border-radius:10px;
+  padding:9px 10px;
+  color:#9aacbf;
+  font-size:9px;
+  line-height:1.55;
+}
+.connection-warning{
+  border-color:#5b4521;
+  background:#21190b;
+  color:#d9b36a;
+  margin-bottom:12px;
+}
+.live-account-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:8px;
+}
+.live-account-card{
+  border:1px solid #223044;
+  background:#0b1119;
+  border-radius:11px;
+  padding:10px;
+}
+.live-account-card span{
+  display:block;
+  color:#7f8fa3;
+  font-size:8px;
+}
+.live-account-card strong{
+  display:block;
+  margin-top:4px;
+  font-size:12px;
+}
+.connection-list{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+.connection-card{
+  border:1px solid #213044;
+  background:#0b1119;
+  border-radius:13px;
+  padding:11px;
+}
+.connection-card.current{
+  border-color:#517fb7;
+  box-shadow:inset 0 0 0 1px #2a4f78;
+}
+.connection-card-head{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:flex-start;
+}
+.connection-card h4{
+  margin:0;
+  font-size:11px;
+}
+.connection-badge{
+  border:1px solid #2c3b50;
+  border-radius:999px;
+  padding:3px 6px;
+  font-size:8px;
+  text-transform:uppercase;
+  letter-spacing:.45px;
+}
+.connection-badge.demo{
+  color:#9dc8ff;
+  border-color:#2d527e;
+  background:#0d1928;
+}
+.connection-badge.real{
+  color:#68dda3;
+  border-color:#275c43;
+  background:#0d2218;
+}
+.connection-badge.manual{
+  color:#aeb9c7;
+}
+.connection-meta{
+  margin-top:8px;
+  display:grid;
+  gap:4px;
+  color:#8392a5;
+  font-size:8px;
+}
+.connection-card-actions{
+  display:flex;
+  gap:6px;
+  margin-top:9px;
+  flex-wrap:wrap;
+}
+.bridge-flow{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  flex-wrap:wrap;
+  margin:8px 0 0;
+}
+.bridge-flow span{
+  border:1px solid #2a3a4f;
+  background:#0d1621;
+  border-radius:9px;
+  padding:7px 9px;
+  font-size:9px;
+}
+.bridge-flow b{
+  color:#72849b;
+}
+.mt5-credentials-card{
+  width:min(720px,100%);
+}
+.credential-row{
+  margin:10px 0;
+}
+.credential-row label{
+  display:block;
+  color:#8293a8;
+  font-size:9px;
+  margin-bottom:5px;
+}
+.credential-copy-row{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:7px;
+}
+.credential-copy-row input{
+  min-width:0;
+  font-family:monospace;
+  font-size:9px;
+}
+.status-connected{color:var(--green)}
+.status-pending{color:var(--amber)}
+.status-offline,.status-error{color:var(--red)}
+@media(max-width:1150px){
+  .settings-connection-grid{grid-template-columns:1fr}
+  .connection-list{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:700px){
+  .connection-list{grid-template-columns:1fr}
+  .live-account-grid{grid-template-columns:1fr 1fr}
+}
+
 /* PLACEHOLDER PAGES */
 .placeholder{
   padding:38px;
@@ -2734,6 +2951,14 @@ textarea{resize:vertical;min-height:90px}
       </div>
     </div>
 
+    <div class="account-switcher">
+      <label>Trading Account</label>
+      <select id="activeAccountSelect">
+        <option>Loading...</option>
+      </select>
+      <div class="account-switcher-status" id="accountSwitcherStatus">—</div>
+    </div>
+
     <nav class="nav">
       <button class="nav-btn active" data-page="dashboard">
         <span class="nav-icon">▣</span> Dashboard
@@ -2765,7 +2990,6 @@ textarea{resize:vertical;min-height:90px}
 
       <button class="nav-btn" data-page="settings">
         <span class="nav-icon">⚙</span> Settings
-        <span class="nav-coming">Soon</span>
       </button>
     </nav>
 
@@ -4394,8 +4618,138 @@ textarea{resize:vertical;min-height:90px}
 
 
     <section class="page" id="page-settings">
-      <header class="page-head"><div><h1>Settings</h1><p>Account and application preferences.</p></div></header>
-      <section class="panel placeholder"><h2>Settings module</h2><p>Currency, account preferences and other application settings will be moved here later.</p></section>
+      <header class="page-head">
+        <div>
+          <h1>Settings & Connections</h1>
+          <p>Manage Traders Environment accounts and securely link Deriv MetaTrader 5 demo or real accounts.</p>
+        </div>
+        <div class="top-actions">
+          <button class="btn" id="refreshConnectionsBtn">Refresh</button>
+        </div>
+      </header>
+
+      <section class="settings-connection-grid">
+        <div class="panel connection-panel">
+          <div class="connection-panel-head">
+            <div>
+              <h3>Link Deriv MT5</h3>
+              <p>Create a read-only bridge connection. TE never needs your MT5 password.</p>
+            </div>
+            <span class="connection-security">Read-only</span>
+          </div>
+
+          <form id="mt5ConnectionForm">
+            <div class="form-grid">
+              <div class="field">
+                <label>Account Name</label>
+                <input id="mt5AccountName" required placeholder="e.g. Deriv Demo 1">
+              </div>
+
+              <div class="field">
+                <label>Account Type</label>
+                <select id="mt5AccountType">
+                  <option value="demo">Demo</option>
+                  <option value="real">Real</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label>MT5 Login</label>
+                <input id="mt5Login" inputmode="numeric" required placeholder="MT5 account number">
+              </div>
+
+              <div class="field">
+                <label>MT5 Server</label>
+                <input id="mt5Server" placeholder="Optional — detected by the EA">
+              </div>
+            </div>
+
+            <div class="connection-note">
+              The MT5 account itself verifies whether it is <strong>Demo</strong> or <strong>Real</strong>.
+              If the type selected here does not match MT5, the bridge rejects the sync.
+            </div>
+
+            <div class="form-actions">
+              <button class="btn primary" id="createMt5ConnectionBtn" type="submit">Create MT5 Link</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel connection-panel">
+          <div class="connection-panel-head">
+            <div>
+              <h3>Active Account</h3>
+              <p>The rest of TE uses the account selected in the sidebar.</p>
+            </div>
+          </div>
+
+          <div class="live-account-grid">
+            <div class="live-account-card">
+              <span>Status</span>
+              <strong id="settingsLiveStatus">—</strong>
+            </div>
+            <div class="live-account-card">
+              <span>Balance</span>
+              <strong id="settingsLiveBalance">—</strong>
+            </div>
+            <div class="live-account-card">
+              <span>Equity</span>
+              <strong id="settingsLiveEquity">—</strong>
+            </div>
+            <div class="live-account-card">
+              <span>Floating P&L</span>
+              <strong id="settingsFloatingPnl">—</strong>
+            </div>
+            <div class="live-account-card">
+              <span>Open Positions</span>
+              <strong id="settingsOpenPositions">—</strong>
+            </div>
+            <div class="live-account-card">
+              <span>Last Sync</span>
+              <strong id="settingsLastSync">—</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel connection-panel">
+        <div class="connection-panel-head">
+          <div>
+            <h3>TE Accounts</h3>
+            <p>Demo and real accounts are kept separate. Switching account changes the Journal, Statistics, Edge, Execution and dashboard data in view.</p>
+          </div>
+        </div>
+
+        <div class="connection-list" id="mt5ConnectionsList">
+          <div class="empty-state">No linked MT5 accounts yet.</div>
+        </div>
+      </section>
+
+      <section class="panel connection-panel">
+        <div class="connection-panel-head">
+          <div>
+            <h3>How the Sync Works</h3>
+            <p>MT5 sends account state, positions and deal history to a secure Supabase Edge Function.</p>
+          </div>
+        </div>
+
+        <div class="bridge-flow">
+          <span>Deriv MT5</span>
+          <b>→</b>
+          <span>TE Bridge EA</span>
+          <b>→</b>
+          <span>Supabase Edge Function</span>
+          <b>→</b>
+          <span>TE Database</span>
+          <b>→</b>
+          <span>Realtime UI</span>
+        </div>
+
+        <div class="connection-note">
+          The bridge contains no order placement, position modification, or close-trade commands.
+          It is designed only to read MT5 account/trade information and send it to Traders Environment.
+        </div>
+      </section>
     </section>
 
   </main>
@@ -4625,6 +4979,54 @@ textarea{resize:vertical;min-height:90px}
   </div>
 </div>
 
+
+<!-- MT5 BRIDGE CREDENTIALS MODAL -->
+<div class="modal" id="mt5CredentialsModal">
+  <div class="modal-card mt5-credentials-card">
+    <div class="modal-head">
+      <h2>MT5 Bridge Credentials</h2>
+      <button class="close" id="closeMt5Credentials">×</button>
+    </div>
+
+    <div class="connection-warning">
+      Save the Bridge Key now. TE stores only its SHA-256 hash, so this raw key is not recoverable later.
+      If you lose it, generate a new key from Settings.
+    </div>
+
+    <div class="credential-row">
+      <label>Supabase Function URL</label>
+      <div class="credential-copy-row">
+        <input id="mt5FunctionUrl" readonly>
+        <button class="btn small" type="button" data-copy-target="mt5FunctionUrl">Copy</button>
+      </div>
+    </div>
+
+    <div class="credential-row">
+      <label>TE Connection ID</label>
+      <div class="credential-copy-row">
+        <input id="mt5ConnectionIdOut" readonly>
+        <button class="btn small" type="button" data-copy-target="mt5ConnectionIdOut">Copy</button>
+      </div>
+    </div>
+
+    <div class="credential-row">
+      <label>Bridge Key</label>
+      <div class="credential-copy-row">
+        <input id="mt5BridgeKeyOut" readonly>
+        <button class="btn small" type="button" data-copy-target="mt5BridgeKeyOut">Copy</button>
+      </div>
+    </div>
+
+    <div class="connection-note">
+      Put these three values into <strong>TradersEnvironmentBridge.mq5</strong> when attaching it to the matching Deriv MT5 account.
+    </div>
+
+    <div class="form-actions">
+      <button class="btn primary" type="button" id="doneMt5Credentials">I Saved Them</button>
+    </div>
+  </div>
+</div>
+
 <div class="status-bar" id="statusBar"></div>
 
 <script>
@@ -4650,7 +5052,9 @@ const isConfigured =
 
 let db = null;
 let currentUser = null;
+let tradingAccounts = [];
 let tradingAccount = null;
+let mt5RealtimeChannel = null;
 let trades = [];
 let psychologySessions = [];
 let identityScores = [];
@@ -4771,6 +5175,13 @@ async function initializeSupabase(){
   db.auth.onAuthStateChange(async (event)=>{
     if(event === 'SIGNED_OUT'){
       currentUser = null;
+
+      if(mt5RealtimeChannel && db){
+        db.removeChannel(mt5RealtimeChannel);
+        mt5RealtimeChannel=null;
+      }
+
+      tradingAccounts = [];
       tradingAccount = null;
       trades = [];
       psychologySessions = [];
@@ -4846,6 +5257,8 @@ async function enterApp(user){
   await loadGoalsData();
   await syncPhase1AutomaticStatus();
   renderAll();
+  renderSettings();
+  subscribeToMt5Realtime();
   showStatus('Journal loaded');
 }
 
@@ -4854,40 +5267,29 @@ async function ensureTradingAccount(){
     .from('trading_accounts')
     .select('*')
     .eq('user_id', currentUser.id)
-    .order('created_at', {ascending:true})
-    .limit(1);
+    .order('created_at', {ascending:true});
 
   if(error){
     console.error(error);
-    showStatus('Could not load trading account',4000);
+    showStatus('Could not load trading accounts',4000);
     return;
   }
 
-  if(data && data.length){
-    tradingAccount=data[0];
+  tradingAccounts=data || [];
 
-    // Keep this journal account in USD.
-    if(tradingAccount.currency !== 'USD'){
-      const { data:updatedAccount, error:currencyError } = await db
-        .from('trading_accounts')
-        .update({currency:'USD'})
-        .eq('id', tradingAccount.id)
-        .eq('user_id', currentUser.id)
-        .select()
-        .single();
-
-      if(!currencyError && updatedAccount){
-        tradingAccount=updatedAccount;
-      }
-    }
-  }else{
+  if(!tradingAccounts.length){
     const { data:newAccount, error:createError } = await db
       .from('trading_accounts')
       .insert({
         user_id:currentUser.id,
-        account_name:'Main Account',
+        account_name:'Manual Account',
         starting_balance:0,
-        currency:'USD'
+        currency:'USD',
+        broker:'Manual',
+        platform:'Manual',
+        account_type:'manual',
+        bridge_enabled:false,
+        connection_status:'manual'
       })
       .select()
       .single();
@@ -4898,17 +5300,39 @@ async function ensureTradingAccount(){
       return;
     }
 
-    tradingAccount=newAccount;
+    tradingAccounts=[newAccount];
   }
 
-  $('#startingBalance').value=Number(tradingAccount?.starting_balance || 0);
+  const savedId=
+    localStorage.getItem(`te_active_account_${currentUser.id}`);
+
+  tradingAccount=
+    tradingAccounts.find(a=>a.id===savedId) ||
+    tradingAccounts[0];
+
+  localStorage.setItem(
+    `te_active_account_${currentUser.id}`,
+    tradingAccount.id
+  );
+
+  $('#startingBalance').value=
+    Number(tradingAccount?.starting_balance || 0);
+
+  renderAccountSelector();
 }
 
 async function loadTrades(){
+  if(!tradingAccount){
+    trades=[];
+    return;
+  }
+
   const { data, error } = await db
     .from('trades')
     .select('*')
     .eq('user_id', currentUser.id)
+    .eq('account_id', tradingAccount.id)
+    .eq('position_status', 'closed')
     .order('trade_date', {ascending:false})
     .order('created_at', {ascending:false});
 
@@ -5314,6 +5738,535 @@ async function loadGoalsData(){
 }
 
 
+
+/* =========================
+   TRADING ACCOUNTS + MT5 LINK
+========================= */
+
+function connectionStatusClass(status){
+  if(status==='connected') return 'status-connected';
+  if(status==='pending') return 'status-pending';
+  if(status==='offline') return 'status-offline';
+  if(status==='error') return 'status-error';
+  return '';
+}
+
+function accountDisplayName(account){
+  const type=(account.account_type||'manual').toUpperCase();
+
+  if(account.account_type==='manual'){
+    return account.account_name || 'Manual Account';
+  }
+
+  return `${account.account_name || 'Deriv MT5'} • ${type}`;
+}
+
+function renderAccountSelector(){
+  const select=$('#activeAccountSelect');
+  if(!select) return;
+
+  const previous=tradingAccount?.id || '';
+  select.innerHTML='';
+
+  tradingAccounts.forEach(account=>{
+    const option=document.createElement('option');
+    option.value=account.id;
+    option.textContent=accountDisplayName(account);
+    select.appendChild(option);
+  });
+
+  if(
+    previous &&
+    [...select.options].some(o=>o.value===previous)
+  ){
+    select.value=previous;
+  }
+
+  const status=$('#accountSwitcherStatus');
+
+  if(tradingAccount?.account_type==='manual'){
+    status.textContent='Manual journal account';
+  }else{
+    status.textContent=
+      `${tradingAccount?.connection_status || 'pending'} • ${tradingAccount?.mt5_server || 'server not detected yet'}`;
+  }
+}
+
+async function switchTradingAccount(accountId){
+  const next=tradingAccounts.find(a=>a.id===accountId);
+  if(!next || next.id===tradingAccount?.id) return;
+
+  tradingAccount=next;
+
+  localStorage.setItem(
+    `te_active_account_${currentUser.id}`,
+    next.id
+  );
+
+  $('#startingBalance').value=
+    Number(tradingAccount.starting_balance || 0);
+
+  await loadTrades();
+  await loadEdgeData();
+  await loadExecutionData();
+  await syncPhase1AutomaticStatus();
+
+  if(trades.length){
+    statsAnchorDate=latestTradeDateObj();
+  }
+
+  renderAccountSelector();
+  renderAll();
+  renderSettings();
+
+  showStatus(`Switched to ${accountDisplayName(next)}`);
+}
+
+$('#activeAccountSelect').addEventListener(
+  'change',
+  e=>switchTradingAccount(e.target.value)
+);
+
+async function refreshTradingAccounts(){
+  const {data,error}=await db
+    .from('trading_accounts')
+    .select('*')
+    .eq('user_id',currentUser.id)
+    .order('created_at',{ascending:true});
+
+  if(error){
+    console.error(error);
+    return;
+  }
+
+  tradingAccounts=data || [];
+
+  const latestCurrent=
+    tradingAccounts.find(a=>a.id===tradingAccount?.id);
+
+  if(latestCurrent){
+    tradingAccount=latestCurrent;
+  }else if(tradingAccounts.length){
+    tradingAccount=tradingAccounts[0];
+  }
+
+  renderAccountSelector();
+  renderSettings();
+  renderMetrics();
+}
+
+function timeAgoOrDate(value){
+  if(!value) return 'Never';
+
+  const date=new Date(value);
+  const diff=Math.max(0,Date.now()-date.getTime());
+
+  if(diff<60000){
+    return `${Math.floor(diff/1000)}s ago`;
+  }
+
+  if(diff<3600000){
+    return `${Math.floor(diff/60000)}m ago`;
+  }
+
+  if(diff<86400000){
+    return `${Math.floor(diff/3600000)}h ago`;
+  }
+
+  return date.toLocaleString();
+}
+
+async function sha256HexBrowser(value){
+  const data=new TextEncoder().encode(value);
+  const digest=await crypto.subtle.digest('SHA-256',data);
+
+  return Array.from(new Uint8Array(digest))
+    .map(b=>b.toString(16).padStart(2,'0'))
+    .join('');
+}
+
+function generateBridgeKey(){
+  const bytes=new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+
+  return 'te_'+Array.from(bytes)
+    .map(b=>b.toString(16).padStart(2,'0'))
+    .join('');
+}
+
+function openMt5Credentials(accountId,rawKey){
+  $('#mt5FunctionUrl').value=
+    `${SUPABASE_URL.replace(/\/$/,'')}/functions/v1/mt5-sync`;
+
+  $('#mt5ConnectionIdOut').value=accountId;
+  $('#mt5BridgeKeyOut').value=rawKey;
+
+  $('#mt5CredentialsModal').classList.add('open');
+}
+
+function closeMt5Credentials(){
+  $('#mt5CredentialsModal').classList.remove('open');
+  $('#mt5BridgeKeyOut').value='';
+}
+
+$('#closeMt5Credentials').addEventListener(
+  'click',
+  closeMt5Credentials
+);
+
+$('#doneMt5Credentials').addEventListener(
+  'click',
+  closeMt5Credentials
+);
+
+$('#mt5CredentialsModal').addEventListener('click',e=>{
+  if(e.target.id==='mt5CredentialsModal'){
+    closeMt5Credentials();
+  }
+});
+
+$$('[data-copy-target]').forEach(btn=>{
+  btn.addEventListener('click',async()=>{
+    const input=$(`#${btn.dataset.copyTarget}`);
+    if(!input) return;
+
+    await navigator.clipboard.writeText(input.value);
+    showStatus('Copied');
+  });
+});
+
+$('#mt5ConnectionForm').addEventListener(
+  'submit',
+  async e=>{
+    e.preventDefault();
+
+    const rawKey=generateBridgeKey();
+    const tokenHash=await sha256HexBrowser(rawKey);
+
+    const payload={
+      user_id:currentUser.id,
+      account_name:$('#mt5AccountName').value.trim(),
+      starting_balance:0,
+      currency:'USD',
+      broker:'Deriv',
+      platform:'MT5',
+      account_type:$('#mt5AccountType').value,
+      mt5_login:$('#mt5Login').value.trim(),
+      mt5_server:$('#mt5Server').value.trim() || null,
+      bridge_token_hash:tokenHash,
+      bridge_enabled:true,
+      connection_status:'pending'
+    };
+
+    const button=$('#createMt5ConnectionBtn');
+    button.disabled=true;
+    button.textContent='Creating...';
+
+    const {data,error}=await db
+      .from('trading_accounts')
+      .insert(payload)
+      .select()
+      .single();
+
+    button.disabled=false;
+    button.textContent='Create MT5 Link';
+
+    if(error){
+      alert(error.message);
+      return;
+    }
+
+    $('#mt5ConnectionForm').reset();
+
+    await refreshTradingAccounts();
+
+    tradingAccount=data;
+    localStorage.setItem(
+      `te_active_account_${currentUser.id}`,
+      data.id
+    );
+
+    renderAccountSelector();
+
+    await loadTrades();
+    renderAll();
+    renderSettings();
+
+    openMt5Credentials(data.id,rawKey);
+
+    showStatus('MT5 link created');
+  }
+);
+
+async function regenerateBridgeKey(accountId){
+  const account=tradingAccounts.find(a=>a.id===accountId);
+  if(!account || account.account_type==='manual') return;
+
+  if(
+    !confirm(
+      `Generate a new bridge key for ${account.account_name}? The old key will stop working immediately.`
+    )
+  ){
+    return;
+  }
+
+  const rawKey=generateBridgeKey();
+  const hash=await sha256HexBrowser(rawKey);
+
+  const {error}=await db
+    .from('trading_accounts')
+    .update({
+      bridge_token_hash:hash,
+      bridge_enabled:true,
+      connection_status:'pending',
+      sync_error:null,
+      updated_at:new Date().toISOString()
+    })
+    .eq('id',account.id)
+    .eq('user_id',currentUser.id);
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  await refreshTradingAccounts();
+  openMt5Credentials(account.id,rawKey);
+}
+
+async function toggleBridge(accountId,enabled){
+  const {error}=await db
+    .from('trading_accounts')
+    .update({
+      bridge_enabled:enabled,
+      connection_status:enabled ? 'pending' : 'offline',
+      updated_at:new Date().toISOString()
+    })
+    .eq('id',accountId)
+    .eq('user_id',currentUser.id);
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  await refreshTradingAccounts();
+}
+
+function renderSettings(){
+  if(!tradingAccount) return;
+
+  const linked=
+    tradingAccounts.filter(
+      a=>a.account_type==='demo' || a.account_type==='real'
+    );
+
+  const list=$('#mt5ConnectionsList');
+
+  if(!linked.length){
+    list.innerHTML=
+      '<div class="empty-state">No linked MT5 accounts yet.</div>';
+  }else{
+    list.innerHTML='';
+
+    linked.forEach(account=>{
+      const card=document.createElement('div');
+
+      card.className=
+        'connection-card'+(
+          account.id===tradingAccount.id
+            ? ' current'
+            : ''
+        );
+
+      card.innerHTML=`
+        <div class="connection-card-head">
+          <div>
+            <h4>${escapeHtml(account.account_name||'Deriv MT5')}</h4>
+          </div>
+          <span class="connection-badge ${account.account_type}">
+            ${escapeHtml(account.account_type)}
+          </span>
+        </div>
+
+        <div class="connection-meta">
+          <span>Login: ${escapeHtml(account.mt5_login||'—')}</span>
+          <span>Server: ${escapeHtml(account.mt5_server||'Not detected yet')}</span>
+          <span class="${connectionStatusClass(account.connection_status)}">
+            Status: ${escapeHtml(account.connection_status||'pending')}
+          </span>
+          <span>Last sync: ${escapeHtml(timeAgoOrDate(account.last_sync_at))}</span>
+        </div>
+
+        <div class="connection-card-actions">
+          <button class="btn small use-account" data-account-id="${account.id}">
+            Use
+          </button>
+          <button class="btn small regen-bridge" data-account-id="${account.id}">
+            New Key
+          </button>
+          <button class="btn small ${account.bridge_enabled?'danger':''} toggle-bridge" data-account-id="${account.id}" data-enabled="${account.bridge_enabled?'0':'1'}">
+            ${account.bridge_enabled?'Disable':'Enable'}
+          </button>
+        </div>
+      `;
+
+      list.appendChild(card);
+    });
+
+    $$('.use-account').forEach(btn=>{
+      btn.addEventListener(
+        'click',
+        ()=>switchTradingAccount(btn.dataset.accountId)
+      );
+    });
+
+    $$('.regen-bridge').forEach(btn=>{
+      btn.addEventListener(
+        'click',
+        ()=>regenerateBridgeKey(btn.dataset.accountId)
+      );
+    });
+
+    $$('.toggle-bridge').forEach(btn=>{
+      btn.addEventListener(
+        'click',
+        ()=>toggleBridge(
+          btn.dataset.accountId,
+          btn.dataset.enabled==='1'
+        )
+      );
+    });
+  }
+
+  const isLinked=
+    tradingAccount.account_type==='demo' ||
+    tradingAccount.account_type==='real';
+
+  $('#settingsLiveStatus').textContent=
+    isLinked
+      ? (tradingAccount.connection_status || 'pending')
+      : 'Manual';
+
+  $('#settingsLiveStatus').className=
+    connectionStatusClass(tradingAccount.connection_status);
+
+  $('#settingsLiveBalance').textContent=
+    isLinked && tradingAccount.current_balance!=null
+      ? money(Number(tradingAccount.current_balance))
+      : '—';
+
+  $('#settingsLiveEquity').textContent=
+    isLinked && tradingAccount.current_equity!=null
+      ? money(Number(tradingAccount.current_equity))
+      : '—';
+
+  const floating=Number(tradingAccount.floating_pnl||0);
+
+  $('#settingsFloatingPnl').textContent=
+    isLinked
+      ? signedMoney(floating)
+      : '—';
+
+  $('#settingsFloatingPnl').className=
+    isLinked ? pnlClass(floating) : '';
+
+  $('#settingsOpenPositions').textContent=
+    isLinked && tradingAccount.open_positions!=null
+      ? String(tradingAccount.open_positions)
+      : '—';
+
+  $('#settingsLastSync').textContent=
+    isLinked
+      ? timeAgoOrDate(tradingAccount.last_sync_at)
+      : '—';
+}
+
+$('#refreshConnectionsBtn').addEventListener(
+  'click',
+  async()=>{
+    await refreshTradingAccounts();
+    await loadTrades();
+    renderAll();
+    showStatus('Connections refreshed');
+  }
+);
+
+function subscribeToMt5Realtime(){
+  if(!db || !currentUser) return;
+
+  if(mt5RealtimeChannel){
+    db.removeChannel(mt5RealtimeChannel);
+    mt5RealtimeChannel=null;
+  }
+
+  mt5RealtimeChannel=db
+    .channel(`te-mt5-${currentUser.id}`)
+    .on(
+      'postgres_changes',
+      {
+        event:'UPDATE',
+        schema:'public',
+        table:'trading_accounts',
+        filter:`user_id=eq.${currentUser.id}`
+      },
+      async payload=>{
+        const updated=payload.new;
+
+        const index=tradingAccounts.findIndex(
+          a=>a.id===updated.id
+        );
+
+        if(index>=0){
+          tradingAccounts[index]=updated;
+        }
+
+        if(tradingAccount?.id===updated.id){
+          tradingAccount=updated;
+          $('#startingBalance').value=
+            Number(updated.starting_balance||0);
+        }
+
+        renderAccountSelector();
+        renderSettings();
+        renderMetrics();
+      }
+    )
+    .on(
+      'postgres_changes',
+      {
+        event:'*',
+        schema:'public',
+        table:'trades',
+        filter:`user_id=eq.${currentUser.id}`
+      },
+      async payload=>{
+        const row=payload.new || payload.old;
+
+        if(!row || row.account_id!==tradingAccount?.id){
+          return;
+        }
+
+        await loadTrades();
+        await loadEdgeData();
+        await loadExecutionData();
+        await syncPhase1AutomaticStatus();
+
+        if(trades.length){
+          statsAnchorDate=latestTradeDateObj();
+        }
+
+        renderAll();
+      }
+    )
+    .subscribe(status=>{
+      if(status==='CHANNEL_ERROR'){
+        console.warn('MT5 Realtime channel error');
+      }
+    });
+}
+
+
 /* =========================
    NAVIGATION
 ========================= */
@@ -5352,6 +6305,10 @@ function navigate(page){
     syncPhase1AutomaticStatus().then(()=>{
       renderGoals();
     });
+  }
+
+  if(page==='settings'){
+    renderSettings();
   }
 
   closeSidebarMobile();
@@ -5953,6 +6910,8 @@ $('#tradeForm').addEventListener('submit',async e=>{
   const payload={
     user_id:currentUser.id,
     account_id:tradingAccount?.id || null,
+    source:'manual',
+    position_status:'closed',
     trade_date:$('#tradeDate').value,
     instrument:$('#instrument').value.trim(),
     direction:$('#direction').value,
@@ -6063,7 +7022,18 @@ $('#startingBalance').addEventListener('change',async e=>{
   }
 
   tradingAccount=data;
+
+  const idx=tradingAccounts.findIndex(
+    a=>a.id===data.id
+  );
+
+  if(idx>=0){
+    tradingAccounts[idx]=data;
+  }
+
+  renderAccountSelector();
   renderMetrics();
+  renderSettings();
   showStatus('Starting balance updated');
 });
 
