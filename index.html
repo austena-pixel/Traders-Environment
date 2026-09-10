@@ -2229,6 +2229,141 @@ input:focus,select:focus,textarea:focus{border-color:#5275a7}
   .document-goal-grid{grid-template-columns:1fr}
 }
 
+
+/* =========================================================
+   GOALS PAGE — ORGANIZED DRAWERS
+========================================================= */
+.goal-tools-bar{
+  border:1px solid var(--line);
+  background:#0b1119;
+  border-radius:16px;
+  padding:13px;
+  margin-bottom:14px;
+}
+.goal-tools-copy{
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  align-items:center;
+  margin-bottom:10px;
+}
+.goal-tools-copy strong{
+  font-size:13px;
+}
+.goal-tools-copy span{
+  color:var(--muted);
+  font-size:9px;
+  text-align:right;
+}
+.goal-tools-actions{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+}
+.goal-tool-btn{
+  appearance:none;
+  border:1px solid #253246;
+  background:#0e1620;
+  color:#edf4fc;
+  border-radius:12px;
+  padding:10px;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  text-align:left;
+  cursor:pointer;
+  transition:.16s ease;
+}
+.goal-tool-btn:hover{
+  border-color:#426287;
+  background:#111c29;
+  transform:translateY(-1px);
+}
+.goal-tool-btn.active{
+  border-color:#6ba7eb;
+  background:#102238;
+  box-shadow:inset 0 0 0 1px #274e7b;
+}
+.goal-tool-icon{
+  width:28px;
+  height:28px;
+  flex:0 0 28px;
+  border:1px solid #31445d;
+  border-radius:9px;
+  display:grid;
+  place-items:center;
+  color:#9dc9fb;
+  font-weight:900;
+}
+.goal-tool-btn strong{
+  display:block;
+  font-size:10px;
+}
+.goal-tool-btn small{
+  display:block;
+  margin-top:3px;
+  color:#8192a7;
+  font-size:8px;
+  line-height:1.3;
+}
+.goal-drawer{
+  margin-top:14px;
+  animation:goalDrawerIn .16s ease;
+}
+.goal-drawer[hidden]{
+  display:none !important;
+}
+.goal-drawer-heading{
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  align-items:flex-start;
+  border-bottom:1px solid #1c2735;
+  padding-bottom:11px;
+  margin-bottom:13px;
+}
+.goal-drawer-heading h3{
+  margin:0;
+  font-size:14px;
+}
+.goal-drawer-heading p{
+  margin:4px 0 0;
+  color:var(--muted);
+  font-size:9px;
+  line-height:1.45;
+}
+.goal-drawer-close{
+  flex:0 0 auto;
+}
+.goal-flow-drawer .goal-cascade{
+  margin-bottom:0;
+}
+.goal-flow-drawer .manual-goal-note{
+  margin-top:12px !important;
+  margin-bottom:0;
+}
+@keyframes goalDrawerIn{
+  from{opacity:0;transform:translateY(-5px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@media(max-width:1100px){
+  .goal-tools-actions{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media(max-width:650px){
+  .goal-tools-copy{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  .goal-tools-copy span{
+    text-align:left;
+  }
+  .goal-tools-actions{
+    grid-template-columns:1fr;
+  }
+}
+
 /* PLACEHOLDER PAGES */
 .placeholder{
   padding:38px;
@@ -3670,8 +3805,135 @@ textarea{resize:vertical;min-height:90px}
 
       <section class="phase-roadmap" id="phaseRoadmap"></section>
 
+      <section class="goal-horizon-summary">
+        <div class="horizon-card">
+          <span>Daily</span>
+          <strong id="dailyGoalProgress">—</strong>
+        </div>
+        <div class="horizon-card">
+          <span>Weekly</span>
+          <strong id="weeklyGoalProgress">—</strong>
+        </div>
+        <div class="horizon-card">
+          <span>Monthly</span>
+          <strong id="monthlyGoalProgress">—</strong>
+        </div>
+        <div class="horizon-card">
+          <span>6-Month</span>
+          <strong id="halfYearGoalProgress">—</strong>
+        </div>
+        <div class="horizon-card">
+          <span>Yearly</span>
+          <strong id="yearlyGoalProgress">—</strong>
+        </div>
+      </section>
 
-      <section class="panel phase-workspace">
+
+      <section class="goal-tools-bar">
+        <div class="goal-tools-copy">
+          <strong>Goal Tools</strong>
+          <span>Keep the main page focused. Open one detailed section only when you need it.</span>
+        </div>
+
+        <div class="goal-tools-actions">
+          <button class="goal-tool-btn" type="button" data-goal-target="goalDrawerWorkspace" aria-expanded="false">
+            <span class="goal-tool-icon">◇</span>
+            <span>
+              <strong>Phase Workspace</strong>
+              <small>SMART plan, evidence & reviews</small>
+            </span>
+          </button>
+
+          <button class="goal-tool-btn" type="button" data-goal-target="goalDrawerQualification" aria-expanded="false">
+            <span class="goal-tool-icon">✓</span>
+            <span>
+              <strong>Phase 1 Qualification</strong>
+              <small>Samples & 90% quality gate</small>
+            </span>
+          </button>
+
+          <button class="goal-tool-btn" type="button" data-goal-target="goalDrawerDevelopment" aria-expanded="false">
+            <span class="goal-tool-icon">◎</span>
+            <span>
+              <strong>Development Goals</strong>
+              <small>Four-phase roadmap details</small>
+            </span>
+          </button>
+
+          <button class="goal-tool-btn" type="button" data-goal-target="goalDrawerFlow" aria-expanded="false">
+            <span class="goal-tool-icon">→</span>
+            <span>
+              <strong>Goal Hierarchy</strong>
+              <small>Daily → weekly → long-term</small>
+            </span>
+          </button>
+        </div>
+      </section>
+
+      <section class="panel goal-chain-builder">
+        <div class="goal-chain-builder-head">
+          <div>
+            <h3>Systematic Goal Planner</h3>
+            <p>
+              Start with the long-term objective, then define the monthly result, weekly result and daily action that will produce it.
+              You type every goal yourself; saving creates and links the four levels automatically.
+            </p>
+          </div>
+
+          <div class="field goal-chain-settings">
+            <label>Trading Phase</label>
+            <select id="goalChainPhase"><option value="">Loading phases…</option></select>
+          </div>
+        </div>
+
+        <div class="goal-chain-grid">
+          <div class="goal-chain-step">
+            <span class="step-number">1 • Direction</span>
+            <h4>Yearly Goal</h4>
+            <textarea id="chainYearlyGoal" placeholder="What must I achieve this year?"></textarea>
+            <input id="chainYearlySuccess" type="text" placeholder="Success measure / evidence">
+          </div>
+
+          <div class="goal-chain-step">
+            <span class="step-number">2 • Milestone</span>
+            <h4>Monthly Goal</h4>
+            <textarea id="chainMonthlyGoal" placeholder="What must this month achieve toward the yearly goal?"></textarea>
+            <input id="chainMonthlySuccess" type="text" placeholder="Success measure / evidence">
+          </div>
+
+          <div class="goal-chain-step">
+            <span class="step-number">3 • Weekly Output</span>
+            <h4>Weekly Goal</h4>
+            <textarea id="chainWeeklyGoal" placeholder="What must I achieve this week toward the monthly goal?"></textarea>
+            <input id="chainWeeklySuccess" type="text" placeholder="Success measure / evidence">
+          </div>
+
+          <div class="goal-chain-step">
+            <span class="step-number">4 • Execution</span>
+            <h4>Daily Goal / Action</h4>
+            <textarea id="chainDailyGoal" placeholder="What must I do today to move the weekly goal forward?"></textarea>
+            <input id="chainDailySuccess" type="text" placeholder="Success measure / evidence">
+          </div>
+        </div>
+
+        <div class="goal-chain-actions">
+          <button class="btn" type="button" id="clearGoalChainBtn">Clear</button>
+          <button class="btn primary" type="button" id="saveGoalChainBtn">Save Goal Chain</button>
+        </div>
+
+        <div class="goal-chain-note">
+          Saved relationship: Daily → Weekly → Monthly → Yearly. You can still use “+ New Goal” for an individual goal or an optional 6-month goal.
+        </div>
+      </section>
+
+      <section class="goal-drawer  panel phase-workspace" id="goalDrawerWorkspace" data-goal-drawer hidden>
+        <div class="goal-drawer-heading">
+          <div>
+            <h3>Phase Workspace</h3>
+            <p>SMART planning, automated evidence, weekly milestones, daily actions and phase review.</p>
+          </div>
+          <button class="btn small goal-drawer-close" type="button" data-close-goal-drawers>Close</button>
+        </div>
         <div class="phase-workspace-tabs" id="phaseWorkspaceTabs"></div>
 
         <div class="phase-detail-head">
@@ -3837,7 +4099,14 @@ textarea{resize:vertical;min-height:90px}
         </div>
       </section>
 
-      <section class="panel phase1-gate">
+      <section class="goal-drawer  panel phase1-gate" id="goalDrawerQualification" data-goal-drawer hidden>
+        <div class="goal-drawer-heading">
+          <div>
+            <h3>Qualification Details</h3>
+            <p>Detailed evidence used by the automatic Phase 1 completion gate.</p>
+          </div>
+          <button class="btn small goal-drawer-close" type="button" data-close-goal-drawers>Close</button>
+        </div>
         <div class="phase1-gate-head">
           <div>
             <h3>Phase 1 Automatic Qualification</h3>
@@ -3901,9 +4170,14 @@ textarea{resize:vertical;min-height:90px}
         </div>
       </section>
 
-
-
-      <section class="panel document-goals">
+      <section class="goal-drawer  panel document-goals" id="goalDrawerDevelopment" data-goal-drawer hidden>
+        <div class="goal-drawer-heading">
+          <div>
+            <h3>Development Path</h3>
+            <p>Your four trading-development goals loaded from the SMART development plan.</p>
+          </div>
+          <button class="btn small goal-drawer-close" type="button" data-close-goal-drawers>Close</button>
+        </div>
         <div class="document-goals-head">
           <div>
             <h3>Trading Development Goals</h3>
@@ -3918,85 +4192,15 @@ textarea{resize:vertical;min-height:90px}
         <div class="document-goal-grid" id="documentGoalGrid"></div>
       </section>
 
-      <section class="panel goal-chain-builder">
-        <div class="goal-chain-builder-head">
+
+      <section class="panel goal-drawer goal-flow-drawer" id="goalDrawerFlow" data-goal-drawer hidden>
+        <div class="goal-drawer-heading">
           <div>
-            <h3>Systematic Goal Planner</h3>
-            <p>
-              Start with the long-term objective, then define the monthly result, weekly result and daily action that will produce it.
-              You type every goal yourself; saving creates and links the four levels automatically.
-            </p>
+            <h3>Goal Hierarchy</h3>
+            <p>See how daily execution feeds weekly, monthly, 6-month and yearly achievement.</p>
           </div>
-
-          <div class="field goal-chain-settings">
-            <label>Trading Phase</label>
-            <select id="goalChainPhase"><option value="">Loading phases…</option></select>
-          </div>
+          <button class="btn small goal-drawer-close" type="button" data-close-goal-drawers>Close</button>
         </div>
-
-        <div class="goal-chain-grid">
-          <div class="goal-chain-step">
-            <span class="step-number">1 • Direction</span>
-            <h4>Yearly Goal</h4>
-            <textarea id="chainYearlyGoal" placeholder="What must I achieve this year?"></textarea>
-            <input id="chainYearlySuccess" type="text" placeholder="Success measure / evidence">
-          </div>
-
-          <div class="goal-chain-step">
-            <span class="step-number">2 • Milestone</span>
-            <h4>Monthly Goal</h4>
-            <textarea id="chainMonthlyGoal" placeholder="What must this month achieve toward the yearly goal?"></textarea>
-            <input id="chainMonthlySuccess" type="text" placeholder="Success measure / evidence">
-          </div>
-
-          <div class="goal-chain-step">
-            <span class="step-number">3 • Weekly Output</span>
-            <h4>Weekly Goal</h4>
-            <textarea id="chainWeeklyGoal" placeholder="What must I achieve this week toward the monthly goal?"></textarea>
-            <input id="chainWeeklySuccess" type="text" placeholder="Success measure / evidence">
-          </div>
-
-          <div class="goal-chain-step">
-            <span class="step-number">4 • Execution</span>
-            <h4>Daily Goal / Action</h4>
-            <textarea id="chainDailyGoal" placeholder="What must I do today to move the weekly goal forward?"></textarea>
-            <input id="chainDailySuccess" type="text" placeholder="Success measure / evidence">
-          </div>
-        </div>
-
-        <div class="goal-chain-actions">
-          <button class="btn" type="button" id="clearGoalChainBtn">Clear</button>
-          <button class="btn primary" type="button" id="saveGoalChainBtn">Save Goal Chain</button>
-        </div>
-
-        <div class="goal-chain-note">
-          Saved relationship: Daily → Weekly → Monthly → Yearly. You can still use “+ New Goal” for an individual goal or an optional 6-month goal.
-        </div>
-      </section>
-
-      <section class="goal-horizon-summary">
-        <div class="horizon-card">
-          <span>Daily</span>
-          <strong id="dailyGoalProgress">—</strong>
-        </div>
-        <div class="horizon-card">
-          <span>Weekly</span>
-          <strong id="weeklyGoalProgress">—</strong>
-        </div>
-        <div class="horizon-card">
-          <span>Monthly</span>
-          <strong id="monthlyGoalProgress">—</strong>
-        </div>
-        <div class="horizon-card">
-          <span>6-Month</span>
-          <strong id="halfYearGoalProgress">—</strong>
-        </div>
-        <div class="horizon-card">
-          <span>Yearly</span>
-          <strong id="yearlyGoalProgress">—</strong>
-        </div>
-      </section>
-
       <div class="goal-cascade">
         <div class="goal-cascade-flow">
           <span class="goal-cascade-node">Daily actions</span>
@@ -4010,12 +4214,12 @@ textarea{resize:vertical;min-height:90px}
           <span class="goal-cascade-node">Yearly goals</span>
         </div>
       </div>
-
       <div class="manual-goal-note" style="margin-top:14px">
         Goal records are managed through the <strong>Systematic Goal Planner</strong>,
         <strong>Weekly Milestones</strong>, and <strong>Daily Action Plan</strong> above.
         Progress continues to be stored and calculated in the background.
       </div>
+      </section>
     </section>
 
 
@@ -5710,6 +5914,73 @@ $('#nextMonth').addEventListener('click',()=>{
 
 
 
+
+
+/* =========================
+   GOALS PAGE DRAWERS
+========================= */
+function closeGoalDrawers(){
+  $$('[data-goal-drawer]').forEach(panel=>{
+    panel.hidden=true;
+  });
+
+  $$('.goal-tool-btn').forEach(button=>{
+    button.classList.remove('active');
+    button.setAttribute('aria-expanded','false');
+  });
+}
+
+function toggleGoalDrawer(targetId,trigger){
+  const panel=document.getElementById(targetId);
+  if(!panel){
+    return;
+  }
+
+  const wasOpen=!panel.hidden;
+
+  closeGoalDrawers();
+
+  if(wasOpen){
+    return;
+  }
+
+  panel.hidden=false;
+
+  if(trigger){
+    trigger.classList.add('active');
+    trigger.setAttribute('aria-expanded','true');
+  }
+
+  requestAnimationFrame(()=>{
+    panel.scrollIntoView({
+      behavior:'smooth',
+      block:'start'
+    });
+  });
+}
+
+$$('.goal-tool-btn').forEach(button=>{
+  button.addEventListener('click',()=>{
+    toggleGoalDrawer(
+      button.dataset.goalTarget,
+      button
+    );
+  });
+});
+
+$$('[data-close-goal-drawers]').forEach(button=>{
+  button.addEventListener('click',()=>{
+    closeGoalDrawers();
+
+    const tools=$('.goal-tools-bar');
+    if(tools){
+      tools.scrollIntoView({
+        behavior:'smooth',
+        block:'start'
+      });
+    }
+  });
+});
 
 /* =========================
    GOALS + 4-PHASE SYSTEM
