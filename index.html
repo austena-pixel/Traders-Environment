@@ -1708,6 +1708,123 @@ input:focus,select:focus,textarea:focus{border-color:#5275a7}
   .goals-filters{grid-template-columns:1fr}
 }
 
+
+/* PHASE 1 AUTOMATIC QUALIFICATION */
+.phase1-gate{
+  padding:14px;
+  margin-bottom:14px;
+}
+.phase1-gate-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:14px;
+  margin-bottom:12px;
+}
+.phase1-gate-head h3{
+  margin:0;
+  font-size:14px;
+}
+.phase1-gate-head p{
+  margin:4px 0 0;
+  color:var(--muted);
+  font-size:10px;
+  line-height:1.55;
+  max-width:850px;
+}
+.phase1-config{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.phase1-config label{
+  font-size:10px;
+  color:var(--muted);
+}
+.phase1-config input{
+  width:76px;
+  padding:7px 8px;
+}
+.phase1-gate-summary{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:9px;
+  margin-bottom:12px;
+}
+.phase1-gate-card{
+  border:1px solid #223044;
+  background:#0b1119;
+  border-radius:12px;
+  padding:10px;
+}
+.phase1-gate-card span{
+  display:block;
+  color:var(--muted);
+  font-size:9px;
+}
+.phase1-gate-card strong{
+  display:block;
+  margin-top:4px;
+  font-size:16px;
+}
+.sample-table-wrap{
+  overflow:auto;
+}
+.sample-table{
+  width:100%;
+  min-width:900px;
+  border-collapse:collapse;
+}
+.sample-table th,
+.sample-table td{
+  border-bottom:1px solid #18212c;
+  padding:8px 7px;
+  font-size:9px;
+  text-align:right;
+}
+.sample-table th:first-child,
+.sample-table td:first-child{
+  text-align:left;
+}
+.sample-table th{
+  color:#8794a7;
+  text-transform:uppercase;
+  letter-spacing:.45px;
+}
+.sample-pass{
+  color:var(--green);
+  font-weight:800;
+}
+.sample-fail{
+  color:var(--red);
+  font-weight:800;
+}
+.sample-current{
+  color:#9cc6ff;
+  font-weight:800;
+}
+.phase1-rule-note{
+  margin-top:10px;
+  color:#91a0b3;
+  font-size:9px;
+  line-height:1.55;
+}
+.manual-goal-note{
+  margin-bottom:12px;
+  border:1px solid #2a394e;
+  background:#0c1621;
+  border-radius:11px;
+  padding:10px 11px;
+  color:#a7b5c6;
+  font-size:10px;
+  line-height:1.55;
+}
+@media(max-width:800px){
+  .phase1-gate-head{flex-direction:column}
+  .phase1-gate-summary{grid-template-columns:repeat(2,1fr)}
+}
+
 /* PLACEHOLDER PAGES */
 .placeholder{
   padding:38px;
@@ -2230,8 +2347,8 @@ textarea{resize:vertical;min-height:90px}
             <p id="equityChartDescription">Daily account equity across the selected period.</p>
           </div>
           <div class="chart-legend-note">
-            X-axis = actual calendar days / trading sessions.<br>
-            No-trade days remain flat so time is not compressed.
+            X-axis = trading days only.<br>
+            Days with no trades are excluded from the curve.
           </div>
         </div>
 
@@ -3137,6 +3254,70 @@ textarea{resize:vertical;min-height:90px}
 
       <section class="phase-roadmap" id="phaseRoadmap"></section>
 
+      <section class="panel phase1-gate">
+        <div class="phase1-gate-head">
+          <div>
+            <h3>Phase 1 Automatic Qualification</h3>
+            <p>
+              Phase 1 is completed only after two consecutive completed trade samples meet the quality standard.
+              Profitability is deliberately ignored here. The gate measures process quality: plan adherence, execution,
+              identity, rules, reflection and affirmation consistency.
+            </p>
+          </div>
+
+          <div class="phase1-config">
+            <label>Trades per sample</label>
+            <input id="phase1SampleSize" type="number" min="20" max="30" step="1" value="20">
+            <button class="btn small" id="savePhase1SampleSize">Save</button>
+          </div>
+        </div>
+
+        <div class="phase1-gate-summary">
+          <div class="phase1-gate-card">
+            <span>Required Samples</span>
+            <strong id="phase1RequiredSamples">2</strong>
+          </div>
+          <div class="phase1-gate-card">
+            <span>Quality Threshold</span>
+            <strong id="phase1Threshold">90%+</strong>
+          </div>
+          <div class="phase1-gate-card">
+            <span>Passing Streak</span>
+            <strong id="phase1PassingStreak">0 / 2</strong>
+          </div>
+          <div class="phase1-gate-card">
+            <span>Current Sample</span>
+            <strong id="phase1CurrentSample">0 / 20</strong>
+          </div>
+        </div>
+
+        <div class="sample-table-wrap">
+          <table class="sample-table">
+            <thead>
+              <tr>
+                <th>Sample</th>
+                <th>Trades</th>
+                <th>Edge / Plan</th>
+                <th>Execution</th>
+                <th>Identity</th>
+                <th>Rules</th>
+                <th>Reflection</th>
+                <th>Affirmations</th>
+                <th>Result</th>
+              </tr>
+            </thead>
+            <tbody id="phase1SamplesBody">
+              <tr><td colspan="9" class="muted">No completed samples yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="phase1-rule-note">
+          Every listed metric must average at least the threshold in each sample. Missing reviews/sessions count as 0%,
+          so the system rewards complete journaling rather than only scoring the trades you choose to review.
+        </div>
+      </section>
+
       <section class="goal-horizon-summary">
         <div class="horizon-card">
           <span>Daily</span>
@@ -3179,6 +3360,12 @@ textarea{resize:vertical;min-height:90px}
           <div class="goals-panel-head">
             <h3>Goal System</h3>
             <span class="pager-text" id="goalCountText">0 goals</span>
+          </div>
+
+          <div class="manual-goal-note">
+            <strong>Your goals are manual.</strong> You decide the goal, horizon, phase, dates, success criteria and progress.
+            The app does not invent goals for you. Automatic calculations only apply when you deliberately link smaller goals
+            to a parent goal.
           </div>
 
           <div class="goals-filters">
@@ -3619,6 +3806,7 @@ async function enterApp(user){
   await loadExecutionData();
   await ensureDefaultTradingPhases();
   await loadGoalsData();
+  await syncPhase1AutomaticStatus();
   renderAll();
   showStatus('Journal loaded');
 }
@@ -3957,7 +4145,9 @@ function navigate(page){
   }
 
   if(page==='goals'){
-    renderGoals();
+    syncPhase1AutomaticStatus().then(()=>{
+      renderGoals();
+    });
   }
 
   closeSidebarMobile();
@@ -4530,6 +4720,7 @@ async function deleteTrade(trade, dayToRefresh=null){
   await loadExecutionData();
   await ensureDefaultTradingPhases();
   await loadGoalsData();
+  await syncPhase1AutomaticStatus();
   renderAll();
 
   if(dayToRefresh){
@@ -4818,6 +5009,359 @@ function averageLevelProgress(level){
   )/levelGoals.length;
 }
 
+
+function phase1Config(){
+  const phase=tradingPhases.find(p=>p.phase_number===1);
+
+  return {
+    phase,
+    sampleSize:Math.max(
+      20,
+      Math.min(30,Number(phase?.sample_size)||20)
+    ),
+    requiredSamples:Math.max(
+      2,
+      Number(phase?.required_samples)||2
+    ),
+    threshold:Math.max(
+      0,
+      Math.min(100,Number(phase?.quality_threshold)||90)
+    )
+  };
+}
+
+function psychologySessionForDate(date){
+  return psychologySessions.find(
+    session=>session.session_date===date
+  ) || null;
+}
+
+function reflectionCompletenessForSession(session){
+  if(!session){
+    return 0;
+  }
+
+  const requiredFields=[
+    session.signal,
+    session.noise,
+    session.strengths,
+    session.weaknesses,
+    session.opportunities,
+    session.threats,
+    session.adjustments
+  ];
+
+  const completed=requiredFields.filter(
+    value=>String(value||'').trim().length>0
+  ).length;
+
+  return completed/requiredFields.length*100;
+}
+
+function averageNumbers(values){
+  if(!values.length){
+    return 0;
+  }
+
+  return values.reduce((a,b)=>a+b,0)/values.length;
+}
+
+function phase1SampleMetrics(sampleTrades){
+  const tradeDates=[
+    ...new Set(sampleTrades.map(t=>t.trade_date))
+  ];
+
+  const edge=averageNumbers(
+    sampleTrades.map(trade=>
+      edgeScoreForTrade(trade.id) ?? 0
+    )
+  );
+
+  const execution=averageNumbers(
+    sampleTrades.map(trade=>
+      executionScoreForTrade(trade.id) ?? 0
+    )
+  );
+
+  const sessions=tradeDates.map(
+    date=>psychologySessionForDate(date)
+  );
+
+  const identity=averageNumbers(
+    sessions.map(session=>
+      session ? (identityPercentForSession(session.id) ?? 0) : 0
+    )
+  );
+
+  const rules=averageNumbers(
+    sessions.map(session=>
+      session ? (rulePercentForSession(session.id) ?? 0) : 0
+    )
+  );
+
+  const reflection=averageNumbers(
+    sessions.map(
+      session=>reflectionCompletenessForSession(session)
+    )
+  );
+
+  const affirmations=averageNumbers(
+    sessions.map(session=>
+      session?.affirmation_before && session?.affirmation_after
+        ? 100
+        : 0
+    )
+  );
+
+  return {
+    edge,
+    execution,
+    identity,
+    rules,
+    reflection,
+    affirmations
+  };
+}
+
+function buildPhase1Qualification(){
+  const {
+    sampleSize,
+    requiredSamples,
+    threshold
+  }=phase1Config();
+
+  const orderedTrades=[...trades].sort((a,b)=>{
+    if(a.trade_date!==b.trade_date){
+      return a.trade_date.localeCompare(b.trade_date);
+    }
+
+    return (a.created_at||'').localeCompare(
+      b.created_at||''
+    );
+  });
+
+  const completedSampleCount=
+    Math.floor(orderedTrades.length/sampleSize);
+
+  const completedSamples=[];
+
+  for(let i=0;i<completedSampleCount;i++){
+    const start=i*sampleSize;
+    const sampleTrades=orderedTrades.slice(
+      start,
+      start+sampleSize
+    );
+
+    const metrics=phase1SampleMetrics(sampleTrades);
+
+    const passed=Object.values(metrics).every(
+      value=>value>=threshold
+    );
+
+    completedSamples.push({
+      number:i+1,
+      trades:sampleTrades,
+      metrics,
+      passed
+    });
+  }
+
+  let currentStreak=0;
+  let maxStreak=0;
+
+  completedSamples.forEach(sample=>{
+    if(sample.passed){
+      currentStreak++;
+      maxStreak=Math.max(maxStreak,currentStreak);
+    }else{
+      currentStreak=0;
+    }
+  });
+
+  const currentSampleTrades=
+    orderedTrades.length % sampleSize;
+
+  const qualified=maxStreak>=requiredSamples;
+
+  const currentProgress=
+    qualified
+      ? 100
+      : Math.min(
+          99.9,
+          (
+            currentStreak +
+            currentSampleTrades/sampleSize
+          ) /
+          requiredSamples *
+          100
+        );
+
+  return {
+    sampleSize,
+    requiredSamples,
+    threshold,
+    orderedTrades,
+    completedSamples,
+    currentSampleTrades,
+    currentStreak,
+    maxStreak,
+    qualified,
+    currentProgress
+  };
+}
+
+async function syncPhase1AutomaticStatus(){
+  const p1=tradingPhases.find(
+    p=>p.phase_number===1
+  );
+
+  const p2=tradingPhases.find(
+    p=>p.phase_number===2
+  );
+
+  if(!p1){
+    return;
+  }
+
+  const qualification=buildPhase1Qualification();
+
+  const desiredP1Status=
+    qualification.qualified
+      ? 'completed'
+      : 'active';
+
+  const updates=[];
+
+  if(p1.status!==desiredP1Status){
+    updates.push(
+      db
+        .from('trading_phases')
+        .update({
+          status:desiredP1Status,
+          completed_at:
+            qualification.qualified
+              ? (p1.completed_at || new Date().toISOString())
+              : null,
+          started_at:
+            p1.started_at || new Date().toISOString(),
+          updated_at:new Date().toISOString()
+        })
+        .eq('id',p1.id)
+        .eq('user_id',currentUser.id)
+    );
+
+    p1.status=desiredP1Status;
+    p1.completed_at=
+      qualification.qualified
+        ? (p1.completed_at || new Date().toISOString())
+        : null;
+  }
+
+  if(p2){
+    const desiredP2Status=
+      qualification.qualified
+        ? (
+            p2.status==='completed'
+              ? 'completed'
+              : 'active'
+          )
+        : (
+            p2.status==='completed'
+              ? 'completed'
+              : 'locked'
+          );
+
+    if(p2.status!==desiredP2Status){
+      updates.push(
+        db
+          .from('trading_phases')
+          .update({
+            status:desiredP2Status,
+            started_at:
+              desiredP2Status==='active'
+                ? (p2.started_at || new Date().toISOString())
+                : p2.started_at,
+            updated_at:new Date().toISOString()
+          })
+          .eq('id',p2.id)
+          .eq('user_id',currentUser.id)
+      );
+
+      p2.status=desiredP2Status;
+    }
+  }
+
+  if(updates.length){
+    const results=await Promise.all(updates);
+    const error=results.find(result=>result.error)?.error;
+
+    if(error){
+      console.error(error);
+      showStatus('Could not synchronize Phase 1 status',4000);
+    }
+  }
+}
+
+function renderPhase1Qualification(){
+  const q=buildPhase1Qualification();
+
+  $('#phase1SampleSize').value=q.sampleSize;
+  $('#phase1RequiredSamples').textContent=q.requiredSamples;
+  $('#phase1Threshold').textContent=q.threshold.toFixed(0)+'%+';
+  $('#phase1PassingStreak').textContent=
+    `${Math.min(q.currentStreak,q.requiredSamples)} / ${q.requiredSamples}`;
+  $('#phase1CurrentSample').textContent=
+    `${q.currentSampleTrades} / ${q.sampleSize}`;
+
+  const body=$('#phase1SamplesBody');
+
+  if(!q.completedSamples.length){
+    body.innerHTML=`
+      <tr>
+        <td>Sample 1</td>
+        <td>${q.currentSampleTrades}/${q.sampleSize}</td>
+        <td colspan="6" class="muted">Sample still collecting trades</td>
+        <td class="sample-current">IN PROGRESS</td>
+      </tr>
+    `;
+    return;
+  }
+
+  body.innerHTML='';
+
+  q.completedSamples.forEach(sample=>{
+    const tr=document.createElement('tr');
+    const m=sample.metrics;
+
+    tr.innerHTML=`
+      <td>Sample ${sample.number}</td>
+      <td>${sample.trades.length}/${q.sampleSize}</td>
+      <td>${m.edge.toFixed(1)}%</td>
+      <td>${m.execution.toFixed(1)}%</td>
+      <td>${m.identity.toFixed(1)}%</td>
+      <td>${m.rules.toFixed(1)}%</td>
+      <td>${m.reflection.toFixed(1)}%</td>
+      <td>${m.affirmations.toFixed(1)}%</td>
+      <td class="${sample.passed?'sample-pass':'sample-fail'}">${sample.passed?'PASS':'FAIL'}</td>
+    `;
+
+    body.appendChild(tr);
+  });
+
+  if(q.currentSampleTrades>0){
+    const tr=document.createElement('tr');
+
+    tr.innerHTML=`
+      <td>Sample ${q.completedSamples.length+1}</td>
+      <td>${q.currentSampleTrades}/${q.sampleSize}</td>
+      <td colspan="6" class="muted">Collecting the next trade sample</td>
+      <td class="sample-current">IN PROGRESS</td>
+    `;
+
+    body.appendChild(tr);
+  }
+}
+
 function renderPhaseRoadmap(){
   const box=$('#phaseRoadmap');
 
@@ -4832,7 +5376,15 @@ function renderPhaseRoadmap(){
   tradingPhases
     .sort((a,b)=>a.phase_number-b.phase_number)
     .forEach(phase=>{
-      const progress=phaseProgress(phase.id);
+      const phase1Qualification=
+        phase.phase_number===1
+          ? buildPhase1Qualification()
+          : null;
+
+      const progress=
+        phase.phase_number===1
+          ? phase1Qualification.currentProgress
+          : phaseProgress(phase.id);
       const card=document.createElement('div');
 
       card.className=
@@ -4862,7 +5414,7 @@ function renderPhaseRoadmap(){
         <p>${escapeHtml(phase.objective)}</p>
 
         <div class="phase-progress-row">
-          <span>Goal progress</span>
+          <span>${phase.phase_number===1 ? 'Automatic qualification' : 'Goal progress'}</span>
           <strong>${progress.toFixed(1)}%</strong>
         </div>
 
@@ -4872,14 +5424,17 @@ function renderPhaseRoadmap(){
 
         <div class="phase-actions">
           ${
-            phase.status==='locked'
-              ? `<button class="btn small activate-phase" data-phase-id="${phase.id}">Set Active</button>`
-              : ''
-          }
-          ${
-            phase.status==='active'
-              ? `<button class="btn small complete-phase" data-phase-id="${phase.id}">Complete Phase</button>`
-              : ''
+            phase.phase_number===1
+              ? `<span class="goal-chip">${phase.status==='completed' ? 'Qualified automatically' : 'Automatic gate — no manual completion'}</span>`
+              : (
+                  phase.status==='locked'
+                    ? `<button class="btn small activate-phase" data-phase-id="${phase.id}">Set Active</button>`
+                    : (
+                        phase.status==='active'
+                          ? `<button class="btn small complete-phase" data-phase-id="${phase.id}">Complete Phase</button>`
+                          : ''
+                      )
+                )
           }
         </div>
       `;
@@ -4903,6 +5458,13 @@ function renderPhaseRoadmap(){
 async function activatePhase(phaseId){
   const phase=tradingPhases.find(p=>p.id===phaseId);
   if(!phase) return;
+
+  if(phase.phase_number===2 && !buildPhase1Qualification().qualified){
+    alert(
+      'Phase 2 remains locked until Phase 1 automatically qualifies through two consecutive passing samples.'
+    );
+    return;
+  }
 
   if(
     !confirm(
@@ -4950,6 +5512,13 @@ async function activatePhase(phaseId){
 async function completePhase(phaseId){
   const phase=tradingPhases.find(p=>p.id===phaseId);
   if(!phase) return;
+
+  if(phase.phase_number===1){
+    alert(
+      'Phase 1 cannot be completed manually. It completes automatically after two consecutive qualifying samples.'
+    );
+    return;
+  }
 
   const progress=phaseProgress(phase.id);
 
@@ -5621,6 +6190,7 @@ async function deleteGoal(goal){
 function renderGoals(){
   populateGoalPhaseControls();
   renderPhaseRoadmap();
+  renderPhase1Qualification();
   renderGoalHorizonSummary();
   renderGoalTree();
   renderGoalActivity();
@@ -5642,8 +6212,50 @@ $('#goalsRefreshBtn').addEventListener(
   'click',
   async()=>{
     await loadGoalsData();
+    await syncPhase1AutomaticStatus();
     renderGoals();
     showStatus('Goals refreshed');
+  }
+);
+
+$('#savePhase1SampleSize').addEventListener(
+  'click',
+  async()=>{
+    const {phase}=phase1Config();
+
+    if(!phase){
+      return;
+    }
+
+    const sampleSize=Math.max(
+      20,
+      Math.min(30,Number($('#phase1SampleSize').value)||20)
+    );
+
+    const {error}=await db
+      .from('trading_phases')
+      .update({
+        sample_size:sampleSize,
+        required_samples:2,
+        quality_threshold:90,
+        updated_at:new Date().toISOString()
+      })
+      .eq('id',phase.id)
+      .eq('user_id',currentUser.id);
+
+    if(error){
+      alert(error.message);
+      return;
+    }
+
+    phase.sample_size=sampleSize;
+    phase.required_samples=2;
+    phase.quality_threshold=90;
+
+    await syncPhase1AutomaticStatus();
+    renderGoals();
+
+    showStatus(`Phase 1 sample size set to ${sampleSize} trades`);
   }
 );
 
@@ -6130,6 +6742,7 @@ async function saveExecutionReview(){
 
   await loadTrades();
   await loadExecutionData();
+  await syncPhase1AutomaticStatus();
 
   renderExecution();
   renderDashboard();
@@ -6189,6 +6802,7 @@ async function deleteExecutionReview(){
 
   await loadTrades();
   await loadExecutionData();
+  await syncPhase1AutomaticStatus();
 
   renderExecution();
   renderDashboard();
@@ -6338,27 +6952,25 @@ function buildDailyEquitySeries(start,end){
   const priorPnl=pnlBeforeDate(start);
   let equity=base+priorPnl;
 
-  const points=[];
-  const cursor=new Date(start.getFullYear(),start.getMonth(),start.getDate());
+  // Trading days only: if no trade occurred on a date, no x-axis point is created.
+  const tradingDates=Object.keys(daily).sort();
 
-  while(cursor<=end){
-    const key=localDateString(cursor);
-    const dayPnl=daily[key]||0;
-
+  const points=tradingDates.map(date=>{
+    const dayPnl=daily[date]||0;
     equity+=dayPnl;
 
-    points.push({
-      date:key,
-      label:cursor.toLocaleDateString(undefined,{
+    const d=parseLocalDate(date);
+
+    return {
+      date,
+      label:d.toLocaleDateString(undefined,{
         month:'short',
         day:'numeric'
       }),
       equity,
       dayPnl
-    });
-
-    cursor.setDate(cursor.getDate()+1);
-  }
+    };
+  });
 
   return {
     points,
@@ -6647,7 +7259,7 @@ function renderStatistics(){
     `${formatDate(localDateString(start))} → ${formatDate(localDateString(end))}`;
 
   $('#equityChartDescription').textContent=
-    `Daily account equity across the ${statsRangeLabel(statsRange)} view.`;
+    `Closing equity for each trading day across the ${statsRangeLabel(statsRange)} view.`;
 
   $('#statEndingEquity').textContent=money(endingEquity);
 
@@ -7169,8 +7781,10 @@ async function saveEdgeReview(){
   }
 
   await loadEdgeData();
+  await syncPhase1AutomaticStatus();
   renderEdgePlaybook();
   renderJournal();
+  renderGoals();
 
   showStatus(
     `Edge review saved • ${edgeRatingForTrade(trade.id)} • ${edgeScoreForTrade(trade.id).toFixed(1)}%`
@@ -7205,8 +7819,10 @@ async function deleteEdgeReview(){
   }
 
   await loadEdgeData();
+  await syncPhase1AutomaticStatus();
   renderEdgePlaybook();
   renderJournal();
+  renderGoals();
 
   showStatus('Edge review deleted');
 }
@@ -7217,8 +7833,10 @@ $('#edgeStatusFilter').addEventListener('change',renderEdgeTradeList);
 $('#edgeRefreshBtn').addEventListener('click',async()=>{
   await loadTrades();
   await loadEdgeData();
+  await syncPhase1AutomaticStatus();
   renderEdgePlaybook();
   renderJournal();
+  renderGoals();
   showStatus('Edge data refreshed');
 });
 
@@ -7497,7 +8115,9 @@ async function savePsychSession(){
   }
 
   await loadPsychologyData();
+  await syncPhase1AutomaticStatus();
   renderPsychology();
+  renderGoals();
 
   const saved=psychologySessions.find(x=>x.id===sessionId);
   if(saved){
