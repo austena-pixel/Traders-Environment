@@ -2448,6 +2448,32 @@ input:focus,select:focus,textarea:focus{border-color:#5275a7}
   }
 }
 
+
+/* PHASE 1 WEEKLY PERFECT-EXECUTION SCORE */
+.weekly-auto-score{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:2px;
+}
+.weekly-auto-score strong{
+  font-size:10px;
+}
+.weekly-auto-score small{
+  color:#7f90a5;
+  font-size:7.5px;
+  white-space:nowrap;
+}
+.weekly-auto-score.perfect strong{
+  color:var(--green);
+}
+.weekly-auto-score.incomplete strong{
+  color:#dbe7f4;
+}
+.weekly-auto-score.no-trades strong{
+  color:var(--muted);
+}
+
 /* PLACEHOLDER PAGES */
 .placeholder{
   padding:38px;
@@ -4494,6 +4520,7 @@ textarea{resize:vertical;min-height:90px}
                 <option value="profit_factor">Profit factor</option>
                 <option value="expectancy">Expectancy ($)</option>
                 <option value="execution_score">Execution score %</option>
+                <option value="perfect_execution_rate">Perfect execution rate %</option>
                 <option value="edge_score">Edge / plan score %</option>
                 <option value="rules_score">Rule compliance %</option>
                 <option value="identity_score">Identity score %</option>
@@ -6164,6 +6191,12 @@ function statsForGoalRange(goal){
     rules_score:avgRules,
     identity_score:avgIdentity,
     reflection_score:avgReflection,
+    perfect_execution_rate:source.length
+      ? source.filter(t=>{
+          const score=executionScoreForTrade(t.id);
+          return score!==null && score>=99.999;
+        }).length/source.length*100
+      : 0,
     net_pnl:source.reduce((s,t)=>s+(Number(t.pnl)||0),0)
   };
 }
@@ -6212,7 +6245,8 @@ function metricDisplay(metricKey,value){
      metricKey==='edge_score' ||
      metricKey==='rules_score' ||
      metricKey==='identity_score' ||
-     metricKey==='reflection_score'){
+     metricKey==='reflection_score' ||
+     metricKey==='perfect_execution_rate'){
     return `${value.toFixed(1)}%`;
   }
 
@@ -6249,6 +6283,17 @@ function parentIdForGoal(goalId){
 }
 
 function effectiveGoalProgress(goalId,visited=new Set()){
+  const currentGoal=goals.find(g=>g.id===goalId);
+  const currentPhase=currentGoal ? phaseForGoal(currentGoal) : null;
+
+  if(
+    currentGoal &&
+    currentGoal.goal_level==='weekly' &&
+    currentPhase?.phase_number===1
+  ){
+    return phase1WeeklyExecutionStats(currentGoal).progress;
+  }
+
   if(visited.has(goalId)){
     return 0;
   }
@@ -7156,12 +7201,65 @@ function phaseGoalsByLevel(phaseId,level){
     );
 }
 
+
+function phase1WeeklyExecutionStats(goal){
+  const start=goal.start_date
+    ? parseLocalDate(goal.start_date)
+    : new Date();
+
+  // Weekly milestones always evaluate a full 7-day window.
+  const end=addStatsDays(start,6);
+
+  const weekTrades=tradesInDateRange(start,end);
+
+  if(!weekTrades.length){
+    return {
+      total:0,
+      perfect:0,
+      progress:0,
+      start,
+      end
+    };
+  }
+
+  const perfect=weekTrades.filter(trade=>{
+    const score=executionScoreForTrade(trade.id);
+    return score!==null && score>=99.999;
+  }).length;
+
+  return {
+    total:weekTrades.length,
+    perfect,
+    progress:perfect/weekTrades.length*100,
+    start,
+    end
+  };
+}
+
+function weeklyMilestoneProgress(goal,phase){
+  if(phase?.phase_number===1){
+    return phase1WeeklyExecutionStats(goal).progress;
+  }
+
+  return effectiveGoalProgress(goal.id);
+}
+
 function renderPhaseWeeklyMilestones(phase){
   const rows=phaseGoalsByLevel(phase.id,'weekly');
   const body=$('#phaseWeeklyTable');
 
   $('#phaseWeeklyCount').textContent=
-    rows.length===1 ? '1 milestone' : `${rows.length} milestones`;
+    phase.phase_number===1
+      ? (
+          rows.length===1
+            ? '1 milestone • auto execution'
+            : `${rows.length} milestones • auto execution`
+        )
+      : (
+          rows.length===1
+            ? '1 milestone'
+            : `${rows.length} milestones`
+        );
 
   if(!rows.length){
     body.innerHTML=
@@ -7172,8 +7270,39 @@ function renderPhaseWeeklyMilestones(phase){
   body.innerHTML='';
 
   rows.forEach((goal,index)=>{
-    const progress=effectiveGoalProgress(goal.id);
+    const progress=weeklyMilestoneProgress(goal,phase);
+    const phase1Stats=
+      phase.phase_number===1
+        ? phase1WeeklyExecutionStats(goal)
+        : null;
+
     const tr=document.createElement('tr');
+
+    const progressHtml=
+      phase1Stats
+        ? `
+          <div class="weekly-auto-score ${
+            phase1Stats.total===0
+              ? 'no-trades'
+              : phase1Stats.progress>=100
+                ? 'perfect'
+                : 'incomplete'
+          }">
+            <strong>${progress.toFixed(0)}%</strong>
+            <small>
+              ${
+                phase1Stats.total===0
+                  ? 'No trades'
+                  : `${phase1Stats.perfect}/${phase1Stats.total} perfect`
+              }
+            </small>
+          </div>
+        `
+        : `
+          <button class="btn small phase-goal-progress compact-progress-btn" data-goal-id="${goal.id}">
+            ${progress.toFixed(0)}%
+          </button>
+        `;
 
     tr.innerHTML=`
       <td class="compact-index">W${index+1}</td>
@@ -7185,26 +7314,29 @@ function renderPhaseWeeklyMilestones(phase){
             : ''
         }
       </td>
-      <td>${escapeHtml(goal.success_criteria||'—')}</td>
-      <td class="progress-cell">
-        <button class="btn small phase-goal-progress compact-progress-btn" data-goal-id="${goal.id}">
-          ${progress.toFixed(0)}%
-        </button>
-      </td>
+      <td>${
+        phase.phase_number===1
+          ? 'Perfect execution'
+          : escapeHtml(goal.success_criteria||'—')
+      }</td>
+      <td class="progress-cell">${progressHtml}</td>
     `;
 
     body.appendChild(tr);
   });
 
-  $$('.phase-goal-progress').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      const goal=goals.find(g=>g.id===btn.dataset.goalId);
+  // Non-Phase-1 milestones remain editable from their progress button.
+  if(phase.phase_number!==1){
+    $$('.phase-goal-progress').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const goal=goals.find(g=>g.id===btn.dataset.goalId);
 
-      if(goal){
-        openGoalModal(goal);
-      }
+        if(goal){
+          openGoalModal(goal);
+        }
+      });
     });
-  });
+  }
 }
 
 function renderPhaseDailyActions(phase){
@@ -7367,11 +7499,26 @@ async function addWeeklyMilestone(){
       goal_level:'weekly',
       title,
       description:$('#quickWeeklyTasks').value.trim() || null,
-      success_criteria:$('#quickWeeklyMetric').value.trim() || null,
+      success_criteria:
+        phase.phase_number===1
+          ? '100% of trades in the 7-day period must have a 100% execution score'
+          : ($('#quickWeeklyMetric').value.trim() || null),
       start_date:localDateString(weekStart),
       end_date:localDateString(weekEnd),
       manual_progress:0,
-      progress_mode:'manual',
+      progress_mode:
+        phase.phase_number===1
+          ? 'automatic'
+          : 'manual',
+      metric_key:
+        phase.phase_number===1
+          ? 'perfect_execution_rate'
+          : null,
+      target_value:
+        phase.phase_number===1
+          ? 100
+          : null,
+      target_direction:'gte',
       status:'not_started',
       updated_at:new Date().toISOString()
     });
