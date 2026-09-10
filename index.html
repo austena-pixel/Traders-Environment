@@ -2288,13 +2288,20 @@ textarea{resize:vertical;min-height:90px}
 
       <div class="stats-toolbar">
         <div class="range-tabs">
-          <button class="range-btn active" data-stats-range="7d">7 Days</button>
-          <button class="range-btn" data-stats-range="1m">1 Month</button>
+          <button class="range-btn active" data-stats-range="1d">Day</button>
+          <button class="range-btn" data-stats-range="1w">Week</button>
+          <button class="range-btn" data-stats-range="1m">Month</button>
           <button class="range-btn" data-stats-range="6m">6 Months</button>
-          <button class="range-btn" data-stats-range="1y">1 Year</button>
+          <button class="range-btn" data-stats-range="1y">Year</button>
           <button class="range-btn" data-stats-range="all">All</button>
         </div>
-        <div class="stats-date-range" id="statsDateRange">—</div>
+
+        <div class="top-actions">
+          <button class="btn small" id="statsPrevPeriod">← Previous</button>
+          <button class="btn small" id="statsCurrentPeriod">Current</button>
+          <button class="btn small" id="statsNextPeriod">Next →</button>
+          <div class="stats-date-range" id="statsDateRange">—</div>
+        </div>
       </div>
 
       <section class="stats-grid">
@@ -2344,11 +2351,11 @@ textarea{resize:vertical;min-height:90px}
         <div class="chart-panel-head">
           <div>
             <h3>Equity Curve</h3>
-            <p id="equityChartDescription">Daily account equity across the selected period.</p>
+            <p id="equityChartDescription">Account equity after every trade in the selected period.</p>
           </div>
           <div class="chart-legend-note">
-            X-axis = trading days only.<br>
-            Days with no trades are excluded from the curve.
+            X-axis = trade number (T1, T2, T3...).<br>
+            Every trade is plotted in sequence, including multiple trades on the same day.
           </div>
         </div>
 
@@ -3633,7 +3640,8 @@ let planReviews = [];
 let planChecks = [];
 let selectedEdgeTradeId = null;
 
-let statsRange = '7d';
+let statsRange = '1d';
+let statsAnchorDate = new Date();
 let equityChartInstance = null;
 
 let executionReviews = [];
@@ -6875,50 +6883,77 @@ function subtractStatsMonths(date,months){
   return d;
 }
 
-function dateRangeForStats(range){
-  const now=new Date();
-  const end=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+function startOfStatsWeek(date){
+  const d=new Date(date.getFullYear(),date.getMonth(),date.getDate());
+  const day=d.getDay();
+  const diff=day===0 ? -6 : 1-day;
+  d.setDate(d.getDate()+diff);
+  return d;
+}
 
-  if(range==='7d'){
-    return {start:addStatsDays(end,-6),end};
+function endOfStatsWeek(date){
+  return addStatsDays(startOfStatsWeek(date),6);
+}
+
+function dateRangeForStats(range){
+  const anchor=new Date(
+    statsAnchorDate.getFullYear(),
+    statsAnchorDate.getMonth(),
+    statsAnchorDate.getDate()
+  );
+
+  if(range==='1d'){
+    return {start:anchor,end:anchor};
+  }
+
+  if(range==='1w'){
+    return {
+      start:startOfStatsWeek(anchor),
+      end:endOfStatsWeek(anchor)
+    };
   }
 
   if(range==='1m'){
     return {
-      start:new Date(end.getFullYear(),end.getMonth(),1),
-      end
+      start:new Date(anchor.getFullYear(),anchor.getMonth(),1),
+      end:new Date(anchor.getFullYear(),anchor.getMonth()+1,0)
     };
   }
 
   if(range==='6m'){
     return {
-      start:subtractStatsMonths(end,6),
-      end
+      start:new Date(anchor.getFullYear(),anchor.getMonth()-5,1),
+      end:new Date(anchor.getFullYear(),anchor.getMonth()+1,0)
     };
   }
 
   if(range==='1y'){
-    const start=new Date(end);
-    start.setFullYear(start.getFullYear()-1);
-    return {start,end};
+    return {
+      start:new Date(anchor.getFullYear(),0,1),
+      end:new Date(anchor.getFullYear(),11,31)
+    };
   }
 
   if(!trades.length){
-    return {start:end,end};
+    return {start:anchor,end:anchor};
   }
 
-  const earliest=trades
+  const sortedDates=trades
     .map(t=>parseLocalDate(t.trade_date))
-    .sort((a,b)=>a-b)[0];
+    .sort((a,b)=>a-b);
 
-  return {start:earliest,end};
+  return {
+    start:sortedDates[0],
+    end:sortedDates[sortedDates.length-1]
+  };
 }
 
 function statsRangeLabel(range){
-  if(range==='7d') return '7-day';
-  if(range==='1m') return 'monthly';
+  if(range==='1d') return 'day';
+  if(range==='1w') return 'week';
+  if(range==='1m') return 'month';
   if(range==='6m') return '6-month';
-  if(range==='1y') return '1-year';
+  if(range==='1y') return 'year';
   return 'all-time';
 }
 
@@ -6941,34 +6976,31 @@ function pnlBeforeDate(start){
 }
 
 function buildDailyEquitySeries(start,end){
-  const selected=tradesInDateRange(start,end);
-  const daily={};
-
-  selected.forEach(t=>{
-    daily[t.trade_date]=(daily[t.trade_date]||0)+(Number(t.pnl)||0);
-  });
+  const selected=tradesInDateRange(start,end)
+    .sort((a,b)=>{
+      if(a.trade_date!==b.trade_date){
+        return a.trade_date.localeCompare(b.trade_date);
+      }
+      return (a.created_at||'').localeCompare(b.created_at||'');
+    });
 
   const base=Number(tradingAccount?.starting_balance||0);
   const priorPnl=pnlBeforeDate(start);
   let equity=base+priorPnl;
 
-  // Trading days only: if no trade occurred on a date, no x-axis point is created.
-  const tradingDates=Object.keys(daily).sort();
-
-  const points=tradingDates.map(date=>{
-    const dayPnl=daily[date]||0;
-    equity+=dayPnl;
-
-    const d=parseLocalDate(date);
+  const points=selected.map((trade,index)=>{
+    const tradePnl=Number(trade.pnl)||0;
+    equity+=tradePnl;
 
     return {
-      date,
-      label:d.toLocaleDateString(undefined,{
-        month:'short',
-        day:'numeric'
-      }),
+      tradeNumber:index+1,
+      label:`T${index+1}`,
+      date:trade.trade_date,
+      instrument:trade.instrument || '—',
+      direction:trade.direction || '—',
       equity,
-      dayPnl
+      tradePnl,
+      rMultiple:Number(trade.r_multiple)||0
     };
   });
 
@@ -7057,8 +7089,10 @@ function renderEquityChart(series){
         data:series.points.map(p=>p.equity),
         borderColor:'#69a8ff',
         backgroundColor:'rgba(105,168,255,.12)',
-        pointRadius:series.points.length<=35 ? 2.2 : 0,
-        pointHoverRadius:4,
+        pointRadius:
+          series.points.length===1 ? 5 :
+          series.points.length<=35 ? 2.5 : 0,
+        pointHoverRadius:5,
         borderWidth:2,
         tension:.22,
         fill:true
@@ -7081,16 +7115,16 @@ function renderEquityChart(series){
           callbacks:{
             title:(items)=>{
               const point=series.points[items[0].dataIndex];
-              return formatDate(point.date);
+              return `${point.label} • ${formatDate(point.date)}`;
             },
             label:(context)=>{
               const point=series.points[context.dataIndex];
 
               return [
-                `Equity: ${money(point.equity)}`,
-                point.dayPnl===0
-                  ? 'Daily P&L: $0.00'
-                  : `Daily P&L: ${signedMoney(point.dayPnl)}`
+                `${point.instrument} • ${point.direction}`,
+                `Trade P&L: ${signedMoney(point.tradePnl)}`,
+                `R: ${point.rMultiple>=0?'+':''}${point.rMultiple.toFixed(2)}R`,
+                `Equity: ${money(point.equity)}`
               ];
             }
           }
@@ -7103,10 +7137,11 @@ function renderEquityChart(series){
             color:'#7f8da1',
             autoSkip:true,
             maxTicksLimit:
-              statsRange==='7d' ? 7 :
-              statsRange==='1m' ? 12 :
-              statsRange==='6m' ? 10 :
-              statsRange==='1y' ? 12 : 12,
+              statsRange==='1d' ? 20 :
+              statsRange==='1w' ? 25 :
+              statsRange==='1m' ? 30 :
+              statsRange==='6m' ? 24 :
+              statsRange==='1y' ? 24 : 24,
             maxRotation:0
           }
         },
@@ -7181,6 +7216,11 @@ function renderStatistics(){
 
   const {start,end}=dateRangeForStats(statsRange);
   const series=buildDailyEquitySeries(start,end);
+
+  const periodNavDisabled=statsRange==='all';
+  $('#statsPrevPeriod').disabled=periodNavDisabled;
+  $('#statsNextPeriod').disabled=periodNavDisabled;
+  $('#statsCurrentPeriod').disabled=periodNavDisabled;
   const source=series.selectedTrades;
 
   const netPnl=source.reduce((s,t)=>s+(Number(t.pnl)||0),0);
@@ -7256,10 +7296,12 @@ function renderStatistics(){
     : netPnl>0 ? Infinity : 0;
 
   $('#statsDateRange').textContent=
-    `${formatDate(localDateString(start))} → ${formatDate(localDateString(end))}`;
+    localDateString(start)===localDateString(end)
+      ? formatDate(localDateString(start))
+      : `${formatDate(localDateString(start))} → ${formatDate(localDateString(end))}`;
 
   $('#equityChartDescription').textContent=
-    `Closing equity for each trading day across the ${statsRangeLabel(statsRange)} view.`;
+    `Equity after every trade across the selected ${statsRangeLabel(statsRange)}.`;
 
   $('#statEndingEquity').textContent=money(endingEquity);
 
@@ -7323,9 +7365,37 @@ function renderStatistics(){
   renderInstrumentStats(source);
 }
 
+function moveStatsPeriod(direction){
+  if(statsRange==='all'){
+    return;
+  }
+
+  const d=new Date(
+    statsAnchorDate.getFullYear(),
+    statsAnchorDate.getMonth(),
+    statsAnchorDate.getDate()
+  );
+
+  if(statsRange==='1d'){
+    d.setDate(d.getDate()+direction);
+  }else if(statsRange==='1w'){
+    d.setDate(d.getDate()+7*direction);
+  }else if(statsRange==='1m'){
+    d.setMonth(d.getMonth()+direction);
+  }else if(statsRange==='6m'){
+    d.setMonth(d.getMonth()+6*direction);
+  }else if(statsRange==='1y'){
+    d.setFullYear(d.getFullYear()+direction);
+  }
+
+  statsAnchorDate=d;
+  renderStatistics();
+}
+
 $$('.range-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
     statsRange=btn.dataset.statsRange;
+    statsAnchorDate=new Date();
 
     $$('.range-btn').forEach(x=>{
       x.classList.toggle('active',x===btn);
@@ -7333,6 +7403,19 @@ $$('.range-btn').forEach(btn=>{
 
     renderStatistics();
   });
+});
+
+$('#statsPrevPeriod').addEventListener('click',()=>{
+  moveStatsPeriod(-1);
+});
+
+$('#statsNextPeriod').addEventListener('click',()=>{
+  moveStatsPeriod(1);
+});
+
+$('#statsCurrentPeriod').addEventListener('click',()=>{
+  statsAnchorDate=new Date();
+  renderStatistics();
 });
 
 
