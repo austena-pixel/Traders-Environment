@@ -1913,6 +1913,256 @@ input:focus,select:focus,textarea:focus{border-color:#5275a7}
   .goal-chain-grid{grid-template-columns:1fr}
 }
 
+
+/* ADVANCED SMART PHASE WORKSPACE */
+.phase-workspace{
+  padding:15px;
+  margin-bottom:14px;
+}
+.phase-workspace-tabs{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  margin-bottom:14px;
+}
+.phase-workspace-tab{
+  border:1px solid var(--line);
+  background:#0d141d;
+  color:#93a2b5;
+  border-radius:10px;
+  padding:8px 11px;
+  font-size:10px;
+}
+.phase-workspace-tab.active{
+  background:#f3f6fb;
+  color:#080b10;
+  border-color:#f3f6fb;
+  font-weight:850;
+}
+.phase-detail-head{
+  display:flex;
+  justify-content:space-between;
+  gap:15px;
+  align-items:flex-start;
+  margin-bottom:13px;
+}
+.phase-detail-head h2{
+  margin:0;
+  font-size:18px;
+}
+.phase-detail-head p{
+  margin:5px 0 0;
+  color:var(--muted);
+  font-size:10px;
+  line-height:1.55;
+}
+.smart-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
+.smart-card{
+  border:1px solid #213044;
+  background:#0b1119;
+  border-radius:13px;
+  padding:11px;
+}
+.smart-card.objective,
+.smart-card.timebound,
+.smart-card.success{
+  grid-column:1/-1;
+}
+.smart-card label{
+  display:block;
+  color:#88a0bb;
+  font-size:9px;
+  text-transform:uppercase;
+  letter-spacing:.55px;
+  margin-bottom:6px;
+}
+.smart-card textarea{
+  min-height:78px;
+  resize:vertical;
+}
+.smart-card.objective textarea,
+.smart-card.success textarea{
+  min-height:90px;
+}
+.smart-dates{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+  margin-top:9px;
+}
+.phase-auto-panel{
+  margin-top:14px;
+  border-top:1px solid #1c2735;
+  padding-top:14px;
+}
+.phase-auto-head{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:center;
+  margin-bottom:10px;
+}
+.phase-auto-head h3{
+  margin:0;
+  font-size:13px;
+}
+.auto-readiness{
+  font-size:19px;
+  font-weight:900;
+}
+.auto-metrics-grid{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:8px;
+}
+.auto-metric{
+  border:1px solid #223044;
+  background:#0b1119;
+  border-radius:11px;
+  padding:9px;
+}
+.auto-metric span{
+  display:block;
+  color:var(--muted);
+  font-size:8px;
+  line-height:1.35;
+}
+.auto-metric strong{
+  display:block;
+  margin-top:5px;
+  font-size:13px;
+}
+.auto-metric small{
+  display:block;
+  margin-top:3px;
+  color:#728399;
+  font-size:8px;
+}
+.metric-pass strong{color:var(--green)}
+.metric-fail strong{color:var(--red)}
+.metric-neutral strong{color:#dbe7f4}
+.template-tracker{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin-top:14px;
+}
+.template-box{
+  border:1px solid #1f2c3c;
+  background:#0a1017;
+  border-radius:13px;
+  padding:12px;
+}
+.template-box-head{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+  margin-bottom:9px;
+}
+.template-box-head h3{
+  margin:0;
+  font-size:12px;
+}
+.template-table{
+  width:100%;
+  border-collapse:collapse;
+}
+.template-table th,
+.template-table td{
+  border-bottom:1px solid #17212d;
+  padding:7px 6px;
+  font-size:9px;
+  text-align:left;
+  vertical-align:top;
+}
+.template-table th{
+  color:#8392a5;
+  text-transform:uppercase;
+  letter-spacing:.4px;
+}
+.template-table td.progress-cell{
+  min-width:90px;
+}
+.quick-entry{
+  display:grid;
+  grid-template-columns:1fr 1.3fr 1fr auto;
+  gap:7px;
+  margin-top:10px;
+}
+.quick-entry.daily{
+  grid-template-columns:120px 1fr 1.2fr 80px auto;
+}
+.quick-entry input{
+  font-size:9px;
+  padding:7px 8px;
+}
+.phase-review-panel{
+  margin-top:14px;
+  border-top:1px solid #1c2735;
+  padding-top:14px;
+}
+.phase-review-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+}
+.phase-review-grid textarea{
+  min-height:90px;
+}
+.phase-review-footer{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:center;
+  margin-top:10px;
+  flex-wrap:wrap;
+}
+.phase-ready-check{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  color:#aab8c9;
+  font-size:10px;
+}
+.phase-score-pill{
+  border:1px solid #2a3b51;
+  border-radius:999px;
+  padding:7px 10px;
+  font-size:10px;
+}
+.goal-automation-row{
+  display:grid;
+  grid-template-columns:180px 1fr 120px 110px;
+  gap:8px;
+  align-items:end;
+}
+.auto-goal-reading{
+  margin-top:6px;
+  color:#8da0b6;
+  font-size:9px;
+}
+@media(max-width:1250px){
+  .auto-metrics-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:980px){
+  .template-tracker{grid-template-columns:1fr}
+}
+@media(max-width:760px){
+  .smart-grid,.phase-review-grid{grid-template-columns:1fr}
+  .smart-card.objective,
+  .smart-card.timebound,
+  .smart-card.success{grid-column:auto}
+  .auto-metrics-grid{grid-template-columns:repeat(2,1fr)}
+  .quick-entry,.quick-entry.daily{grid-template-columns:1fr}
+  .goal-automation-row{grid-template-columns:1fr}
+  .smart-dates{grid-template-columns:1fr}
+}
+
 /* PLACEHOLDER PAGES */
 .placeholder{
   padding:38px;
@@ -3344,7 +3594,7 @@ textarea{resize:vertical;min-height:90px}
       <header class="page-head">
         <div>
           <h1>Goals</h1>
-          <p>Build daily behaviour into weekly, monthly, half-year and yearly achievement while progressing through your four trading phases.</p>
+          <p>Plan each development phase with SMART criteria, connect daily actions to long-term goals, and let recorded trading data automate progress where it can be measured objectively.</p>
         </div>
         <div class="top-actions">
           <button class="btn" id="goalsRefreshBtn">Refresh</button>
@@ -3353,6 +3603,173 @@ textarea{resize:vertical;min-height:90px}
       </header>
 
       <section class="phase-roadmap" id="phaseRoadmap"></section>
+
+
+      <section class="panel phase-workspace">
+        <div class="phase-workspace-tabs" id="phaseWorkspaceTabs"></div>
+
+        <div class="phase-detail-head">
+          <div>
+            <h2 id="phaseWorkspaceTitle">Phase</h2>
+            <p id="phaseWorkspaceSubtitle">SMART development workspace</p>
+          </div>
+
+          <button class="btn primary" id="savePhaseSmartBtn">Save SMART Plan</button>
+        </div>
+
+        <div class="smart-grid">
+          <div class="smart-card objective">
+            <label>Objective</label>
+            <textarea id="phaseSmartObjective"></textarea>
+          </div>
+
+          <div class="smart-card">
+            <label>Specific</label>
+            <textarea id="phaseSmartSpecific"></textarea>
+          </div>
+
+          <div class="smart-card">
+            <label>Measurable</label>
+            <textarea id="phaseSmartMeasurable"></textarea>
+          </div>
+
+          <div class="smart-card">
+            <label>Achievable</label>
+            <textarea id="phaseSmartAchievable"></textarea>
+          </div>
+
+          <div class="smart-card">
+            <label>Relevant</label>
+            <textarea id="phaseSmartRelevant"></textarea>
+          </div>
+
+          <div class="smart-card timebound">
+            <label>Time-Bound</label>
+            <textarea id="phaseSmartTimeBound"></textarea>
+
+            <div class="smart-dates">
+              <div class="field">
+                <label>Starting Date</label>
+                <input type="date" id="phaseSmartStartDate">
+              </div>
+
+              <div class="field">
+                <label>Target Completion</label>
+                <input type="date" id="phaseSmartTargetDate">
+              </div>
+            </div>
+          </div>
+
+          <div class="smart-card success">
+            <label>Success Criteria</label>
+            <textarea id="phaseSmartSuccess"></textarea>
+          </div>
+        </div>
+
+        <div class="phase-auto-panel">
+          <div class="phase-auto-head">
+            <div>
+              <h3>Automated Evidence</h3>
+              <span class="muted">Calculated from the data already recorded elsewhere in Traders Environment.</span>
+            </div>
+            <div class="auto-readiness" id="phaseAutoReadiness">0%</div>
+          </div>
+
+          <div class="auto-metrics-grid" id="phaseAutoMetrics"></div>
+        </div>
+
+        <div class="template-tracker">
+          <div class="template-box">
+            <div class="template-box-head">
+              <h3>Weekly Milestones</h3>
+              <span class="pager-text" id="phaseWeeklyCount">0</span>
+            </div>
+
+            <table class="template-table">
+              <thead>
+                <tr>
+                  <th>Week</th>
+                  <th>Goal</th>
+                  <th>Tasks</th>
+                  <th>Metric</th>
+                  <th>Progress</th>
+                </tr>
+              </thead>
+              <tbody id="phaseWeeklyTable"></tbody>
+            </table>
+
+            <div class="quick-entry">
+              <input id="quickWeeklyGoal" type="text" placeholder="Weekly goal">
+              <input id="quickWeeklyTasks" type="text" placeholder="Tasks">
+              <input id="quickWeeklyMetric" type="text" placeholder="Success metric">
+              <button class="btn small" id="addWeeklyMilestoneBtn">Add</button>
+            </div>
+          </div>
+
+          <div class="template-box">
+            <div class="template-box-head">
+              <h3>Daily Action Plan</h3>
+              <span class="pager-text" id="phaseDailyCount">0</span>
+            </div>
+
+            <table class="template-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Priority</th>
+                  <th>Practice</th>
+                  <th>Hours</th>
+                  <th>Done</th>
+                </tr>
+              </thead>
+              <tbody id="phaseDailyTable"></tbody>
+            </table>
+
+            <div class="quick-entry daily">
+              <input id="quickDailyDate" type="date">
+              <input id="quickDailyPriority" type="text" placeholder="Priority">
+              <input id="quickDailyPractice" type="text" placeholder="Practice / action">
+              <input id="quickDailyHours" type="number" min="0" step="0.25" placeholder="Hours">
+              <button class="btn small" id="addDailyActionBtn">Add</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="phase-review-panel">
+          <div class="template-box-head">
+            <h3>Phase Review</h3>
+            <span class="phase-score-pill" id="phaseReviewScore">Overall score: 0%</span>
+          </div>
+
+          <div class="phase-review-grid">
+            <div class="field">
+              <label>What Went Well?</label>
+              <textarea id="phaseReviewWentWell"></textarea>
+            </div>
+            <div class="field">
+              <label>Challenges</label>
+              <textarea id="phaseReviewChallenges"></textarea>
+            </div>
+            <div class="field">
+              <label>Lessons Learned</label>
+              <textarea id="phaseReviewLessons"></textarea>
+            </div>
+            <div class="field">
+              <label>Improvements</label>
+              <textarea id="phaseReviewImprovements"></textarea>
+            </div>
+          </div>
+
+          <div class="phase-review-footer">
+            <label class="phase-ready-check">
+              <input type="checkbox" id="phaseReviewReady">
+              Ready for next phase
+            </label>
+
+            <button class="btn primary" id="savePhaseReviewBtn">Save Phase Review</button>
+          </div>
+        </div>
+      </section>
 
       <section class="panel phase1-gate">
         <div class="phase1-gate-head">
@@ -3738,7 +4155,50 @@ textarea{resize:vertical;min-height:90px}
         </div>
 
         <div class="field full">
-          <label>Manual Progress — used when the goal has no child goals</label>
+          <label>Progress Method</label>
+          <div class="goal-automation-row">
+            <div class="field">
+              <select id="goalProgressMode">
+                <option value="manual">Manual</option>
+                <option value="automatic">Automatic from trading data</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <select id="goalMetricKey">
+                <option value="trade_count">Trade count</option>
+                <option value="win_rate">Win rate %</option>
+                <option value="avg_r">Average R</option>
+                <option value="profit_factor">Profit factor</option>
+                <option value="expectancy">Expectancy ($)</option>
+                <option value="execution_score">Execution score %</option>
+                <option value="edge_score">Edge / plan score %</option>
+                <option value="rules_score">Rule compliance %</option>
+                <option value="identity_score">Identity score %</option>
+                <option value="reflection_score">Reflection completion %</option>
+                <option value="net_pnl">Net P&L ($)</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <select id="goalTargetDirection">
+                <option value="gte">At least ≥</option>
+                <option value="lte">At most ≤</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <input id="goalTargetValue" type="number" step="0.01" placeholder="Target">
+            </div>
+          </div>
+
+          <div class="auto-goal-reading" id="goalAutoPreview">
+            Manual mode: update progress yourself.
+          </div>
+        </div>
+
+        <div class="field full" id="goalManualProgressWrap">
+          <label>Manual Progress — used when this goal has no child goals</label>
           <div class="goal-progress-control">
             <input type="range" id="goalProgress" min="0" max="100" step="5" value="0">
             <output id="goalProgressOutput">0%</output>
@@ -3802,7 +4262,9 @@ let tradingPhases = [];
 let goals = [];
 let goalLinks = [];
 let goalProgressLogs = [];
+let phaseReviews = [];
 let editingGoalId = null;
+let selectedPhaseWorkspaceNumber = 1;
 
 let viewDate = new Date();
 let editingTradeId = null;
@@ -3917,7 +4379,9 @@ async function initializeSupabase(){
       goals = [];
       goalLinks = [];
       goalProgressLogs = [];
+      phaseReviews = [];
       editingGoalId = null;
+      selectedPhaseWorkspaceNumber = 1;
 
       setLoggedInUI(false);
     }
@@ -4228,7 +4692,7 @@ async function ensureDefaultTradingPhases(){
 }
 
 async function loadGoalsData(){
-  const [phasesRes,goalsRes,linksRes,logsRes]=await Promise.all([
+  const [phasesRes,goalsRes,linksRes,logsRes,reviewsRes]=await Promise.all([
     db
       .from('trading_phases')
       .select('*')
@@ -4251,14 +4715,20 @@ async function loadGoalsData(){
       .select('*')
       .eq('user_id',currentUser.id)
       .order('logged_at',{ascending:false})
-      .limit(100)
+      .limit(100),
+
+    db
+      .from('phase_reviews')
+      .select('*')
+      .eq('user_id',currentUser.id)
   ]);
 
   const error=
     phasesRes.error ||
     goalsRes.error ||
     linksRes.error ||
-    logsRes.error;
+    logsRes.error ||
+    reviewsRes.error;
 
   if(error){
     console.error(error);
@@ -4270,6 +4740,12 @@ async function loadGoalsData(){
   goals=goalsRes.data||[];
   goalLinks=linksRes.data||[];
   goalProgressLogs=logsRes.data||[];
+  phaseReviews=reviewsRes.data||[];
+
+  const active=tradingPhases.find(p=>p.status==='active');
+  if(active && !tradingPhases.some(p=>p.phase_number===selectedPhaseWorkspaceNumber)){
+    selectedPhaseWorkspaceNumber=active.phase_number;
+  }
 }
 
 
@@ -5073,6 +5549,146 @@ const GOAL_PARENT_LEVEL={
   yearly:null
 };
 
+
+function goalDateRange(goal){
+  let start=goal.start_date
+    ? parseLocalDate(goal.start_date)
+    : (
+        trades.length
+          ? parseLocalDate([...trades].sort((a,b)=>a.trade_date.localeCompare(b.trade_date))[0].trade_date)
+          : new Date()
+      );
+
+  let end=goal.end_date
+    ? parseLocalDate(goal.end_date)
+    : new Date();
+
+  return {start,end};
+}
+
+function statsForGoalRange(goal){
+  const {start,end}=goalDateRange(goal);
+  const source=tradesInDateRange(start,end);
+
+  const wins=source.filter(t=>Number(t.pnl)>0);
+  const losses=source.filter(t=>Number(t.pnl)<0);
+
+  const grossProfit=wins.reduce((s,t)=>s+(Number(t.pnl)||0),0);
+  const grossLoss=Math.abs(
+    losses.reduce((s,t)=>s+(Number(t.pnl)||0),0)
+  );
+
+  const dates=[...new Set(source.map(t=>t.trade_date))];
+  const sessions=psychologySessions.filter(
+    s=>s.session_date>=localDateString(start) &&
+       s.session_date<=localDateString(end)
+  );
+
+  const avgExecution=averageNumbers(
+    source.map(t=>executionScoreForTrade(t.id) ?? 0)
+  );
+
+  const avgEdge=averageNumbers(
+    source.map(t=>edgeScoreForTrade(t.id) ?? 0)
+  );
+
+  const avgRules=averageNumbers(
+    sessions.map(s=>rulePercentForSession(s.id) ?? 0)
+  );
+
+  const avgIdentity=averageNumbers(
+    sessions.map(s=>identityPercentForSession(s.id) ?? 0)
+  );
+
+  const avgReflection=averageNumbers(
+    sessions.map(s=>reflectionCompletenessForSession(s))
+  );
+
+  return {
+    trade_count:source.length,
+    win_rate:source.length ? wins.length/source.length*100 : 0,
+    avg_r:source.length
+      ? source.reduce((s,t)=>s+(Number(t.r_multiple)||0),0)/source.length
+      : 0,
+    profit_factor:grossLoss
+      ? grossProfit/grossLoss
+      : grossProfit>0 ? 999 : 0,
+    expectancy:source.length
+      ? source.reduce((s,t)=>s+(Number(t.pnl)||0),0)/source.length
+      : 0,
+    execution_score:avgExecution,
+    edge_score:avgEdge,
+    rules_score:avgRules,
+    identity_score:avgIdentity,
+    reflection_score:avgReflection,
+    net_pnl:source.reduce((s,t)=>s+(Number(t.pnl)||0),0)
+  };
+}
+
+function automaticGoalMetricValue(goal){
+  const metrics=statsForGoalRange(goal);
+  return Number(metrics[goal.metric_key]) || 0;
+}
+
+function automaticGoalProgress(goal){
+  if(goal.progress_mode!=='automatic' || !goal.metric_key){
+    return null;
+  }
+
+  const current=automaticGoalMetricValue(goal);
+  const target=Number(goal.target_value);
+
+  if(!Number.isFinite(target) || target===0){
+    return 0;
+  }
+
+  if(goal.target_direction==='lte'){
+    if(current<=target){
+      return 100;
+    }
+
+    return Math.max(
+      0,
+      Math.min(100,(target/Math.abs(current))*100)
+    );
+  }
+
+  if(target<0){
+    return current>=target ? 100 : 0;
+  }
+
+  return Math.max(
+    0,
+    Math.min(100,(current/target)*100)
+  );
+}
+
+function metricDisplay(metricKey,value){
+  if(metricKey==='win_rate' ||
+     metricKey==='execution_score' ||
+     metricKey==='edge_score' ||
+     metricKey==='rules_score' ||
+     metricKey==='identity_score' ||
+     metricKey==='reflection_score'){
+    return `${value.toFixed(1)}%`;
+  }
+
+  if(metricKey==='avg_r'){
+    return `${value>=0?'+':''}${value.toFixed(2)}R`;
+  }
+
+  if(metricKey==='expectancy' || metricKey==='net_pnl'){
+    return signedMoney(value);
+  }
+
+  if(metricKey==='profit_factor'){
+    return value>=999 ? '∞' : value.toFixed(2);
+  }
+
+  return value.toFixed(0);
+}
+
+
 function phaseForGoal(goal){
   return tradingPhases.find(p=>p.id===goal.phase_id)||null;
 }
@@ -5104,6 +5720,12 @@ function effectiveGoalProgress(goalId,visited=new Set()){
   const childIds=childIdsForGoal(goalId);
 
   if(!childIds.length){
+    const auto=automaticGoalProgress(goal);
+
+    if(auto!==null){
+      return auto;
+    }
+
     return Math.max(
       0,
       Math.min(100,Number(goal.manual_progress)||0)
@@ -5525,6 +6147,816 @@ function renderPhase1Qualification(){
   }
 }
 
+
+function selectedWorkspacePhase(){
+  return tradingPhases.find(
+    p=>p.phase_number===selectedPhaseWorkspaceNumber
+  ) || tradingPhases[0] || null;
+}
+
+function phaseReviewForPhase(phaseId){
+  return phaseReviews.find(
+    review=>review.phase_id===phaseId
+  ) || null;
+}
+
+function phaseTradeDateRange(phase){
+  let start;
+
+  if(phase?.started_at){
+    const d=new Date(phase.started_at);
+    start=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  }else if(trades.length){
+    start=parseLocalDate(
+      [...trades].sort(
+        (a,b)=>a.trade_date.localeCompare(b.trade_date)
+      )[0].trade_date
+    );
+  }else{
+    start=new Date();
+  }
+
+  const end=phase?.target_completion
+    ? parseLocalDate(phase.target_completion)
+    : new Date();
+
+  return {start,end};
+}
+
+function phaseDataMetrics(phase){
+  if(!phase){
+    return {
+      trades:0,winRate:0,avgR:0,profitFactor:0,
+      expectancy:0,edge:0,execution:0,rules:0,
+      identity:0,reflection:0,riskIdentity:0,netPnl:0,
+      reviewCoverage:0
+    };
+  }
+
+  const {start,end}=phaseTradeDateRange(phase);
+  const source=tradesInDateRange(start,end);
+
+  const wins=source.filter(t=>Number(t.pnl)>0);
+  const losses=source.filter(t=>Number(t.pnl)<0);
+
+  const grossProfit=wins.reduce(
+    (s,t)=>s+(Number(t.pnl)||0),0
+  );
+
+  const grossLoss=Math.abs(
+    losses.reduce((s,t)=>s+(Number(t.pnl)||0),0)
+  );
+
+  const sessions=psychologySessions.filter(
+    s=>s.session_date>=localDateString(start) &&
+       s.session_date<=localDateString(end)
+  );
+
+  const riskScores=[];
+
+  sessions.forEach(session=>{
+    const row=identityScores.find(
+      x=>x.session_id===session.id &&
+         x.value_key==='risk_management'
+    );
+
+    if(row){
+      riskScores.push((Number(row.score)||0)*10);
+    }
+  });
+
+  const reviewedCount=source.filter(
+    trade=>
+      reviewForTrade(trade.id) &&
+      executionReviewForTrade(trade.id)
+  ).length;
+
+  return {
+    trades:source.length,
+    winRate:source.length
+      ? wins.length/source.length*100
+      : 0,
+    avgR:source.length
+      ? source.reduce(
+          (s,t)=>s+(Number(t.r_multiple)||0),0
+        )/source.length
+      : 0,
+    profitFactor:grossLoss
+      ? grossProfit/grossLoss
+      : grossProfit>0 ? 999 : 0,
+    expectancy:source.length
+      ? source.reduce(
+          (s,t)=>s+(Number(t.pnl)||0),0
+        )/source.length
+      : 0,
+    edge:averageNumbers(
+      source.map(t=>edgeScoreForTrade(t.id) ?? 0)
+    ),
+    execution:averageNumbers(
+      source.map(t=>executionScoreForTrade(t.id) ?? 0)
+    ),
+    rules:averageNumbers(
+      sessions.map(s=>rulePercentForSession(s.id) ?? 0)
+    ),
+    identity:averageNumbers(
+      sessions.map(s=>identityPercentForSession(s.id) ?? 0)
+    ),
+    reflection:averageNumbers(
+      sessions.map(s=>reflectionCompletenessForSession(s))
+    ),
+    riskIdentity:averageNumbers(riskScores),
+    netPnl:source.reduce(
+      (s,t)=>s+(Number(t.pnl)||0),0
+    ),
+    reviewCoverage:source.length
+      ? reviewedCount/source.length*100
+      : 0
+  };
+}
+
+function phaseAutomatedEvidence(phase){
+  if(!phase){
+    return {readiness:0,items:[]};
+  }
+
+  const m=phaseDataMetrics(phase);
+
+  if(phase.phase_number===1){
+    const q=buildPhase1Qualification();
+
+    const items=[
+      {
+        label:'Passing samples',
+        value:`${q.maxStreak}/${q.requiredSamples}`,
+        pass:q.qualified,
+        note:`${q.sampleSize} trades each`
+      },
+      {
+        label:'Current sample',
+        value:`${q.currentSampleTrades}/${q.sampleSize}`,
+        pass:null,
+        note:'Trades collected'
+      },
+      {
+        label:'Execution',
+        value:`${m.execution.toFixed(1)}%`,
+        pass:m.execution>=q.threshold,
+        note:`Target ≥${q.threshold}%`
+      },
+      {
+        label:'Edge / Plan',
+        value:`${m.edge.toFixed(1)}%`,
+        pass:m.edge>=q.threshold,
+        note:`Target ≥${q.threshold}%`
+      },
+      {
+        label:'Rules',
+        value:`${m.rules.toFixed(1)}%`,
+        pass:m.rules>=q.threshold,
+        note:`Target ≥${q.threshold}%`
+      },
+      {
+        label:'Identity',
+        value:`${m.identity.toFixed(1)}%`,
+        pass:m.identity>=q.threshold,
+        note:`Target ≥${q.threshold}%`
+      }
+    ];
+
+    return {
+      readiness:q.currentProgress,
+      items
+    };
+  }
+
+  if(phase.phase_number===2){
+    const target=Math.max(
+      1,
+      Number(phase.target_trade_sample)||80
+    );
+
+    const conditions=[
+      m.trades>=target,
+      m.expectancy>0,
+      m.profitFactor>1,
+      m.execution>=90,
+      m.edge>=90
+    ];
+
+    const items=[
+      {
+        label:'Forward-tested trades',
+        value:`${m.trades}/${target}`,
+        pass:m.trades>=target,
+        note:'Sample progress'
+      },
+      {
+        label:'Expectancy',
+        value:signedMoney(m.expectancy),
+        pass:m.expectancy>0,
+        note:'Must be positive'
+      },
+      {
+        label:'Profit factor',
+        value:m.profitFactor>=999?'∞':m.profitFactor.toFixed(2),
+        pass:m.profitFactor>1,
+        note:'Target >1.00'
+      },
+      {
+        label:'Win rate',
+        value:`${m.winRate.toFixed(1)}%`,
+        pass:null,
+        note:'Observed'
+      },
+      {
+        label:'Average R',
+        value:`${m.avgR>=0?'+':''}${m.avgR.toFixed(2)}R`,
+        pass:m.avgR>0,
+        note:'Observed'
+      },
+      {
+        label:'Execution',
+        value:`${m.execution.toFixed(1)}%`,
+        pass:m.execution>=90,
+        note:'Maintain ≥90%'
+      },
+      {
+        label:'Plan adherence',
+        value:`${m.edge.toFixed(1)}%`,
+        pass:m.edge>=90,
+        note:'Maintain ≥90%'
+      }
+    ];
+
+    return {
+      readiness:conditions.filter(Boolean).length/conditions.length*100,
+      items
+    };
+  }
+
+  if(phase.phase_number===3){
+    const conditions=[
+      m.reviewCoverage>=90,
+      m.rules>=90,
+      m.identity>=90,
+      m.reflection>=90,
+      m.execution>=90
+    ];
+
+    const items=[
+      {
+        label:'Trade classification',
+        value:`${m.reviewCoverage.toFixed(1)}%`,
+        pass:m.reviewCoverage>=90,
+        note:'Edge + execution reviewed'
+      },
+      {
+        label:'Rule stability',
+        value:`${m.rules.toFixed(1)}%`,
+        pass:m.rules>=90,
+        note:'Target ≥90%'
+      },
+      {
+        label:'Identity stability',
+        value:`${m.identity.toFixed(1)}%`,
+        pass:m.identity>=90,
+        note:'Target ≥90%'
+      },
+      {
+        label:'Reflection',
+        value:`${m.reflection.toFixed(1)}%`,
+        pass:m.reflection>=90,
+        note:'Adjustment loop'
+      },
+      {
+        label:'Execution',
+        value:`${m.execution.toFixed(1)}%`,
+        pass:m.execution>=90,
+        note:'Remain stable'
+      },
+      {
+        label:'Trades observed',
+        value:String(m.trades),
+        pass:null,
+        note:'Across conditions'
+      }
+    ];
+
+    return {
+      readiness:conditions.filter(Boolean).length/conditions.length*100,
+      items
+    };
+  }
+
+  const conditions=[
+    m.riskIdentity>=90,
+    m.rules>=90,
+    m.execution>=90,
+    m.netPnl>0
+  ];
+
+  const items=[
+    {
+      label:'Risk-management identity',
+      value:`${m.riskIdentity.toFixed(1)}%`,
+      pass:m.riskIdentity>=90,
+      note:'Target ≥90%'
+    },
+    {
+      label:'Rule compliance',
+      value:`${m.rules.toFixed(1)}%`,
+      pass:m.rules>=90,
+      note:'Capital protection'
+    },
+    {
+      label:'Execution',
+      value:`${m.execution.toFixed(1)}%`,
+      pass:m.execution>=90,
+      note:'No degradation'
+    },
+    {
+      label:'Net P&L',
+      value:signedMoney(m.netPnl),
+      pass:m.netPnl>0,
+      note:'Accumulation'
+    },
+    {
+      label:'Expectancy',
+      value:signedMoney(m.expectancy),
+      pass:m.expectancy>0,
+      note:'Per trade'
+    },
+    {
+      label:'Profit factor',
+      value:m.profitFactor>=999?'∞':m.profitFactor.toFixed(2),
+      pass:m.profitFactor>1,
+      note:'Efficiency'
+    }
+  ];
+
+  return {
+    readiness:conditions.filter(Boolean).length/conditions.length*100,
+    items
+  };
+}
+
+function renderPhaseWorkspaceTabs(){
+  const box=$('#phaseWorkspaceTabs');
+  box.innerHTML='';
+
+  tradingPhases
+    .sort((a,b)=>a.phase_number-b.phase_number)
+    .forEach(phase=>{
+      const button=document.createElement('button');
+
+      button.className=
+        'phase-workspace-tab'+(
+          phase.phase_number===selectedPhaseWorkspaceNumber
+            ? ' active'
+            : ''
+        );
+
+      button.textContent=
+        `Phase ${phase.phase_number} — ${phase.name}`;
+
+      button.addEventListener('click',()=>{
+        selectedPhaseWorkspaceNumber=phase.phase_number;
+        renderPhaseWorkspace();
+      });
+
+      box.appendChild(button);
+    });
+}
+
+function renderPhaseSmartForm(phase){
+  $('#phaseWorkspaceTitle').textContent=
+    `Phase ${phase.phase_number} — ${phase.name}`;
+
+  $('#phaseWorkspaceSubtitle').textContent=
+    phase.status==='active'
+      ? 'Current active development phase'
+      : `Status: ${phase.status}`;
+
+  $('#phaseSmartObjective').value=
+    phase.objective || '';
+
+  $('#phaseSmartSpecific').value=
+    phase.specific_text || '';
+
+  $('#phaseSmartMeasurable').value=
+    phase.measurable_text || '';
+
+  $('#phaseSmartAchievable').value=
+    phase.achievable_text || '';
+
+  $('#phaseSmartRelevant').value=
+    phase.relevant_text || '';
+
+  $('#phaseSmartTimeBound').value=
+    phase.time_bound_text || '';
+
+  $('#phaseSmartSuccess').value=
+    phase.success_criteria || '';
+
+  $('#phaseSmartStartDate').value=
+    phase.started_at
+      ? localDateString(new Date(phase.started_at))
+      : '';
+
+  $('#phaseSmartTargetDate').value=
+    phase.target_completion || '';
+}
+
+function renderPhaseAutomatedEvidence(phase){
+  const evidence=phaseAutomatedEvidence(phase);
+  const box=$('#phaseAutoMetrics');
+
+  $('#phaseAutoReadiness').textContent=
+    `${evidence.readiness.toFixed(0)}%`;
+
+  box.innerHTML='';
+
+  evidence.items.forEach(item=>{
+    const card=document.createElement('div');
+
+    card.className=
+      'auto-metric '+
+      (
+        item.pass===true
+          ? 'metric-pass'
+          : item.pass===false
+            ? 'metric-fail'
+            : 'metric-neutral'
+      );
+
+    card.innerHTML=`
+      <span>${escapeHtml(item.label)}</span>
+      <strong>${escapeHtml(String(item.value))}</strong>
+      <small>${escapeHtml(item.note||'')}</small>
+    `;
+
+    box.appendChild(card);
+  });
+}
+
+function phaseGoalsByLevel(phaseId,level){
+  return goals
+    .filter(
+      goal=>
+        goal.phase_id===phaseId &&
+        goal.goal_level===level
+    )
+    .sort((a,b)=>
+      (a.start_date||'').localeCompare(b.start_date||'')
+    );
+}
+
+function renderPhaseWeeklyMilestones(phase){
+  const rows=phaseGoalsByLevel(phase.id,'weekly');
+  const body=$('#phaseWeeklyTable');
+
+  $('#phaseWeeklyCount').textContent=
+    rows.length===1 ? '1 milestone' : `${rows.length} milestones`;
+
+  if(!rows.length){
+    body.innerHTML=
+      '<tr><td colspan="5" class="muted">No weekly milestones yet.</td></tr>';
+    return;
+  }
+
+  body.innerHTML='';
+
+  rows.forEach((goal,index)=>{
+    const progress=effectiveGoalProgress(goal.id);
+    const tr=document.createElement('tr');
+
+    tr.innerHTML=`
+      <td>Week ${index+1}</td>
+      <td>${escapeHtml(goal.title)}</td>
+      <td>${escapeHtml(goal.description||'—')}</td>
+      <td>${escapeHtml(goal.success_criteria||'—')}</td>
+      <td class="progress-cell">
+        <button class="btn small phase-goal-progress" data-goal-id="${goal.id}">
+          ${progress.toFixed(0)}%
+        </button>
+      </td>
+    `;
+
+    body.appendChild(tr);
+  });
+
+  $$('.phase-goal-progress').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const goal=goals.find(g=>g.id===btn.dataset.goalId);
+
+      if(goal){
+        openGoalModal(goal);
+      }
+    });
+  });
+}
+
+function renderPhaseDailyActions(phase){
+  const rows=phaseGoalsByLevel(phase.id,'daily');
+  const body=$('#phaseDailyTable');
+
+  $('#phaseDailyCount').textContent=
+    rows.length===1 ? '1 action' : `${rows.length} actions`;
+
+  if(!rows.length){
+    body.innerHTML=
+      '<tr><td colspan="5" class="muted">No daily actions yet.</td></tr>';
+    return;
+  }
+
+  body.innerHTML='';
+
+  rows.slice(-14).forEach(goal=>{
+    const progress=effectiveGoalProgress(goal.id);
+    const tr=document.createElement('tr');
+
+    tr.innerHTML=`
+      <td>${goal.start_date ? formatDate(goal.start_date) : '—'}</td>
+      <td>${escapeHtml(goal.priority || goal.title || '—')}</td>
+      <td>${escapeHtml(goal.practice || goal.description || '—')}</td>
+      <td>${goal.planned_hours==null ? '—' : Number(goal.planned_hours).toFixed(2)}</td>
+      <td>
+        <input
+          class="phase-daily-done"
+          data-goal-id="${goal.id}"
+          type="checkbox"
+          ${progress>=100?'checked':''}
+        >
+      </td>
+    `;
+
+    body.appendChild(tr);
+  });
+
+  $$('.phase-daily-done').forEach(input=>{
+    input.addEventListener('change',()=>{
+      setGoalProgress(
+        input.dataset.goalId,
+        input.checked ? 100 : 0,
+        input.checked
+          ? 'Daily action completed'
+          : 'Daily action reopened'
+      );
+    });
+  });
+}
+
+function renderPhaseReview(phase){
+  const review=phaseReviewForPhase(phase.id);
+  const evidence=phaseAutomatedEvidence(phase);
+
+  $('#phaseReviewWentWell').value=
+    review?.what_went_well || '';
+
+  $('#phaseReviewChallenges').value=
+    review?.challenges || '';
+
+  $('#phaseReviewLessons').value=
+    review?.lessons_learned || '';
+
+  $('#phaseReviewImprovements').value=
+    review?.improvements || '';
+
+  $('#phaseReviewReady').checked=
+    Boolean(review?.ready_for_next_phase);
+
+  $('#phaseReviewScore').textContent=
+    `Overall score: ${evidence.readiness.toFixed(0)}%`;
+}
+
+function renderPhaseWorkspace(){
+  const phase=selectedWorkspacePhase();
+
+  if(!phase){
+    return;
+  }
+
+  renderPhaseWorkspaceTabs();
+  renderPhaseSmartForm(phase);
+  renderPhaseAutomatedEvidence(phase);
+  renderPhaseWeeklyMilestones(phase);
+  renderPhaseDailyActions(phase);
+  renderPhaseReview(phase);
+
+  if(!$('#quickDailyDate').value){
+    $('#quickDailyDate').value=localDateString(new Date());
+  }
+}
+
+async function savePhaseSmartPlan(){
+  const phase=selectedWorkspacePhase();
+  if(!phase){
+    return;
+  }
+
+  const startDate=$('#phaseSmartStartDate').value;
+
+  const payload={
+    objective:$('#phaseSmartObjective').value.trim(),
+    specific_text:$('#phaseSmartSpecific').value.trim() || null,
+    measurable_text:$('#phaseSmartMeasurable').value.trim() || null,
+    achievable_text:$('#phaseSmartAchievable').value.trim() || null,
+    relevant_text:$('#phaseSmartRelevant').value.trim() || null,
+    time_bound_text:$('#phaseSmartTimeBound').value.trim() || null,
+    success_criteria:$('#phaseSmartSuccess').value.trim() || null,
+    target_completion:$('#phaseSmartTargetDate').value || null,
+    started_at:startDate
+      ? new Date(`${startDate}T12:00:00`).toISOString()
+      : phase.started_at,
+    updated_at:new Date().toISOString()
+  };
+
+  const {error}=await db
+    .from('trading_phases')
+    .update(payload)
+    .eq('id',phase.id)
+    .eq('user_id',currentUser.id);
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  await loadGoalsData();
+  renderGoals();
+
+  showStatus('SMART phase plan saved');
+}
+
+async function addWeeklyMilestone(){
+  const phase=selectedWorkspacePhase();
+  const title=$('#quickWeeklyGoal').value.trim();
+
+  if(!phase || !title){
+    alert('Enter the weekly goal.');
+    return;
+  }
+
+  const today=new Date();
+  const weekStart=startOfStatsWeek(today);
+  const weekEnd=endOfStatsWeek(today);
+
+  const {error}=await db
+    .from('goals')
+    .insert({
+      user_id:currentUser.id,
+      phase_id:phase.id,
+      goal_level:'weekly',
+      title,
+      description:$('#quickWeeklyTasks').value.trim() || null,
+      success_criteria:$('#quickWeeklyMetric').value.trim() || null,
+      start_date:localDateString(weekStart),
+      end_date:localDateString(weekEnd),
+      manual_progress:0,
+      progress_mode:'manual',
+      status:'not_started',
+      updated_at:new Date().toISOString()
+    });
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  $('#quickWeeklyGoal').value='';
+  $('#quickWeeklyTasks').value='';
+  $('#quickWeeklyMetric').value='';
+
+  await loadGoalsData();
+  renderGoals();
+
+  showStatus('Weekly milestone added');
+}
+
+async function addDailyAction(){
+  const phase=selectedWorkspacePhase();
+  const priority=$('#quickDailyPriority').value.trim();
+  const practice=$('#quickDailyPractice').value.trim();
+  const date=$('#quickDailyDate').value || localDateString(new Date());
+
+  if(!phase || (!priority && !practice)){
+    alert('Enter a priority or practice/action.');
+    return;
+  }
+
+  const title=priority || practice;
+
+  const {error}=await db
+    .from('goals')
+    .insert({
+      user_id:currentUser.id,
+      phase_id:phase.id,
+      goal_level:'daily',
+      title,
+      priority:priority || null,
+      practice:practice || null,
+      description:practice || null,
+      planned_hours:
+        $('#quickDailyHours').value
+          ? Number($('#quickDailyHours').value)
+          : null,
+      start_date:date,
+      end_date:date,
+      manual_progress:0,
+      progress_mode:'manual',
+      status:'not_started',
+      updated_at:new Date().toISOString()
+    });
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  $('#quickDailyPriority').value='';
+  $('#quickDailyPractice').value='';
+  $('#quickDailyHours').value='';
+
+  await loadGoalsData();
+  renderGoals();
+
+  showStatus('Daily action added');
+}
+
+async function savePhaseReview(){
+  const phase=selectedWorkspacePhase();
+
+  if(!phase){
+    return;
+  }
+
+  const evidence=phaseAutomatedEvidence(phase);
+  const existing=phaseReviewForPhase(phase.id);
+
+  const payload={
+    user_id:currentUser.id,
+    phase_id:phase.id,
+    what_went_well:
+      $('#phaseReviewWentWell').value.trim() || null,
+    challenges:
+      $('#phaseReviewChallenges').value.trim() || null,
+    lessons_learned:
+      $('#phaseReviewLessons').value.trim() || null,
+    improvements:
+      $('#phaseReviewImprovements').value.trim() || null,
+    ready_for_next_phase:
+      $('#phaseReviewReady').checked,
+    overall_score:evidence.readiness,
+    reviewed_at:new Date().toISOString(),
+    updated_at:new Date().toISOString()
+  };
+
+  let result;
+
+  if(existing){
+    result=await db
+      .from('phase_reviews')
+      .update(payload)
+      .eq('id',existing.id)
+      .eq('user_id',currentUser.id);
+  }else{
+    result=await db
+      .from('phase_reviews')
+      .insert(payload);
+  }
+
+  if(result.error){
+    alert(result.error.message);
+    return;
+  }
+
+  await loadGoalsData();
+  renderGoals();
+
+  showStatus('Phase review saved');
+}
+
+$('#savePhaseSmartBtn').addEventListener(
+  'click',
+  savePhaseSmartPlan
+);
+
+$('#addWeeklyMilestoneBtn').addEventListener(
+  'click',
+  addWeeklyMilestone
+);
+
+$('#addDailyActionBtn').addEventListener(
+  'click',
+  addDailyAction
+);
+
+$('#savePhaseReviewBtn').addEventListener(
+  'click',
+  savePhaseReview
+);
+
+
 function renderPhaseRoadmap(){
   const box=$('#phaseRoadmap');
 
@@ -5872,7 +7304,13 @@ function renderGoalTree(){
       }
 
       <div class="goal-progress-top">
-        <span>${childCount ? `Derived from ${childCount} child goal${childCount===1?'':'s'}` : 'Manual progress'}</span>
+        <span>${
+          childCount
+            ? `Derived from ${childCount} child goal${childCount===1?'':'s'}`
+            : goal.progress_mode==='automatic'
+              ? 'Automatic from trading data'
+              : 'Manual progress'
+        }</span>
         <strong>${progress.toFixed(1)}%</strong>
       </div>
 
@@ -5883,13 +7321,20 @@ function renderGoalTree(){
       ${
         childCount
           ? `<div class="goal-derived-note">Progress updates automatically from the goals beneath this one.</div>`
-          : `
-            <div class="goal-progress-actions">
-              <button class="btn small goal-add-progress" data-goal-id="${goal.id}" data-add="10">+10%</button>
-              <button class="btn small goal-add-progress" data-goal-id="${goal.id}" data-add="25">+25%</button>
-              <button class="btn small goal-complete" data-goal-id="${goal.id}">Complete</button>
-            </div>
-          `
+          : (
+              goal.progress_mode==='automatic'
+                ? `<div class="goal-derived-note">
+                    Current: ${metricDisplay(goal.metric_key,automaticGoalMetricValue(goal))}
+                    • Target: ${goal.target_direction==='lte'?'≤':'≥'} ${metricDisplay(goal.metric_key,Number(goal.target_value)||0)}
+                   </div>`
+                : `
+                  <div class="goal-progress-actions">
+                    <button class="btn small goal-add-progress" data-goal-id="${goal.id}" data-add="10">+10%</button>
+                    <button class="btn small goal-add-progress" data-goal-id="${goal.id}" data-add="25">+25%</button>
+                    <button class="btn small goal-complete" data-goal-id="${goal.id}">Complete</button>
+                  </div>
+                `
+            )
       }
     `;
 
@@ -6098,6 +7543,14 @@ function openGoalModal(goal=null){
     $('#goalProgressOutput').textContent=
       `${Number(goal.manual_progress||0).toFixed(0)}%`;
 
+    $('#goalProgressMode').value=goal.progress_mode || 'manual';
+    $('#goalMetricKey').value=goal.metric_key || 'trade_count';
+    $('#goalTargetDirection').value=goal.target_direction || 'gte';
+    $('#goalTargetValue').value=
+      goal.target_value==null ? '' : Number(goal.target_value);
+
+    updateGoalProgressModeUI();
+
     populateGoalParentOptions(
       goal.goal_level,
       goal.phase_id,
@@ -6119,6 +7572,11 @@ function openGoalModal(goal=null){
     $('#goalStartDate').value=localDateString(new Date());
     $('#goalProgress').value=0;
     $('#goalProgressOutput').textContent='0%';
+    $('#goalProgressMode').value='manual';
+    $('#goalMetricKey').value='trade_count';
+    $('#goalTargetDirection').value='gte';
+    $('#goalTargetValue').value='';
+    updateGoalProgressModeUI();
 
     populateGoalParentOptions(
       $('#goalLevel').value,
@@ -6135,10 +7593,31 @@ function closeGoalModal(){
   $('#goalForm').reset();
 }
 
+function updateGoalProgressModeUI(){
+  const automatic=$('#goalProgressMode').value==='automatic';
+
+  $('#goalManualProgressWrap').style.display=
+    automatic ? 'none' : '';
+
+  $('#goalMetricKey').disabled=!automatic;
+  $('#goalTargetDirection').disabled=!automatic;
+  $('#goalTargetValue').disabled=!automatic;
+
+  $('#goalAutoPreview').textContent=
+    automatic
+      ? 'Automatic mode: progress will be calculated from recorded trading data inside this goal’s date range.'
+      : 'Manual mode: update progress yourself.';
+}
+
 $('#goalProgress').addEventListener('input',()=>{
   $('#goalProgressOutput').textContent=
     `${Number($('#goalProgress').value).toFixed(0)}%`;
 });
+
+$('#goalProgressMode').addEventListener(
+  'change',
+  updateGoalProgressModeUI
+);
 
 $('#goalLevel').addEventListener('change',()=>{
   populateGoalParentOptions(
@@ -6195,6 +7674,19 @@ $('#goalForm').addEventListener('submit',async e=>{
     start_date:$('#goalStartDate').value || null,
     end_date:$('#goalEndDate').value || null,
     manual_progress:progress,
+    progress_mode:$('#goalProgressMode').value,
+    metric_key:
+      $('#goalProgressMode').value==='automatic'
+        ? $('#goalMetricKey').value
+        : null,
+    target_value:
+      $('#goalProgressMode').value==='automatic'
+        ? (Number($('#goalTargetValue').value)||0)
+        : null,
+    target_direction:
+      $('#goalProgressMode').value==='automatic'
+        ? $('#goalTargetDirection').value
+        : 'gte',
     status:
       progress>=100
         ? 'completed'
@@ -6415,6 +7907,7 @@ async function createGoalRecord({
       start_date:startDate || null,
       end_date:endDate || null,
       manual_progress:0,
+      progress_mode:'manual',
       status:'not_started',
       updated_at:new Date().toISOString()
     })
@@ -6560,6 +8053,7 @@ $('#saveGoalChainBtn').addEventListener(
 function renderGoals(){
   populateGoalPhaseControls();
   renderPhaseRoadmap();
+  renderPhaseWorkspace();
   renderPhase1Qualification();
   renderGoalHorizonSummary();
   renderGoalTree();
