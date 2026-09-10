@@ -2163,6 +2163,72 @@ input:focus,select:focus,textarea:focus{border-color:#5275a7}
   .smart-dates{grid-template-columns:1fr}
 }
 
+
+/* DOCUMENT DEVELOPMENT GOALS */
+.document-goals{
+  padding:14px;
+  margin-bottom:14px;
+}
+.document-goals-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+.document-goals-head h3{
+  margin:0;
+  font-size:14px;
+}
+.document-goals-head p{
+  margin:4px 0 0;
+  color:var(--muted);
+  font-size:10px;
+  line-height:1.55;
+  max-width:900px;
+}
+.document-goal-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+.document-goal-card{
+  border:1px solid #223044;
+  background:#0b1119;
+  border-radius:13px;
+  padding:11px;
+}
+.document-goal-card .phase-label{
+  color:#8ebcff;
+  font-size:9px;
+  text-transform:uppercase;
+  letter-spacing:.55px;
+}
+.document-goal-card h4{
+  margin:5px 0 8px;
+  font-size:12px;
+}
+.document-goal-card p{
+  margin:0 0 8px;
+  color:#a7b5c6;
+  font-size:9px;
+  line-height:1.5;
+}
+.document-goal-card .goal-source-line{
+  border-top:1px solid #182331;
+  margin-top:8px;
+  padding-top:8px;
+  color:#7f90a5;
+  font-size:8px;
+  line-height:1.45;
+}
+@media(max-width:1200px){
+  .document-goal-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:650px){
+  .document-goal-grid{grid-template-columns:1fr}
+}
+
 /* PLACEHOLDER PAGES */
 .placeholder{
   padding:38px;
@@ -3836,6 +3902,22 @@ textarea{resize:vertical;min-height:90px}
       </section>
 
 
+
+      <section class="panel document-goals">
+        <div class="document-goals-head">
+          <div>
+            <h3>Trading Development Goals</h3>
+            <p>
+              These four phase goals are loaded from your Trading Development Phases SMART template.
+              They define the development path; the Systematic Goal Planner below is where you create your own yearly,
+              monthly, weekly and daily goals that support the active phase.
+            </p>
+          </div>
+        </div>
+
+        <div class="document-goal-grid" id="documentGoalGrid"></div>
+      </section>
+
       <section class="panel goal-chain-builder">
         <div class="goal-chain-builder-head">
           <div>
@@ -3848,7 +3930,7 @@ textarea{resize:vertical;min-height:90px}
 
           <div class="field goal-chain-settings">
             <label>Trading Phase</label>
-            <select id="goalChainPhase"></select>
+            <select id="goalChainPhase"><option value="">Loading phases…</option></select>
           </div>
         </div>
 
@@ -4575,6 +4657,170 @@ async function loadExecutionData(){
 }
 
 
+
+const DOCUMENT_PHASE_TEMPLATE = [
+  {
+    phase_number:1,
+    name:'Perfect Execution',
+    objective:'Learn perfect execution.',
+    specific:'Master the execution of my trading plan by following every rule for entries, exits, risk management, and journaling without emotional interference.',
+    measurable:'Original SMART template: achieve at least 95% rule adherence; journal 100% of trades; maintain 0 revenge trades; maintain 0 rule-breaking trades; complete weekly trade reviews. Current Traders Environment automatic gate remains the newer standard: 2 consecutive samples of 20–30 trades with 90%+ across the required process metrics.',
+    achievable:'Keep scores for every trading session and individual trade execution.',
+    relevant:'Consistent execution is the foundation of long-term profitability.',
+    time_bound:'Template target: complete within 2–3 months. Automatic phase advancement is controlled by the current sample-based qualification gate.',
+    start_date:'2026-07-06',
+    target_date:'2026-10-30',
+    success:'I trust myself to execute my trading plan consistently. My execution score remains above 95% for at least 8 consecutive weeks.'
+  },
+  {
+    phase_number:2,
+    name:'Edge Development',
+    objective:'Develop and validate a statistical trading edge.',
+    specific:'Develop and validate a trading strategy with measurable statistical returns.',
+    measurable:'Complete 80–100 forward-tested trades and record win rate, risk-to-reward ratio, base rate and profit factor.',
+    achievable:'Dedicate scheduled study and testing sessions each week.',
+    relevant:'A disciplined trader still needs a strategy with positive expectancy.',
+    time_bound:'Complete within 3 months.',
+    start_date:'2026-09-01',
+    target_date:'2026-12-31',
+    success:'My strategy has verified positive expectancy. I can explain exactly why my edge works and under what market conditions.'
+  },
+  {
+    phase_number:3,
+    name:'Technical & Mental Adaptation',
+    objective:'Adapt technically (edge) and mentally (beliefs).',
+    specific:'Develop the ability to recognize changing market conditions, adapt my strategy appropriately, and maintain a flexible, disciplined mindset.',
+    measurable:'Document all major market conditions observed; define clear adaptation rules for each condition; review and classify trades by market condition each week.',
+    achievable:'Integrate adaptation reviews into the weekly trading journal.',
+    relevant:'Markets evolve, and successful traders adapt without abandoning discipline.',
+    time_bound:'Complete within 3 months.',
+    start_date:'2027-01-01',
+    target_date:'2027-03-30',
+    success:'I adapt according to predefined rules rather than emotion. I remain emotionally stable despite changing market conditions.'
+  },
+  {
+    phase_number:4,
+    name:'Wealth Accumulation',
+    objective:'Grow wealth through disciplined execution and risk management.',
+    specific:'Grow trading capital through disciplined execution, sound risk management, and consistent compounding while protecting capital.',
+    measurable:'Follow risk management rules on 100% of trades; never exceed maximum daily or weekly loss limits; increase account size only after meeting predefined performance evidence; save and reinvest a predetermined percentage of profits.',
+    achievable:'Scale position sizes gradually based on consistent performance.',
+    relevant:'The purpose of trading is sustainable wealth creation, not short-term excitement.',
+    time_bound:'Measure progress over the next 9 months, with monthly and quarterly reviews.',
+    start_date:'',
+    target_date:'',
+    success:'Protect capital while accumulating profits through disciplined execution, risk management and responsible scaling.'
+  }
+];
+
+function documentPhaseTemplate(number){
+  return DOCUMENT_PHASE_TEMPLATE.find(
+    item=>item.phase_number===Number(number)
+  ) || null;
+}
+
+function mergedPhaseWithDocumentDefaults(phase){
+  const template=documentPhaseTemplate(phase.phase_number);
+  if(!template) return phase;
+
+  return {
+    ...phase,
+    display_name:template.name,
+    display_objective:phase.objective || template.objective,
+    display_success:phase.success_criteria || template.success,
+    template
+  };
+}
+
+function renderDocumentGoals(){
+  const box=$('#documentGoalGrid');
+  if(!box) return;
+
+  box.innerHTML='';
+
+  DOCUMENT_PHASE_TEMPLATE.forEach(template=>{
+    const card=document.createElement('div');
+    card.className='document-goal-card';
+
+    card.innerHTML=`
+      <span class="phase-label">Phase ${template.phase_number}</span>
+      <h4>${escapeHtml(template.name)}</h4>
+      <p><strong>Objective:</strong> ${escapeHtml(template.objective)}</p>
+      <p><strong>Measurable:</strong> ${escapeHtml(template.measurable)}</p>
+      <p><strong>Success:</strong> ${escapeHtml(template.success)}</p>
+      <div class="goal-source-line">Loaded from your Trading Development Phases SMART template.</div>
+    `;
+
+    box.appendChild(card);
+  });
+}
+
+
+async function syncDocumentPhaseCoreFieldsIfLegacy(){
+  const legacyNames={
+    1:['Perfect Execution'],
+    2:['Winning System','Edge Development'],
+    3:['Awareness & Adaptability','Technical & Mental Adaptation'],
+    4:['Profit Accumulation','Wealth Accumulation']
+  };
+
+  const legacyObjectives={
+    1:[
+      'Learn to execute the trading process perfectly even before the edge is consistently profitable.',
+      'Learn perfect execution.'
+    ],
+    2:[
+      'Develop and implement a positive-expectancy trading system while maintaining the execution standard built in Phase 1.',
+      'Develop and validate a statistical trading edge.'
+    ],
+    3:[
+      'Increase awareness and learn to adapt when market conditions, structure or the effectiveness of the edge changes.',
+      'Adapt technically (edge) and mentally (beliefs).'
+    ],
+    4:[
+      'Accumulate and compound profits while preserving the execution, edge and adaptability developed in the earlier phases.',
+      'Grow wealth through disciplined execution and risk management.'
+    ]
+  };
+
+  const updates=[];
+
+  for(const phase of tradingPhases){
+    const template=documentPhaseTemplate(phase.phase_number);
+    if(!template) continue;
+
+    const nameIsLegacy=(legacyNames[phase.phase_number]||[]).includes(phase.name);
+    const objectiveIsLegacy=(legacyObjectives[phase.phase_number]||[]).includes(phase.objective);
+
+    // Only replace our earlier generated defaults. User-edited phase text is left alone.
+    if(!nameIsLegacy && !objectiveIsLegacy){
+      continue;
+    }
+
+    const payload={
+      name:template.name,
+      objective:template.objective,
+      success_criteria:template.success,
+      updated_at:new Date().toISOString()
+    };
+
+    const result=await db
+      .from('trading_phases')
+      .update(payload)
+      .eq('id',phase.id)
+      .eq('user_id',currentUser.id)
+      .select()
+      .single();
+
+    if(result.error){
+      console.warn('Could not sync document phase goal:',result.error);
+      continue;
+    }
+
+    Object.assign(phase,result.data);
+  }
+}
+
 async function ensureDefaultTradingPhases(){
   const {data,error}=await db
     .from('trading_phases')
@@ -4590,44 +4836,22 @@ async function ensureDefaultTradingPhases(){
 
   if(data && data.length){
     tradingPhases=data;
+    await syncDocumentPhaseCoreFieldsIfLegacy();
     return;
   }
 
-  const defaultPhases=[
-    {
-      user_id:currentUser.id,
-      phase_number:1,
-      name:'Perfect Execution',
-      objective:'Learn to execute the trading process perfectly even before the edge is consistently profitable.',
-      success_criteria:'Demonstrate repeatable, rule-based execution over a meaningful sample without allowing recent P&L to distort behaviour.',
-      status:'active',
-      started_at:new Date().toISOString()
-    },
-    {
-      user_id:currentUser.id,
-      phase_number:2,
-      name:'Winning System',
-      objective:'Develop and implement a positive-expectancy trading system while maintaining the execution standard built in Phase 1.',
-      success_criteria:'Show evidence of positive expectancy over a meaningful sample while execution quality remains consistently high.',
-      status:'locked'
-    },
-    {
-      user_id:currentUser.id,
-      phase_number:3,
-      name:'Awareness & Adaptability',
-      objective:'Increase awareness and learn to adapt when market conditions, structure or the effectiveness of the edge changes.',
-      success_criteria:'Recognize meaningful regime changes and make evidence-based technical or psychological adjustments without abandoning risk discipline.',
-      status:'locked'
-    },
-    {
-      user_id:currentUser.id,
-      phase_number:4,
-      name:'Profit Accumulation',
-      objective:'Accumulate and compound profits while preserving the execution, edge and adaptability developed in the earlier phases.',
-      success_criteria:'Grow capital according to predefined risk and drawdown limits without degrading execution quality.',
-      status:'locked'
-    }
-  ];
+  const defaultPhases=DOCUMENT_PHASE_TEMPLATE.map(template=>({
+    user_id:currentUser.id,
+    phase_number:template.phase_number,
+    name:template.name,
+    objective:template.objective,
+    success_criteria:template.success,
+    status:template.phase_number===1 ? 'active' : 'locked',
+    started_at:
+      template.phase_number===1 && template.start_date
+        ? new Date(`${template.start_date}T12:00:00`).toISOString()
+        : null
+  }));
 
   const {data:created,error:createError}=await db
     .from('trading_phases')
@@ -4646,7 +4870,7 @@ async function ensureDefaultTradingPhases(){
 }
 
 async function loadGoalsData(){
-  const [phasesRes,goalsRes,linksRes,logsRes,reviewsRes]=await Promise.all([
+  const [phasesRes,goalsRes,linksRes,logsRes]=await Promise.all([
     db
       .from('trading_phases')
       .select('*')
@@ -4669,23 +4893,17 @@ async function loadGoalsData(){
       .select('*')
       .eq('user_id',currentUser.id)
       .order('logged_at',{ascending:false})
-      .limit(100),
-
-    db
-      .from('phase_reviews')
-      .select('*')
-      .eq('user_id',currentUser.id)
+      .limit(100)
   ]);
 
-  const error=
+  const coreError=
     phasesRes.error ||
     goalsRes.error ||
     linksRes.error ||
-    logsRes.error ||
-    reviewsRes.error;
+    logsRes.error;
 
-  if(error){
-    console.error(error);
+  if(coreError){
+    console.error(coreError);
     showStatus('Could not load goals',4000);
     return;
   }
@@ -4694,10 +4912,28 @@ async function loadGoalsData(){
   goals=goalsRes.data||[];
   goalLinks=linksRes.data||[];
   goalProgressLogs=logsRes.data||[];
-  phaseReviews=reviewsRes.data||[];
+
+  // phase_reviews is an optional advanced table. If the migration has not
+  // been run yet, the Goals page still loads and the phase dropdown works.
+  try{
+    const reviewsRes=await db
+      .from('phase_reviews')
+      .select('*')
+      .eq('user_id',currentUser.id);
+
+    phaseReviews=reviewsRes.error ? [] : (reviewsRes.data||[]);
+  }catch(error){
+    console.warn('Phase reviews unavailable:',error);
+    phaseReviews=[];
+  }
 
   const active=tradingPhases.find(p=>p.status==='active');
-  if(active && !tradingPhases.some(p=>p.phase_number===selectedPhaseWorkspaceNumber)){
+  if(
+    active &&
+    !tradingPhases.some(
+      p=>p.phase_number===selectedPhaseWorkspaceNumber
+    )
+  ){
     selectedPhaseWorkspaceNumber=active.phase_number;
   }
 }
@@ -6483,8 +6719,10 @@ function renderPhaseWorkspaceTabs(){
 }
 
 function renderPhaseSmartForm(phase){
+  const template=documentPhaseTemplate(phase.phase_number);
+
   $('#phaseWorkspaceTitle').textContent=
-    `Phase ${phase.phase_number} — ${phase.name}`;
+    `Phase ${phase.phase_number} — ${template?.name || phase.name}`;
 
   $('#phaseWorkspaceSubtitle').textContent=
     phase.status==='active'
@@ -6492,33 +6730,33 @@ function renderPhaseSmartForm(phase){
       : `Status: ${phase.status}`;
 
   $('#phaseSmartObjective').value=
-    phase.objective || '';
+    phase.objective || template?.objective || '';
 
   $('#phaseSmartSpecific').value=
-    phase.specific_text || '';
+    phase.specific_text || template?.specific || '';
 
   $('#phaseSmartMeasurable').value=
-    phase.measurable_text || '';
+    phase.measurable_text || template?.measurable || '';
 
   $('#phaseSmartAchievable').value=
-    phase.achievable_text || '';
+    phase.achievable_text || template?.achievable || '';
 
   $('#phaseSmartRelevant').value=
-    phase.relevant_text || '';
+    phase.relevant_text || template?.relevant || '';
 
   $('#phaseSmartTimeBound').value=
-    phase.time_bound_text || '';
+    phase.time_bound_text || template?.time_bound || '';
 
   $('#phaseSmartSuccess').value=
-    phase.success_criteria || '';
+    phase.success_criteria || template?.success || '';
 
   $('#phaseSmartStartDate').value=
     phase.started_at
       ? localDateString(new Date(phase.started_at))
-      : '';
+      : (template?.start_date || '');
 
   $('#phaseSmartTargetDate').value=
-    phase.target_completion || '';
+    phase.target_completion || template?.target_date || '';
 }
 
 function renderPhaseAutomatedEvidence(phase){
@@ -6959,8 +7197,8 @@ function renderPhaseRoadmap(){
           <span class="phase-status ${statusClass}">${escapeHtml(phase.status)}</span>
         </div>
 
-        <h3>${escapeHtml(phase.name)}</h3>
-        <p>${escapeHtml(phase.objective)}</p>
+        <h3>${escapeHtml(documentPhaseTemplate(phase.phase_number)?.name || phase.name)}</h3>
+        <p>${escapeHtml(phase.objective || documentPhaseTemplate(phase.phase_number)?.objective || '')}</p>
 
         <div class="phase-progress-row">
           <span>${phase.phase_number===1 ? 'Automatic qualification' : 'Goal progress'}</span>
@@ -7359,74 +7597,78 @@ function populateGoalPhaseControls(){
   const formSelect=$('#goalPhase');
   const chainSelect=$('#goalChainPhase');
 
-  const filterCurrent=filter.value;
-  const formCurrent=formSelect.value;
+  const filterCurrent=filter?.value || '';
+  const formCurrent=formSelect?.value || '';
   const chainCurrent=chainSelect?.value || '';
+
+  if(filter){
+    filter.innerHTML='<option value="">All phases</option>';
+  }
+
+  if(formSelect){
+    formSelect.innerHTML='';
+  }
 
   if(chainSelect){
     chainSelect.innerHTML='';
   }
 
-  filter.innerHTML='<option value="">All phases</option>';
-  formSelect.innerHTML='';
+  const ordered=[...tradingPhases].sort(
+    (a,b)=>a.phase_number-b.phase_number
+  );
 
-  tradingPhases
-    .sort((a,b)=>a.phase_number-b.phase_number)
-    .forEach(phase=>{
-      const label=
-        `Phase ${phase.phase_number} — ${phase.name}`;
+  ordered.forEach(phase=>{
+    const template=documentPhaseTemplate(phase.phase_number);
+    const phaseName=template?.name || phase.name;
+    const label=`Phase ${phase.phase_number} — ${phaseName}`;
 
-      const f=document.createElement('option');
-      f.value=phase.id;
-      f.textContent=label;
-      filter.appendChild(f);
+    if(filter){
+      const option=document.createElement('option');
+      option.value=phase.id;
+      option.textContent=label;
+      filter.appendChild(option);
+    }
 
-      const g=document.createElement('option');
-      g.value=phase.id;
-      g.textContent=label;
-      formSelect.appendChild(g);
+    if(formSelect){
+      const option=document.createElement('option');
+      option.value=phase.id;
+      option.textContent=label;
+      formSelect.appendChild(option);
+    }
 
-      if(chainSelect){
-        const c=document.createElement('option');
-        c.value=phase.id;
-        c.textContent=label;
-        chainSelect.appendChild(c);
-      }
-    });
+    if(chainSelect){
+      const option=document.createElement('option');
+      option.value=phase.id;
+      option.textContent=label;
+      chainSelect.appendChild(option);
+    }
+  });
 
-  if(
-    [...filter.options].some(o=>o.value===filterCurrent)
-  ){
+  const active=tradingPhases.find(
+    p=>p.status==='active'
+  ) || ordered[0];
+
+  if(filter && [...filter.options].some(o=>o.value===filterCurrent)){
     filter.value=filterCurrent;
   }
 
-  if(
-    [...formSelect.options].some(o=>o.value===formCurrent)
-  ){
-    formSelect.value=formCurrent;
-  }else{
-    const active=tradingPhases.find(
-      p=>p.status==='active'
-    );
-
-    if(active){
+  if(formSelect){
+    if([...formSelect.options].some(o=>o.value===formCurrent)){
+      formSelect.value=formCurrent;
+    }else if(active){
       formSelect.value=active.id;
     }
   }
 
   if(chainSelect){
-    if(
-      [...chainSelect.options].some(o=>o.value===chainCurrent)
-    ){
+    if([...chainSelect.options].some(o=>o.value===chainCurrent)){
       chainSelect.value=chainCurrent;
-    }else{
-      const active=tradingPhases.find(
-        p=>p.status==='active'
-      );
+    }else if(active){
+      chainSelect.value=active.id;
+    }
 
-      if(active){
-        chainSelect.value=active.id;
-      }
+    if(!chainSelect.options.length){
+      chainSelect.innerHTML='<option value="">No phases available</option>';
     }
   }
 }
@@ -7901,6 +8143,11 @@ async function linkGoalChild(parentId,childId){
 async function saveGoalChain(){
   const phaseId=$('#goalChainPhase').value || null;
 
+  if(!phaseId){
+    alert('Select a Trading Phase first.');
+    return;
+  }
+
   const yearlyTitle=$('#chainYearlyGoal').value.trim();
   const monthlyTitle=$('#chainMonthlyGoal').value.trim();
   const weeklyTitle=$('#chainWeeklyGoal').value.trim();
@@ -8006,6 +8253,7 @@ $('#saveGoalChainBtn').addEventListener(
 
 function renderGoals(){
   populateGoalPhaseControls();
+  renderDocumentGoals();
   renderPhaseRoadmap();
   renderPhaseWorkspace();
   renderPhase1Qualification();
