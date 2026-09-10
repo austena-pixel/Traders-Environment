@@ -1825,6 +1825,94 @@ input:focus,select:focus,textarea:focus{border-color:#5275a7}
   .phase1-gate-summary{grid-template-columns:repeat(2,1fr)}
 }
 
+
+/* SYSTEMATIC GOAL CHAIN BUILDER */
+.goal-chain-builder{
+  padding:15px;
+  margin-bottom:14px;
+}
+.goal-chain-builder-head{
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  align-items:flex-start;
+  margin-bottom:13px;
+}
+.goal-chain-builder-head h3{
+  margin:0;
+  font-size:14px;
+}
+.goal-chain-builder-head p{
+  margin:4px 0 0;
+  max-width:850px;
+  color:var(--muted);
+  font-size:10px;
+  line-height:1.55;
+}
+.goal-chain-settings{
+  min-width:220px;
+}
+.goal-chain-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+.goal-chain-step{
+  position:relative;
+  border:1px solid #223044;
+  background:#0b1119;
+  border-radius:13px;
+  padding:11px;
+}
+.goal-chain-step:not(:last-child)::after{
+  content:'→';
+  position:absolute;
+  right:-17px;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:2;
+  color:#62738a;
+  font-size:16px;
+}
+.goal-chain-step .step-number{
+  color:#7f90a5;
+  font-size:9px;
+  text-transform:uppercase;
+  letter-spacing:.55px;
+}
+.goal-chain-step h4{
+  margin:4px 0 9px;
+  font-size:12px;
+}
+.goal-chain-step textarea{
+  min-height:88px;
+}
+.goal-chain-step input{
+  margin-top:8px;
+  font-size:10px;
+}
+.goal-chain-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:12px;
+}
+.goal-chain-note{
+  margin-top:10px;
+  color:#8292a7;
+  font-size:9px;
+  line-height:1.5;
+}
+@media(max-width:1050px){
+  .goal-chain-grid{grid-template-columns:repeat(2,1fr)}
+  .goal-chain-step::after{display:none}
+}
+@media(max-width:650px){
+  .goal-chain-builder-head{flex-direction:column}
+  .goal-chain-settings{width:100%}
+  .goal-chain-grid{grid-template-columns:1fr}
+}
+
 /* PLACEHOLDER PAGES */
 .placeholder{
   padding:38px;
@@ -2298,7 +2386,8 @@ textarea{resize:vertical;min-height:90px}
 
         <div class="top-actions">
           <button class="btn small" id="statsPrevPeriod">← Previous</button>
-          <button class="btn small" id="statsCurrentPeriod">Current</button>
+          <input type="date" id="statsAnchorInput" style="width:auto;min-width:145px;padding:7px 9px">
+          <button class="btn small" id="statsLatestTrade">Latest Trade</button>
           <button class="btn small" id="statsNextPeriod">Next →</button>
           <div class="stats-date-range" id="statsDateRange">—</div>
         </div>
@@ -2354,13 +2443,17 @@ textarea{resize:vertical;min-height:90px}
             <p id="equityChartDescription">Account equity after every trade in the selected period.</p>
           </div>
           <div class="chart-legend-note">
-            X-axis = trade number (T1, T2, T3...).<br>
-            Every trade is plotted in sequence, including multiple trades on the same day.
+            X-axis = trade number (T0, T1, T2, T3...).<br>
+            T0 is opening equity; every recorded trade is then plotted in sequence.
           </div>
         </div>
 
-        <div class="equity-canvas-wrap">
+        <div class="equity-canvas-wrap" id="equityCanvasWrap">
           <canvas id="equityChart"></canvas>
+        </div>
+
+        <div class="stats-empty hidden" id="equityEmptyState" style="min-height:160px">
+          No trades were recorded in this selected period.
         </div>
       </section>
 
@@ -3325,6 +3418,63 @@ textarea{resize:vertical;min-height:90px}
         </div>
       </section>
 
+
+      <section class="panel goal-chain-builder">
+        <div class="goal-chain-builder-head">
+          <div>
+            <h3>Systematic Goal Planner</h3>
+            <p>
+              Start with the long-term objective, then define the monthly result, weekly result and daily action that will produce it.
+              You type every goal yourself; saving creates and links the four levels automatically.
+            </p>
+          </div>
+
+          <div class="field goal-chain-settings">
+            <label>Trading Phase</label>
+            <select id="goalChainPhase"></select>
+          </div>
+        </div>
+
+        <div class="goal-chain-grid">
+          <div class="goal-chain-step">
+            <span class="step-number">1 • Direction</span>
+            <h4>Yearly Goal</h4>
+            <textarea id="chainYearlyGoal" placeholder="What must I achieve this year?"></textarea>
+            <input id="chainYearlySuccess" type="text" placeholder="Success measure / evidence">
+          </div>
+
+          <div class="goal-chain-step">
+            <span class="step-number">2 • Milestone</span>
+            <h4>Monthly Goal</h4>
+            <textarea id="chainMonthlyGoal" placeholder="What must this month achieve toward the yearly goal?"></textarea>
+            <input id="chainMonthlySuccess" type="text" placeholder="Success measure / evidence">
+          </div>
+
+          <div class="goal-chain-step">
+            <span class="step-number">3 • Weekly Output</span>
+            <h4>Weekly Goal</h4>
+            <textarea id="chainWeeklyGoal" placeholder="What must I achieve this week toward the monthly goal?"></textarea>
+            <input id="chainWeeklySuccess" type="text" placeholder="Success measure / evidence">
+          </div>
+
+          <div class="goal-chain-step">
+            <span class="step-number">4 • Execution</span>
+            <h4>Daily Goal / Action</h4>
+            <textarea id="chainDailyGoal" placeholder="What must I do today to move the weekly goal forward?"></textarea>
+            <input id="chainDailySuccess" type="text" placeholder="Success measure / evidence">
+          </div>
+        </div>
+
+        <div class="goal-chain-actions">
+          <button class="btn" type="button" id="clearGoalChainBtn">Clear</button>
+          <button class="btn primary" type="button" id="saveGoalChainBtn">Save Goal Chain</button>
+        </div>
+
+        <div class="goal-chain-note">
+          Saved relationship: Daily → Weekly → Monthly → Yearly. You can still use “+ New Goal” for an individual goal or an optional 6-month goal.
+        </div>
+      </section>
+
       <section class="goal-horizon-summary">
         <div class="horizon-card">
           <span>Daily</span>
@@ -3809,6 +3959,11 @@ async function enterApp(user){
   showStatus('Loading journal...');
   await ensureTradingAccount();
   await loadTrades();
+
+  if(trades.length){
+    statsAnchorDate=latestTradeDateObj();
+  }
+
   await loadPsychologyData();
   await loadEdgeData();
   await loadExecutionData();
@@ -5803,9 +5958,15 @@ function renderGoalActivity(){
 function populateGoalPhaseControls(){
   const filter=$('#goalPhaseFilter');
   const formSelect=$('#goalPhase');
+  const chainSelect=$('#goalChainPhase');
 
   const filterCurrent=filter.value;
   const formCurrent=formSelect.value;
+  const chainCurrent=chainSelect?.value || '';
+
+  if(chainSelect){
+    chainSelect.innerHTML='';
+  }
 
   filter.innerHTML='<option value="">All phases</option>';
   formSelect.innerHTML='';
@@ -5825,6 +5986,13 @@ function populateGoalPhaseControls(){
       g.value=phase.id;
       g.textContent=label;
       formSelect.appendChild(g);
+
+      if(chainSelect){
+        const c=document.createElement('option');
+        c.value=phase.id;
+        c.textContent=label;
+        chainSelect.appendChild(c);
+      }
     });
 
   if(
@@ -5844,6 +6012,22 @@ function populateGoalPhaseControls(){
 
     if(active){
       formSelect.value=active.id;
+    }
+  }
+
+  if(chainSelect){
+    if(
+      [...chainSelect.options].some(o=>o.value===chainCurrent)
+    ){
+      chainSelect.value=chainCurrent;
+    }else{
+      const active=tradingPhases.find(
+        p=>p.status==='active'
+      );
+
+      if(active){
+        chainSelect.value=active.id;
+      }
     }
   }
 }
@@ -6194,6 +6378,184 @@ async function deleteGoal(goal){
 
   showStatus('Goal deleted');
 }
+
+
+function clearGoalChain(){
+  [
+    '#chainYearlyGoal',
+    '#chainMonthlyGoal',
+    '#chainWeeklyGoal',
+    '#chainDailyGoal',
+    '#chainYearlySuccess',
+    '#chainMonthlySuccess',
+    '#chainWeeklySuccess',
+    '#chainDailySuccess'
+  ].forEach(selector=>{
+    $(selector).value='';
+  });
+}
+
+async function createGoalRecord({
+  phaseId,
+  level,
+  title,
+  successCriteria,
+  startDate,
+  endDate
+}){
+  const {data,error}=await db
+    .from('goals')
+    .insert({
+      user_id:currentUser.id,
+      phase_id:phaseId || null,
+      goal_level:level,
+      title,
+      description:null,
+      success_criteria:successCriteria || null,
+      start_date:startDate || null,
+      end_date:endDate || null,
+      manual_progress:0,
+      status:'not_started',
+      updated_at:new Date().toISOString()
+    })
+    .select()
+    .single();
+
+  if(error){
+    throw error;
+  }
+
+  await db
+    .from('goal_progress_logs')
+    .insert({
+      user_id:currentUser.id,
+      goal_id:data.id,
+      progress:0,
+      note:'Created through systematic goal planner'
+    });
+
+  return data;
+}
+
+async function linkGoalChild(parentId,childId){
+  const {error}=await db
+    .from('goal_links')
+    .insert({
+      user_id:currentUser.id,
+      parent_goal_id:parentId,
+      child_goal_id:childId
+    });
+
+  if(error){
+    throw error;
+  }
+}
+
+async function saveGoalChain(){
+  const phaseId=$('#goalChainPhase').value || null;
+
+  const yearlyTitle=$('#chainYearlyGoal').value.trim();
+  const monthlyTitle=$('#chainMonthlyGoal').value.trim();
+  const weeklyTitle=$('#chainWeeklyGoal').value.trim();
+  const dailyTitle=$('#chainDailyGoal').value.trim();
+
+  if(
+    !yearlyTitle ||
+    !monthlyTitle ||
+    !weeklyTitle ||
+    !dailyTitle
+  ){
+    alert(
+      'Complete all four levels: Yearly, Monthly, Weekly and Daily.'
+    );
+    return;
+  }
+
+  const today=new Date();
+  const todayKey=localDateString(today);
+
+  const yearEnd=localDateString(
+    new Date(today.getFullYear(),11,31)
+  );
+
+  const monthEnd=localDateString(
+    new Date(today.getFullYear(),today.getMonth()+1,0)
+  );
+
+  const weekEnd=localDateString(
+    endOfStatsWeek(today)
+  );
+
+  $('#saveGoalChainBtn').disabled=true;
+  $('#saveGoalChainBtn').textContent='Saving...';
+
+  try{
+    const yearly=await createGoalRecord({
+      phaseId,
+      level:'yearly',
+      title:yearlyTitle,
+      successCriteria:$('#chainYearlySuccess').value.trim(),
+      startDate:todayKey,
+      endDate:yearEnd
+    });
+
+    const monthly=await createGoalRecord({
+      phaseId,
+      level:'monthly',
+      title:monthlyTitle,
+      successCriteria:$('#chainMonthlySuccess').value.trim(),
+      startDate:todayKey,
+      endDate:monthEnd
+    });
+
+    const weekly=await createGoalRecord({
+      phaseId,
+      level:'weekly',
+      title:weeklyTitle,
+      successCriteria:$('#chainWeeklySuccess').value.trim(),
+      startDate:todayKey,
+      endDate:weekEnd
+    });
+
+    const daily=await createGoalRecord({
+      phaseId,
+      level:'daily',
+      title:dailyTitle,
+      successCriteria:$('#chainDailySuccess').value.trim(),
+      startDate:todayKey,
+      endDate:todayKey
+    });
+
+    await linkGoalChild(yearly.id,monthly.id);
+    await linkGoalChild(monthly.id,weekly.id);
+    await linkGoalChild(weekly.id,daily.id);
+
+    await loadGoalsData();
+    clearGoalChain();
+    renderGoals();
+
+    showStatus(
+      'Goal chain saved • Yearly → Monthly → Weekly → Daily'
+    );
+  }catch(error){
+    console.error(error);
+    alert(error.message || 'Could not save the goal chain.');
+  }finally{
+    $('#saveGoalChainBtn').disabled=false;
+    $('#saveGoalChainBtn').textContent='Save Goal Chain';
+  }
+}
+
+$('#clearGoalChainBtn').addEventListener(
+  'click',
+  clearGoalChain
+);
+
+$('#saveGoalChainBtn').addEventListener(
+  'click',
+  saveGoalChain
+);
+
 
 function renderGoals(){
   populateGoalPhaseControls();
@@ -6869,6 +7231,22 @@ function parseLocalDate(dateString){
   return new Date(y,m-1,d);
 }
 
+function latestTradeDateObj(){
+  if(!trades.length){
+    return new Date();
+  }
+
+  const latest=[...trades]
+    .sort((a,b)=>{
+      if(a.trade_date!==b.trade_date){
+        return b.trade_date.localeCompare(a.trade_date);
+      }
+      return (b.created_at||'').localeCompare(a.created_at||'');
+    })[0];
+
+  return parseLocalDate(latest.trade_date);
+}
+
 function addStatsDays(date,amount){
   const d=new Date(date.getFullYear(),date.getMonth(),date.getDate());
   d.setDate(d.getDate()+amount);
@@ -6981,18 +7359,34 @@ function buildDailyEquitySeries(start,end){
       if(a.trade_date!==b.trade_date){
         return a.trade_date.localeCompare(b.trade_date);
       }
-      return (a.created_at||'').localeCompare(b.created_at||'');
+
+      return (a.created_at||'').localeCompare(
+        b.created_at||''
+      );
     });
 
   const base=Number(tradingAccount?.starting_balance||0);
   const priorPnl=pnlBeforeDate(start);
-  let equity=base+priorPnl;
+  const openingEquity=base+priorPnl;
+  let equity=openingEquity;
 
-  const points=selected.map((trade,index)=>{
+  const points=[{
+    tradeNumber:0,
+    label:'T0',
+    date:localDateString(start),
+    instrument:'Opening equity',
+    direction:'',
+    equity,
+    tradePnl:0,
+    rMultiple:0,
+    isOpening:true
+  }];
+
+  selected.forEach((trade,index)=>{
     const tradePnl=Number(trade.pnl)||0;
     equity+=tradePnl;
 
-    return {
+    points.push({
       tradeNumber:index+1,
       label:`T${index+1}`,
       date:trade.trade_date,
@@ -7000,13 +7394,14 @@ function buildDailyEquitySeries(start,end){
       direction:trade.direction || '—',
       equity,
       tradePnl,
-      rMultiple:Number(trade.r_multiple)||0
-    };
+      rMultiple:Number(trade.r_multiple)||0,
+      isOpening:false
+    });
   });
 
   return {
     points,
-    openingEquity:base+priorPnl,
+    openingEquity,
     selectedTrades:selected
   };
 }
@@ -7052,6 +7447,22 @@ function renderEquityChart(series){
   }
 
   const canvas=$('#equityChart');
+  const wrap=$('#equityCanvasWrap');
+  const empty=$('#equityEmptyState');
+
+  if(!series.selectedTrades.length){
+    if(equityChartInstance){
+      equityChartInstance.destroy();
+      equityChartInstance=null;
+    }
+
+    wrap.classList.add('hidden');
+    empty.classList.remove('hidden');
+    return;
+  }
+
+  wrap.classList.remove('hidden');
+  empty.classList.add('hidden');
 
   if(equityChartInstance){
     equityChartInstance.destroy();
@@ -7119,6 +7530,13 @@ function renderEquityChart(series){
             },
             label:(context)=>{
               const point=series.points[context.dataIndex];
+
+              if(point.isOpening){
+                return [
+                  'Opening equity',
+                  `Equity: ${money(point.equity)}`
+                ];
+              }
 
               return [
                 `${point.instrument} • ${point.direction}`,
@@ -7220,14 +7638,15 @@ function renderStatistics(){
   const periodNavDisabled=statsRange==='all';
   $('#statsPrevPeriod').disabled=periodNavDisabled;
   $('#statsNextPeriod').disabled=periodNavDisabled;
-  $('#statsCurrentPeriod').disabled=periodNavDisabled;
+  $('#statsLatestTrade').disabled=!trades.length;
+  $('#statsAnchorInput').disabled=periodNavDisabled;
+  $('#statsAnchorInput').value=localDateString(statsAnchorDate);
   const source=series.selectedTrades;
 
   const netPnl=source.reduce((s,t)=>s+(Number(t.pnl)||0),0);
 
-  const endingEquity=series.points.length
-    ? series.points[series.points.length-1].equity
-    : series.openingEquity;
+  const endingEquity=
+    series.points[series.points.length-1]?.equity ?? series.openingEquity;
 
   const returnPct=series.openingEquity!==0
     ? netPnl/Math.abs(series.openingEquity)*100
@@ -7395,7 +7814,6 @@ function moveStatsPeriod(direction){
 $$('.range-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
     statsRange=btn.dataset.statsRange;
-    statsAnchorDate=new Date();
 
     $$('.range-btn').forEach(x=>{
       x.classList.toggle('active',x===btn);
@@ -7413,9 +7831,18 @@ $('#statsNextPeriod').addEventListener('click',()=>{
   moveStatsPeriod(1);
 });
 
-$('#statsCurrentPeriod').addEventListener('click',()=>{
-  statsAnchorDate=new Date();
-  renderStatistics();
+$('#statsLatestTrade').addEventListener('click',()=>{
+  if(trades.length){
+    statsAnchorDate=latestTradeDateObj();
+    renderStatistics();
+  }
+});
+
+$('#statsAnchorInput').addEventListener('change',e=>{
+  if(e.target.value){
+    statsAnchorDate=parseLocalDate(e.target.value);
+    renderStatistics();
+  }
 });
 
 
