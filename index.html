@@ -2474,6 +2474,78 @@ input:focus,select:focus,textarea:focus{border-color:#5275a7}
   color:var(--muted);
 }
 
+
+/* DAILY ACTION PLAN — LIST */
+.daily-action-list{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.daily-action-item{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:center;
+  border:1px solid #1d2938;
+  background:#0b1119;
+  border-radius:10px;
+  padding:9px 10px;
+}
+.daily-action-main{
+  display:flex;
+  align-items:flex-start;
+  gap:9px;
+  flex:1;
+  min-width:0;
+  cursor:pointer;
+}
+.daily-action-main input{
+  width:16px;
+  height:16px;
+  margin-top:1px;
+  flex:0 0 auto;
+}
+.daily-action-copy{
+  min-width:0;
+}
+.daily-action-copy strong{
+  display:block;
+  font-size:9px;
+  line-height:1.35;
+}
+.daily-action-copy small{
+  display:block;
+  margin-top:2px;
+  color:#7f90a5;
+  font-size:7.5px;
+  line-height:1.35;
+}
+.daily-action-meta{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:#7f90a5;
+  font-size:8px;
+  white-space:nowrap;
+}
+.daily-action-empty{
+  color:var(--muted);
+  font-size:9px;
+  padding:10px 2px;
+}
+.daily-list-entry{
+  margin-top:8px;
+}
+@media(max-width:650px){
+  .daily-action-item{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  .daily-action-meta{
+    padding-left:25px;
+  }
+}
+
 /* PLACEHOLDER PAGES */
 .placeholder{
   padding:38px;
@@ -4149,21 +4221,11 @@ textarea{resize:vertical;min-height:90px}
               <span class="pager-text" id="phaseDailyCount">0</span>
             </div>
 
-            <table class="template-table compact-template-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Action</th>
-                  <th>Hrs</th>
-                  <th>Done</th>
-                </tr>
-              </thead>
-              <tbody id="phaseDailyTable"></tbody>
-            </table>
+            <div class="daily-action-list" id="phaseDailyTable"></div>
 
-            <div class="quick-entry compact-daily-entry">
+            <div class="quick-entry compact-daily-entry daily-list-entry">
               <input id="quickDailyDate" type="date">
-              <input id="quickDailyPriority" type="text" placeholder="Daily action / priority">
+              <input id="quickDailyPriority" type="text" placeholder="Add daily action">
               <input id="quickDailyPractice" type="hidden" value="">
               <input id="quickDailyHours" type="number" min="0" step="0.25" placeholder="Hrs">
               <button class="btn small" id="addDailyActionBtn">Add</button>
@@ -7341,46 +7403,63 @@ function renderPhaseWeeklyMilestones(phase){
 
 function renderPhaseDailyActions(phase){
   const rows=phaseGoalsByLevel(phase.id,'daily');
-  const body=$('#phaseDailyTable');
+  const box=$('#phaseDailyTable');
 
   $('#phaseDailyCount').textContent=
     rows.length===1 ? '1 action' : `${rows.length} actions`;
 
   if(!rows.length){
-    body.innerHTML=
-      '<tr><td colspan="4" class="muted">No daily actions yet.</td></tr>';
+    box.innerHTML=
+      '<div class="daily-action-empty">No daily actions yet.</div>';
     return;
   }
 
-  body.innerHTML='';
+  box.innerHTML='';
 
   rows.slice(-7).forEach(goal=>{
     const progress=effectiveGoalProgress(goal.id);
-    const tr=document.createElement('tr');
+    const item=document.createElement('div');
+    item.className='daily-action-item';
 
-    tr.innerHTML=`
-      <td class="compact-date">${goal.start_date ? formatDate(goal.start_date) : '—'}</td>
-      <td>
-        <strong class="compact-primary">${escapeHtml(goal.priority || goal.title || '—')}</strong>
-        ${
-          (goal.practice || goal.description) &&
-          (goal.practice || goal.description)!==(goal.priority || goal.title)
-            ? `<span class="compact-secondary">${escapeHtml(goal.practice || goal.description)}</span>`
-            : ''
-        }
-      </td>
-      <td>${goal.planned_hours==null ? '—' : Number(goal.planned_hours).toFixed(1)}</td>
-      <td>
+    const actionText=
+      goal.priority || goal.title || goal.practice || goal.description || '—';
+
+    const secondary=
+      (goal.practice || goal.description) &&
+      (goal.practice || goal.description)!==actionText
+        ? (goal.practice || goal.description)
+        : '';
+
+    item.innerHTML=`
+      <label class="daily-action-main">
         <input
           class="phase-daily-done"
           data-goal-id="${goal.id}"
           type="checkbox"
           ${progress>=100?'checked':''}
         >
-      </td>
+
+        <span class="daily-action-copy">
+          <strong>${escapeHtml(actionText)}</strong>
+          ${
+            secondary
+              ? `<small>${escapeHtml(secondary)}</small>`
+              : ''
+          }
+        </span>
+      </label>
+
+      <div class="daily-action-meta">
+        <span>${goal.start_date ? formatDate(goal.start_date) : '—'}</span>
+        ${
+          goal.planned_hours==null
+            ? ''
+            : `<span>${Number(goal.planned_hours).toFixed(1)}h</span>`
+        }
+      </div>
     `;
 
-    body.appendChild(tr);
+    box.appendChild(item);
   });
 
   $$('.phase-daily-done').forEach(input=>{
