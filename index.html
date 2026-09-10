@@ -3929,56 +3929,10 @@ textarea{resize:vertical;min-height:90px}
         </div>
       </div>
 
-      <div class="goals-layout">
-        <section class="panel goals-panel">
-          <div class="goals-panel-head">
-            <h3>Goal System</h3>
-            <span class="pager-text" id="goalCountText">0 goals</span>
-          </div>
-
-          <div class="manual-goal-note">
-            <strong>Your goals are manual.</strong> You decide the goal, horizon, phase, dates, success criteria and progress.
-            The app does not invent goals for you. Automatic calculations only apply when you deliberately link smaller goals
-            to a parent goal.
-          </div>
-
-          <div class="goals-filters">
-            <input type="text" id="goalSearch" placeholder="Search goals">
-            <select id="goalPhaseFilter">
-              <option value="">All phases</option>
-            </select>
-            <select id="goalLevelFilter">
-              <option value="">All horizons</option>
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
-              <option value="half_year">6-Month</option>
-              <option value="yearly">Yearly</option>
-            </select>
-            <select id="goalStatusFilter">
-              <option value="">All status</option>
-              <option value="not_started">Not started</option>
-              <option value="in_progress">In progress</option>
-              <option value="completed">Completed</option>
-            </select>
-          </div>
-
-          <div class="goal-tree" id="goalTree">
-            <div class="empty-state">No goals created yet.</div>
-          </div>
-        </section>
-
-        <aside class="panel goal-activity">
-          <h3>Progress Activity</h3>
-
-          <div class="psych-note" style="margin-bottom:12px">
-            Parent progress is calculated from its child goals. This keeps your system aligned with the principle that daily execution produces weekly results, which produce monthly and long-term achievement.
-          </div>
-
-          <div id="goalActivityList">
-            <div class="empty-state">No progress activity yet.</div>
-          </div>
-        </aside>
+      <div class="manual-goal-note" style="margin-top:14px">
+        Goal records are managed through the <strong>Systematic Goal Planner</strong>,
+        <strong>Weekly Milestones</strong>, and <strong>Daily Action Plan</strong> above.
+        Progress continues to be stored and calculated in the background.
       </div>
     </section>
 
@@ -8056,21 +8010,9 @@ function renderGoals(){
   renderPhaseWorkspace();
   renderPhase1Qualification();
   renderGoalHorizonSummary();
-  renderGoalTree();
-  renderGoalActivity();
 }
 
-[
-  '#goalSearch',
-  '#goalPhaseFilter',
-  '#goalLevelFilter',
-  '#goalStatusFilter'
-].forEach(selector=>{
-  $(selector).addEventListener(
-    selector==='#goalSearch' ? 'input' : 'change',
-    renderGoalTree
-  );
-});
+
 
 $('#goalsRefreshBtn').addEventListener(
   'click',
