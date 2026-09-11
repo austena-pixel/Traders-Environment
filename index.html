@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<!-- TE v26: stop repeated equity-curve redraw on MT5 heartbeat -->
+<!-- TE v27: individual-month equity curve selector -->
 <title>Traders Environment</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -3245,6 +3245,7 @@ textarea{resize:vertical;min-height:90px}
         <div class="top-actions">
           <button class="btn small" id="statsPrevPeriod">← Previous</button>
           <input type="date" id="statsAnchorInput" style="width:auto;min-width:145px;padding:7px 9px">
+          <input type="month" id="statsMonthInput" class="hidden" style="width:auto;min-width:145px;padding:7px 9px" aria-label="Select month">
           <button class="btn small" id="statsLatestTrade">Latest Trade</button>
           <button class="btn small" id="statsNextPeriod">Next →</button>
           <div class="stats-date-range" id="statsDateRange">—</div>
@@ -11079,11 +11080,25 @@ function renderStatistics(){
   const series=buildDailyEquitySeries(start,end);
 
   const periodNavDisabled=statsRange==='all';
+  const monthMode=statsRange==='1m';
+
   $('#statsPrevPeriod').disabled=periodNavDisabled;
   $('#statsNextPeriod').disabled=periodNavDisabled;
   $('#statsLatestTrade').disabled=!trades.length;
-  $('#statsAnchorInput').disabled=periodNavDisabled;
-  $('#statsAnchorInput').value=localDateString(statsAnchorDate);
+
+  const dateInput=$('#statsAnchorInput');
+  const monthInput=$('#statsMonthInput');
+
+  dateInput.classList.toggle('hidden',monthMode);
+  monthInput.classList.toggle('hidden',!monthMode);
+
+  dateInput.disabled=periodNavDisabled || monthMode;
+  monthInput.disabled=periodNavDisabled || !monthMode;
+
+  dateInput.value=localDateString(statsAnchorDate);
+  monthInput.value=
+    `${statsAnchorDate.getFullYear()}-${String(statsAnchorDate.getMonth()+1).padStart(2,'0')}`;
+
   const source=series.selectedTrades;
 
   const netPnl=source.reduce((s,t)=>s+(Number(t.pnl)||0),0);
@@ -11163,7 +11178,9 @@ function renderStatistics(){
       : `${formatDate(localDateString(start))} → ${formatDate(localDateString(end))}`;
 
   $('#equityChartDescription').textContent=
-    `Cumulative account equity after every trade across the selected ${statsRangeLabel(statsRange)}. The vertical scale adjusts to keep real changes visible without flattening the curve.`;
+    statsRange==='1m'
+      ? `Individual monthly equity curve for ${statsAnchorDate.toLocaleString(undefined,{month:'long',year:'numeric'})}. T0 is the equity at the start of that month; each closed trade is then plotted in sequence.`
+      : `Cumulative account equity after every trade across the selected ${statsRangeLabel(statsRange)}. The vertical scale adjusts to keep real changes visible without flattening the curve.`;
 
   $('#statEndingEquity').textContent=money(endingEquity);
 
@@ -11258,6 +11275,14 @@ $$('.range-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
     statsRange=btn.dataset.statsRange;
 
+    if(statsRange==='1m'){
+      statsAnchorDate=new Date(
+        statsAnchorDate.getFullYear(),
+        statsAnchorDate.getMonth(),
+        1
+      );
+    }
+
     $$('.range-btn').forEach(x=>{
       x.classList.toggle('active',x===btn);
     });
@@ -11284,6 +11309,28 @@ $('#statsLatestTrade').addEventListener('click',()=>{
 $('#statsAnchorInput').addEventListener('change',e=>{
   if(e.target.value){
     statsAnchorDate=parseLocalDate(e.target.value);
+    renderStatistics();
+  }
+});
+
+$('#statsMonthInput').addEventListener('change',e=>{
+  if(!e.target.value){
+    return;
+  }
+
+  const [year,month]=e.target.value.split('-').map(Number);
+
+  if(Number.isFinite(year) && Number.isFinite(month)){
+    statsAnchorDate=new Date(year,month-1,1);
+    statsRange='1m';
+
+    $$('.range-btn').forEach(btn=>{
+      btn.classList.toggle(
+        'active',
+        btn.dataset.statsRange==='1m'
+      );
+    });
+
     renderStatistics();
   }
 });
