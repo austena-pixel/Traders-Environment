@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<!-- TE v22: dashboard MT5 closed-trade live refresh -->
+<!-- TE v23: permanent per-trade removal from Traders Environment -->
 <title>Traders Environment</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -5352,6 +5352,7 @@ async function loadTrades(){
     .eq('user_id', currentUser.id)
     .eq('account_id', tradingAccount.id)
     .eq('position_status', 'closed')
+    .eq('is_deleted', false)
     .order('trade_date', {ascending:false})
     .order('created_at', {ascending:false});
 
@@ -6670,7 +6671,15 @@ function renderRecent(){
         <span>${formatDate(t.trade_date)}</span>
         <span>${Number(t.r_multiple||0)>=0?'+':''}${Number(t.r_multiple||0).toFixed(2)}R</span>
       </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:8px">
+        <button class="btn small danger recent-delete-trade" type="button">Delete</button>
+      </div>
     `;
+
+    d.querySelector('.recent-delete-trade').addEventListener('click',e=>{
+      e.stopPropagation();
+      deleteTrade(t);
+    });
 
     d.addEventListener('click',()=>openTradeModal(t.trade_date));
     box.appendChild(d);
@@ -6974,18 +6983,33 @@ function renderDayTrades(date){
 }
 
 async function deleteTrade(trade, dayToRefresh=null){
-  if(!confirm(`Delete ${trade.instrument} trade on ${formatDate(trade.trade_date)}?`)){
+  const mt5Note = trade.source==='mt5'
+    ? '\n\nThis removes the trade from Traders Environment only. It does not delete the broker/MT5 history.'
+    : '';
+
+  if(!confirm(`Delete ${trade.instrument} trade on ${formatDate(trade.trade_date)}?${mt5Note}`)){
     return;
   }
 
   const { error } = await db
     .from('trades')
-    .delete()
+    .update({
+      is_deleted:true,
+      deleted_at:new Date().toISOString(),
+      updated_at:new Date().toISOString()
+    })
     .eq('id',trade.id)
-    .eq('user_id',currentUser.id);
+    .eq('user_id',currentUser.id)
+    .eq('account_id',tradingAccount.id);
 
   if(error){
-    alert(error.message);
+    const msg=String(error.message||'');
+
+    if(msg.toLowerCase().includes('is_deleted') || msg.toLowerCase().includes('deleted_at')){
+      alert('Trade deletion is not enabled in the database yet. Run the TE v23 trade-delete SQL migration in Supabase, then try again.');
+    }else{
+      alert(msg || 'Could not delete trade.');
+    }
     return;
   }
 
@@ -7001,7 +7025,7 @@ async function deleteTrade(trade, dayToRefresh=null){
     renderDayTrades(dayToRefresh);
   }
 
-  showStatus('Trade deleted');
+  showStatus('Trade removed from Traders Environment');
 }
 
 $('#tradeForm').addEventListener('submit',async e=>{
