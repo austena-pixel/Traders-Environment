@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<!-- TE v23: permanent per-trade removal from Traders Environment -->
+<!-- TE v24: Excel-style cumulative equity curve -->
 <title>Traders Environment</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -10888,8 +10888,8 @@ function renderEquityChart(series){
           series.points.length<=35 ? 2.5 : 0,
         pointHoverRadius:5,
         borderWidth:2,
-        tension:.22,
-        fill:true
+        tension:0,
+        fill:false
       }]
     },
     plugins:[negativeZonePlugin],
@@ -10947,10 +10947,14 @@ function renderEquityChart(series){
           }
         },
         y:{
+          beginAtZero:true,
           grid:{color:'rgba(118,136,160,.10)'},
           ticks:{
             color:'#7f8da1',
-            callback:value=>'$'+Number(value).toLocaleString()
+            callback:value=>'$'+Number(value).toLocaleString(
+              undefined,
+              {maximumFractionDigits:2}
+            )
           }
         }
       }
