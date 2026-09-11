@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<!-- TE v25: adaptive Excel-style equity curve scale -->
+<!-- TE v26: stop repeated equity-curve redraw on MT5 heartbeat -->
 <title>Traders Environment</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -5370,11 +5370,23 @@ function tradeRefreshFingerprint(source=trades){
   return source
     .map(t=>[
       t.id || '',
+      t.source || '',
+      t.mt5_position_id || '',
+      t.trade_date || '',
+      t.instrument || '',
+      t.direction || '',
+      Number(t.entry_price)||0,
+      Number(t.exit_price)||0,
+      Number(t.volume)||0,
+      Number(t.pnl)||0,
+      Number(t.commission)||0,
+      Number(t.swap)||0,
+      Number(t.fee)||0,
+      Number(t.r_multiple)||0,
+      Number(t.initial_risk)||0,
       t.position_status || '',
       t.closed_at || '',
-      t.sync_updated_at || '',
-      t.updated_at || '',
-      Number(t.pnl)||0
+      t.is_deleted ? '1' : '0'
     ].join('|'))
     .sort()
     .join('~');
@@ -6333,7 +6345,19 @@ function subscribeToMt5Realtime(){
           return;
         }
 
+        const before=tradeRefreshFingerprint();
+
         await loadTrades();
+
+        const after=tradeRefreshFingerprint();
+
+        // MT5 may touch the same trade row repeatedly during sync.
+        // Ignore timestamp-only / non-material updates so the equity chart
+        // stays still instead of collapsing and redrawing every few seconds.
+        if(after===before){
+          return;
+        }
+
         await loadEdgeData();
         await loadExecutionData();
         await syncPhase1AutomaticStatus();
@@ -10929,9 +10953,7 @@ function renderEquityChart(series){
     options:{
       responsive:true,
       maintainAspectRatio:false,
-      animation:{
-        duration:300
-      },
+      animation:false,
       interaction:{
         mode:'index',
         intersect:false
