@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<!-- TE v24: Excel-style cumulative equity curve -->
+<!-- TE v25: adaptive Excel-style equity curve scale -->
 <title>Traders Environment</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -10874,6 +10874,39 @@ function renderEquityChart(series){
     }
   };
 
+  // Adaptive equity scale:
+  // Keep the curve visible without making a few dollars look like a huge account move.
+  // Unlike beginAtZero, this avoids flattening a $9k+ account into one horizontal line.
+  const equityValues=series.points
+    .map(p=>Number(p.equity))
+    .filter(Number.isFinite);
+
+  const equityMin=Math.min(...equityValues);
+  const equityMax=Math.max(...equityValues);
+  const equitySpread=Math.max(0,equityMax-equityMin);
+
+  const referenceEquity=Math.max(
+    1,
+    Math.abs(Number(series.openingEquity)||0),
+    Math.abs(equityMin),
+    Math.abs(equityMax)
+  );
+
+  // Minimum visible window = 0.25% of account equity or $10,
+  // whichever is larger. Larger real swings automatically expand the window.
+  const minimumWindow=Math.max(referenceEquity*0.0025,10);
+  const targetWindow=Math.max(equitySpread*1.35,minimumWindow);
+  const extraSpace=Math.max((targetWindow-equitySpread)/2,targetWindow*0.06);
+
+  let equityAxisMin=equityMin-extraSpace;
+  let equityAxisMax=equityMax+extraSpace;
+
+  // If the series crosses zero, keep zero naturally visible.
+  if(equityMin<=0 && equityMax>=0){
+    equityAxisMin=Math.min(equityAxisMin,0);
+    equityAxisMax=Math.max(equityAxisMax,0);
+  }
+
   equityChartInstance=new Chart(canvas.getContext('2d'),{
     type:'line',
     data:{
@@ -10947,7 +10980,8 @@ function renderEquityChart(series){
           }
         },
         y:{
-          beginAtZero:true,
+          min:equityAxisMin,
+          max:equityAxisMax,
           grid:{color:'rgba(118,136,160,.10)'},
           ticks:{
             color:'#7f8da1',
@@ -11107,7 +11141,7 @@ function renderStatistics(){
       : `${formatDate(localDateString(start))} → ${formatDate(localDateString(end))}`;
 
   $('#equityChartDescription').textContent=
-    `Equity after every trade across the selected ${statsRangeLabel(statsRange)}.`;
+    `Cumulative account equity after every trade across the selected ${statsRangeLabel(statsRange)}. The vertical scale adjusts to keep real changes visible without flattening the curve.`;
 
   $('#statEndingEquity').textContent=money(endingEquity);
 
