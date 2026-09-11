@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- TE v22: dashboard MT5 closed-trade live refresh -->
 <title>Traders Environment</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -5071,6 +5072,8 @@ let currentUser = null;
 let tradingAccounts = [];
 let tradingAccount = null;
 let mt5RealtimeChannel = null;
+let mt5TradeRefreshInFlight = false;
+let mt5TradeRefreshQueued = false;
 let trades = [];
 let psychologySessions = [];
 let identityScores = [];
@@ -5360,6 +5363,68 @@ async function loadTrades(){
   }
 
   trades=data || [];
+}
+
+function tradeRefreshFingerprint(source=trades){
+  return source
+    .map(t=>[
+      t.id || '',
+      t.position_status || '',
+      t.closed_at || '',
+      t.sync_updated_at || '',
+      t.updated_at || '',
+      Number(t.pnl)||0
+    ].join('|'))
+    .sort()
+    .join('~');
+}
+
+async function refreshMt5TradesFromHeartbeat(){
+  if(!db || !currentUser || !tradingAccount){
+    return;
+  }
+
+  const linked=
+    tradingAccount.account_type==='demo' ||
+    tradingAccount.account_type==='real';
+
+  if(!linked){
+    return;
+  }
+
+  if(mt5TradeRefreshInFlight){
+    mt5TradeRefreshQueued=true;
+    return;
+  }
+
+  mt5TradeRefreshInFlight=true;
+
+  try{
+    const before=tradeRefreshFingerprint();
+
+    await loadTrades();
+
+    const after=tradeRefreshFingerprint();
+
+    if(after!==before){
+      if(trades.length){
+        statsAnchorDate=latestTradeDateObj();
+      }
+
+      await syncPhase1AutomaticStatus();
+      renderAll();
+      showStatus('New MT5 trade synced',1800);
+    }
+  }catch(error){
+    console.warn('Could not refresh MT5 trades from account heartbeat',error);
+  }finally{
+    mt5TradeRefreshInFlight=false;
+
+    if(mt5TradeRefreshQueued){
+      mt5TradeRefreshQueued=false;
+      setTimeout(refreshMt5TradesFromHeartbeat,250);
+    }
+  }
 }
 
 async function loadPsychologyData(){
@@ -6246,6 +6311,10 @@ function subscribeToMt5Realtime(){
         renderAccountSelector();
         renderSettings();
         renderMetrics();
+
+        if(tradingAccount?.id===updated.id){
+          refreshMt5TradesFromHeartbeat();
+        }
       }
     )
     .on(
@@ -6542,7 +6611,20 @@ function renderMetrics(){
   $('#allTimePnl').className=pnlClass(allPnl);
 
   const start=Number(tradingAccount?.starting_balance || 0);
-  $('#currentEquity').textContent=money(start+allPnl);
+  const linkedAccount=
+    tradingAccount?.account_type==='demo' ||
+    tradingAccount?.account_type==='real';
+
+  const liveEquity=Number(tradingAccount?.current_equity);
+
+  const dashboardEquity=
+    linkedAccount &&
+    tradingAccount?.current_equity!=null &&
+    Number.isFinite(liveEquity)
+      ? liveEquity
+      : start+allPnl;
+
+  $('#currentEquity').textContent=money(dashboardEquity);
   $('#allTimeTrades').textContent=trades.length;
 }
 
@@ -6550,7 +6632,22 @@ function renderRecent(){
   const box=$('#recentTrades');
 
   const arr=[...trades]
-    .sort((a,b)=>(b.created_at||'').localeCompare(a.created_at||''))
+    .sort((a,b)=>{
+      const bTime=
+        b.closed_at ||
+        b.sync_updated_at ||
+        b.updated_at ||
+        b.created_at ||
+        '';
+      const aTime=
+        a.closed_at ||
+        a.sync_updated_at ||
+        a.updated_at ||
+        a.created_at ||
+        '';
+
+      return bTime.localeCompare(aTime);
+    })
     .slice(0,10);
 
   if(!arr.length){
