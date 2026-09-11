@@ -3780,6 +3780,7 @@ textarea{resize:vertical;min-height:90px}
                 <span class="edge-mini-kpi" id="edgeSelectedPnl">P&amp;L: —</span>
                 <span class="edge-mini-kpi" id="edgeSelectedR">R: —</span>
                 <span class="edge-mini-kpi" id="edgeSelectedSetup">Setup: —</span>
+                <span class="edge-mini-kpi" id="edgeSelectedEntryTiming">Entry moment: —</span>
                 <span class="edge-mini-kpi" id="edgeSelectedExitRule">Exit: —</span>
               </div>
             </div>
@@ -3797,8 +3798,8 @@ textarea{resize:vertical;min-height:90px}
 
             <div class="plan-flow">
               <strong>Plan hierarchy:</strong>
-              4H Market Context → 30m–15m Market Structure → 5m–3m Entry → Exit Management.
-              The lower-timeframe pattern is only meaningful when the larger context and structure support it.
+              4H Market Context → 30m–15m Market Structure → 5m–3m Entry Moment + Pattern → Exit Management.
+              A lower-timeframe pattern may be executed at the continuation breakout or at a valid post-breakout moment, provided the larger context and structure remain valid.
             </div>
 
             <div class="edge-section">
@@ -3884,7 +3885,8 @@ textarea{resize:vertical;min-height:90px}
                 <div class="edge-check-main">
                   <input type="checkbox" class="edge-check-input" data-edge-key="breakout_location">
                   <div class="edge-check-copy">
-                    <strong>The lower-timeframe setup developed at the relevant continuation breakout / structure location.</strong>
+                    <strong>A valid continuation breakout / structural release occurred within the planned sequence.</strong>
+                    <span>This confirms the continuation structure; the trade does not have to be entered exactly at the breakout.</span>
                   </div>
                 </div>
                 <input class="edge-check-comment" data-edge-comment="breakout_location" type="text" placeholder="Optional comment">
@@ -3895,7 +3897,20 @@ textarea{resize:vertical;min-height:90px}
               <div class="edge-section-head">
                 <div>
                   <h4>Entry — 5m → 3m</h4>
-                  <span>Confirm the entry pattern only after context and structure are valid.</span>
+                  <span>Confirm the entry pattern at the chosen valid moment: breakout, first post-breakout moment, or second post-breakout moment.</span>
+                </div>
+              </div>
+
+              <div class="edge-context-grid" style="grid-template-columns:1fr;margin-bottom:10px;">
+                <div class="field">
+                  <label>Entry Moment</label>
+                  <select id="edgeEntryTiming">
+                    <option value="">Select</option>
+                    <option value="Breakout (B-Out)">Breakout (B-Out)</option>
+                    <option value="After Breakout — 1st Moment">After Breakout — 1st Moment</option>
+                    <option value="After Breakout — 2nd Moment">After Breakout — 2nd Moment</option>
+                  </select>
+                  <span style="color:var(--muted);font-size:10px;line-height:1.5;">This records where the valid 5m–3m pattern was executed. A post-breakout entry is not a plan violation when the continuation structure and entry conditions remain valid.</span>
                 </div>
               </div>
 
@@ -3914,7 +3929,8 @@ textarea{resize:vertical;min-height:90px}
                 <div class="edge-check-main">
                   <input type="checkbox" class="edge-check-input" data-edge-key="entry_pattern_formed">
                   <div class="edge-check-copy">
-                    <strong>The selected entry pattern was fully formed before execution.</strong>
+                    <strong>The selected entry pattern was fully formed at the chosen entry moment before execution.</strong>
+                    <span>The same pattern standard applies at the breakout, 1st post-breakout moment, or 2nd post-breakout moment.</span>
                   </div>
                 </div>
                 <input class="edge-check-comment" data-edge-comment="entry_pattern_formed" type="text" placeholder="Optional comment">
@@ -4097,8 +4113,8 @@ textarea{resize:vertical;min-height:90px}
               <div class="execution-check-main">
                 <input type="checkbox" class="execution-check-input" data-execution-key="entry_timing">
                 <div class="execution-check-copy">
-                  <strong>Entry timing followed the planned trigger.</strong>
-                  <span>No premature anticipation, chasing, or unnecessary delay after the valid trigger.</span>
+                  <strong>Entry timing matched the selected valid entry moment and trigger.</strong>
+                  <span>The entry may be at breakout, the 1st post-breakout moment, or the 2nd post-breakout moment; avoid anticipation, chasing, or execution outside the valid trigger.</span>
                 </div>
               </div>
               <input class="execution-check-comment" data-execution-comment="entry_timing" type="text" placeholder="Optional comment">
@@ -9883,7 +9899,7 @@ $('#savePhase1SampleSize').addEventListener(
 const EXECUTION_CRITERIA = [
   {
     key:'entry_timing',
-    label:'Entry timing followed the planned trigger.',
+    label:'Entry timing matched the selected valid entry moment and trigger.',
     sort:1
   },
   {
@@ -11124,7 +11140,7 @@ const EDGE_CRITERIA = [
   {
     key:'breakout_location',
     section:'market_structure',
-    label:'The lower-timeframe setup developed at the relevant continuation breakout / structure location.',
+    label:'A valid continuation breakout / structural release occurred within the planned sequence.',
     sort:5
   },
   {
@@ -11136,7 +11152,7 @@ const EDGE_CRITERIA = [
   {
     key:'entry_pattern_formed',
     section:'entry',
-    label:'The selected entry pattern was fully formed before execution.',
+    label:'The selected entry pattern was fully formed at the chosen entry moment before execution.',
     sort:7
   },
   {
@@ -11249,9 +11265,16 @@ $$('input[name="edgeExitRule"]').forEach(input=>{
   });
 });
 
+$('#edgeEntryTiming').addEventListener('change',()=>{
+  const timing=$('#edgeEntryTiming').value || '—';
+  $('#edgeSelectedEntryTiming').textContent=`Entry moment: ${timing}`;
+});
+
 function clearEdgeEditor(){
   $('#edgeMarketState').value='';
   $('#edgeEntryPattern').value='';
+  $('#edgeEntryTiming').value='';
+  $('#edgeSelectedEntryTiming').textContent='Entry moment: —';
   $('#edgeReviewNotes').value='';
 
   $$('input[name="edgeExitRule"]').forEach(input=>input.checked=false);
@@ -11298,6 +11321,11 @@ function loadEdgeReviewIntoEditor(trade){
     checksForReview(review.id).forEach(row=>{
       map[row.criterion_key]=row;
     });
+
+    const savedEntryTiming=map.entry_timing?.comment || '';
+    $('#edgeEntryTiming').value=savedEntryTiming;
+    $('#edgeSelectedEntryTiming').textContent=
+      `Entry moment: ${savedEntryTiming || '—'}`;
 
     $$('.edge-check-input').forEach(input=>{
       input.checked=Boolean(map[input.dataset.edgeKey]?.complied);
@@ -11465,6 +11493,13 @@ async function saveEdgeReview(){
     return;
   }
 
+  const selectedEntryTiming=$('#edgeEntryTiming').value || null;
+
+  if(!selectedEntryTiming){
+    alert('Select the entry moment: Breakout, 1st Moment, or 2nd Moment.');
+    return;
+  }
+
   const selectedExitRule=document.querySelector('input[name="edgeExitRule"]:checked')?.value || null;
 
   if(!selectedExitRule){
@@ -11523,6 +11558,19 @@ async function saveEdgeReview(){
     comment:$(`[data-edge-comment="${item.key}"]`).value.trim() || null,
     sort_order:item.sort
   }));
+
+  // Entry moment is classification metadata, not an additional scoring condition.
+  // This preserves the existing Edge score while allowing valid entries at or after breakout.
+  checkPayload.push({
+    review_id:review.id,
+    user_id:currentUser.id,
+    section:'entry',
+    criterion_key:'entry_timing',
+    criterion_label:'Entry timing / moment',
+    complied:true,
+    comment:selectedEntryTiming,
+    sort_order:7
+  });
 
   const {error:checkError}=await db
     .from('trade_plan_checks')
