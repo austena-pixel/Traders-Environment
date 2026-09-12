@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<!-- TradersIOS v29: live-config-safe branding + enhanced R derivation -->
+<!-- TradersIOS v32: MT5-accurate P&L + automatic R pipeline -->
 <title>TradersIOS — Traders Intelligence Operating System</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -3376,7 +3376,7 @@ textarea{resize:vertical;min-height:90px}
         <div class="metric">
           <div class="label">Profit Factor</div>
           <div class="value neutral" id="profitFactor">0.00</div>
-          <div class="sub">Gross profit / loss</div>
+          <div class="sub">MT5 profit / loss</div>
         </div>
         <div class="metric">
           <div class="label">Best Day</div>
@@ -6787,14 +6787,16 @@ function tradeInitialRisk(trade){
     return 0;
   }
 
-  const explicitInitialRisk=Number(trade.initial_risk);
-  if(Number.isFinite(explicitInitialRisk) && explicitInitialRisk>0){
-    return explicitInitialRisk;
-  }
-
+  // MT5 bridge v1.07 calculates this in the broker/account currency
+  // using OrderCalcProfit, then the backend preserves the FIRST valid risk.
   const storedRisk=Number(trade.risk_amount);
   if(Number.isFinite(storedRisk) && storedRisk>0){
     return storedRisk;
+  }
+
+  const explicitInitialRisk=Number(trade.initial_risk);
+  if(Number.isFinite(explicitInitialRisk) && explicitInitialRisk>0){
+    return explicitInitialRisk;
   }
 
   const entry=Number(trade.entry_price);
