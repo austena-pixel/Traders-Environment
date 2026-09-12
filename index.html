@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<!-- TradersIOS v28: branding + robust R display -->
+<!-- TradersIOS v29: live-config-safe branding + enhanced R derivation -->
 <title>TradersIOS — Traders Intelligence Operating System</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -2921,7 +2921,7 @@ textarea{resize:vertical;min-height:90px}
 <!-- LOGIN -->
 <section class="auth-screen" id="authScreen">
   <div class="auth-card">
-    <div class="auth-brand">T·IOS</div>
+    <div class="auth-brand" title="Traders Intelligence Operating System">T·IOS</div>
     <h1>Traders Intelligence Operating System</h1>
     <p>Sign in to your personal trading intelligence system.</p>
 
@@ -2951,7 +2951,7 @@ textarea{resize:vertical;min-height:90px}
 
   <aside class="sidebar" id="sidebar">
     <div class="side-brand">
-      <div class="side-logo">T·IOS</div>
+      <div class="side-logo" title="Traders Intelligence Operating System">T·IOS</div>
       <div>
         <strong>TradersIOS</strong>
         <span>Traders Intelligence Operating System</span>
@@ -6451,18 +6451,77 @@ $('#sidebarOverlay').addEventListener('click',closeSidebarMobile);
    DASHBOARD CALCULATIONS
 ========================= */
 
-// R is always based on net P&L divided by the INITIAL cash risk.
-// For imported MT5 trades, use the stored r_multiple when available,
-// otherwise derive it from risk_amount so the UI stays correct even
-// if an older row was synced before r_multiple was recalculated.
+// R is always based on NET P&L divided by the INITIAL cash risk.
+// TraderIOS first uses an explicit initial risk captured by MT5/manual review.
+// If an older imported trade has no stored cash risk but DOES contain
+// entry, initial stop and exit prices, TraderIOS derives the missing
+// cash risk from the realized price movement. This is a display fallback;
+// it does not overwrite the Supabase trade row.
+function tradeInitialRisk(trade){
+  if(!trade){
+    return 0;
+  }
+
+  const explicitInitialRisk=Number(trade.initial_risk);
+  if(Number.isFinite(explicitInitialRisk) && explicitInitialRisk>0){
+    return explicitInitialRisk;
+  }
+
+  const storedRisk=Number(trade.risk_amount);
+  if(Number.isFinite(storedRisk) && storedRisk>0){
+    return storedRisk;
+  }
+
+  const entry=Number(trade.entry_price);
+  const stop=Number(trade.stop_loss);
+  const exit=Number(trade.exit_price);
+  const netPnl=Number(trade.pnl);
+  const commission=Number(trade.commission)||0;
+  const swap=Number(trade.swap)||0;
+  const fee=Number(trade.fee)||0;
+
+  if(
+    !Number.isFinite(entry) ||
+    !Number.isFinite(stop) ||
+    !Number.isFinite(exit) ||
+    !Number.isFinite(netPnl)
+  ){
+    return 0;
+  }
+
+  const realisedMove=Math.abs(exit-entry);
+  const riskMove=Math.abs(entry-stop);
+
+  if(realisedMove<=1e-12 || riskMove<=1e-12){
+    return 0;
+  }
+
+  // Recover the price-movement portion of P&L by removing costs.
+  // This lets us infer the cash value of the initial stop distance
+  // without assuming a forex contract size or a Deriv symbol type.
+  const pricePnl=netPnl-commission-swap-fee;
+
+  if(Math.abs(pricePnl)<=1e-12){
+    return 0;
+  }
+
+  const derivedRisk=
+    Math.abs(pricePnl) *
+    (riskMove/realisedMove);
+
+  return Number.isFinite(derivedRisk) && derivedRisk>0
+    ? derivedRisk
+    : 0;
+}
+
 function tradeRMultiple(trade){
   if(!trade){
     return 0;
   }
 
   const stored=Number(trade.r_multiple);
-  const risk=Number(trade.risk_amount);
   const pnl=Number(trade.pnl);
+  const risk=tradeInitialRisk(trade);
 
   if(
     Number.isFinite(stored) &&
@@ -6472,7 +6531,6 @@ function tradeRMultiple(trade){
   }
 
   if(
-    Number.isFinite(risk) &&
     risk>0 &&
     Number.isFinite(pnl)
   ){
@@ -6989,7 +7047,7 @@ function openEditTrade(trade){
   $('#entry').value=trade.entry_price ?? '';
   $('#stop').value=trade.stop_loss ?? '';
   $('#exit').value=trade.exit_price ?? '';
-  $('#riskAmount').value=trade.risk_amount ?? '';
+  $('#riskAmount').value=tradeInitialRisk(trade) || '';
   $('#pnl').value=trade.pnl ?? '';
   $('#rMultiple').value=tradeRMultiple(trade);
   $('#executionScore').value=trade.execution_score ?? '';
@@ -10244,7 +10302,7 @@ function loadExecutionReviewIntoEditor(trade){
   $('#executionSelectedPnl').textContent=
     `P&L: ${signedMoney(Number(trade.pnl)||0)}`;
 
-  const r=Number(trade.r_multiple)||0;
+  const r=tradeRMultiple(trade);
 
   $('#executionSelectedR').textContent=
     `R: ${r>=0?'+':''}${r.toFixed(2)}R`;
@@ -10839,7 +10897,7 @@ function buildDailyEquitySeries(start,end){
       direction:trade.direction || '—',
       equity,
       tradePnl,
-      rMultiple:Number(trade.r_multiple)||0,
+      rMultiple:tradeRMultiple(trade),
       isOpening:false
     });
   });
@@ -11565,7 +11623,7 @@ function loadEdgeReviewIntoEditor(trade){
 
   $('#edgeSelectedPnl').textContent=`P&L: ${signedMoney(Number(trade.pnl)||0)}`;
 
-  const r=Number(trade.r_multiple)||0;
+  const r=tradeRMultiple(trade);
   $('#edgeSelectedR').textContent=`R: ${r>=0?'+':''}${r.toFixed(2)}R`;
 
   $('#edgeSelectedSetup').textContent=`Setup: ${trade.setup || '—'}`;
@@ -12380,7 +12438,13 @@ function exportTrades(sourceTrades, filename){
   const csv=[
     headers.join(','),
     ...sourceTrades.map(t=>headers.map(h=>
-      esc(h==='r_multiple' ? tradeRMultiple(t) : t[h])
+      esc(
+        h==='r_multiple'
+          ? tradeRMultiple(t)
+          : h==='risk_amount'
+            ? tradeInitialRisk(t)
+            : t[h]
+      )
     ).join(','))
   ].join('\n');
 
