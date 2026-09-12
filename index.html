@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<!-- TE v27: individual-month equity curve selector -->
-<title>Traders Environment</title>
+<!-- TradersIOS v28: branding + robust R display -->
+<title>TradersIOS — Traders Intelligence Operating System</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
@@ -60,11 +60,15 @@ button{cursor:pointer}
   box-shadow:0 30px 80px rgba(0,0,0,.45);
 }
 .auth-brand{
-  width:48px;height:48px;
+  width:54px;height:54px;
   display:grid;place-items:center;
   background:#f5f7fb;color:#07090d;
-  border-radius:14px;font-weight:900;
+  border-radius:50%;
+  font-size:10px;
+  letter-spacing:.35px;
+  font-weight:900;
   margin-bottom:18px;
+  border:2px solid #dbe5f2;
 }
 .auth-card h1{font-size:25px;margin:0 0 7px}
 .auth-card p{color:var(--muted);font-size:13px;line-height:1.55;margin:0 0 22px}
@@ -122,14 +126,16 @@ input:focus,select:focus,textarea:focus{border-color:#5275a7}
   border-bottom:1px solid #151d28;
 }
 .side-logo{
-  width:38px;height:38px;
-  border-radius:11px;
+  width:40px;height:40px;
+  border-radius:50%;
   background:#f4f7fb;
   color:#07090d;
   display:grid;
   place-items:center;
-  font-size:12px;
+  font-size:9px;
+  letter-spacing:.3px;
   font-weight:900;
+  border:2px solid #dbe5f2;
 }
 .side-brand strong{font-size:14px}
 .side-brand span{
@@ -2915,9 +2921,9 @@ textarea{resize:vertical;min-height:90px}
 <!-- LOGIN -->
 <section class="auth-screen" id="authScreen">
   <div class="auth-card">
-    <div class="auth-brand">TE</div>
-    <h1>Traders Environment</h1>
-    <p>Sign in to your private trading journal.</p>
+    <div class="auth-brand">T·IOS</div>
+    <h1>Traders Intelligence Operating System</h1>
+    <p>Sign in to your personal trading intelligence system.</p>
 
     <form id="loginForm" style="padding:0">
       <div class="auth-field">
@@ -2945,10 +2951,10 @@ textarea{resize:vertical;min-height:90px}
 
   <aside class="sidebar" id="sidebar">
     <div class="side-brand">
-      <div class="side-logo">TE</div>
+      <div class="side-logo">T·IOS</div>
       <div>
-        <strong>Traders Environment</strong>
-        <span>Performance workspace</span>
+        <strong>TradersIOS</strong>
+        <span>Traders Intelligence Operating System</span>
       </div>
     </div>
 
@@ -3004,7 +3010,7 @@ textarea{resize:vertical;min-height:90px}
 
     <div class="mobile-top">
       <button class="mobile-menu" id="mobileMenuBtn">☰</button>
-      <strong>Traders Environment</strong>
+      <strong>TradersIOS</strong>
       <div style="width:40px"></div>
     </div>
 
@@ -4422,7 +4428,7 @@ textarea{resize:vertical;min-height:90px}
           <div class="phase-auto-head">
             <div>
               <h3>Automated Evidence</h3>
-              <span class="muted">Calculated from the data already recorded elsewhere in Traders Environment.</span>
+              <span class="muted">Calculated from the data already recorded elsewhere in TradersIOS.</span>
             </div>
             <div class="auto-readiness" id="phaseAutoReadiness">0%</div>
           </div>
@@ -4639,7 +4645,7 @@ textarea{resize:vertical;min-height:90px}
       <header class="page-head">
         <div>
           <h1>Settings & Connections</h1>
-          <p>Manage Traders Environment accounts and securely link Deriv MetaTrader 5 demo or real accounts.</p>
+          <p>Manage TradersIOS accounts and securely link Deriv MetaTrader 5 demo or real accounts.</p>
         </div>
         <div class="top-actions">
           <button class="btn" id="refreshConnectionsBtn">Refresh</button>
@@ -4765,7 +4771,7 @@ textarea{resize:vertical;min-height:90px}
 
         <div class="connection-note">
           The bridge contains no order placement, position modification, or close-trade commands.
-          It is designed only to read MT5 account/trade information and send it to Traders Environment.
+          It is designed only to read MT5 account/trade information and send it to TradersIOS.
         </div>
       </section>
     </section>
@@ -5383,7 +5389,7 @@ function tradeRefreshFingerprint(source=trades){
       Number(t.commission)||0,
       Number(t.swap)||0,
       Number(t.fee)||0,
-      Number(t.r_multiple)||0,
+      tradeRMultiple(t),
       Number(t.initial_risk)||0,
       t.position_status || '',
       t.closed_at || '',
@@ -5558,7 +5564,7 @@ const DOCUMENT_PHASE_TEMPLATE = [
     name:'Perfect Execution',
     objective:'Learn perfect execution.',
     specific:'Master the execution of my trading plan by following every rule for entries, exits, risk management, and journaling without emotional interference.',
-    measurable:'Original SMART template: achieve at least 95% rule adherence; journal 100% of trades; maintain 0 revenge trades; maintain 0 rule-breaking trades; complete weekly trade reviews. Current Traders Environment automatic gate remains the newer standard: 2 consecutive samples of 20–30 trades with 90%+ across the required process metrics.',
+    measurable:'Original SMART template: achieve at least 95% rule adherence; journal 100% of trades; maintain 0 revenge trades; maintain 0 rule-breaking trades; complete weekly trade reviews. Current TradersIOS automatic gate remains the newer standard: 2 consecutive samples of 20–30 trades with 90%+ across the required process metrics.',
     achievable:'Keep scores for every trading session and individual trade execution.',
     relevant:'Consistent execution is the foundation of long-term profitability.',
     time_bound:'Template target: complete within 2–3 months. Automatic phase advancement is controlled by the current sample-based qualification gate.',
@@ -6445,6 +6451,37 @@ $('#sidebarOverlay').addEventListener('click',closeSidebarMobile);
    DASHBOARD CALCULATIONS
 ========================= */
 
+// R is always based on net P&L divided by the INITIAL cash risk.
+// For imported MT5 trades, use the stored r_multiple when available,
+// otherwise derive it from risk_amount so the UI stays correct even
+// if an older row was synced before r_multiple was recalculated.
+function tradeRMultiple(trade){
+  if(!trade){
+    return 0;
+  }
+
+  const stored=Number(trade.r_multiple);
+  const risk=Number(trade.risk_amount);
+  const pnl=Number(trade.pnl);
+
+  if(
+    Number.isFinite(stored) &&
+    Math.abs(stored)>1e-12
+  ){
+    return stored;
+  }
+
+  if(
+    Number.isFinite(risk) &&
+    risk>0 &&
+    Number.isFinite(pnl)
+  ){
+    return pnl/risk;
+  }
+
+  return Number.isFinite(stored) ? stored : 0;
+}
+
 function monthTrades(){
   const y=viewDate.getFullYear();
   const m=viewDate.getMonth()+1;
@@ -6465,7 +6502,7 @@ function dayPnlMap(sourceTrades){
 
     map[t.trade_date].pnl += Number(t.pnl)||0;
     map[t.trade_date].count += 1;
-    map[t.trade_date].r += Number(t.r_multiple)||0;
+    map[t.trade_date].r += tradeRMultiple(t);
   });
 
   return map;
@@ -6563,7 +6600,7 @@ function renderMetrics(){
   const pnl=mt.reduce((s,t)=>s+(Number(t.pnl)||0),0);
   const wins=mt.filter(t=>Number(t.pnl)>0).length;
   const avgR=mt.length
-    ? mt.reduce((s,t)=>s+(Number(t.r_multiple)||0),0)/mt.length
+    ? mt.reduce((s,t)=>s+(tradeRMultiple(t)),0)/mt.length
     : 0;
 
   const grossProfit=mt
@@ -6694,7 +6731,7 @@ function renderRecent(){
       </div>
       <div class="t2">
         <span>${formatDate(t.trade_date)}</span>
-        <span>${Number(t.r_multiple||0)>=0?'+':''}${Number(t.r_multiple||0).toFixed(2)}R</span>
+        <span>${tradeRMultiple(t)>=0?'+':''}${tradeRMultiple(t).toFixed(2)}R</span>
       </div>
       <div style="display:flex;justify-content:flex-end;margin-top:8px">
         <button class="btn small danger recent-delete-trade" type="button">Delete</button>
@@ -6789,7 +6826,7 @@ function renderJournal(){
   const totalPnl=filtered.reduce((s,t)=>s+(Number(t.pnl)||0),0);
   const wins=filtered.filter(t=>Number(t.pnl)>0).length;
   const avgR=filtered.length
-    ? filtered.reduce((s,t)=>s+(Number(t.r_multiple)||0),0)/filtered.length
+    ? filtered.reduce((s,t)=>s+(tradeRMultiple(t)),0)/filtered.length
     : 0;
 
   $('#jTrades').textContent=filtered.length;
@@ -6824,7 +6861,7 @@ function renderJournal(){
   }else{
     pageItems.forEach(t=>{
       const pnl=Number(t.pnl)||0;
-      const r=Number(t.r_multiple)||0;
+      const r=tradeRMultiple(t);
 
       const tr=document.createElement('tr');
 
@@ -6954,7 +6991,7 @@ function openEditTrade(trade){
   $('#exit').value=trade.exit_price ?? '';
   $('#riskAmount').value=trade.risk_amount ?? '';
   $('#pnl').value=trade.pnl ?? '';
-  $('#rMultiple').value=trade.r_multiple ?? '';
+  $('#rMultiple').value=tradeRMultiple(trade);
   $('#executionScore').value=trade.execution_score ?? '';
   $('#psychology').value=trade.psychology || '';
   $('#notes').value=trade.notes || '';
@@ -6995,7 +7032,7 @@ function renderDayTrades(date){
       <strong>${escapeHtml(t.instrument||'—')} ${escapeHtml(t.direction||'')}</strong>
       <span>${escapeHtml(t.setup||'No setup')}</span>
       <span class="${pnlClass(Number(t.pnl))}">${signedMoney(Number(t.pnl))}</span>
-      <span>${Number(t.r_multiple||0)>=0?'+':''}${Number(t.r_multiple||0).toFixed(2)}R</span>
+      <span>${tradeRMultiple(t)>=0?'+':''}${tradeRMultiple(t).toFixed(2)}R</span>
       <button class="btn danger small" type="button">Delete</button>
     `;
 
@@ -7009,7 +7046,7 @@ function renderDayTrades(date){
 
 async function deleteTrade(trade, dayToRefresh=null){
   const mt5Note = trade.source==='mt5'
-    ? '\n\nThis removes the trade from Traders Environment only. It does not delete the broker/MT5 history.'
+    ? '\n\nThis removes the trade from TradersIOS only. It does not delete the broker/MT5 history.'
     : '';
 
   if(!confirm(`Delete ${trade.instrument} trade on ${formatDate(trade.trade_date)}?${mt5Note}`)){
@@ -7050,7 +7087,7 @@ async function deleteTrade(trade, dayToRefresh=null){
     renderDayTrades(dayToRefresh);
   }
 
-  showStatus('Trade removed from Traders Environment');
+  showStatus('Trade removed from TradersIOS');
 }
 
 $('#tradeForm').addEventListener('submit',async e=>{
@@ -7372,7 +7409,7 @@ function statsForGoalRange(goal){
     trade_count:source.length,
     win_rate:source.length ? wins.length/source.length*100 : 0,
     avg_r:source.length
-      ? source.reduce((s,t)=>s+(Number(t.r_multiple)||0),0)/source.length
+      ? source.reduce((s,t)=>s+(tradeRMultiple(t)),0)/source.length
       : 0,
     profit_factor:grossLoss
       ? grossProfit/grossLoss
@@ -8020,7 +8057,7 @@ function phaseDataMetrics(phase){
       : 0,
     avgR:source.length
       ? source.reduce(
-          (s,t)=>s+(Number(t.r_multiple)||0),0
+          (s,t)=>s+(tradeRMultiple(t)),0
         )/source.length
       : 0,
     profitFactor:grossLoss
@@ -11038,7 +11075,7 @@ function renderInstrumentStats(sourceTrades){
 
     grouped[key].trades++;
     grouped[key].pnl+=Number(t.pnl)||0;
-    grouped[key].rTotal+=Number(t.r_multiple)||0;
+    grouped[key].rTotal+=tradeRMultiple(t);
 
     if(Number(t.pnl)>0){
       grouped[key].wins++;
@@ -11124,7 +11161,7 @@ function renderStatistics(){
     : grossProfit>0 ? Infinity : 0;
 
   const avgR=source.length
-    ? source.reduce((s,t)=>s+(Number(t.r_multiple)||0),0)/source.length
+    ? source.reduce((s,t)=>s+(tradeRMultiple(t)),0)/source.length
     : 0;
 
   const expectancy=source.length
@@ -12342,7 +12379,9 @@ function exportTrades(sourceTrades, filename){
 
   const csv=[
     headers.join(','),
-    ...sourceTrades.map(t=>headers.map(h=>esc(t[h])).join(','))
+    ...sourceTrades.map(t=>headers.map(h=>
+      esc(h==='r_multiple' ? tradeRMultiple(t) : t[h])
+    ).join(','))
   ].join('\n');
 
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
@@ -12354,11 +12393,11 @@ function exportTrades(sourceTrades, filename){
 }
 
 $('#exportBtn').addEventListener('click',()=>{
-  exportTrades(trades,'traders-environment-trades.csv');
+  exportTrades(trades,'tradersios-trades.csv');
 });
 
 $('#journalExportBtn').addEventListener('click',()=>{
-  exportTrades(filteredJournalTrades(),'traders-environment-journal-filtered.csv');
+  exportTrades(filteredJournalTrades(),'tradersios-journal-filtered.csv');
 });
 
 /* =========================
