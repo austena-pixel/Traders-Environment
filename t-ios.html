@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<!-- T·IOS v33: Intelligence Overview v1 + MT5-accurate P&L -->
+<!-- T·IOS v34: Performance L1 risk ranges + static Intelligence page -->
 <title>T·IOS — Trader Intelligence Operating System</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -72,7 +72,7 @@ button{cursor:pointer}
   height:100%;
   opacity:.92;
 }
-.intelligence-grid{
+.auth-bg .intelligence-grid{
   position:absolute;
   inset:-10%;
   background-image:
@@ -3644,6 +3644,36 @@ textarea{resize:vertical;min-height:90px}
   .cross-arrow{transform:rotate(90deg);min-height:24px}
 }
 
+.risk-range-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.risk-range-status{
+  display:block;
+  margin-top:7px;
+  padding:7px 9px;
+  border:1px solid #26364a;
+  background:#0b141e;
+  border-radius:9px;
+  color:#91a2b8;
+  font-size:9px;
+  line-height:1.45;
+}
+.risk-range-status.ok{
+  border-color:#24573f;
+  background:#0b1d16;
+  color:#9ce7bd;
+}
+.risk-range-status.out{
+  border-color:#6a3f2f;
+  background:#21140f;
+  color:#f2b49a;
+}
+@media(max-width:620px){
+  .risk-range-grid{grid-template-columns:1fr}
+}
+
 </style>
 </head>
 
@@ -5782,9 +5812,22 @@ textarea{resize:vertical;min-height:90px}
             </select>
           </div>
 
+          <div class="field hidden" id="defaultCashRiskRangeField">
+            <label>Allowed Cash Risk Range</label>
+            <div class="risk-range-grid">
+              <input type="number" id="defaultCashRiskMin" min="0.01" step="0.01" placeholder="Min e.g. 4">
+              <input type="number" id="defaultCashRiskMax" min="0.01" step="0.01" placeholder="Max e.g. 6">
+            </div>
+            <span class="field-help">Example: $4 to $6 means a trade may use any planned 1R amount inside that range.</span>
+          </div>
+
           <div class="field hidden" id="defaultRiskPercentField">
-            <label>Default Account Risk %</label>
-            <input type="number" id="defaultRiskPercent" min="0.01" step="0.01" placeholder="e.g. 1">
+            <label>Allowed Account Risk % Range</label>
+            <div class="risk-range-grid">
+              <input type="number" id="defaultRiskPercentMin" min="0.01" step="0.01" placeholder="Min e.g. 0.5">
+              <input type="number" id="defaultRiskPercentMax" min="0.01" step="0.01" placeholder="Max e.g. 1">
+            </div>
+            <span class="field-help">The actual percentage for each trade can vary inside this range.</span>
           </div>
 
           <div class="field hidden" id="fixedRiskUnitField">
@@ -5913,15 +5956,16 @@ textarea{resize:vertical;min-height:90px}
         </div>
 
         <div class="field hidden" id="rRiskPercentField">
-          <label>Risk %</label>
-          <input type="number" id="rRiskPercent" min="0.01" step="0.01" placeholder="e.g. 1">
-          <span class="field-help">Example: 1 means 1% of account equity = 1R.</span>
+          <label>Actual Risk %</label>
+          <input type="number" id="rRiskPercent" min="0.01" step="0.01" placeholder="e.g. 0.75">
+          <span class="field-help" id="rRiskPercentHelp">Enter the actual percentage used for this trade; T·IOS checks it against your allowed range.</span>
         </div>
 
         <div class="field" id="riskAmountField">
-          <label id="riskAmountLabel">1R Amount</label>
-          <input type="number" id="riskAmount" min="0" step="0.01" placeholder="e.g. 200">
-          <span class="field-help" id="riskAmountHelp">The cash amount represented by 1R for this trade.</span>
+          <label id="riskAmountLabel">Actual 1R Amount</label>
+          <input type="number" id="riskAmount" min="0" step="0.01" placeholder="e.g. 5">
+          <span class="field-help" id="riskAmountHelp">Enter the actual planned cash risk for this trade.</span>
+          <span class="risk-range-status" id="tradeRiskRangeStatus">No allowable risk range configured yet.</span>
         </div>
 
         <div class="field">
@@ -6298,25 +6342,52 @@ function accountHasPersistentRConfig(account=tradingAccount){
   );
 }
 
+function accountSupportsRiskRangeColumns(account=tradingAccount){
+  return Boolean(
+    account &&
+    Object.prototype.hasOwnProperty.call(account,'default_cash_risk_min') &&
+    Object.prototype.hasOwnProperty.call(account,'default_cash_risk_max') &&
+    Object.prototype.hasOwnProperty.call(account,'default_risk_percent_min') &&
+    Object.prototype.hasOwnProperty.call(account,'default_risk_percent_max')
+  );
+}
+
+function validPositiveNumber(value){
+  const n=Number(value);
+  return Number.isFinite(n) && n>0 ? n : 0;
+}
+
 function getAccountRConfig(account=tradingAccount){
   const local=readLocalJson(rConfigStorageKey(account),{});
   const basis=(accountHasPersistentRConfig(account) && account.default_r_basis)
     ? account.default_r_basis
     : (local.basis || 'planned_cash');
 
-  const dbPct=Number(account?.default_risk_percent);
-  const localPct=Number(local.riskPercent);
-  const dbFixed=Number(account?.fixed_risk_unit);
-  const localFixed=Number(local.fixedRiskUnit);
+  const dbFixed=validPositiveNumber(account?.fixed_risk_unit);
+  const localFixed=validPositiveNumber(local.fixedRiskUnit);
+
+  const legacyPct=validPositiveNumber(account?.default_risk_percent) || validPositiveNumber(local.riskPercent);
+
+  const dbCashMin=validPositiveNumber(account?.default_cash_risk_min);
+  const dbCashMax=validPositiveNumber(account?.default_cash_risk_max);
+  const localCashMin=validPositiveNumber(local.cashRiskMin);
+  const localCashMax=validPositiveNumber(local.cashRiskMax);
+
+  const dbPctMin=validPositiveNumber(account?.default_risk_percent_min);
+  const dbPctMax=validPositiveNumber(account?.default_risk_percent_max);
+  const localPctMin=validPositiveNumber(local.riskPercentMin);
+  const localPctMax=validPositiveNumber(local.riskPercentMax);
+
+  const riskPercentMin=dbPctMin || localPctMin || legacyPct || 0;
+  const riskPercentMax=dbPctMax || localPctMax || legacyPct || 0;
 
   return {
     basis:R_BASIS_LABELS[basis] ? basis : 'planned_cash',
-    riskPercent:Number.isFinite(dbPct) && dbPct>0
-      ? dbPct
-      : Number.isFinite(localPct) && localPct>0 ? localPct : 1,
-    fixedRiskUnit:Number.isFinite(dbFixed) && dbFixed>0
-      ? dbFixed
-      : Number.isFinite(localFixed) && localFixed>0 ? localFixed : 0
+    cashRiskMin:dbCashMin || localCashMin || 0,
+    cashRiskMax:dbCashMax || localCashMax || 0,
+    riskPercentMin,
+    riskPercentMax,
+    fixedRiskUnit:dbFixed || localFixed || 0
   };
 }
 
@@ -7357,43 +7428,69 @@ async function toggleBridge(accountId,enabled){
   await refreshTradingAccounts();
 }
 
+function updateRConfigFields(){
+  const basis=$('#defaultRBasis').value;
+  const cashRangeField=$('#defaultCashRiskRangeField');
+  const pctRangeField=$('#defaultRiskPercentField');
+  const fixedField=$('#fixedRiskUnitField');
+
+  cashRangeField.classList.toggle('hidden', !['planned_cash','stop_based'].includes(basis));
+  pctRangeField.classList.toggle('hidden', basis!=='account_percent');
+  fixedField.classList.toggle('hidden', basis!=='fixed_unit');
+
+  const notes={
+    planned_cash:'Planned Cash Risk: define an allowable cash-risk range for the plan, for example $4–$6. Each trade records the actual planned cash risk used inside or outside that range.',
+    account_percent:'Account % Risk: define an allowable percentage range. Each trade records the actual percentage used, and 1R is calculated from equity at entry × that percentage.',
+    stop_based:'Stop-Based Risk: define the allowable cash-risk range for the initial stop reference. The stop can be broker-placed or a predefined mental/plan stop.',
+    fixed_unit:'Fixed Risk Unit: every trade uses the same configured cash amount as 1R.',
+    none:'No R-Multiple: T·IOS will not manufacture R. Performance Intelligence will use P&L, return, win rate, equity, drawdown and other non-R metrics.'
+  };
+  $('#rConfigNote').textContent=notes[basis] || notes.planned_cash;
+}
+
 function renderRConfigSettings(){
   if(!tradingAccount || !$('#defaultRBasis')) return;
 
   const config=getAccountRConfig();
   $('#defaultRBasis').value=config.basis;
-  $('#defaultRiskPercent').value=config.riskPercent;
+  $('#defaultCashRiskMin').value=config.cashRiskMin>0 ? config.cashRiskMin : '';
+  $('#defaultCashRiskMax').value=config.cashRiskMax>0 ? config.cashRiskMax : '';
+  $('#defaultRiskPercentMin').value=config.riskPercentMin>0 ? config.riskPercentMin : '';
+  $('#defaultRiskPercentMax').value=config.riskPercentMax>0 ? config.riskPercentMax : '';
   $('#fixedRiskUnit').value=config.fixedRiskUnit>0 ? config.fixedRiskUnit : '';
-
-  $('#defaultRiskPercentField').classList.toggle(
-    'hidden',
-    config.basis!=='account_percent'
-  );
-  $('#fixedRiskUnitField').classList.toggle(
-    'hidden',
-    config.basis!=='fixed_unit'
-  );
-
-  const notes={
-    planned_cash:'Planned Cash Risk: 1R is the cash amount the trader intended to lose if the trade failed. A placed stop order is not required.',
-    account_percent:'Account % Risk: 1R is calculated from account equity at entry × the chosen risk percentage.',
-    stop_based:'Stop-Based Risk: 1R is the cash value represented by the initial stop reference. This can be a broker stop or a predefined mental/plan stop.',
-    fixed_unit:'Fixed Risk Unit: every trade uses the same configured cash amount as 1R.',
-    none:'No R-Multiple: T·IOS will not manufacture R. Performance Intelligence will use P&L, return, win rate, equity, drawdown and other non-R metrics.'
-  };
-  $('#rConfigNote').textContent=notes[config.basis] || notes.planned_cash;
+  updateRConfigFields();
 }
 
 async function saveRConfiguration(){
   if(!tradingAccount) return;
 
   const basis=$('#defaultRBasis').value;
-  const riskPercent=Number($('#defaultRiskPercent').value);
+  const cashRiskMin=Number($('#defaultCashRiskMin').value);
+  const cashRiskMax=Number($('#defaultCashRiskMax').value);
+  const riskPercentMin=Number($('#defaultRiskPercentMin').value);
+  const riskPercentMax=Number($('#defaultRiskPercentMax').value);
   const fixedRiskUnit=Number($('#fixedRiskUnit').value);
 
-  if(basis==='account_percent' && (!Number.isFinite(riskPercent) || riskPercent<=0)){
-    alert('Enter a valid default account risk percentage.');
-    return;
+  if(['planned_cash','stop_based'].includes(basis)){
+    if(!Number.isFinite(cashRiskMin) || cashRiskMin<=0 || !Number.isFinite(cashRiskMax) || cashRiskMax<=0){
+      alert('Enter a valid minimum and maximum allowable cash risk.');
+      return;
+    }
+    if(cashRiskMax<cashRiskMin){
+      alert('Maximum allowable cash risk must be greater than or equal to the minimum.');
+      return;
+    }
+  }
+
+  if(basis==='account_percent'){
+    if(!Number.isFinite(riskPercentMin) || riskPercentMin<=0 || !Number.isFinite(riskPercentMax) || riskPercentMax<=0){
+      alert('Enter a valid minimum and maximum allowable account risk percentage.');
+      return;
+    }
+    if(riskPercentMax<riskPercentMin){
+      alert('Maximum risk % must be greater than or equal to the minimum risk %.');
+      return;
+    }
   }
 
   if(basis==='fixed_unit' && (!Number.isFinite(fixedRiskUnit) || fixedRiskUnit<=0)){
@@ -7403,22 +7500,35 @@ async function saveRConfiguration(){
 
   const config={
     basis,
-    riskPercent:Number.isFinite(riskPercent) && riskPercent>0 ? riskPercent : 1,
-    fixedRiskUnit:Number.isFinite(fixedRiskUnit) && fixedRiskUnit>0 ? fixedRiskUnit : 0
+    cashRiskMin:validPositiveNumber(cashRiskMin),
+    cashRiskMax:validPositiveNumber(cashRiskMax),
+    riskPercentMin:validPositiveNumber(riskPercentMin),
+    riskPercentMax:validPositiveNumber(riskPercentMax),
+    fixedRiskUnit:validPositiveNumber(fixedRiskUnit)
   };
 
-  // Always keep a local fallback so the feature works before/without migration.
+  // Keep a local fallback so risk ranges work before/without the optional migration.
   saveAccountRConfigLocal(config);
 
   if(accountHasPersistentRConfig()){
+    const updatePayload={
+      default_r_basis:config.basis,
+      // Legacy field retained for compatibility with the first R-basis migration.
+      default_risk_percent:config.riskPercentMin || null,
+      fixed_risk_unit:config.fixedRiskUnit || null,
+      updated_at:new Date().toISOString()
+    };
+
+    if(accountSupportsRiskRangeColumns()){
+      updatePayload.default_cash_risk_min=config.cashRiskMin || null;
+      updatePayload.default_cash_risk_max=config.cashRiskMax || null;
+      updatePayload.default_risk_percent_min=config.riskPercentMin || null;
+      updatePayload.default_risk_percent_max=config.riskPercentMax || null;
+    }
+
     const {data,error}=await db
       .from('trading_accounts')
-      .update({
-        default_r_basis:config.basis,
-        default_risk_percent:config.riskPercent,
-        fixed_risk_unit:config.fixedRiskUnit || null,
-        updated_at:new Date().toISOString()
-      })
+      .update(updatePayload)
       .eq('id',tradingAccount.id)
       .eq('user_id',currentUser.id)
       .select()
@@ -7426,7 +7536,7 @@ async function saveRConfiguration(){
 
     if(error){
       console.error(error);
-      showStatus('R settings saved locally; Supabase persistence failed',4000);
+      showStatus('R range saved locally; Supabase persistence failed',4000);
       renderRConfigSettings();
       return;
     }
@@ -7438,9 +7548,9 @@ async function saveRConfiguration(){
 
   renderRConfigSettings();
   showStatus(
-    accountHasPersistentRConfig()
-      ? 'R settings saved to T·IOS'
-      : 'R settings saved for this browser/account'
+    accountSupportsRiskRangeColumns()
+      ? 'R risk range saved to T·IOS'
+      : 'R risk range saved for this browser/account'
   );
 }
 
@@ -7575,28 +7685,7 @@ function renderSettings(){
       : '—';
 }
 
-$('#defaultRBasis').addEventListener('change',()=>{
-  const basis=$('#defaultRBasis').value;
-
-  $('#defaultRiskPercentField').classList.toggle(
-    'hidden',
-    basis!=='account_percent'
-  );
-  $('#fixedRiskUnitField').classList.toggle(
-    'hidden',
-    basis!=='fixed_unit'
-  );
-
-  const notes={
-    planned_cash:'Planned Cash Risk: 1R is the cash amount the trader intended to lose if the trade failed. A placed stop order is not required.',
-    account_percent:'Account % Risk: 1R is calculated from account equity at entry × the chosen risk percentage.',
-    stop_based:'Stop-Based Risk: 1R is the cash value represented by the initial stop reference. This can be a broker stop or a predefined mental/plan stop.',
-    fixed_unit:'Fixed Risk Unit: every trade uses the same configured cash amount as 1R.',
-    none:'No R-Multiple: T·IOS will not manufacture R. Performance Intelligence will use P&L, return, win rate, equity, drawdown and other non-R metrics.'
-  };
-
-  $('#rConfigNote').textContent=notes[basis] || notes.planned_cash;
-});
+$('#defaultRBasis').addEventListener('change',updateRConfigFields);
 
 $('#saveRConfigBtn').addEventListener('click',saveRConfiguration);
 
@@ -8390,6 +8479,72 @@ function estimatedAccountEquityForR(){
   return Math.max(0,start+closedPnl);
 }
 
+function riskRangeText(min,max,unit='$'){
+  if(!(min>0) || !(max>0)) return '';
+  if(unit==='%') return `${min.toFixed(2)}% – ${max.toFixed(2)}%`;
+  return `${unit}${min.toFixed(2)} – ${unit}${max.toFixed(2)}`;
+}
+
+function updateTradeRiskRangeStatus(){
+  const status=$('#tradeRiskRangeStatus');
+  if(!status) return;
+
+  const basis=$('#rBasis').value;
+  const config=getAccountRConfig();
+  status.className='risk-range-status';
+
+  if(basis==='none'){
+    status.textContent='R-multiple is disabled for this trade.';
+    return;
+  }
+
+  if(basis==='fixed_unit'){
+    status.textContent=config.fixedRiskUnit>0
+      ? `Fixed plan unit: $${config.fixedRiskUnit.toFixed(2)} = 1R.`
+      : 'Set the fixed 1R amount in Settings.';
+    return;
+  }
+
+  if(basis==='account_percent'){
+    const min=config.riskPercentMin;
+    const max=config.riskPercentMax;
+    const actual=Number($('#rRiskPercent').value);
+    if(!(min>0) || !(max>0)){
+      status.textContent='No allowable account-risk % range configured yet.';
+      return;
+    }
+    const range=riskRangeText(min,max,'%');
+    if(!Number.isFinite(actual) || actual<=0){
+      status.textContent=`Allowed risk range: ${range}. Enter the actual % used for this trade.`;
+      return;
+    }
+    const within=actual>=min && actual<=max;
+    status.classList.add(within?'ok':'out');
+    status.textContent=within
+      ? `Within plan • ${actual.toFixed(2)}% is inside ${range}.`
+      : `Outside plan • ${actual.toFixed(2)}% is outside ${range}. The trade can still be recorded as evidence.`;
+    return;
+  }
+
+  const min=config.cashRiskMin;
+  const max=config.cashRiskMax;
+  const actual=Number($('#riskAmount').value);
+  if(!(min>0) || !(max>0)){
+    status.textContent='No allowable cash-risk range configured yet.';
+    return;
+  }
+  const range=riskRangeText(min,max,'$');
+  if(!Number.isFinite(actual) || actual<=0){
+    status.textContent=`Allowed risk range: ${range}. Enter the actual planned risk used for this trade.`;
+    return;
+  }
+  const within=actual>=min && actual<=max;
+  status.classList.add(within?'ok':'out');
+  status.textContent=within
+    ? `Within plan • $${actual.toFixed(2)} is inside ${range}.`
+    : `Outside plan • $${actual.toFixed(2)} is outside ${range}. The trade can still be recorded as evidence.`;
+}
+
 function updateTradeRBasisUI({preserveRisk=false}={}){
   const basis=$('#rBasis').value;
   const config=getAccountRConfig();
@@ -8408,23 +8563,22 @@ function updateTradeRBasisUI({preserveRisk=false}={}){
   riskInput.readOnly=false;
 
   if(basis==='planned_cash'){
-    riskLabel.textContent='Planned Cash Risk (1R)';
-    riskHelp.textContent='Enter the maximum cash loss you intended to represent 1R. A stop order is not required.';
-    basisHelp.textContent='1R is the cash amount the trader intended to risk.';
+    riskLabel.textContent='Actual Planned Cash Risk (1R)';
+    riskHelp.textContent='Enter the actual cash risk chosen for this trade. T·IOS compares it with the allowable range from Settings.';
+    basisHelp.textContent='The trading plan defines a cash-risk range; each trade records the actual risk used.';
   }else if(basis==='account_percent'){
     riskLabel.textContent='Calculated 1R Amount';
-    riskHelp.textContent='Calculated automatically from account equity at entry × risk %.';
-    basisHelp.textContent='1R is a chosen percentage of account equity at trade entry.';
+    riskHelp.textContent='Calculated automatically from account equity at entry × the actual risk % used.';
+    basisHelp.textContent='The trading plan defines an allowable % range; each trade records the actual % used.';
     riskInput.readOnly=true;
-    if(!$('#rRiskPercent').value) $('#rRiskPercent').value=config.riskPercent;
     if(!$('#rAccountEquity').value){
       const equity=estimatedAccountEquityForR();
       if(equity>0) $('#rAccountEquity').value=equity.toFixed(2);
     }
   }else if(basis==='stop_based'){
-    riskLabel.textContent='Stop-Based Cash Risk (1R)';
-    riskHelp.textContent='Enter the cash value represented by the initial stop distance. The stop may be broker-placed or part of the trader\'s plan.';
-    basisHelp.textContent='1R is based on the initial stop reference. For manual trades, enter its cash value.';
+    riskLabel.textContent='Actual Stop-Based Cash Risk (1R)';
+    riskHelp.textContent='Enter the actual cash risk represented by the initial stop reference; T·IOS compares it with your allowable cash-risk range.';
+    basisHelp.textContent='The stop reference defines actual risk; the plan still allows a configurable cash-risk range.';
   }else if(basis==='fixed_unit'){
     riskLabel.textContent='Fixed 1R Amount';
     riskHelp.textContent='Uses the fixed risk unit configured for this trading account.';
@@ -8448,13 +8602,15 @@ function updateTradeRBasisUI({preserveRisk=false}={}){
     riskInput.value=calculated>0 ? calculated.toFixed(2) : '';
   }
 
+  updateTradeRiskRangeStatus();
   autoR();
 }
 
 function applyNewTradeRDefaults(){
   const config=getAccountRConfig();
   $('#rBasis').value=config.basis;
-  $('#rRiskPercent').value=config.riskPercent;
+  // A range is a plan boundary, not the actual risk. Leave the per-trade value blank.
+  $('#rRiskPercent').value='';
   const equity=estimatedAccountEquityForR();
   $('#rAccountEquity').value=equity>0 ? equity.toFixed(2) : '';
   $('#riskAmount').value=config.basis==='fixed_unit' && config.fixedRiskUnit>0
@@ -8499,7 +8655,7 @@ function openEditTrade(trade){
   $('#exit').value=trade.exit_price ?? '';
   $('#rBasis').value=basis;
   $('#rAccountEquity').value=trade.r_basis_equity ?? localMeta.accountEquity ?? '';
-  $('#rRiskPercent').value=trade.r_basis_percent ?? localMeta.riskPercent ?? getAccountRConfig().riskPercent;
+  $('#rRiskPercent').value=trade.r_basis_percent ?? localMeta.riskPercent ?? '';
   $('#riskAmount').value=tradeInitialRisk(trade) || '';
   $('#pnl').value=trade.pnl ?? '';
   $('#executionScore').value=trade.execution_score ?? '';
@@ -8697,10 +8853,14 @@ $('#tradeForm').addEventListener('submit',async e=>{
 
   const savedTradeId=result.data?.id || editingTradeId;
   if(savedTradeId){
+    const rConfigAtTrade=getAccountRConfig();
     saveTradeRMeta(savedTradeId,{
       basis,
       riskPercent:basis==='account_percent' && Number.isFinite(riskPercent) ? riskPercent : null,
-      accountEquity:basis==='account_percent' && Number.isFinite(accountEquity) ? accountEquity : null
+      accountEquity:basis==='account_percent' && Number.isFinite(accountEquity) ? accountEquity : null,
+      allowedRiskMin:basis==='account_percent' ? rConfigAtTrade.riskPercentMin : rConfigAtTrade.cashRiskMin,
+      allowedRiskMax:basis==='account_percent' ? rConfigAtTrade.riskPercentMax : rConfigAtTrade.cashRiskMax,
+      allowedRiskUnit:basis==='account_percent' ? '%' : '$'
     });
   }
 
@@ -8738,7 +8898,7 @@ $$('.addTradeTrigger').forEach(btn=>{
 });
 
 $('#rBasis').addEventListener('change',()=>updateTradeRBasisUI());
-$('#riskAmount').addEventListener('input',autoR);
+$('#riskAmount').addEventListener('input',()=>{ updateTradeRiskRangeStatus(); autoR(); });
 $('#pnl').addEventListener('input',autoR);
 $('#rAccountEquity').addEventListener('input',()=>updateTradeRBasisUI({preserveRisk:true}));
 $('#rRiskPercent').addEventListener('input',()=>updateTradeRBasisUI({preserveRisk:true}));
