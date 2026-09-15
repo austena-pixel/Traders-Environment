@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>H·IOS Family</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #08111f;
+      --panel: #0f1b2d;
+      --text: #f4f7fb;
+      --muted: #9fb0c5;
+      --accent: #37d5c7;
+      --border: rgba(255,255,255,.08);
+    }
+    body {
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(55,213,199,.12), transparent 32%),
+        radial-gradient(circle at bottom left, rgba(79,140,255,.10), transparent 28%),
+        var(--bg);
+      color: var(--text);
+    }
+    header {
+      max-width: 1200px;
+      margin: auto;
+      padding: 28px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .logo {
+      width: 44px; height: 44px; border-radius: 14px;
+      display: grid; place-items: center; font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), #6ea8ff);
+      color: #06101d;
+    }
+    .brand h1 { font-size: 20px; letter-spacing: .4px; }
+    .brand small { color: var(--muted); display: block; margin-top: 3px; font-size: 12px; }
+    nav a {
+      color: var(--muted); text-decoration: none;
+      margin-left: 20px; font-size: 14px;
+    }
+    nav a:hover { color: var(--text); }
+    .hero {
+      max-width: 1200px; margin: 0 auto;
+      padding: 70px 24px 42px;
+    }
+    .eyebrow {
+      color: var(--accent); font-weight: 700;
+      letter-spacing: 1.4px; font-size: 12px;
+      margin-bottom: 14px;
+    }
+    .hero h2 {
+      max-width: 850px;
+      font-size: clamp(38px, 6vw, 72px);
+      line-height: 1.02;
+      margin-bottom: 20px;
+    }
+    .hero p {
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.7;
+    }
+    .products {
+      max-width: 1200px; margin: auto;
+      padding: 25px 24px 80px;
+    }
+    .section-title { margin-bottom: 22px; }
+    .section-title h3 { font-size: 25px; }
+    .section-title p { color: var(--muted); font-size: 14px; margin-top: 6px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+    .card {
+      min-height: 260px;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 26px;
+      position: relative;
+      overflow: hidden;
+      transition: .25s ease;
+    }
+    .card:hover { transform: translateY(-4px); border-color: rgba(55,213,199,.34); }
+    .card::after {
+      content: ""; position: absolute;
+      width: 160px; height: 160px;
+      right: -70px; top: -70px;
+      border-radius: 50%;
+      background: rgba(55,213,199,.08);
+    }
+    .tag {
+      display: inline-block;
+      font-size: 11px; font-weight: 700;
+      padding: 7px 10px;
+      border-radius: 999px;
+      color: var(--accent);
+      background: rgba(55,213,199,.09);
+      margin-bottom: 22px;
+    }
+    .card h4 { font-size: 28px; margin-bottom: 10px; }
+    .card p {
+      color: var(--muted);
+      line-height: 1.65;
+      max-width: 520px;
+      margin-bottom: 28px;
+    }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: #06101d;
+      background: var(--accent);
+      padding: 11px 15px;
+      border-radius: 11px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .button.secondary {
+      background: rgba(255,255,255,.07);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .coming { opacity: .65; }
+    .coming .tag { color: #aab8c8; background: rgba(255,255,255,.06); }
+    .system-note {
+      max-width: 1200px;
+      margin: 0 auto 60px;
+      padding: 0 24px;
+    }
+    .note {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.025);
+      border-radius: 18px;
+      padding: 22px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+    .note strong { color: var(--text); }
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 25px 24px;
+      text-align: center;
+      color: #7f91a8;
+      font-size: 13px;
+    }
+    @media (max-width: 760px) {
+      nav { display: none; }
+      .hero { padding-top: 42px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">H</div>
+      <div>
+        <h1>H·IOS</h1>
+        <small>Human Intelligence Operating Systems</small>
+      </div>
+    </div>
+    <nav>
+      <a href="#products">Products</a>
+      <a href="#about">About</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow">H·IOS PRODUCT FAMILY</div>
+      <h2>One intelligence family. Different areas of human development.</h2>
+      <p>
+        H·IOS is the parent environment for specialized personal intelligence systems.
+        Each product focuses on a different domain while sharing the same goal:
+        turning personal data, behaviour, outcomes and reflection into useful personal intelligence.
+      </p>
+    </section>
+
+    <section class="products" id="products">
+      <div class="section-title">
+        <h3>Choose a system</h3>
+        <p>Access the H·IOS product built for the area you want to develop.</p>
+      </div>
+
+      <div class="grid">
+        <article class="card">
+          <span class="tag">TRADING</span>
+          <h4>T·IOS</h4>
+          <p>
+            Trader Intelligence Operating System. Track trading behaviour, execution,
+            psychology, strategy, performance and long-term development.
+          </p>
+          <a class="button" href="t-ios.html">Open T·IOS →</a>
+        </article>
+
+        <article class="card">
+          <span class="tag">EDUCATION</span>
+          <h4>S·IOS</h4>
+          <p>
+            Student Personal Intelligence Operating System. Understand study behaviour,
+            learning methods, knowledge mastery, focus, assessments and academic development.
+          </p>
+          <a class="button" href="s-ios.html">Open S·IOS →</a>
+        </article>
+
+        <article class="card coming">
+          <span class="tag">FUTURE PRODUCT</span>
+          <h4>Next IOS</h4>
+          <p>
+            Future H·IOS products can extend the same Personal Intelligence architecture
+            into other areas of human performance and development.
+          </p>
+          <a class="button secondary" href="#" onclick="return false;">Coming later</a>
+        </article>
+
+        <article class="card coming">
+          <span class="tag">H·IOS CORE</span>
+          <h4>Personal Intelligence</h4>
+          <p>
+            A future shared layer connecting permitted insights across H·IOS products,
+            while keeping domain data controlled and separated where necessary.
+          </p>
+          <a class="button secondary" href="#" onclick="return false;">Future layer</a>
+        </article>
+      </div>
+    </section>
+
+    <section class="system-note" id="about">
+      <div class="note">
+        <strong>Current concept:</strong>
+        T·IOS and S·IOS remain separate specialized products, while H·IOS acts as the family
+        and shared intelligence architecture above them. We can later add login, user profiles,
+        real product routing, subscription status and cross-product intelligence.
+      </div>
+    </section>
+  </main>
+
+  <footer>H·IOS — Human Intelligence Operating Systems</footer>
+</body>
+</html>
