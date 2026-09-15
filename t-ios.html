@@ -3245,7 +3245,7 @@ textarea{resize:vertical;min-height:90px}
 
 
 /* =====================================================
-   T·IOS INTELLIGENCE OVERVIEW — V1
+   T·IOS INTELLIGENCE OVERVIEW — V3
 ===================================================== */
 .intelligence-overview{
   display:grid;
@@ -3576,6 +3576,12 @@ textarea{resize:vertical;min-height:90px}
   color:#69a8ff;
   font-size:20px;
   font-weight:900;
+}
+
+.cross-subsection{
+  margin-top:22px;
+  padding-top:20px;
+  border-top:1px solid #1a2735;
 }
 
 .cross-insight{
@@ -5499,6 +5505,65 @@ textarea{resize:vertical;min-height:90px}
             <div class="intel-note" id="intelPerformanceNote">Outcome data gives context, but T·IOS does not treat profit alone as proof of good process.</div>
             <div class="intel-card-action"><button class="btn small" type="button" data-intel-nav="statistics">Open Statistics →</button></div>
           </div>
+          <div class="panel intelligence-card">
+            <div class="intelligence-card-top">
+              <div class="intel-name">Strategy Intelligence</div>
+              <span class="intel-state" id="intelStrategyState">Waiting</span>
+            </div>
+            <div class="intel-value neutral" id="intelStrategyScore">—</div>
+            <div class="intel-evidence" id="intelStrategyEvidence">0 classified setups</div>
+            <div class="intel-detail-grid">
+              <div class="intel-detail"><span>Best sampled setup</span><strong id="intelStrategyBest">—</strong></div>
+              <div class="intel-detail"><span>Sample</span><strong id="intelStrategySample">—</strong></div>
+            </div>
+            <div class="intel-note" id="intelStrategyNote">Separates strategy/setup performance from whether the plan was executed correctly.</div>
+            <div class="intel-card-action"><button class="btn small" type="button" data-intel-nav="journal">Review Setups →</button></div>
+          </div>
+
+          <div class="panel intelligence-card">
+            <div class="intelligence-card-top">
+              <div class="intel-name">Behaviour Intelligence</div>
+              <span class="intel-state" id="intelBehaviourState">Waiting</span>
+            </div>
+            <div class="intel-value neutral" id="intelBehaviourScore">—</div>
+            <div class="intel-evidence" id="intelBehaviourEvidence">0 reviewed trades</div>
+            <div class="intel-detail-grid">
+              <div class="intel-detail"><span>Repeated deviation</span><strong id="intelBehaviourPattern">—</strong></div>
+              <div class="intel-detail"><span>Occurrences</span><strong id="intelBehaviourOccurrences">—</strong></div>
+            </div>
+            <div class="intel-note" id="intelBehaviourNote">Looks for repeated observable execution deviations rather than labeling your identity.</div>
+            <div class="intel-card-action"><button class="btn small" type="button" data-intel-nav="execution">Inspect Behaviour →</button></div>
+          </div>
+
+          <div class="panel intelligence-card">
+            <div class="intelligence-card-top">
+              <div class="intel-name">Context Intelligence</div>
+              <span class="intel-state" id="intelContextState">Waiting</span>
+            </div>
+            <div class="intel-value neutral" id="intelContextScore">—</div>
+            <div class="intel-evidence" id="intelContextEvidence">0 contextual reviews</div>
+            <div class="intel-detail-grid">
+              <div class="intel-detail"><span>Market states</span><strong id="intelContextStates">—</strong></div>
+              <div class="intel-detail"><span>Best sampled state</span><strong id="intelContextBestState">—</strong></div>
+            </div>
+            <div class="intel-note" id="intelContextNote">Studies the environment around trades so outcomes are not interpreted without market context.</div>
+            <div class="intel-card-action"><button class="btn small" type="button" data-intel-nav="playbook">Review Context →</button></div>
+          </div>
+
+          <div class="panel intelligence-card">
+            <div class="intelligence-card-top">
+              <div class="intel-name">Risk Intelligence</div>
+              <span class="intel-state" id="intelRiskState">Waiting</span>
+            </div>
+            <div class="intel-value neutral" id="intelRiskScore">—</div>
+            <div class="intel-evidence" id="intelRiskEvidence">0 risk reviews</div>
+            <div class="intel-detail-grid">
+              <div class="intel-detail"><span>Average losing trade</span><strong id="intelRiskAvgLoss">—</strong></div>
+              <div class="intel-detail"><span>Worst losing trade</span><strong id="intelRiskWorstLoss">—</strong></div>
+            </div>
+            <div class="intel-note" id="intelRiskNote">Connects stop placement and risk-sizing behaviour with the downside actually experienced.</div>
+            <div class="intel-card-action"><button class="btn small" type="button" data-intel-nav="execution">Review Risk →</button></div>
+          </div>
         </section>
 
         <section class="panel intelligence-route">
@@ -5535,6 +5600,32 @@ textarea{resize:vertical;min-height:90px}
 
             <div class="cross-insight" id="intelCrossInsight">
               More reviewed trades are needed before T·IOS can compare execution quality with performance.
+            </div>
+            <div class="cross-subsection">
+              <div class="intelligence-panel-head">
+                <div>
+                  <h3>Cross-Intelligence · Psychology × Execution</h3>
+                  <p>Compares execution under self-reported constructive states (Calm, Focused, Patient) with reactive states (Anxious, FOMO, Revenge impulse, Overconfident).</p>
+                </div>
+              </div>
+
+              <div class="cross-flow">
+                <div class="cross-box">
+                  <span>Constructive State</span>
+                  <strong id="intelConstructiveExec">—</strong>
+                  <small id="intelConstructiveCount">0 trades</small>
+                </div>
+                <div class="cross-arrow">↔</div>
+                <div class="cross-box">
+                  <span>Reactive State</span>
+                  <strong id="intelReactiveExec">—</strong>
+                  <small id="intelReactiveCount">0 trades</small>
+                </div>
+              </div>
+
+              <div class="cross-insight" id="intelPsychExecutionInsight">
+                T·IOS needs reviewed execution trades with psychology labels before it can test this relationship.
+              </div>
             </div>
           </section>
 
@@ -13465,6 +13556,162 @@ function reviewedMilestoneText(count,target=3,noun='reviews'){
   return `${remaining} more ${noun}`;
 }
 
+function activeTradeIdSet(){
+  return new Set(trades.map(t=>t.id));
+}
+
+function activeExecutionReviews(){
+  const ids=activeTradeIdSet();
+  return executionReviews.filter(r=>ids.has(r.trade_id));
+}
+
+function activePlanReviews(){
+  const ids=activeTradeIdSet();
+  return planReviews.filter(r=>ids.has(r.trade_id));
+}
+
+function executionCriterionStats(keys){
+  const activeReviews=activeExecutionReviews();
+  const reviewIds=new Set(activeReviews.map(r=>r.id));
+  const rows=executionChecks.filter(row=>
+    reviewIds.has(row.review_id) && keys.includes(row.criterion_key)
+  );
+  const complied=rows.filter(row=>Boolean(row.complied)).length;
+  const reviewedIds=new Set(rows.map(row=>row.review_id));
+  return {
+    rows,
+    total:rows.length,
+    complied,
+    pct:rows.length ? complied/rows.length*100 : null,
+    reviewedTrades:reviewedIds.size
+  };
+}
+
+function planCriterionStats(keys){
+  const activeReviews=activePlanReviews();
+  const reviewIds=new Set(activeReviews.map(r=>r.id));
+  const rows=planChecks.filter(row=>
+    reviewIds.has(row.review_id) && keys.includes(row.criterion_key)
+  );
+  const complied=rows.filter(row=>Boolean(row.complied)).length;
+  const reviewedIds=new Set(rows.map(row=>row.review_id));
+  return {
+    rows,
+    total:rows.length,
+    complied,
+    pct:rows.length ? complied/rows.length*100 : null,
+    reviewedTrades:reviewedIds.size
+  };
+}
+
+function intelligenceSetupStats(){
+  const groups=new Map();
+
+  trades.forEach(trade=>{
+    const setup=String(trade.setup||'').trim();
+    const r=tradeRMultiple(trade);
+    if(!setup || !Number.isFinite(r)) return;
+
+    if(!groups.has(setup)){
+      groups.set(setup,{name:setup,count:0,sumR:0,wins:0});
+    }
+
+    const g=groups.get(setup);
+    g.count++;
+    g.sumR+=r;
+    if(Number(trade.pnl)>0) g.wins++;
+  });
+
+  return [...groups.values()].map(g=>({
+    ...g,
+    avgR:g.count ? g.sumR/g.count : null,
+    winRate:g.count ? g.wins/g.count*100 : null
+  }));
+}
+
+function shortExecutionCriterionLabel(key){
+  const labels={
+    entry_timing:'Entry timing',
+    entry_accuracy:'Entry accuracy',
+    stop_placement:'Stop placement',
+    risk_sizing:'Risk sizing',
+    trade_management:'Trade management',
+    exit_execution:'Exit execution'
+  };
+  return labels[key] || key;
+}
+
+function intelligenceBehaviourPattern(){
+  const activeReviews=activeExecutionReviews();
+  if(!activeReviews.length){
+    return {reviewed:0,top:null};
+  }
+
+  const reviewIds=new Set(activeReviews.map(r=>r.id));
+  const counts=new Map(EXECUTION_CRITERIA.map(item=>[item.key,0]));
+
+  executionChecks.forEach(row=>{
+    if(!reviewIds.has(row.review_id)) return;
+    if(!counts.has(row.criterion_key)) return;
+    if(!Boolean(row.complied)){
+      counts.set(row.criterion_key,(counts.get(row.criterion_key)||0)+1);
+    }
+  });
+
+  const sorted=[...counts.entries()]
+    .map(([key,count])=>({
+      key,
+      count,
+      rate:activeReviews.length ? count/activeReviews.length*100 : 0
+    }))
+    .sort((a,b)=>b.count-a.count);
+
+  return {
+    reviewed:activeReviews.length,
+    top:sorted.length ? sorted[0] : null
+  };
+}
+
+function marketStateStats(){
+  const reviews=activePlanReviews().filter(r=>String(r.market_state||'').trim());
+  const groups=new Map();
+
+  reviews.forEach(review=>{
+    const state=String(review.market_state).trim();
+    const trade=trades.find(t=>t.id===review.trade_id);
+    const r=trade ? tradeRMultiple(trade) : NaN;
+    if(!groups.has(state)) groups.set(state,{state,count:0,rValues:[]});
+    const g=groups.get(state);
+    g.count++;
+    if(Number.isFinite(r)) g.rValues.push(r);
+  });
+
+  const stats=[...groups.values()].map(g=>({
+    state:g.state,
+    count:g.count,
+    avgR:g.rValues.length ? g.rValues.reduce((a,b)=>a+b,0)/g.rValues.length : null,
+    performanceCount:g.rValues.length
+  }));
+
+  return {reviews,stats};
+}
+
+function psychologyExecutionGroups(){
+  const constructive=new Set(['Calm','Focused','Patient']);
+  const reactive=new Set(['Anxious','FOMO','Revenge impulse','Overconfident']);
+  const result={constructive:[],reactive:[]};
+
+  trades.forEach(trade=>{
+    const score=executionScoreForTrade(trade.id);
+    if(score===null || !Number.isFinite(score)) return;
+    const state=String(trade.psychology||'').trim();
+    if(constructive.has(state)) result.constructive.push(score);
+    if(reactive.has(state)) result.reactive.push(score);
+  });
+
+  return result;
+}
+
 function renderIntelligence(){
   const data=intelligenceProcessAverage();
 
@@ -13571,6 +13818,130 @@ function renderIntelligence(){
     $('#intelPerformanceNote').textContent=`Performance Intelligence is already active from ${trades.length} trades. It describes outcomes, but it cannot explain why those outcomes occurred until process evidence is connected.`;
   }
 
+  /* Specialized Intelligence — Strategy */
+  const setupStats=intelligenceSetupStats();
+  const classifiedSetupTrades=setupStats.reduce((sum,item)=>sum+item.count,0);
+  const qualifiedSetups=setupStats.filter(item=>item.count>=3 && Number.isFinite(item.avgR));
+  const bestSetup=qualifiedSetups.length
+    ? [...qualifiedSetups].sort((a,b)=>b.avgR-a.avgR)[0]
+    : null;
+  const largestSetupSample=setupStats.length
+    ? [...setupStats].sort((a,b)=>b.count-a.count)[0]
+    : null;
+
+  $('#intelStrategyScore').textContent=
+    bestSetup ? `${bestSetup.avgR>=0?'+':''}${bestSetup.avgR.toFixed(2)}R` : '—';
+  $('#intelStrategyEvidence').textContent=
+    `${classifiedSetupTrades} trade${classifiedSetupTrades===1?'':'s'} with setup labels`;
+  $('#intelStrategyBest').textContent=bestSetup ? bestSetup.name : 'Need 3 trades / setup';
+  $('#intelStrategySample').textContent=bestSetup
+    ? `${bestSetup.count} trades`
+    : (largestSetupSample ? `${largestSetupSample.count} max` : '—');
+
+  if(classifiedSetupTrades===0){
+    setIntelligenceState('#intelStrategyState','Needs labels');
+    $('#intelStrategyNote').textContent='Strategy Intelligence needs consistent Setup / Edge labels on trades before it can compare strategy outcomes.';
+  }else if(!bestSetup){
+    setIntelligenceState('#intelStrategyState','Building','building');
+    $('#intelStrategyNote').textContent='Setup data exists, but T·IOS waits for at least 3 comparable trades in a setup before displaying a sampled strategy result.';
+  }else{
+    setIntelligenceState('#intelStrategyState','Active','active');
+    $('#intelStrategyNote').textContent=`Among setups with at least 3 classified trades, ${bestSetup.name} currently has the strongest average outcome (${bestSetup.avgR>=0?'+':''}${bestSetup.avgR.toFixed(2)}R across ${bestSetup.count} trades). This is sample evidence, not proof the setup is universally superior.`;
+  }
+
+  /* Specialized Intelligence — Behaviour */
+  const behaviour=intelligenceBehaviourPattern();
+  $('#intelBehaviourEvidence').textContent=
+    `${behaviour.reviewed} reviewed trade${behaviour.reviewed===1?'':'s'}`;
+
+  if(!behaviour.top || behaviour.reviewed===0){
+    $('#intelBehaviourScore').textContent='—';
+    $('#intelBehaviourPattern').textContent='—';
+    $('#intelBehaviourOccurrences').textContent='—';
+    setIntelligenceState('#intelBehaviourState','Needs reviews');
+    $('#intelBehaviourNote').textContent='Behaviour Intelligence needs execution reviews before it can identify repeated observable deviations.';
+  }else{
+    $('#intelBehaviourScore').textContent=`${behaviour.top.rate.toFixed(0)}%`;
+    $('#intelBehaviourPattern').textContent=shortExecutionCriterionLabel(behaviour.top.key);
+    $('#intelBehaviourOccurrences').textContent=`${behaviour.top.count} / ${behaviour.reviewed}`;
+
+    if(behaviour.reviewed<3){
+      setIntelligenceState('#intelBehaviourState','Building','building');
+      $('#intelBehaviourNote').textContent='A possible repeated deviation has appeared, but the reviewed sample is too small to treat it as a behavioural pattern.';
+    }else if(behaviour.top.count===0){
+      setIntelligenceState('#intelBehaviourState','Active','active');
+      $('#intelBehaviourNote').textContent=`Across ${behaviour.reviewed} reviewed trades, no execution criterion has yet repeated as a failed behaviour.`;
+    }else{
+      setIntelligenceState('#intelBehaviourState','Active','active');
+      $('#intelBehaviourNote').textContent=`The most repeated observable execution deviation is ${shortExecutionCriterionLabel(behaviour.top.key).toLowerCase()}, appearing in ${behaviour.top.count} of ${behaviour.reviewed} reviewed trades.`;
+    }
+  }
+
+  /* Specialized Intelligence — Context */
+  const contextCriteria=planCriterionStats(['context_identified','momentum_alignment']);
+  const marketStates=marketStateStats();
+  const balanceState=marketStates.stats.find(x=>x.state==='Balance');
+  const imbalanceState=marketStates.stats.find(x=>x.state==='Imbalance');
+  const stateCandidates=marketStates.stats.filter(x=>x.performanceCount>=3 && Number.isFinite(x.avgR));
+  const bestState=stateCandidates.length
+    ? [...stateCandidates].sort((a,b)=>b.avgR-a.avgR)[0]
+    : null;
+
+  $('#intelContextScore').textContent=
+    contextCriteria.pct===null ? '—' : contextCriteria.pct.toFixed(1)+'%';
+  $('#intelContextEvidence').textContent=
+    `${marketStates.reviews.length} contextual review${marketStates.reviews.length===1?'':'s'}`;
+  $('#intelContextStates').textContent=
+    marketStates.reviews.length
+      ? `Balance ${balanceState?.count||0} · Imbalance ${imbalanceState?.count||0}`
+      : '—';
+  $('#intelContextBestState').textContent=
+    bestState ? `${bestState.state} ${bestState.avgR>=0?'+':''}${bestState.avgR.toFixed(2)}R` : 'Need 3 trades / state';
+
+  if(marketStates.reviews.length===0 && contextCriteria.total===0){
+    setIntelligenceState('#intelContextState','Needs reviews');
+    $('#intelContextNote').textContent='Context Intelligence needs playbook reviews with market state and context checks before it can compare environments.';
+  }else if(marketStates.reviews.length<3 || contextCriteria.reviewedTrades<3){
+    setIntelligenceState('#intelContextState','Building','building');
+    $('#intelContextNote').textContent='Initial market-context evidence exists. Continue classifying Balance / Imbalance and reviewing higher-timeframe context before treating state differences as meaningful.';
+  }else{
+    setIntelligenceState('#intelContextState','Active','active');
+    $('#intelContextNote').textContent=bestState
+      ? `Context process compliance is ${contextCriteria.pct.toFixed(1)}%. Among market states with at least 3 performance observations, ${bestState.state} currently has the stronger average outcome.`
+      : `Context process compliance is ${contextCriteria.pct.toFixed(1)}%. More trades are still needed within each market state before comparing state performance.`;
+  }
+
+  /* Specialized Intelligence — Risk */
+  const riskCriteria=executionCriterionStats(['stop_placement','risk_sizing']);
+  const losingR=rValues.filter(v=>v<0);
+  const avgLossR=losingR.length ? losingR.reduce((a,b)=>a+b,0)/losingR.length : null;
+  const worstLossR=losingR.length ? Math.min(...losingR) : null;
+
+  $('#intelRiskScore').textContent=
+    riskCriteria.pct===null ? '—' : riskCriteria.pct.toFixed(1)+'%';
+  $('#intelRiskEvidence').textContent=
+    `${riskCriteria.reviewedTrades} reviewed trade${riskCriteria.reviewedTrades===1?'':'s'} · ${losingR.length} loss${losingR.length===1?'':'es'}`;
+  $('#intelRiskAvgLoss').textContent=
+    avgLossR===null ? '—' : `${avgLossR.toFixed(2)}R`;
+  $('#intelRiskWorstLoss').textContent=
+    worstLossR===null ? '—' : `${worstLossR.toFixed(2)}R`;
+
+  if(riskCriteria.reviewedTrades===0){
+    if(trades.length){
+      setIntelligenceState('#intelRiskState','Building','building');
+      $('#intelRiskNote').textContent='Downside outcomes are visible from trade data, but Risk Intelligence still needs reviewed stop-placement and risk-sizing behaviour before it can explain the process behind those outcomes.';
+    }else{
+      setIntelligenceState('#intelRiskState','Waiting');
+      $('#intelRiskNote').textContent='Risk Intelligence will connect risk-process evidence with downside outcomes once trades and execution reviews exist.';
+    }
+  }else if(riskCriteria.reviewedTrades<3){
+    setIntelligenceState('#intelRiskState','Building','building');
+    $('#intelRiskNote').textContent='Initial stop-placement and risk-sizing evidence exists, but more reviewed trades are needed before treating the compliance rate as stable.';
+  }else{
+    setIntelligenceState('#intelRiskState','Active','active');
+    $('#intelRiskNote').textContent=`Across reviewed risk checks, stop-placement and risk-sizing compliance is ${riskCriteria.pct.toFixed(1)}%. Outcome loss size remains a separate signal and should be interpreted with market context.`;
+  }
+
   /* Evidence coverage */
   $('#intelCoverageTrades').textContent=trades.length;
   $('#intelCoverageExecution').textContent=`${executionReviewed} / ${trades.length}`;
@@ -13617,6 +13988,40 @@ function renderIntelligence(){
   }
   $('#intelCrossInsight').textContent=crossInsight;
 
+  /* Cross-Intelligence: Psychology × Execution */
+  const psychExecution=psychologyExecutionGroups();
+  const constructiveAvg=averageFinite(psychExecution.constructive);
+  const reactiveAvg=averageFinite(psychExecution.reactive);
+
+  $('#intelConstructiveExec').textContent=
+    constructiveAvg===null ? '—' : constructiveAvg.toFixed(1)+'%';
+  $('#intelReactiveExec').textContent=
+    reactiveAvg===null ? '—' : reactiveAvg.toFixed(1)+'%';
+  $('#intelConstructiveCount').textContent=
+    `${psychExecution.constructive.length} trade${psychExecution.constructive.length===1?'':'s'}`;
+  $('#intelReactiveCount').textContent=
+    `${psychExecution.reactive.length} trade${psychExecution.reactive.length===1?'':'s'}`;
+
+  let psychExecutionInsight='T·IOS needs reviewed execution trades with psychology labels before it can test whether self-reported state and execution quality move together.';
+  const psychExecTotal=psychExecution.constructive.length+psychExecution.reactive.length;
+
+  if(psychExecTotal>0 && (psychExecution.constructive.length<3 || psychExecution.reactive.length<3)){
+    psychExecutionInsight=`Psychology × Execution evidence has started (${psychExecTotal} comparable reviewed trade${psychExecTotal===1?'':'s'}), but T·IOS needs at least 3 constructive-state and 3 reactive-state trades before this comparison becomes useful.`;
+  }
+
+  if(psychExecution.constructive.length>=3 && psychExecution.reactive.length>=3){
+    const diff=constructiveAvg-reactiveAvg;
+    if(Math.abs(diff)<5){
+      psychExecutionInsight=`Constructive-state trades average ${constructiveAvg.toFixed(1)}% execution versus ${reactiveAvg.toFixed(1)}% during reactive states. The current difference is small, so T·IOS should not form a strong psychology-execution conclusion yet.`;
+    }else if(diff>0){
+      psychExecutionInsight=`Constructive-state trades average ${constructiveAvg.toFixed(1)}% execution versus ${reactiveAvg.toFixed(1)}% during reactive states. Better execution is currently associated with the constructive-state group in this sample; this does not prove the psychological state caused the difference.`;
+    }else{
+      psychExecutionInsight=`Constructive-state trades average ${constructiveAvg.toFixed(1)}% execution versus ${reactiveAvg.toFixed(1)}% during reactive states. The expected relationship is not present in this sample, so T·IOS should inspect context and review quality before drawing conclusions.`;
+    }
+  }
+
+  $('#intelPsychExecutionInsight').textContent=psychExecutionInsight;
+
   /* Development priority */
   const processAreas=[];
   if(data.avgExecution!==null && executionReviewed>=3){
@@ -13628,8 +14033,14 @@ function renderIntelligence(){
   if(data.avgPsych!==null && psychCount>=3){
     processAreas.push({name:'Psychology process',score:data.avgPsych});
   }
+  if(contextCriteria.pct!==null && contextCriteria.reviewedTrades>=3){
+    processAreas.push({name:'Context process',score:contextCriteria.pct});
+  }
+  if(riskCriteria.pct!==null && riskCriteria.reviewedTrades>=3){
+    processAreas.push({name:'Risk process',score:riskCriteria.pct});
+  }
 
-  let priority='Build balanced process evidence first: review at least 3 trades in Execution, 3 trades in Edge / Playbook, and record at least 3 Psychology sessions. Performance data alone should not choose your development priority.';
+  let priority='Build balanced process evidence first: review at least 3 trades in Execution and Edge / Playbook, record at least 3 Psychology sessions, and keep Context and Risk checks populated. Performance data alone should not choose your development priority.';
   let weakest=null;
   if(processAreas.length){
     weakest=[...processAreas].sort((a,b)=>a.score-b.score)[0];
@@ -13647,7 +14058,10 @@ function renderIntelligence(){
 
   if(processAreas.length>=2 && processEvidenceCount>=10){
     const strongest=[...processAreas].sort((a,b)=>b.score-a.score)[0];
-    personalSummary=`Current evidence shows ${strongest.name} as the strongest measured process area (${strongest.score.toFixed(1)}%) and ${weakest.name} as the weakest sufficiently measured area (${weakest.score.toFixed(1)}%). ${crossInsight}`;
+    const behaviourSentence=(behaviour.reviewed>=3 && behaviour.top && behaviour.top.count>0)
+      ? ` Most repeated observed execution deviation: ${shortExecutionCriterionLabel(behaviour.top.key).toLowerCase()} (${behaviour.top.count}/${behaviour.reviewed} reviewed trades).`
+      : '';
+    personalSummary=`Current evidence shows ${strongest.name} as the strongest measured process area (${strongest.score.toFixed(1)}%) and ${weakest.name} as the weakest sufficiently measured area (${weakest.score.toFixed(1)}%).${behaviourSentence} ${crossInsight}`;
   }else if(processAreas.length===1){
     personalSummary=`T·IOS has enough initial evidence to describe ${processAreas[0].name.toLowerCase()}, while Performance Intelligence is already active from ${trades.length} trade${trades.length===1?'':'s'}. More balanced evidence across other process systems is needed before forming a strong Personal Trader Intelligence conclusion.`;
   }
