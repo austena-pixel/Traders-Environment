@@ -3152,6 +3152,8 @@ input:focus,select:focus,textarea:focus{
   gap:13px;
 }
 .field{display:flex;flex-direction:column;gap:7px}
+.field-help{font-size:11px;color:var(--muted);line-height:1.45}
+.field input[readonly]{background:rgba(255,255,255,.025);color:#cdd8e5;cursor:not-allowed}
 .field.full{grid-column:1/-1}
 textarea{resize:vertical;min-height:90px}
 .form-actions{
@@ -5501,6 +5503,8 @@ textarea{resize:vertical;min-height:90px}
             <div class="intel-detail-grid">
               <div class="intel-detail"><span>Win rate</span><strong id="intelPerformanceWinRate">—</strong></div>
               <div class="intel-detail"><span>Profit factor</span><strong id="intelPerformanceProfitFactor">—</strong></div>
+              <div class="intel-detail"><span>Core data quality</span><strong id="intelPerformanceDataQuality">—</strong></div>
+              <div class="intel-detail"><span>R coverage</span><strong id="intelPerformanceRCoverage">—</strong></div>
             </div>
             <div class="intel-note" id="intelPerformanceNote">Outcome data gives context, but T·IOS does not treat profit alone as proof of good process.</div>
             <div class="intel-card-action"><button class="btn small" type="button" data-intel-nav="statistics">Open Statistics →</button></div>
@@ -5811,8 +5815,9 @@ textarea{resize:vertical;min-height:90px}
     <form id="tradeForm" class="trade-form">
       <div class="form-grid">
         <div class="field">
-          <label>Date</label>
+          <label>Trade Date</label>
           <input type="date" id="tradeDate" required>
+          <span class="field-help">Core performance date used for daily, weekly and monthly evaluation.</span>
         </div>
 
         <div class="field">
@@ -5849,18 +5854,21 @@ textarea{resize:vertical;min-height:90px}
         </div>
 
         <div class="field">
-          <label>Risk Amount ($)</label>
-          <input type="number" id="riskAmount" step="0.01" placeholder="e.g. 200">
+          <label>Initial Risk Amount ($)</label>
+          <input type="number" id="riskAmount" min="0" step="0.01" placeholder="e.g. 200" required>
+          <span class="field-help">Cash risk at trade entry. T·IOS treats this as 1R for performance calculations.</span>
         </div>
 
         <div class="field">
-          <label>P&amp;L ($)</label>
+          <label>Net P&amp;L ($)</label>
           <input type="number" id="pnl" step="0.01" placeholder="e.g. 450 or -200" required>
+          <span class="field-help">Final trade result after trading costs. This is the performance outcome.</span>
         </div>
 
         <div class="field">
-          <label>R Multiple</label>
-          <input type="number" id="rMultiple" step="0.01" placeholder="Auto from P&L ÷ risk">
+          <label>Realized R Multiple</label>
+          <input type="number" id="rMultiple" step="0.01" placeholder="Auto: Net P&L ÷ Initial Risk" readonly tabindex="-1">
+          <span class="field-help">Derived automatically from raw data and cannot be manually overridden.</span>
         </div>
 
         <div class="field">
@@ -7546,25 +7554,55 @@ function tradeRMultiple(trade){
     return 0;
   }
 
-  const stored=Number(trade.r_multiple);
   const pnl=Number(trade.pnl);
   const risk=tradeInitialRisk(trade);
 
-  if(
-    Number.isFinite(stored) &&
-    Math.abs(stored)>1e-12
-  ){
-    return stored;
-  }
-
-  if(
-    risk>0 &&
-    Number.isFinite(pnl)
-  ){
+  // Performance Raw Data Level 1: P&L + initial risk are the source of truth.
+  // Stored R is retained only as a legacy fallback for older records that do
+  // not contain enough raw data to reconstruct R.
+  if(risk>0 && Number.isFinite(pnl)){
     return pnl/risk;
   }
 
+  const stored=Number(trade.r_multiple);
   return Number.isFinite(stored) ? stored : 0;
+}
+
+function performanceHasValidR(trade){
+  return Boolean(
+    trade &&
+    Number.isFinite(Number(trade.pnl)) &&
+    tradeInitialRisk(trade)>0
+  );
+}
+
+function performanceRValues(source=trades){
+  return source
+    .filter(performanceHasValidR)
+    .map(trade=>tradeRMultiple(trade))
+    .filter(Number.isFinite);
+}
+
+function performanceCoreDataQuality(source=trades){
+  const total=source.length;
+  const dated=source.filter(t=>Boolean(t.trade_date)).length;
+  const pnlReady=source.filter(t=>Number.isFinite(Number(t.pnl))).length;
+  const riskReady=source.filter(t=>tradeInitialRisk(t)>0).length;
+  const complete=source.filter(t=>
+    Boolean(t.trade_date) &&
+    Number.isFinite(Number(t.pnl)) &&
+    tradeInitialRisk(t)>0
+  ).length;
+
+  return {
+    total,
+    dated,
+    pnlReady,
+    riskReady,
+    rReady:riskReady,
+    complete,
+    pct:total ? complete/total*100 : 0
+  };
 }
 
 function monthTrades(){
@@ -7684,8 +7722,9 @@ function renderMetrics(){
 
   const pnl=mt.reduce((s,t)=>s+(Number(t.pnl)||0),0);
   const wins=mt.filter(t=>Number(t.pnl)>0).length;
-  const avgR=mt.length
-    ? mt.reduce((s,t)=>s+(tradeRMultiple(t)),0)/mt.length
+  const monthRValues=performanceRValues(mt);
+  const avgR=monthRValues.length
+    ? monthRValues.reduce((s,r)=>s+r,0)/monthRValues.length
     : 0;
 
   const grossProfit=mt
@@ -7910,8 +7949,9 @@ function renderJournal(){
 
   const totalPnl=filtered.reduce((s,t)=>s+(Number(t.pnl)||0),0);
   const wins=filtered.filter(t=>Number(t.pnl)>0).length;
-  const avgR=filtered.length
-    ? filtered.reduce((s,t)=>s+(tradeRMultiple(t)),0)/filtered.length
+  const filteredRValues=performanceRValues(filtered);
+  const avgR=filteredRValues.length
+    ? filteredRValues.reduce((s,r)=>s+r,0)/filteredRValues.length
     : 0;
 
   $('#jTrades').textContent=filtered.length;
@@ -8181,15 +8221,18 @@ $('#tradeForm').addEventListener('submit',async e=>{
   const pnl=Number($('#pnl').value);
   const risk=Number($('#riskAmount').value);
 
-  let r=$('#rMultiple').value==='' ? NaN : Number($('#rMultiple').value);
-
-  if(!Number.isFinite(r) && risk>0){
-    r=pnl/risk;
+  if(!Number.isFinite(pnl)){
+    alert('Enter a valid Net P&L amount.');
+    return;
   }
 
-  if(!Number.isFinite(r)){
-    r=0;
+  if(!Number.isFinite(risk) || risk<=0){
+    alert('Enter the Initial Risk Amount for this trade. T·IOS needs it to calculate R correctly.');
+    $('#riskAmount').focus();
+    return;
   }
+
+  const r=pnl/risk;
 
   const payload={
     user_id:currentUser.id,
@@ -8203,9 +8246,9 @@ $('#tradeForm').addEventListener('submit',async e=>{
     entry_price:$('#entry').value==='' ? null : Number($('#entry').value),
     stop_loss:$('#stop').value==='' ? null : Number($('#stop').value),
     exit_price:$('#exit').value==='' ? null : Number($('#exit').value),
-    risk_amount:risk || 0,
-    pnl:pnl || 0,
-    r_multiple:r,
+    risk_amount:risk,
+    pnl:pnl,
+    r_multiple:Number(r.toFixed(6)),
     execution_score:$('#executionScore').value==='' ? null : Number($('#executionScore').value),
     psychology:$('#psychology').value || null,
     notes:$('#notes').value.trim() || null,
@@ -8280,6 +8323,8 @@ function autoR(){
 
   if(Number.isFinite(pnl) && risk>0){
     $('#rMultiple').value=(pnl/risk).toFixed(2);
+  }else{
+    $('#rMultiple').value='';
   }
 }
 
@@ -12246,8 +12291,9 @@ function renderStatistics(){
     ? grossProfit/grossLoss
     : grossProfit>0 ? Infinity : 0;
 
-  const avgR=source.length
-    ? source.reduce((s,t)=>s+(tradeRMultiple(t)),0)/source.length
+  const sourceRValues=performanceRValues(source);
+  const avgR=sourceRValues.length
+    ? sourceRValues.reduce((s,r)=>s+r,0)/sourceRValues.length
     : 0;
 
   const expectancy=source.length
@@ -13721,9 +13767,8 @@ function renderIntelligence(){
   const processEvidenceCount=executionReviewed+edgeReviewed+psychCount;
   const maturity=intelligenceMaturity(processEvidenceCount);
 
-  const rValues=trades
-    .map(t=>tradeRMultiple(t))
-    .filter(v=>Number.isFinite(v));
+  const rValues=performanceRValues(trades);
+  const corePerformanceData=performanceCoreDataQuality(trades);
 
   const avgR=rValues.length
     ? rValues.reduce((sum,v)=>sum+v,0)/rValues.length
@@ -13809,13 +13854,20 @@ function renderIntelligence(){
     winRate===null ? '—' : winRate.toFixed(1)+'%';
   $('#intelPerformanceProfitFactor').textContent=
     profitFactor===null ? '—' : (profitFactor===Infinity ? '∞' : profitFactor.toFixed(2));
+  $('#intelPerformanceDataQuality').textContent=
+    trades.length ? corePerformanceData.pct.toFixed(0)+'%' : '—';
+  $('#intelPerformanceRCoverage').textContent=
+    `${corePerformanceData.rReady} / ${trades.length}`;
 
   if(trades.length===0){
     setIntelligenceState('#intelPerformanceState','Waiting');
     $('#intelPerformanceNote').textContent='Performance Intelligence activates automatically when trades exist in the selected account.';
+  }else if(corePerformanceData.complete<trades.length){
+    setIntelligenceState('#intelPerformanceState','Data incomplete','building');
+    $('#intelPerformanceNote').textContent=`Outcome data exists for ${trades.length} trades, but only ${corePerformanceData.complete} currently contain the complete Level 1 core facts: date, Net P&L and initial risk. R-based conclusions use only complete records.`;
   }else{
     setIntelligenceState('#intelPerformanceState','Active','active');
-    $('#intelPerformanceNote').textContent=`Performance Intelligence is already active from ${trades.length} trades. It describes outcomes, but it cannot explain why those outcomes occurred until process evidence is connected.`;
+    $('#intelPerformanceNote').textContent=`Performance Intelligence has complete Level 1 core performance data for all ${trades.length} trades. Outcome metrics can now be calculated from raw facts rather than manually entered R values.`;
   }
 
   /* Specialized Intelligence — Strategy */
