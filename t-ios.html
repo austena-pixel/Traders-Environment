@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<!-- TradersIOS v32: MT5-accurate P&L + automatic R pipeline -->
-<title>TradersIOS — Traders Intelligence Operating System</title>
+<!-- T·IOS v32: MT5-accurate P&L + automatic R pipeline -->
+<title>T·IOS — Trader Intelligence Operating System</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
@@ -464,6 +464,44 @@ input:focus,select:focus,textarea:focus{
   border-radius:999px;
   padding:2px 5px;
 }
+.hios-back-link{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  color:#9fb0c5;
+  text-decoration:none;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.25px;
+  border:1px solid #202a38;
+  background:#0d141d;
+  border-radius:10px;
+  padding:8px 10px;
+  transition:.18s ease;
+}
+.hios-back-link:hover{
+  color:#fff;
+  border-color:#35465f;
+  background:#111923;
+  transform:translateY(-1px);
+}
+.auth-hios-link{
+  position:relative;
+  z-index:2;
+  margin-bottom:14px;
+}
+.sidebar-footer .hios-back-link{
+  width:100%;
+  justify-content:center;
+  margin-bottom:12px;
+}
+.mobile-hios-link{
+  min-width:40px;
+  justify-content:center;
+  padding:7px 8px;
+  font-size:10px;
+}
+
 .sidebar-footer{
   margin-top:auto;
   border-top:1px solid #151d28;
@@ -3228,13 +3266,14 @@ textarea{resize:vertical;min-height:90px}
   </div>
 
   <div class="auth-card">
+    <a class="hios-back-link auth-hios-link" href="index.html" title="Return to H·IOS family">← H·IOS</a>
     <div class="auth-state">Intelligence System Active</div>
 
     <div class="auth-top">
       <div class="auth-brand-wrap">
-        <div class="auth-brand" title="Traders Intelligence Operating System">T·IOS</div>
+        <div class="auth-brand" title="Trader Intelligence Operating System">T·IOS</div>
         <div class="auth-title-wrap">
-          <h1>Traders Intelligence Operating System</h1>
+          <h1>Trader Intelligence Operating System</h1>
           <p class="auth-subtitle">Execution Intelligence, Playbook Intelligence, Chart Intelligence, and Performance Intelligence connect here to build one Personal Trader Intelligence System.</p>
         </div>
       </div>
@@ -3276,10 +3315,10 @@ textarea{resize:vertical;min-height:90px}
 
   <aside class="sidebar" id="sidebar">
     <div class="side-brand">
-      <div class="side-logo" title="Traders Intelligence Operating System">T·IOS</div>
+      <div class="side-logo" title="Trader Intelligence Operating System">T·IOS</div>
       <div>
-        <strong>TradersIOS</strong>
-        <span>Traders Intelligence Operating System</span>
+        <strong>T·IOS</strong>
+        <span>Trader Intelligence Operating System</span>
       </div>
     </div>
 
@@ -3326,6 +3365,7 @@ textarea{resize:vertical;min-height:90px}
     </nav>
 
     <div class="sidebar-footer">
+      <a class="hios-back-link" href="index.html" title="Return to H·IOS family">← H·IOS Family</a>
       <div class="side-user" id="sideUserEmail">—</div>
       <button class="btn danger logout-side" id="logoutBtn">Sign Out</button>
     </div>
@@ -3335,8 +3375,8 @@ textarea{resize:vertical;min-height:90px}
 
     <div class="mobile-top">
       <button class="mobile-menu" id="mobileMenuBtn">☰</button>
-      <strong>TradersIOS</strong>
-      <div style="width:40px"></div>
+      <strong>T·IOS</strong>
+      <a class="hios-back-link mobile-hios-link" href="index.html" title="Return to H·IOS">H·IOS</a>
     </div>
 
     <!-- DASHBOARD -->
@@ -4753,7 +4793,7 @@ textarea{resize:vertical;min-height:90px}
           <div class="phase-auto-head">
             <div>
               <h3>Automated Evidence</h3>
-              <span class="muted">Calculated from the data already recorded elsewhere in TradersIOS.</span>
+              <span class="muted">Calculated from the data already recorded elsewhere in T·IOS.</span>
             </div>
             <div class="auto-readiness" id="phaseAutoReadiness">0%</div>
           </div>
@@ -4970,7 +5010,7 @@ textarea{resize:vertical;min-height:90px}
       <header class="page-head">
         <div>
           <h1>Settings & Connections</h1>
-          <p>Manage TradersIOS accounts and securely link Deriv MetaTrader 5 demo or real accounts.</p>
+          <p>Manage T·IOS accounts and securely link Deriv MetaTrader 5 demo or real accounts.</p>
         </div>
         <div class="top-actions">
           <button class="btn" id="refreshConnectionsBtn">Refresh</button>
@@ -5096,7 +5136,7 @@ textarea{resize:vertical;min-height:90px}
 
         <div class="connection-note">
           The bridge contains no order placement, position modification, or close-trade commands.
-          It is designed only to read MT5 account/trade information and send it to TradersIOS.
+          It is designed only to read MT5 account/trade information and send it to T·IOS.
         </div>
       </section>
     </section>
@@ -5889,7 +5929,7 @@ const DOCUMENT_PHASE_TEMPLATE = [
     name:'Perfect Execution',
     objective:'Learn perfect execution.',
     specific:'Master the execution of my trading plan by following every rule for entries, exits, risk management, and journaling without emotional interference.',
-    measurable:'Original SMART template: achieve at least 95% rule adherence; journal 100% of trades; maintain 0 revenge trades; maintain 0 rule-breaking trades; complete weekly trade reviews. Current TradersIOS automatic gate remains the newer standard: 2 consecutive samples of 20–30 trades with 90%+ across the required process metrics.',
+    measurable:'Original SMART template: achieve at least 95% rule adherence; journal 100% of trades; maintain 0 revenge trades; maintain 0 rule-breaking trades; complete weekly trade reviews. Current T·IOS automatic gate remains the newer standard: 2 consecutive samples of 20–30 trades with 90%+ across the required process metrics.',
     achievable:'Keep scores for every trading session and individual trade execution.',
     relevant:'Consistent execution is the foundation of long-term profitability.',
     time_bound:'Template target: complete within 2–3 months. Automatic phase advancement is controlled by the current sample-based qualification gate.',
@@ -7431,7 +7471,7 @@ function renderDayTrades(date){
 
 async function deleteTrade(trade, dayToRefresh=null){
   const mt5Note = trade.source==='mt5'
-    ? '\n\nThis removes the trade from TradersIOS only. It does not delete the broker/MT5 history.'
+    ? '\n\nThis removes the trade from T·IOS only. It does not delete the broker/MT5 history.'
     : '';
 
   if(!confirm(`Delete ${trade.instrument} trade on ${formatDate(trade.trade_date)}?${mt5Note}`)){
@@ -7472,7 +7512,7 @@ async function deleteTrade(trade, dayToRefresh=null){
     renderDayTrades(dayToRefresh);
   }
 
-  showStatus('Trade removed from TradersIOS');
+  showStatus('Trade removed from T·IOS');
 }
 
 $('#tradeForm').addEventListener('submit',async e=>{
