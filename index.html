@@ -3,437 +3,462 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>H·IOS — Sign In</title>
+<title>H·IOS</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
-  --bg:#07090d;
-  --panel:rgba(15,18,25,.88);
-  --panel2:#11151d;
-  --text:#f7f9fc;
-  --muted:#8e98aa;
-  --line:#232936;
-  --accent:#6ea8ff;
-  --accent2:#8b5cf6;
-  --danger:#fb7185;
+  --bg:#07090d; --panel:#10131a; --panel2:#151922; --text:#f5f7fb;
+  --muted:#8f98aa; --line:#232936; --accent:#6ea8ff; --accent2:#8b5cf6;
+  --good:#36d399; --warn:#fbbf24; --danger:#fb7185;
 }
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
 body{
-  min-height:100vh;
-  color:var(--text);
+  min-height:100vh;color:var(--text);
   background:
-    radial-gradient(circle at 15% 20%,rgba(110,168,255,.16),transparent 28%),
-    radial-gradient(circle at 82% 14%,rgba(139,92,246,.16),transparent 28%),
-    radial-gradient(circle at 70% 85%,rgba(110,168,255,.08),transparent 26%),
+    radial-gradient(circle at 15% 10%,rgba(110,168,255,.12),transparent 26%),
+    radial-gradient(circle at 85% 0%,rgba(139,92,246,.12),transparent 25%),
     var(--bg);
-  display:grid;
-  place-items:center;
-  padding:24px;
-  overflow-x:hidden;
 }
-.orb{
-  position:fixed;border-radius:999px;filter:blur(2px);opacity:.5;pointer-events:none;
+.hidden{display:none!important}
+
+/* ================= LOGIN ================= */
+#authScreen{
+  min-height:100vh;display:grid;place-items:center;padding:24px;
 }
-.orb.one{width:280px;height:280px;left:-90px;top:14%;background:rgba(110,168,255,.08)}
-.orb.two{width:360px;height:360px;right:-150px;bottom:-80px;background:rgba(139,92,246,.08)}
-.shell{
-  width:min(1050px,100%);
-  display:grid;
-  grid-template-columns:1.05fr .95fr;
-  border:1px solid var(--line);
-  border-radius:26px;
-  overflow:hidden;
-  background:rgba(8,10,15,.72);
-  box-shadow:0 30px 100px rgba(0,0,0,.45);
-  backdrop-filter:blur(20px);
+.auth-shell{
+  width:min(1050px,100%);display:grid;grid-template-columns:1.05fr .95fr;
+  border:1px solid var(--line);border-radius:26px;overflow:hidden;
+  background:rgba(8,10,15,.76);box-shadow:0 30px 100px rgba(0,0,0,.45);
 }
 .brand-panel{
-  position:relative;
-  padding:54px 52px;
-  min-height:620px;
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-  background:
-    linear-gradient(145deg,rgba(110,168,255,.08),rgba(139,92,246,.04)),
-    rgba(7,9,13,.7);
+  padding:54px 52px;min-height:620px;display:flex;flex-direction:column;justify-content:space-between;
+  background:linear-gradient(145deg,rgba(110,168,255,.08),rgba(139,92,246,.04));
 }
-.brand{
-  display:flex;align-items:center;gap:13px
-}
+.brand{display:flex;align-items:center;gap:13px}
 .logo{
-  width:44px;height:44px;border-radius:14px;
-  display:grid;place-items:center;
-  font-weight:900;font-size:19px;
+  width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-weight:900;font-size:19px;
   background:linear-gradient(135deg,var(--accent),var(--accent2));
-  box-shadow:0 12px 35px rgba(110,168,255,.22)
 }
-.brand-text h1{margin:0;font-size:20px;letter-spacing:.04em}
-.brand-text span{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+.brand h1{margin:0;font-size:20px;letter-spacing:.04em}
+.brand small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
 .hero{max-width:480px}
-.hero h2{
-  margin:0 0 18px;
-  font-size:clamp(36px,5vw,58px);
-  line-height:1.03;
-  letter-spacing:-.045em;
-}
+.hero h2{margin:0 0 18px;font-size:clamp(36px,5vw,58px);line-height:1.03;letter-spacing:-.045em}
 .hero h2 span{
   background:linear-gradient(90deg,#fff,#9ec3ff,#b8a5ff);
   -webkit-background-clip:text;background-clip:text;color:transparent
 }
-.hero p{
-  margin:0;
-  color:#aeb7c7;
-  line-height:1.7;
-  font-size:15px;
-  max-width:430px;
-}
-.promise{
-  display:grid;
-  gap:10px;
-  margin-top:32px;
-}
-.promise div{
-  display:flex;gap:10px;align-items:center;
-  color:#cfd5df;font-size:13px
-}
-.dot{
-  width:7px;height:7px;border-radius:999px;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  box-shadow:0 0 14px rgba(110,168,255,.55)
-}
+.hero p{margin:0;color:#aeb7c7;line-height:1.7;font-size:15px;max-width:430px}
+.promise{display:grid;gap:10px;margin-top:32px}
+.promise div{display:flex;gap:10px;align-items:center;color:#cfd5df;font-size:13px}
+.dot{width:7px;height:7px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2))}
 .brand-foot{color:#626c7d;font-size:11px}
-.login-panel{
-  background:rgba(15,18,25,.86);
-  padding:54px 48px;
-  display:flex;
-  align-items:center;
-}
-.login-wrap{width:100%;max-width:390px;margin:0 auto}
-.login-wrap .eyebrow{
-  font-size:12px;color:#8fb8ff;text-transform:uppercase;
-  letter-spacing:.14em;font-weight:800;margin-bottom:10px
-}
+.login-panel{background:rgba(15,18,25,.86);padding:54px 48px;display:flex;align-items:center}
+.login-wrap{width:100%;max-width:390px;margin:auto}
+.eyebrow{font-size:12px;color:#8fb8ff;text-transform:uppercase;letter-spacing:.14em;font-weight:800;margin-bottom:10px}
 .login-wrap h3{margin:0;font-size:30px;letter-spacing:-.025em}
-.login-wrap .desc{color:var(--muted);font-size:13px;line-height:1.6;margin:8px 0 28px}
+.desc{color:var(--muted);font-size:13px;line-height:1.6;margin:8px 0 28px}
 .field{margin-bottom:15px}
 label{display:block;font-size:12px;color:#c6ceda;margin-bottom:7px}
 .input-wrap{position:relative}
-input[type="email"],input[type="password"],input[type="text"]{
-  width:100%;
-  border:1px solid var(--line);
-  background:#0a0d12;
-  color:var(--text);
-  border-radius:12px;
-  padding:13px 44px 13px 14px;
-  outline:none;
-  transition:.18s ease;
+input[type=email],input[type=password],input[type=text]{
+  width:100%;border:1px solid var(--line);background:#0a0d12;color:var(--text);
+  border-radius:12px;padding:13px 44px 13px 14px;outline:none;
 }
-input:focus{
-  border-color:#476da9;
-  box-shadow:0 0 0 3px rgba(110,168,255,.09)
-}
+input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 .eye{
   position:absolute;right:10px;top:50%;transform:translateY(-50%);
-  border:0;background:transparent;color:#8893a5;cursor:pointer;
-  width:32px;height:32px;border-radius:8px
+  border:0;background:transparent;color:#8893a5;cursor:pointer;width:32px;height:32px;border-radius:8px
 }
-.eye:hover{background:#151a24;color:white}
-.meta{
-  display:flex;align-items:center;justify-content:space-between;
-  gap:14px;margin:4px 0 20px;font-size:12px
-}
+.meta{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:4px 0 20px;font-size:12px}
 .remember{display:flex;align-items:center;gap:8px;color:#9aa4b5}
 .remember input{accent-color:#6ea8ff}
-.link{
-  color:#9dc3ff;text-decoration:none;cursor:pointer
-}
+.link{color:#9dc3ff;text-decoration:none;cursor:pointer}
 .link:hover{text-decoration:underline}
-.submit{
-  width:100%;
-  border:0;
-  border-radius:12px;
-  padding:13px 16px;
-  color:white;
-  font-weight:800;
-  cursor:pointer;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  box-shadow:0 14px 34px rgba(110,168,255,.18);
-  transition:.18s ease;
+.submit,.primary{
+  border:0;border-radius:12px;padding:12px 15px;color:white;font-weight:800;cursor:pointer;
+  background:linear-gradient(135deg,var(--accent),var(--accent2))
 }
-.submit:hover{transform:translateY(-1px);filter:brightness(1.05)}
-.submit:active{transform:translateY(0)}
-.submit:disabled{opacity:.65;cursor:not-allowed;transform:none}
-.divider{
-  display:flex;align-items:center;gap:10px;
-  color:#677184;font-size:11px;margin:23px 0
-}
-.divider::before,.divider::after{content:"";height:1px;background:var(--line);flex:1}
-.alt{
-  display:grid;grid-template-columns:1fr 1fr;gap:10px
-}
-.alt button{
-  border:1px solid var(--line);background:#0b0e14;color:#d8dee9;
-  border-radius:11px;padding:11px;cursor:pointer;font-weight:700
-}
-.alt button:hover{background:#111722}
-.create{
-  text-align:center;color:#7f899a;font-size:12px;margin-top:22px
-}
-.notice{
-  display:none;
-  margin-top:14px;
-  padding:11px 12px;
-  border-radius:10px;
-  font-size:12px;
-  line-height:1.45;
-}
+.submit{width:100%;padding:13px 16px}
+.submit:disabled{opacity:.65;cursor:not-allowed}
+.notice{display:none;margin-top:14px;padding:11px 12px;border-radius:10px;font-size:12px;line-height:1.45}
 .notice.error{display:block;background:rgba(251,113,133,.08);border:1px solid rgba(251,113,133,.25);color:#fda4af}
 .notice.info{display:block;background:rgba(110,168,255,.08);border:1px solid rgba(110,168,255,.25);color:#bfdbfe}
-@media(max-width:850px){
-  .shell{grid-template-columns:1fr;max-width:560px}
-  .brand-panel{min-height:auto;padding:34px 28px}
-  .hero{margin:60px 0 34px}
-  .hero h2{font-size:42px}
-  .brand-foot{display:none}
-  .login-panel{padding:38px 28px 44px}
+
+/* ================= H·IOS HOME ================= */
+#appScreen{min-height:100vh}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.sidebar{
+  border-right:1px solid var(--line);padding:24px 18px;position:sticky;top:0;height:100vh;
+  background:rgba(7,9,13,.88);backdrop-filter:blur(18px)
 }
-@media(max-width:480px){
-  body{padding:12px}
-  .shell{border-radius:20px}
-  .brand-panel,.login-panel{padding-left:20px;padding-right:20px}
-  .hero{margin:42px 0 22px}
-  .hero h2{font-size:35px}
-  .alt{grid-template-columns:1fr}
+.side-brand{display:flex;align-items:center;gap:12px;margin:2px 6px 28px}
+.side-logo{
+  width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-weight:800;
+  background:linear-gradient(135deg,var(--accent),var(--accent2))
+}
+.side-brand h1{font-size:18px;margin:0;letter-spacing:.04em}
+.side-brand small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.nav{display:grid;gap:7px}
+.nav button{
+  border:0;color:var(--muted);background:transparent;text-align:left;padding:11px 12px;border-radius:10px;cursor:pointer
+}
+.nav button:hover,.nav button.active{background:var(--panel2);color:var(--text)}
+.side-foot{position:absolute;left:18px;right:18px;bottom:20px;color:var(--muted);font-size:12px}
+.main{padding:28px 30px 46px;max-width:1500px;width:100%;margin:0 auto}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:16px}
+.hello h2{margin:0;font-size:26px}.hello p{margin:6px 0 0;color:var(--muted)}
+.actions{display:flex;gap:10px}
+.chip{
+  border:1px solid var(--line);background:var(--panel);color:var(--text);
+  border-radius:12px;padding:10px 14px;cursor:pointer
+}
+
+/* Compact overview at top */
+.overview-head{display:flex;align-items:end;justify-content:space-between;margin:8px 0 10px}
+.overview-head h3{margin:0;font-size:15px}
+.overview-head span{color:var(--muted);font-size:11px}
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.q{
+  padding:10px 13px;border-radius:12px;background:#0c0f15;border:1px solid #1c2230;min-height:66px
+}
+.q small{color:var(--muted);font-size:11px}.q b{display:block;font-size:18px;margin-top:4px}
+
+.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}
+.card{background:linear-gradient(180deg,rgba(21,25,34,.96),rgba(16,19,26,.96));border:1px solid var(--line);border-radius:18px;padding:20px}
+.card h3{margin:0 0 6px;font-size:15px}.sub{color:var(--muted);font-size:13px}
+.focus-list{display:grid;gap:11px;margin-top:18px}
+.focus-item{
+  display:grid;grid-template-columns:34px 1fr auto;gap:12px;align-items:center;padding:13px 14px;
+  border-radius:13px;background:#0c0f15;border:1px solid #1c2230
+}
+.rank{width:30px;height:30px;border-radius:9px;background:#161c28;display:grid;place-items:center;color:var(--accent);font-weight:800}
+.focus-item b{display:block;font-size:14px}.focus-item small{color:var(--muted)}
+.tag{font-size:11px;padding:6px 8px;border-radius:999px;background:#151c29;color:#b8c8e8;border:1px solid #283247}
+.alert{margin-top:16px;padding:14px;border-radius:13px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.22)}
+.alert strong{display:block;margin-bottom:4px}.alert span{color:#d5c48b;font-size:13px}
+.goal-row{margin-top:15px}.goal-head{display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px}
+.bar{height:9px;background:#0b0e13;border-radius:999px;overflow:hidden}.bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.insight{margin-top:14px;padding:14px;border-radius:13px;background:#0c0f15;border:1px solid #1c2230}
+.insight b{font-size:13px}.insight p{font-size:13px;color:var(--muted);line-height:1.5;margin:7px 0 0}
+.section-title{display:flex;align-items:end;justify-content:space-between;margin:26px 0 13px}
+.section-title h3{margin:0;font-size:17px}.section-title span{color:var(--muted);font-size:12px}
+.products{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.product{
+  border:1px solid var(--line);background:var(--panel);border-radius:16px;padding:17px;cursor:pointer;transition:.18s ease
+}
+.product:hover{transform:translateY(-2px);border-color:#33405a}
+.picon{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:900;margin-bottom:15px;background:#171d28}
+.product h4{margin:0 0 5px}.product p{margin:0;color:var(--muted);font-size:12px;line-height:1.45}
+.product .status{display:inline-block;margin-top:14px;font-size:11px;color:var(--good)}
+
+@media(max-width:950px){
+  .auth-shell{grid-template-columns:1fr;max-width:560px}
+  .brand-panel{min-height:auto;padding:34px 28px}.hero{margin:50px 0 28px}.brand-foot{display:none}
+  .login-panel{padding:38px 28px 44px}
+  .app{grid-template-columns:1fr}.sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}
+  .nav{grid-template-columns:repeat(4,1fr)}.side-foot{display:none}.main{padding:20px}.grid{grid-template-columns:1fr}.products{grid-template-columns:1fr}
+}
+@media(max-width:620px){
+  #authScreen{padding:12px}.brand-panel,.login-panel{padding-left:20px;padding-right:20px}.hero h2{font-size:35px}
+  .topbar{align-items:flex-start;flex-direction:column}.nav{grid-template-columns:repeat(2,1fr)}
+  .quick{grid-template-columns:repeat(2,1fr)}.focus-item{grid-template-columns:32px 1fr}.tag{grid-column:2;justify-self:start}
+  .main{padding:16px}.card{padding:16px}
 }
 </style>
 </head>
 <body>
-<div class="orb one"></div>
-<div class="orb two"></div>
 
-<div class="shell">
-  <section class="brand-panel">
-    <div class="brand">
-      <div class="logo">H</div>
-      <div class="brand-text">
-        <h1>H·IOS</h1>
-        <span>Human Intelligence Operating System</span>
+<!-- =========================================================
+     LOGIN PRE-PAGE
+========================================================= -->
+<section id="authScreen">
+  <div class="auth-shell">
+    <section class="brand-panel">
+      <div class="brand">
+        <div class="logo">H</div>
+        <div><h1>H·IOS</h1><small>Human Intelligence Operating System</small></div>
       </div>
-    </div>
 
-    <div class="hero">
-      <h2>Your goals.<br><span>Your intelligence ecosystem.</span></h2>
-      <p>
-        Enter H·IOS to connect your goals, priorities and specialized intelligence systems
-        in one adaptive environment.
-      </p>
-
-      <div class="promise">
-        <div><span class="dot"></span> G·IOS for dynamic goals and priorities</div>
-        <div><span class="dot"></span> T·IOS for trading intelligence</div>
-        <div><span class="dot"></span> S·IOS for student intelligence</div>
+      <div class="hero">
+        <h2>Your goals.<br><span>Your intelligence ecosystem.</span></h2>
+        <p>Enter H·IOS to connect your goals, priorities and specialized intelligence systems in one adaptive environment.</p>
+        <div class="promise">
+          <div><span class="dot"></span> G·IOS for dynamic goals and priorities</div>
+          <div><span class="dot"></span> T·IOS for trading intelligence</div>
+          <div><span class="dot"></span> S·IOS for student intelligence</div>
+        </div>
       </div>
-    </div>
 
-    <div class="brand-foot">H·IOS · Prototype access interface</div>
-  </section>
+      <div class="brand-foot">H·IOS · Intelligence family</div>
+    </section>
 
-  <section class="login-panel">
-    <div class="login-wrap">
-      <div class="eyebrow">Welcome back</div>
-      <h3>Sign in to H·IOS</h3>
-      <p class="desc">Access your goals, priorities and connected intelligence systems.</p>
+    <section class="login-panel">
+      <div class="login-wrap">
+        <div class="eyebrow">Welcome back</div>
+        <h3>Sign in to H·IOS</h3>
+        <p class="desc">Use the same credentials you already use for T·IOS.</p>
 
-      <form id="loginForm">
-        <div class="field">
-          <label for="email">Email</label>
-          <div class="input-wrap">
-            <input id="email" type="email" placeholder="you@example.com" autocomplete="email" required>
+        <form id="loginForm">
+          <div class="field">
+            <label for="email">Email</label>
+            <div class="input-wrap">
+              <input id="email" type="email" autocomplete="email" required>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="password">Password</label>
+            <div class="input-wrap">
+              <input id="password" type="password" autocomplete="current-password" required>
+              <button class="eye" type="button" id="togglePassword" aria-label="Show password">◉</button>
+            </div>
+          </div>
+
+          <div class="meta">
+            <label class="remember"><input type="checkbox" id="remember"> Remember me</label>
+            <a class="link" href="#" id="forgotLink">Forgot password?</a>
+          </div>
+
+          <button class="submit" id="signInButton" type="submit">Enter H·IOS</button>
+          <div class="notice" id="notice"></div>
+        </form>
+      </div>
+    </section>
+  </div>
+</section>
+
+<!-- =========================================================
+     H·IOS DEFAULT / G·IOS-POWERED HOME
+     This is in the SAME FILE, so successful login no longer
+     redirects to a missing /h-ios.html route.
+========================================================= -->
+<section id="appScreen" class="hidden">
+  <div class="app">
+    <aside class="sidebar">
+      <div class="side-brand">
+        <div class="side-logo">H</div>
+        <div><h1>H·IOS</h1><small>Intelligence ecosystem</small></div>
+      </div>
+      <nav class="nav">
+        <button class="active">Home</button>
+        <button onclick="showMessage('G·IOS','Goals Intelligence Operating System')">G·IOS</button>
+        <button onclick="goToTIOS()">T·IOS</button>
+        <button onclick="showMessage('S·IOS','Student Intelligence Operating System')">S·IOS</button>
+      </nav>
+      <div class="side-foot">H·IOS family interface</div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="hello">
+          <h2>Good afternoon</h2>
+          <p>Your intelligence ecosystem is prioritizing what matters now.</p>
+        </div>
+        <div class="actions">
+          <button class="chip" onclick="showMessage('Priority Logic','G·IOS weighs urgency, importance, progress, dependencies and signals from connected intelligence systems.')">Why these priorities?</button>
+          <button class="chip" onclick="logout()">Sign out</button>
+        </div>
+      </div>
+
+      <div class="overview-head">
+        <h3>Intelligence Overview</h3>
+        <span>Live signals feeding your H·IOS context</span>
+      </div>
+      <section class="quick">
+        <div class="q"><small>Active goals</small><b>7</b></div>
+        <div class="q"><small>High-priority items</small><b>2</b></div>
+        <div class="q"><small>Connected ·IOS</small><b>3</b></div>
+        <div class="q"><small>On-track goals</small><b>5</b></div>
+      </section>
+
+      <section class="grid">
+        <div class="card">
+          <h3>Today's Focus</h3>
+          <div class="sub">G·IOS dynamically ranked from connected intelligence.</div>
+          <div class="focus-list">
+            <div class="focus-item">
+              <div class="rank">1</div>
+              <div><b>Complete engineering assignment</b><small>S·IOS · due tomorrow · 62% complete</small></div>
+              <span class="tag">Very high</span>
+            </div>
+            <div class="focus-item">
+              <div class="rank">2</div>
+              <div><b>Study Test 2 scope</b><small>S·IOS · assessment in 3 days · behind plan</small></div>
+              <span class="tag">High</span>
+            </div>
+            <div class="focus-item">
+              <div class="rank">3</div>
+              <div><b>Review trading execution</b><small>T·IOS · execution quality below target</small></div>
+              <span class="tag">Moderate</span>
+            </div>
+            <div class="focus-item">
+              <div class="rank">4</div>
+              <div><b>Continue trading sample</b><small>T·IOS · active milestone · no immediate deadline</small></div>
+              <span class="tag">Maintain</span>
+            </div>
+          </div>
+          <div class="alert">
+            <strong>Priority alert</strong>
+            <span>Your academic workload increased today. G·IOS recommends protecting your first two focus blocks for study before returning to trading work.</span>
           </div>
         </div>
 
-        <div class="field">
-          <label for="password">Password</label>
-          <div class="input-wrap">
-            <input id="password" type="password" placeholder="Enter your password" autocomplete="current-password" required>
-            <button class="eye" type="button" id="togglePassword" aria-label="Show password">◉</button>
+        <div class="card">
+          <h3>Goal Status</h3>
+          <div class="sub">Progress across connected domains.</div>
+          <div class="goal-row"><div class="goal-head"><span>Engineering</span><b>72%</b></div><div class="bar"><span style="width:72%"></span></div></div>
+          <div class="goal-row"><div class="goal-head"><span>Trading</span><b>61%</b></div><div class="bar"><span style="width:61%"></span></div></div>
+          <div class="goal-row"><div class="goal-head"><span>Fitness</span><b>88%</b></div><div class="bar"><span style="width:88%"></span></div></div>
+          <div class="insight">
+            <b>Cross-intelligence insight</b>
+            <p>Your study deadlines are temporarily more urgent than your current trading milestone. Your long-term trading goal remains unchanged; only today's attention allocation has shifted.</p>
           </div>
         </div>
+      </section>
 
-        <div class="meta">
-          <label class="remember">
-            <input type="checkbox" id="remember"> Remember me
-          </label>
-          <a class="link" href="#" id="forgotLink">Forgot password?</a>
+      <div class="section-title">
+        <h3>Your ·IOS</h3>
+        <span>Specialized intelligence connected through H·IOS</span>
+      </div>
+
+      <section class="products">
+        <div class="product" onclick="showMessage('G·IOS','Dynamic goals, priorities, milestones, adaptive planning and cross-domain progress intelligence.')">
+          <div class="picon">G</div><h4>G·IOS</h4>
+          <p>Dynamic goals, priorities, milestones, adaptive planning and cross-domain progress intelligence.</p>
+          <span class="status">Free · Active</span>
         </div>
 
-        <button class="submit" type="submit">Enter H·IOS</button>
-        <div class="notice" id="notice"></div>
-      </form>
+        <div class="product" onclick="goToTIOS()">
+          <div class="picon">T</div><h4>T·IOS</h4>
+          <p>Trading performance, execution, psychology, edge tracking and phase-based development.</p>
+          <span class="status">Connected</span>
+        </div>
 
-      <div class="divider">or continue with</div>
-
-      <div class="alt">
-        <button type="button" onclick="socialPlaceholder('Google')">Google</button>
-        <button type="button" onclick="socialPlaceholder('GitHub')">GitHub</button>
-      </div>
-
-      <div class="create">
-        New to H·IOS? <a class="link" href="#" id="createAccount">Create account</a>
-      </div>
-      <div class="create" id="sessionShortcut" style="display:none;margin-top:10px">
-        Already signed in? <a class="link" href="h-ios.html" id="continueCurrentSession">Continue to H·IOS</a>
-      </div>
-    </div>
-  </section>
-</div>
+        <div class="product" onclick="showMessage('S·IOS','Student intelligence will connect study planning, assessment tracking and academic progress.')">
+          <div class="picon">S</div><h4>S·IOS</h4>
+          <p>Study planning, assessment tracking, learning progress and academic intelligence.</p>
+          <span class="status">Connected</span>
+        </div>
+      </section>
+    </main>
+  </div>
+</section>
 
 <script>
-/* =========================================================
-   H·IOS AUTH
-   Uses the SAME Supabase Auth project as T·IOS.
-   This means your existing T·IOS email + password work here.
-========================================================= */
-
+/* SAME SUPABASE AUTH PROJECT USED BY T·IOS */
 const SUPABASE_URL = "https://tmxosoyqflmwqzjgnkez.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_meHq49fLyw8PVNPZxWacnw_SQMj5B-h";
 
-const db = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
-);
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-const password = document.getElementById('password');
-const toggle = document.getElementById('togglePassword');
+const authScreen = document.getElementById('authScreen');
+const appScreen = document.getElementById('appScreen');
 const notice = document.getElementById('notice');
-const submitButton = document.querySelector('.submit');
+const passwordInput = document.getElementById('password');
+const signInButton = document.getElementById('signInButton');
 
-toggle.addEventListener('click', () => {
-  const showing = password.type === 'text';
-  password.type = showing ? 'password' : 'text';
-  toggle.textContent = showing ? '◉' : '◎';
-  toggle.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+document.getElementById('togglePassword').addEventListener('click', () => {
+  const visible = passwordInput.type === 'text';
+  passwordInput.type = visible ? 'password' : 'text';
+  document.getElementById('togglePassword').textContent = visible ? '◉' : '◎';
 });
-
-/* The login page is intentionally always shown.
-   Even if a valid Supabase session already exists, H·IOS will not auto-skip
-   this pre-page. The user can sign in with the same T·IOS credentials. */
 
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const email = document.getElementById('email').value.trim();
-  const pass = password.value;
+  const password = passwordInput.value;
 
-  if (!email || !pass) {
-    setNotice('Please enter your email and password.', 'error');
+  if(!email || !password){
+    setNotice('Enter your email and password.', 'error');
     return;
   }
 
-  submitButton.disabled = true;
-  submitButton.textContent = 'Signing in...';
+  signInButton.disabled = true;
+  signInButton.textContent = 'Signing in...';
   setNotice('Checking your H·IOS account...', 'info');
 
   try{
-    const { data, error } = await db.auth.signInWithPassword({
-      email: email,
-      password: pass
-    });
-
-    if(error){
-      setNotice(error.message || 'Unable to sign in.', 'error');
-      return;
-    }
-
-    if(!data?.user){
-      setNotice('Sign-in did not return a valid user account.', 'error');
-      return;
-    }
-
-    setNotice('Signed in successfully. Opening H·IOS...', 'info');
-
-    setTimeout(() => {
-      window.location.replace('h-ios.html');
-    }, 450);
-
-  }catch(err){
-    console.error(err);
-    setNotice('Could not connect to authentication. Check your internet connection and try again.', 'error');
-  }finally{
-    setTimeout(() => {
-      submitButton.disabled = false;
-      submitButton.textContent = 'Enter H·IOS';
-    }, 700);
-  }
-});
-
-/* Password recovery now uses the same Supabase account system. */
-document.getElementById('forgotLink').addEventListener('click', async (e) => {
-  e.preventDefault();
-
-  const email = document.getElementById('email').value.trim();
-
-  if(!email){
-    setNotice('Enter your email first, then press “Forgot password?”.', 'error');
-    return;
-  }
-
-  try{
-    setNotice('Sending password reset email...', 'info');
-
-    const redirectTo = new URL('h-ios-login.html', window.location.href).href;
-
-    const { error } = await db.auth.resetPasswordForEmail(email, {
-      redirectTo
-    });
+    const { data, error } = await db.auth.signInWithPassword({ email, password });
 
     if(error){
       setNotice(error.message, 'error');
       return;
     }
 
-    setNotice('Password reset email sent. Check your inbox.', 'info');
+    if(!data?.user){
+      setNotice('A valid user session was not returned.', 'error');
+      return;
+    }
+
+    /* IMPORTANT:
+       NO window.location.href = "h-ios.html"
+       NO redirect at all.
+       We reveal the goals/default H·IOS page in this exact same file. */
+    showApp();
 
   }catch(err){
     console.error(err);
-    setNotice('Unable to send the reset email right now.', 'error');
+    setNotice('Could not connect to authentication. Check your connection and try again.', 'error');
+  }finally{
+    signInButton.disabled = false;
+    signInButton.textContent = 'Enter H·IOS';
   }
 });
 
-/* Keep account creation disabled for now so H·IOS does not create
-   a separate account system from T·IOS. */
-document.getElementById('createAccount').addEventListener('click', (e) => {
+document.getElementById('forgotLink').addEventListener('click', async (e) => {
   e.preventDefault();
-  setNotice('Use your existing H·IOS / T·IOS account. Account registration can be added later.', 'info');
+  const email = document.getElementById('email').value.trim();
+
+  if(!email){
+    setNotice('Enter your email first, then choose “Forgot password?”.', 'error');
+    return;
+  }
+
+  try{
+    const { error } = await db.auth.resetPasswordForEmail(email);
+    if(error){
+      setNotice(error.message, 'error');
+      return;
+    }
+    setNotice('Password reset email sent. Check your inbox.', 'info');
+  }catch(err){
+    setNotice('Unable to send reset email right now.', 'error');
+  }
 });
 
-/* Social login is not enabled yet. */
-function socialPlaceholder(provider){
-  setNotice(provider + ' sign-in is not enabled yet. Use your existing email and password.', 'info');
+function showApp(){
+  authScreen.classList.add('hidden');
+  appScreen.classList.remove('hidden');
+  window.scrollTo({top:0,behavior:'instant'});
 }
 
-async function showExistingSessionShortcut(){
-  try{
-    const { data, error } = await db.auth.getSession();
-    if(error) return;
-    if(data?.session?.user){
-      const shortcut = document.getElementById('sessionShortcut');
-      if(shortcut) shortcut.style.display = 'block';
-    }
-  }catch(err){
-    console.warn('Session check failed:', err);
-  }
+async function logout(){
+  try{ await db.auth.signOut(); }catch(e){}
+  appScreen.classList.add('hidden');
+  authScreen.classList.remove('hidden');
+  document.getElementById('loginForm').reset();
+  notice.className = 'notice';
+  notice.textContent = '';
+  window.scrollTo({top:0,behavior:'instant'});
 }
 
-showExistingSessionShortcut();
+function goToTIOS(){
+  window.location.href = 't-ios.html';
+}
 
-function setNotice(message, type){
+function showMessage(title, text){
+  alert(title + "\n\n" + text);
+}
+
+function setNotice(message,type){
   notice.textContent = message;
   notice.className = 'notice ' + type;
 }
 
+/* Deliberately do NOT auto-open the app from an old session.
+   The login pre-page stays visible when this file is freshly opened. */
 </script>
 </body>
 </html>
