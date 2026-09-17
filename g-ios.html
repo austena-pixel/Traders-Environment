@@ -1522,6 +1522,30 @@ function deleteGoal(id){
 }
 
 function returnToHIOS(){
+  /*
+    If G·IOS was opened from H·IOS, go back to that exact browser entry.
+    This avoids needlessly reloading H·IOS.
+    If there is no usable H·IOS referrer, load the H·IOS home route.
+    H·IOS itself now restores the existing Supabase session automatically.
+  */
+  try{
+    if(document.referrer){
+      const ref = new URL(document.referrer);
+      const file = ref.pathname.split('/').pop().toLowerCase();
+
+      const cameFromHIOS =
+        ref.origin === window.location.origin &&
+        (file === '' || file === 'index.html' || file === 'h-ios.html');
+
+      if(cameFromHIOS && window.history.length > 1){
+        window.history.back();
+        return;
+      }
+    }
+  }catch(error){
+    console.warn('Could not inspect H·IOS referrer:', error);
+  }
+
   window.location.href = './index.html?view=home';
 }
 
