@@ -114,6 +114,177 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   border-radius:12px;padding:10px 14px;cursor:pointer
 }
 
+
+/* ================= PRODUCT MANAGER ================= */
+.product-nav{
+  display:grid;
+  gap:7px;
+  margin-top:7px;
+}
+.product-nav button{
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.product-nav-icon{
+  width:24px;
+  height:24px;
+  border-radius:8px;
+  display:grid;
+  place-items:center;
+  flex:0 0 auto;
+  font-size:11px;
+  font-weight:900;
+  color:#dce8ff;
+  background:#171d28;
+  border:1px solid #242d3b;
+}
+.product-nav-empty{
+  padding:10px 12px;
+  color:#5f697a;
+  font-size:11px;
+  line-height:1.45;
+}
+.add-product-btn{
+  border:0;
+  color:#fff;
+  font-weight:800;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+}
+.product-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:14px;
+}
+.product-action{
+  border:1px solid var(--line);
+  background:#0c1017;
+  color:#cbd5e3;
+  border-radius:9px;
+  padding:7px 10px;
+  font-size:11px;
+  cursor:pointer;
+}
+.product-action.primary-action{
+  border:0;
+  color:#fff;
+  font-weight:800;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+}
+.product-action.remove-action{
+  color:#fda4af;
+  border-color:rgba(251,113,133,.25);
+  background:rgba(251,113,133,.06);
+}
+.product .status.not-added{color:#7c8798}
+.product .status.added{color:var(--good)}
+
+.product-modal{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  display:none;
+  place-items:center;
+  padding:20px;
+  background:rgba(0,0,0,.70);
+  backdrop-filter:blur(5px);
+}
+.product-modal.show{display:grid}
+.product-modal-box{
+  width:min(720px,100%);
+  max-height:min(760px,90vh);
+  overflow:auto;
+  border:1px solid var(--line);
+  border-radius:22px;
+  padding:22px;
+  background:#10141c;
+  box-shadow:0 30px 90px rgba(0,0,0,.5);
+}
+.product-modal-head{
+  display:flex;
+  justify-content:space-between;
+  gap:18px;
+  align-items:flex-start;
+  margin-bottom:18px;
+}
+.product-modal-head h3{
+  margin:0;
+  font-size:21px;
+}
+.product-modal-head p{
+  margin:6px 0 0;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.5;
+}
+.modal-close{
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  border:1px solid var(--line);
+  background:#0b0f15;
+  color:#cbd5e3;
+  cursor:pointer;
+}
+.product-catalog-list{
+  display:grid;
+  gap:10px;
+}
+.catalog-item{
+  display:grid;
+  grid-template-columns:44px 1fr auto;
+  align-items:center;
+  gap:13px;
+  padding:13px;
+  border:1px solid #202736;
+  border-radius:14px;
+  background:#0b0f15;
+}
+.catalog-icon{
+  width:42px;
+  height:42px;
+  border-radius:12px;
+  display:grid;
+  place-items:center;
+  font-weight:900;
+  background:#171d28;
+  border:1px solid #283141;
+}
+.catalog-item h4{
+  margin:0;
+  font-size:14px;
+}
+.catalog-item p{
+  margin:4px 0 0;
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.45;
+}
+.catalog-actions{
+  display:flex;
+  gap:7px;
+}
+.catalog-actions button{
+  border:1px solid var(--line);
+  background:#111722;
+  color:#d7deea;
+  border-radius:9px;
+  padding:8px 10px;
+  font-size:11px;
+  cursor:pointer;
+}
+.catalog-actions button.added{
+  color:#fda4af;
+  border-color:rgba(251,113,133,.24);
+  background:rgba(251,113,133,.06);
+}
+@media(max-width:620px){
+  .catalog-item{grid-template-columns:40px 1fr}
+  .catalog-actions{grid-column:1/-1;justify-content:flex-end}
+}
+
 /* Compact overview at top */
 .overview-head{display:flex;align-items:end;justify-content:space-between;margin:8px 0 10px}
 .overview-head h3{margin:0;font-size:15px}
@@ -241,10 +412,8 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
         <div><h1>H·IOS</h1><small>Intelligence ecosystem</small></div>
       </div>
       <nav class="nav">
-        <button class="active">Home</button>
-        <button onclick="goToGIOS()">G·IOS</button>
-        <button onclick="goToTIOS()">T·IOS</button>
-        <button onclick="showMessage('S·IOS','Student Intelligence Operating System')">S·IOS</button>
+        <button class="active" onclick="window.scrollTo({top:0,behavior:'smooth'})">Home</button>
+        <div class="product-nav" id="productSidebarNav"></div>
       </nav>
       <div class="side-foot">H·IOS family interface</div>
     </aside>
@@ -256,6 +425,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
           <p>Your intelligence ecosystem is prioritizing what matters now.</p>
         </div>
         <div class="actions">
+          <button class="chip add-product-btn" onclick="openProductModal()">Add Product</button>
           <button class="chip" onclick="showMessage('Priority Logic','G·IOS weighs urgency, importance, progress, dependencies and signals from connected intelligence systems.')">Why these priorities?</button>
           <button class="chip" onclick="logout()">Sign out</button>
         </div>
@@ -268,7 +438,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
       <section class="quick">
         <div class="q"><small>Active goals</small><b>7</b></div>
         <div class="q"><small>High-priority items</small><b>2</b></div>
-        <div class="q"><small>Connected ·IOS</small><b>3</b></div>
+        <div class="q"><small>Connected ·IOS</small><b id="connectedProductsCount">0</b></div>
         <div class="q"><small>On-track goals</small><b>5</b></div>
       </section>
 
@@ -322,28 +492,27 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
         <span>Specialized intelligence connected through H·IOS</span>
       </div>
 
-      <section class="products">
-        <div class="product" onclick="goToGIOS()">
-          <div class="picon">G</div><h4>G·IOS</h4>
-          <p>Dynamic goals, priorities, milestones, adaptive planning and cross-domain progress intelligence.</p>
-          <span class="status">Free · Active</span>
-        </div>
-
-        <div class="product" onclick="goToTIOS()">
-          <div class="picon">T</div><h4>T·IOS</h4>
-          <p>Trading performance, execution, psychology, edge tracking and phase-based development.</p>
-          <span class="status">Connected</span>
-        </div>
-
-        <div class="product" onclick="showMessage('S·IOS','Student intelligence will connect study planning, assessment tracking and academic progress.')">
-          <div class="picon">S</div><h4>S·IOS</h4>
-          <p>Study planning, assessment tracking, learning progress and academic intelligence.</p>
-          <span class="status">Connected</span>
-        </div>
-      </section>
+      <section class="products" id="productsGrid"></section>
     </main>
   </div>
 </section>
+
+
+<!-- =========================================================
+     ADD PRODUCT MODAL
+========================================================= -->
+<div class="product-modal" id="productModal">
+  <div class="product-modal-box">
+    <div class="product-modal-head">
+      <div>
+        <h3>Add Product</h3>
+        <p>Select which specialized ·IOS products belong in your H·IOS workspace. Only added products appear in the sidebar.</p>
+      </div>
+      <button class="modal-close" type="button" onclick="closeProductModal()" aria-label="Close">×</button>
+    </div>
+    <div class="product-catalog-list" id="productCatalogList"></div>
+  </div>
+</div>
 
 <script>
 /* SAME SUPABASE AUTH PROJECT USED BY T·IOS */
@@ -351,6 +520,194 @@ const SUPABASE_URL = "https://tmxosoyqflmwqzjgnkez.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_meHq49fLyw8PVNPZxWacnw_SQMj5B-h";
 
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+
+/* =========================================================
+   H·IOS PRODUCT MANAGER
+   Products are stored locally for this browser.
+   Only products that have been added appear in the sidebar.
+========================================================= */
+const HIOS_PRODUCT_STORAGE_KEY = 'hios_added_products_v1';
+
+const HIOS_PRODUCT_CATALOG = [
+  {
+    id:'gios',
+    name:'G·IOS',
+    icon:'G',
+    description:'Dynamic goals, priorities, milestones, adaptive planning and cross-domain progress intelligence.',
+    url:'g-ios.html',
+    availability:'Available'
+  },
+  {
+    id:'tios',
+    name:'T·IOS',
+    icon:'T',
+    description:'Trading performance, execution, psychology, edge tracking and phase-based development.',
+    url:'t-ios.html',
+    availability:'Available'
+  },
+  {
+    id:'sios',
+    name:'S·IOS',
+    icon:'S',
+    description:'Study planning, assessment tracking, learning progress and academic intelligence.',
+    url:'',
+    availability:'Planned'
+  }
+];
+
+let addedProductIds = loadAddedProducts();
+
+function loadAddedProducts(){
+  try{
+    const raw = localStorage.getItem(HIOS_PRODUCT_STORAGE_KEY);
+    if(!raw) return [];
+    const parsed = JSON.parse(raw);
+    if(!Array.isArray(parsed)) return [];
+    return parsed.filter(id => HIOS_PRODUCT_CATALOG.some(product => product.id === id));
+  }catch(error){
+    console.warn('Could not load H·IOS products:', error);
+    return [];
+  }
+}
+
+function saveAddedProducts(){
+  localStorage.setItem(HIOS_PRODUCT_STORAGE_KEY, JSON.stringify(addedProductIds));
+}
+
+function isProductAdded(id){
+  return addedProductIds.includes(id);
+}
+
+function addProduct(id){
+  if(!HIOS_PRODUCT_CATALOG.some(product => product.id === id)) return;
+  if(!isProductAdded(id)){
+    addedProductIds.push(id);
+    saveAddedProducts();
+  }
+  renderProductManager();
+}
+
+function removeProduct(id){
+  addedProductIds = addedProductIds.filter(productId => productId !== id);
+  saveAddedProducts();
+  renderProductManager();
+}
+
+function toggleProduct(id){
+  if(isProductAdded(id)) removeProduct(id);
+  else addProduct(id);
+}
+
+function openProduct(id){
+  const product = HIOS_PRODUCT_CATALOG.find(item => item.id === id);
+  if(!product) return;
+
+  if(!isProductAdded(id)){
+    openProductModal();
+    return;
+  }
+
+  if(product.url){
+    window.location.href = product.url;
+    return;
+  }
+
+  showMessage(product.name, product.name + ' is added to H·IOS, but its dedicated product page has not been built yet.');
+}
+
+function renderProductManager(){
+  const sidebar = document.getElementById('productSidebarNav');
+  const grid = document.getElementById('productsGrid');
+  const catalog = document.getElementById('productCatalogList');
+  const connectedCount = document.getElementById('connectedProductsCount');
+
+  if(connectedCount){
+    connectedCount.textContent = addedProductIds.length;
+  }
+
+  if(sidebar){
+    const addedProducts = HIOS_PRODUCT_CATALOG.filter(product => isProductAdded(product.id));
+
+    sidebar.innerHTML = addedProducts.length
+      ? addedProducts.map(product => `
+          <button type="button" onclick="openProduct('${product.id}')">
+            <span class="product-nav-icon">${product.icon}</span>
+            <span>${product.name}</span>
+          </button>
+        `).join('')
+      : `<div class="product-nav-empty">No products added yet.<br>Use <b>Add Product</b> to build your workspace.</div>`;
+  }
+
+  if(grid){
+    grid.innerHTML = HIOS_PRODUCT_CATALOG.map(product => {
+      const added = isProductAdded(product.id);
+      return `
+        <div class="product">
+          <div class="picon">${product.icon}</div>
+          <h4>${product.name}</h4>
+          <p>${product.description}</p>
+          <span class="status ${added ? 'added' : 'not-added'}">
+            ${added ? 'Added to H·IOS' : product.availability}
+          </span>
+
+          <div class="product-actions">
+            ${
+              added
+                ? `<button class="product-action primary-action" type="button" onclick="openProduct('${product.id}')">Open</button>
+                   <button class="product-action remove-action" type="button" onclick="removeProduct('${product.id}')">Remove</button>`
+                : `<button class="product-action primary-action" type="button" onclick="addProduct('${product.id}')">Add Product</button>`
+            }
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  if(catalog){
+    catalog.innerHTML = HIOS_PRODUCT_CATALOG.map(product => {
+      const added = isProductAdded(product.id);
+      return `
+        <div class="catalog-item">
+          <div class="catalog-icon">${product.icon}</div>
+          <div>
+            <h4>${product.name}</h4>
+            <p>${product.description}</p>
+          </div>
+          <div class="catalog-actions">
+            ${added && product.url ? `<button type="button" onclick="openProduct('${product.id}')">Open</button>` : ''}
+            <button
+              type="button"
+              class="${added ? 'added' : ''}"
+              onclick="toggleProduct('${product.id}')"
+            >${added ? 'Remove' : 'Add'}</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+}
+
+function openProductModal(){
+  renderProductManager();
+  document.getElementById('productModal').classList.add('show');
+}
+
+function closeProductModal(){
+  document.getElementById('productModal').classList.remove('show');
+}
+
+document.getElementById('productModal').addEventListener('click', event => {
+  if(event.target.id === 'productModal') closeProductModal();
+});
+
+document.addEventListener('keydown', event => {
+  if(event.key === 'Escape') closeProductModal();
+});
+
+renderProductManager();
+
+
 
 const authScreen = document.getElementById('authScreen');
 const appScreen = document.getElementById('appScreen');
@@ -431,6 +788,7 @@ document.getElementById('forgotLink').addEventListener('click', async (e) => {
 function showApp(){
   authScreen.classList.add('hidden');
   appScreen.classList.remove('hidden');
+  renderProductManager();
   window.scrollTo({top:0,behavior:'instant'});
 }
 
@@ -444,12 +802,8 @@ async function logout(){
   window.scrollTo({top:0,behavior:'instant'});
 }
 
-function goToGIOS(){
-  window.location.href = './g-ios.html';
-}
-
 function goToTIOS(){
-  window.location.href = './t-ios.html';
+  window.location.href = 't-ios.html';
 }
 
 function showMessage(title, text){
@@ -461,43 +815,8 @@ function setNotice(message,type){
   notice.className = 'notice ' + type;
 }
 
-/* Direct visits to index.html still show the login pre-page.
-   Internal family navigation can use ?view=home. In that case, H·IOS
-   checks the SAME Supabase session used by T·IOS and opens the default
-   dashboard only when that session is valid. */
-async function handleInternalFamilyReturn(){
-  const params = new URLSearchParams(window.location.search);
-
-  if(params.get('view') !== 'home'){
-    return;
-  }
-
-  try{
-    const { data, error } = await db.auth.getSession();
-
-    if(error){
-      console.warn('H·IOS session check failed:', error);
-      return;
-    }
-
-    if(data?.session?.user){
-      showApp();
-
-      // Clean the URL after opening the home dashboard.
-      if(window.history && window.history.replaceState){
-        window.history.replaceState({}, '', 'index.html');
-      }
-      return;
-    }
-
-    setNotice('Your session has expired. Sign in again to continue to H·IOS.', 'info');
-
-  }catch(err){
-    console.warn('H·IOS internal return check failed:', err);
-  }
-}
-
-handleInternalFamilyReturn();
+/* Deliberately do NOT auto-open the app from an old session.
+   The login pre-page stays visible when this file is freshly opened. */
 </script>
 </body>
 </html>
