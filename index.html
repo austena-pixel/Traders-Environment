@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>H·IOS — Sign In</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
   --bg:#07090d;
@@ -163,6 +164,7 @@ input:focus{
 }
 .submit:hover{transform:translateY(-1px);filter:brightness(1.05)}
 .submit:active{transform:translateY(0)}
+.submit:disabled{opacity:.65;cursor:not-allowed;transform:none}
 .divider{
   display:flex;align-items:center;gap:10px;
   color:#677184;font-size:11px;margin:23px 0
@@ -286,9 +288,24 @@ input:focus{
 </div>
 
 <script>
+/* =========================================================
+   H·IOS AUTH
+   Uses the SAME Supabase Auth project as T·IOS.
+   This means your existing T·IOS email + password work here.
+========================================================= */
+
+const SUPABASE_URL = "https://tmxosoyqflmwqzjgnkez.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_meHq49fLyw8PVNPZxWacnw_SQMj5B-h";
+
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
+
 const password = document.getElementById('password');
 const toggle = document.getElementById('togglePassword');
 const notice = document.getElementById('notice');
+const submitButton = document.querySelector('.submit');
 
 toggle.addEventListener('click', () => {
   const showing = password.type === 'text';
@@ -297,45 +314,120 @@ toggle.addEventListener('click', () => {
   toggle.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
 });
 
-document.getElementById('loginForm').addEventListener('submit', (e) => {
+/* If the user already has a valid H·IOS / T·IOS session on this domain,
+   send them straight to the H·IOS home page. */
+async function checkExistingSession(){
+  try{
+    const { data, error } = await db.auth.getSession();
+    if(error) return;
+
+    if(data?.session?.user){
+      window.location.replace('h-ios.html');
+    }
+  }catch(err){
+    console.warn('Session check failed:', err);
+  }
+}
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+
   const email = document.getElementById('email').value.trim();
-  const pass = password.value.trim();
+  const pass = password.value;
 
   if (!email || !pass) {
     setNotice('Please enter your email and password.', 'error');
     return;
   }
 
-  // Prototype behavior only:
-  // Replace this section with Supabase Auth or another real authentication provider.
-  localStorage.setItem('hios_demo_signed_in', 'true');
-  localStorage.setItem('hios_demo_email', email);
+  submitButton.disabled = true;
+  submitButton.textContent = 'Signing in...';
+  setNotice('Checking your H·IOS account...', 'info');
 
-  setNotice('Prototype sign-in accepted. Opening H·IOS...', 'info');
-  setTimeout(() => {
-    window.location.href = 'h-ios.html';
-  }, 650);
+  try{
+    const { data, error } = await db.auth.signInWithPassword({
+      email: email,
+      password: pass
+    });
+
+    if(error){
+      setNotice(error.message || 'Unable to sign in.', 'error');
+      return;
+    }
+
+    if(!data?.user){
+      setNotice('Sign-in did not return a valid user account.', 'error');
+      return;
+    }
+
+    setNotice('Signed in successfully. Opening H·IOS...', 'info');
+
+    setTimeout(() => {
+      window.location.replace('h-ios.html');
+    }, 450);
+
+  }catch(err){
+    console.error(err);
+    setNotice('Could not connect to authentication. Check your internet connection and try again.', 'error');
+  }finally{
+    setTimeout(() => {
+      submitButton.disabled = false;
+      submitButton.textContent = 'Enter H·IOS';
+    }, 700);
+  }
 });
 
-document.getElementById('forgotLink').addEventListener('click', (e) => {
+/* Password recovery now uses the same Supabase account system. */
+document.getElementById('forgotLink').addEventListener('click', async (e) => {
   e.preventDefault();
-  setNotice('Password recovery will be connected when authentication is added.', 'info');
+
+  const email = document.getElementById('email').value.trim();
+
+  if(!email){
+    setNotice('Enter your email first, then press “Forgot password?”.', 'error');
+    return;
+  }
+
+  try{
+    setNotice('Sending password reset email...', 'info');
+
+    const redirectTo = new URL('h-ios-login.html', window.location.href).href;
+
+    const { error } = await db.auth.resetPasswordForEmail(email, {
+      redirectTo
+    });
+
+    if(error){
+      setNotice(error.message, 'error');
+      return;
+    }
+
+    setNotice('Password reset email sent. Check your inbox.', 'info');
+
+  }catch(err){
+    console.error(err);
+    setNotice('Unable to send the reset email right now.', 'error');
+  }
 });
 
+/* Keep account creation disabled for now so H·IOS does not create
+   a separate account system from T·IOS. */
 document.getElementById('createAccount').addEventListener('click', (e) => {
   e.preventDefault();
-  setNotice('Account creation will be connected when authentication is added.', 'info');
+  setNotice('Use your existing H·IOS / T·IOS account. Account registration can be added later.', 'info');
 });
 
+/* Social login is not enabled yet. */
 function socialPlaceholder(provider){
-  setNotice(provider + ' sign-in will be connected when authentication is added.', 'info');
+  setNotice(provider + ' sign-in is not enabled yet. Use your existing email and password.', 'info');
 }
 
 function setNotice(message, type){
   notice.textContent = message;
   notice.className = 'notice ' + type;
 }
+
+checkExistingSession();
 </script>
 </body>
 </html>
