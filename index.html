@@ -242,7 +242,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
       </div>
       <nav class="nav">
         <button class="active">Home</button>
-        <button onclick="showMessage('G·IOS','Goals Intelligence Operating System')">G·IOS</button>
+        <button onclick="goToGIOS()">G·IOS</button>
         <button onclick="goToTIOS()">T·IOS</button>
         <button onclick="showMessage('S·IOS','Student Intelligence Operating System')">S·IOS</button>
       </nav>
@@ -323,7 +323,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
       </div>
 
       <section class="products">
-        <div class="product" onclick="showMessage('G·IOS','Dynamic goals, priorities, milestones, adaptive planning and cross-domain progress intelligence.')">
+        <div class="product" onclick="goToGIOS()">
           <div class="picon">G</div><h4>G·IOS</h4>
           <p>Dynamic goals, priorities, milestones, adaptive planning and cross-domain progress intelligence.</p>
           <span class="status">Free · Active</span>
@@ -442,6 +442,10 @@ async function logout(){
   notice.className = 'notice';
   notice.textContent = '';
   window.scrollTo({top:0,behavior:'instant'});
+}
+
+function goToGIOS(){
+  window.location.href = 'g-ios.html';
 }
 
 function goToTIOS(){
