@@ -794,8 +794,7 @@ function showApp(){
 
 async function logout(){
   try{ await db.auth.signOut(); }catch(e){}
-  appScreen.classList.add('hidden');
-  authScreen.classList.remove('hidden');
+  showLoginScreen();
   document.getElementById('loginForm').reset();
   notice.className = 'notice';
   notice.textContent = '';
@@ -815,8 +814,61 @@ function setNotice(message,type){
   notice.className = 'notice ' + type;
 }
 
-/* Deliberately do NOT auto-open the app from an old session.
-   The login pre-page stays visible when this file is freshly opened. */
+/* =========================================================
+   SESSION RESTORATION
+   Supabase persists the authenticated session in this browser.
+   On refresh or when returning from another ·IOS product,
+   H·IOS checks that session and opens the app instead of
+   forcing the user back through the login screen.
+========================================================= */
+
+function showLoginScreen(){
+  appScreen.classList.add('hidden');
+  authScreen.classList.remove('hidden');
+}
+
+async function restoreExistingSession(){
+  try{
+    const { data, error } = await db.auth.getSession();
+
+    if(error){
+      console.warn('Could not restore H·IOS session:', error);
+      showLoginScreen();
+      return;
+    }
+
+    if(data?.session?.user){
+      showApp();
+      return;
+    }
+
+    showLoginScreen();
+
+  }catch(error){
+    console.warn('H·IOS session restore failed:', error);
+    showLoginScreen();
+  }
+}
+
+/* Keep the UI synchronized if Supabase refreshes or clears the session. */
+db.auth.onAuthStateChange((event, session) => {
+  if(
+    (event === 'SIGNED_IN' ||
+     event === 'TOKEN_REFRESHED' ||
+     event === 'INITIAL_SESSION') &&
+    session?.user
+  ){
+    showApp();
+  }
+
+  if(event === 'SIGNED_OUT'){
+    showLoginScreen();
+  }
+});
+
+/* This is what fixes refresh + returning from G·IOS/T·IOS. */
+restoreExistingSession();
+
 </script>
 </body>
 </html>
