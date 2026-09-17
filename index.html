@@ -457,8 +457,43 @@ function setNotice(message,type){
   notice.className = 'notice ' + type;
 }
 
-/* Deliberately do NOT auto-open the app from an old session.
-   The login pre-page stays visible when this file is freshly opened. */
+/* Direct visits to index.html still show the login pre-page.
+   Internal family navigation can use ?view=home. In that case, H·IOS
+   checks the SAME Supabase session used by T·IOS and opens the default
+   dashboard only when that session is valid. */
+async function handleInternalFamilyReturn(){
+  const params = new URLSearchParams(window.location.search);
+
+  if(params.get('view') !== 'home'){
+    return;
+  }
+
+  try{
+    const { data, error } = await db.auth.getSession();
+
+    if(error){
+      console.warn('H·IOS session check failed:', error);
+      return;
+    }
+
+    if(data?.session?.user){
+      showApp();
+
+      // Clean the URL after opening the home dashboard.
+      if(window.history && window.history.replaceState){
+        window.history.replaceState({}, '', 'index.html');
+      }
+      return;
+    }
+
+    setNotice('Your session has expired. Sign in again to continue to H·IOS.', 'info');
+
+  }catch(err){
+    console.warn('H·IOS internal return check failed:', err);
+  }
+}
+
+handleInternalFamilyReturn();
 </script>
 </body>
 </html>
