@@ -509,7 +509,7 @@ async function init(){
   try{
     const {data,error} = await db.auth.getSession();
     if(error || !data?.session?.user){
-      window.location.replace("index.html");
+      window.location.replace("/src/app/index.html");
       return;
     }
     currentUser = data.session.user;
@@ -518,7 +518,7 @@ async function init(){
     renderAll();
   }catch(err){
     console.error(err);
-    window.location.replace("index.html");
+    window.location.replace("/src/app/index.html");
   }
 }
 
@@ -761,11 +761,13 @@ function deleteGoal(id){
   saveGoals(); renderAll();
 }
 
-function returnToHIOS(){ window.location.href="index.html?view=home"; }
+function returnToHIOS(){
+  window.location.href = '/src/app/index.html?view=home';
+}
 
 async function signOut(){
   try{await db.auth.signOut();}catch(e){}
-  window.location.replace("index.html");
+  window.location.replace("/src/app/index.html");
 }
 
 function goTo(id){ document.getElementById(id)?.scrollIntoView({behavior:"smooth",block:"start"}); }
