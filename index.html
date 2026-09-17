@@ -1,250 +1,243 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>H·IOS Family</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #08111f;
-      --panel: #0f1b2d;
-      --text: #f4f7fb;
-      --muted: #9fb0c5;
-      --accent: #37d5c7;
-      --border: rgba(255,255,255,.08);
-    }
-    body {
-      min-height: 100vh;
-      font-family: Arial, Helvetica, sans-serif;
-      background:
-        radial-gradient(circle at top right, rgba(55,213,199,.12), transparent 32%),
-        radial-gradient(circle at bottom left, rgba(79,140,255,.10), transparent 28%),
-        var(--bg);
-      color: var(--text);
-    }
-    header {
-      max-width: 1200px;
-      margin: auto;
-      padding: 28px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-    }
-    .brand { display: flex; align-items: center; gap: 12px; }
-    .logo {
-      width: 44px; height: 44px; border-radius: 14px;
-      display: grid; place-items: center; font-weight: 800;
-      background: linear-gradient(135deg, var(--accent), #6ea8ff);
-      color: #06101d;
-    }
-    .brand h1 { font-size: 20px; letter-spacing: .4px; }
-    .brand small { color: var(--muted); display: block; margin-top: 3px; font-size: 12px; }
-    nav a {
-      color: var(--muted); text-decoration: none;
-      margin-left: 20px; font-size: 14px;
-    }
-    nav a:hover { color: var(--text); }
-    .hero {
-      max-width: 1200px; margin: 0 auto;
-      padding: 70px 24px 42px;
-    }
-    .eyebrow {
-      color: var(--accent); font-weight: 700;
-      letter-spacing: 1.4px; font-size: 12px;
-      margin-bottom: 14px;
-    }
-    .hero h2 {
-      max-width: 850px;
-      font-size: clamp(38px, 6vw, 72px);
-      line-height: 1.02;
-      margin-bottom: 20px;
-    }
-    .hero p {
-      max-width: 760px;
-      color: var(--muted);
-      font-size: 17px;
-      line-height: 1.7;
-    }
-    .products {
-      max-width: 1200px; margin: auto;
-      padding: 25px 24px 80px;
-    }
-    .section-title { margin-bottom: 22px; }
-    .section-title h3 { font-size: 25px; }
-    .section-title p { color: var(--muted); font-size: 14px; margin-top: 6px; }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 18px;
-    }
-    .card {
-      min-height: 260px;
-      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      padding: 26px;
-      position: relative;
-      overflow: hidden;
-      transition: .25s ease;
-    }
-    .card:hover { transform: translateY(-4px); border-color: rgba(55,213,199,.34); }
-    .card::after {
-      content: ""; position: absolute;
-      width: 160px; height: 160px;
-      right: -70px; top: -70px;
-      border-radius: 50%;
-      background: rgba(55,213,199,.08);
-    }
-    .tag {
-      display: inline-block;
-      font-size: 11px; font-weight: 700;
-      padding: 7px 10px;
-      border-radius: 999px;
-      color: var(--accent);
-      background: rgba(55,213,199,.09);
-      margin-bottom: 22px;
-    }
-    .card h4 { font-size: 28px; margin-bottom: 10px; }
-    .card p {
-      color: var(--muted);
-      line-height: 1.65;
-      max-width: 520px;
-      margin-bottom: 28px;
-    }
-    .button {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      text-decoration: none;
-      color: #06101d;
-      background: var(--accent);
-      padding: 11px 15px;
-      border-radius: 11px;
-      font-size: 14px;
-      font-weight: 800;
-    }
-    .button.secondary {
-      background: rgba(255,255,255,.07);
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-    .coming { opacity: .65; }
-    .coming .tag { color: #aab8c8; background: rgba(255,255,255,.06); }
-    .system-note {
-      max-width: 1200px;
-      margin: 0 auto 60px;
-      padding: 0 24px;
-    }
-    .note {
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.025);
-      border-radius: 18px;
-      padding: 22px;
-      color: var(--muted);
-      line-height: 1.65;
-    }
-    .note strong { color: var(--text); }
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 25px 24px;
-      text-align: center;
-      color: #7f91a8;
-      font-size: 13px;
-    }
-    @media (max-width: 760px) {
-      nav { display: none; }
-      .hero { padding-top: 42px; }
-      .grid { grid-template-columns: 1fr; }
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>H·IOS</title>
+<style>
+:root{
+  --bg:#07090d; --panel:#10131a; --panel2:#151922; --text:#f5f7fb;
+  --muted:#8f98aa; --line:#232936; --accent:#6ea8ff; --accent2:#8b5cf6;
+  --good:#36d399; --warn:#fbbf24; --danger:#fb7185;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; min-height:100vh; background:
+  radial-gradient(circle at 15% 10%, rgba(110,168,255,.12), transparent 26%),
+  radial-gradient(circle at 85% 0%, rgba(139,92,246,.12), transparent 25%),
+  var(--bg);
+  color:var(--text); font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+}
+button,input{font:inherit}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.sidebar{
+  border-right:1px solid var(--line);padding:24px 18px;position:sticky;top:0;height:100vh;
+  background:rgba(7,9,13,.86);backdrop-filter:blur(18px)
+}
+.brand{display:flex;align-items:center;gap:12px;margin:2px 6px 28px}
+.logo{
+  width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-weight:800;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;box-shadow:0 10px 30px rgba(110,168,255,.2)
+}
+.brand h1{font-size:18px;margin:0;letter-spacing:.04em}.brand small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.nav{display:grid;gap:7px}.nav button{
+  border:0;color:var(--muted);background:transparent;text-align:left;padding:11px 12px;border-radius:10px;cursor:pointer
+}
+.nav button:hover,.nav button.active{background:var(--panel2);color:var(--text)}
+.side-foot{position:absolute;left:18px;right:18px;bottom:20px;color:var(--muted);font-size:12px}
+.main{padding:28px 30px 46px;max-width:1500px;width:100%;margin:0 auto}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:26px}
+.hello h2{margin:0;font-size:26px}.hello p{margin:6px 0 0;color:var(--muted)}
+.actions{display:flex;gap:10px}.chip,.primary{
+  border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:12px;padding:10px 14px;cursor:pointer
+}
+.primary{border:0;background:linear-gradient(135deg,var(--accent),var(--accent2));font-weight:700}
+.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}
+.card{background:linear-gradient(180deg,rgba(21,25,34,.96),rgba(16,19,26,.96));border:1px solid var(--line);border-radius:18px;padding:20px}
+.card h3{margin:0 0 6px;font-size:15px}.sub{color:var(--muted);font-size:13px}
+.focus-list{display:grid;gap:11px;margin-top:18px}
+.focus-item{
+  display:grid;grid-template-columns:34px 1fr auto;gap:12px;align-items:center;padding:13px 14px;border-radius:13px;background:#0c0f15;border:1px solid #1c2230
+}
+.rank{width:30px;height:30px;border-radius:9px;background:#161c28;display:grid;place-items:center;color:var(--accent);font-weight:800}
+.focus-item b{display:block;font-size:14px}.focus-item small{color:var(--muted)}
+.tag{font-size:11px;padding:6px 8px;border-radius:999px;background:#151c29;color:#b8c8e8;border:1px solid #283247}
+.alert{
+  margin-top:16px;padding:14px;border-radius:13px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.22)
+}
+.alert strong{display:block;margin-bottom:4px}.alert span{color:#d5c48b;font-size:13px}
+.goal-row{margin-top:15px}.goal-head{display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px}
+.bar{height:9px;background:#0b0e13;border-radius:999px;overflow:hidden}.bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.insight{margin-top:14px;padding:14px;border-radius:13px;background:#0c0f15;border:1px solid #1c2230}
+.insight b{font-size:13px}.insight p{font-size:13px;color:var(--muted);line-height:1.5;margin:7px 0 0}
+.section-title{display:flex;align-items:end;justify-content:space-between;margin:26px 0 13px}
+.section-title h3{margin:0;font-size:17px}.section-title span{color:var(--muted);font-size:12px}
+.products{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.product{
+  border:1px solid var(--line);background:var(--panel);border-radius:16px;padding:17px;cursor:pointer;transition:.18s ease
+}
+.product:hover{transform:translateY(-2px);border-color:#33405a}
+.picon{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:900;margin-bottom:15px;background:#171d28}
+.product h4{margin:0 0 5px}.product p{margin:0;color:var(--muted);font-size:12px;line-height:1.45}
+.product .status{display:inline-block;margin-top:14px;font-size:11px;color:var(--good)}
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+.q{padding:14px;border-radius:14px;background:#0c0f15;border:1px solid #1c2230}
+.q small{color:var(--muted)}.q b{display:block;font-size:20px;margin-top:5px}
+.modal{
+  position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;place-items:center;padding:20px;z-index:20
+}
+.modal.show{display:grid}.modal-box{max-width:520px;width:100%;background:#12161e;border:1px solid var(--line);border-radius:18px;padding:22px}
+.modal-box h3{margin-top:0}.modal-box p{color:var(--muted);line-height:1.55}.modal-box .row{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+@media(max-width:950px){
+  .app{grid-template-columns:1fr}.sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}
+  .nav{grid-template-columns:repeat(4,1fr)}.side-foot{display:none}.main{padding:20px}.grid{grid-template-columns:1fr}.products{grid-template-columns:1fr}
+}
+@media(max-width:620px){
+  .topbar{align-items:flex-start;flex-direction:column}.nav{grid-template-columns:repeat(2,1fr)}.quick{grid-template-columns:repeat(2,1fr)}
+  .focus-item{grid-template-columns:32px 1fr}.tag{grid-column:2;justify-self:start}.main{padding:16px}.card{padding:16px}
+}
+</style>
 </head>
 <body>
-  <header>
+<div class="app">
+  <aside class="sidebar">
     <div class="brand">
       <div class="logo">H</div>
-      <div>
-        <h1>H·IOS</h1>
-        <small>Human Intelligence Operating Systems</small>
+      <div><h1>H·IOS</h1><small>Human Intelligence Operating System</small></div>
+    </div>
+    <nav class="nav">
+      <button class="active">Home</button>
+      <button onclick="openProduct('G·IOS','Goals Intelligence Operating System')">G·IOS</button>
+      <button onclick="openProduct('T·IOS','Trading Intelligence Operating System')">T·IOS</button>
+      <button onclick="openProduct('S·IOS','Student Intelligence Operating System')">S·IOS</button>
+    </nav>
+    <div class="side-foot">H·IOS family interface · prototype</div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="hello">
+        <h2>Good afternoon</h2>
+        <p>Your intelligence ecosystem is prioritizing what matters now.</p>
+      </div>
+      <div class="actions">
+        <button class="chip" onclick="showModal()">Why these priorities?</button>
+        <button class="primary" onclick="openProduct('G·IOS','Goals Intelligence Operating System')">Open G·IOS</button>
       </div>
     </div>
-    <nav>
-      <a href="#products">Products</a>
-      <a href="#about">About</a>
-    </nav>
-  </header>
 
-  <main>
-    <section class="hero">
-      <div class="eyebrow">H·IOS PRODUCT FAMILY</div>
-      <h2>One intelligence family. Different areas of human development.</h2>
-      <p>
-        H·IOS is the parent environment for specialized personal intelligence systems.
-        Each product focuses on a different domain while sharing the same goal:
-        turning personal data, behaviour, outcomes and reflection into useful personal intelligence.
-      </p>
-    </section>
-
-    <section class="products" id="products">
-      <div class="section-title">
-        <h3>Choose a system</h3>
-        <p>Access the H·IOS product built for the area you want to develop.</p>
+    <section class="grid">
+      <div class="card">
+        <h3>Today's Focus</h3>
+        <div class="sub">G·IOS dynamically ranked from connected intelligence.</div>
+        <div class="focus-list">
+          <div class="focus-item">
+            <div class="rank">1</div>
+            <div><b>Complete engineering assignment</b><small>S·IOS · due tomorrow · 62% complete</small></div>
+            <span class="tag">Very high</span>
+          </div>
+          <div class="focus-item">
+            <div class="rank">2</div>
+            <div><b>Study Test 2 scope</b><small>S·IOS · assessment in 3 days · behind plan</small></div>
+            <span class="tag">High</span>
+          </div>
+          <div class="focus-item">
+            <div class="rank">3</div>
+            <div><b>Review trading execution</b><small>T·IOS · execution quality below target</small></div>
+            <span class="tag">Moderate</span>
+          </div>
+          <div class="focus-item">
+            <div class="rank">4</div>
+            <div><b>Continue trading sample</b><small>T·IOS · active milestone · no immediate deadline</small></div>
+            <span class="tag">Maintain</span>
+          </div>
+        </div>
+        <div class="alert">
+          <strong>Priority alert</strong>
+          <span>Your academic workload increased today. G·IOS recommends protecting your first two focus blocks for study before returning to trading work.</span>
+        </div>
       </div>
 
-      <div class="grid">
-        <article class="card">
-          <span class="tag">TRADING</span>
-          <h4>T·IOS</h4>
-          <p>
-            Trader Intelligence Operating System. Track trading behaviour, execution,
-            psychology, strategy, performance and long-term development.
-          </p>
-          <a class="button" href="t-ios.html">Open T·IOS →</a>
-        </article>
-
-        <article class="card">
-          <span class="tag">EDUCATION</span>
-          <h4>S·IOS</h4>
-          <p>
-            Student Personal Intelligence Operating System. Understand study behaviour,
-            learning methods, knowledge mastery, focus, assessments and academic development.
-          </p>
-          <a class="button" href="s-ios.html">Open S·IOS →</a>
-        </article>
-
-        <article class="card coming">
-          <span class="tag">FUTURE PRODUCT</span>
-          <h4>Next IOS</h4>
-          <p>
-            Future H·IOS products can extend the same Personal Intelligence architecture
-            into other areas of human performance and development.
-          </p>
-          <a class="button secondary" href="#" onclick="return false;">Coming later</a>
-        </article>
-
-        <article class="card coming">
-          <span class="tag">H·IOS CORE</span>
-          <h4>Personal Intelligence</h4>
-          <p>
-            A future shared layer connecting permitted insights across H·IOS products,
-            while keeping domain data controlled and separated where necessary.
-          </p>
-          <a class="button secondary" href="#" onclick="return false;">Future layer</a>
-        </article>
+      <div class="card">
+        <h3>Goal Status</h3>
+        <div class="sub">Progress across connected domains.</div>
+        <div class="goal-row">
+          <div class="goal-head"><span>Engineering</span><b>72%</b></div>
+          <div class="bar"><span style="width:72%"></span></div>
+        </div>
+        <div class="goal-row">
+          <div class="goal-head"><span>Trading</span><b>61%</b></div>
+          <div class="bar"><span style="width:61%"></span></div>
+        </div>
+        <div class="goal-row">
+          <div class="goal-head"><span>Fitness</span><b>88%</b></div>
+          <div class="bar"><span style="width:88%"></span></div>
+        </div>
+        <div class="insight">
+          <b>Cross-intelligence insight</b>
+          <p>Your study deadlines are temporarily more urgent than your current trading milestone. No change to the long-term trading goal is recommended; only today's attention allocation has changed.</p>
+        </div>
       </div>
     </section>
 
-    <section class="system-note" id="about">
-      <div class="note">
-        <strong>Current concept:</strong>
-        T·IOS and S·IOS remain separate specialized products, while H·IOS acts as the family
-        and shared intelligence architecture above them. We can later add login, user profiles,
-        real product routing, subscription status and cross-product intelligence.
+    <div class="section-title">
+      <h3>Your ·IOS</h3>
+      <span>Specialized intelligence connected through H·IOS</span>
+    </div>
+
+    <section class="products">
+      <div class="product" onclick="openProduct('G·IOS','Goals Intelligence Operating System')">
+        <div class="picon">G</div>
+        <h4>G·IOS</h4>
+        <p>Dynamic goals, priorities, milestones, adaptive planning and cross-domain progress intelligence.</p>
+        <span class="status">Free · Active</span>
       </div>
+      <div class="product" onclick="openProduct('T·IOS','Trading Intelligence Operating System')">
+        <div class="picon">T</div>
+        <h4>T·IOS</h4>
+        <p>Trading performance, execution, psychology, edge tracking and phase-based development.</p>
+        <span class="status">Connected</span>
+      </div>
+      <div class="product" onclick="openProduct('S·IOS','Student Intelligence Operating System')">
+        <div class="picon">S</div>
+        <h4>S·IOS</h4>
+        <p>Study planning, assessment tracking, learning progress and academic intelligence.</p>
+        <span class="status">Connected</span>
+      </div>
+    </section>
+
+    <div class="section-title">
+      <h3>Intelligence Overview</h3>
+      <span>Live signals feeding your H·IOS context</span>
+    </div>
+    <section class="quick">
+      <div class="q"><small>Active goals</small><b>7</b></div>
+      <div class="q"><small>High-priority items</small><b>2</b></div>
+      <div class="q"><small>Connected ·IOS</small><b>3</b></div>
+      <div class="q"><small>On-track goals</small><b>5</b></div>
     </section>
   </main>
+</div>
 
-  <footer>H·IOS — Human Intelligence Operating Systems</footer>
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <h3 id="modalTitle">How H·IOS chose today's priorities</h3>
+    <p id="modalText">
+      G·IOS evaluates deadlines, goal importance, progress, consequences, dependencies and signals from connected products.
+      It can recommend changes to attention, but major goal changes should remain under user control.
+    </p>
+    <div class="row">
+      <button class="chip" onclick="hideModal()">Close</button>
+      <button class="primary" onclick="hideModal()">Accept priorities</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function showModal(){
+  document.getElementById('modalTitle').textContent='How H·IOS chose today\\'s priorities';
+  document.getElementById('modalText').textContent='G·IOS evaluates deadlines, goal importance, progress, consequences, dependencies and signals from connected products. It can recommend changes to attention, but major goal changes should remain under user control.';
+  document.getElementById('modal').classList.add('show');
+}
+function hideModal(){ document.getElementById('modal').classList.remove('show'); }
+function openProduct(name, description){
+  document.getElementById('modalTitle').textContent=name;
+  document.getElementById('modalText').textContent=description + '. This prototype currently demonstrates the H·IOS default page and product-family navigation.';
+  document.getElementById('modal').classList.add('show');
+}
+document.getElementById('modal').addEventListener('click', e => {
+  if(e.target.id === 'modal') hideModal();
+});
+</script>
 </body>
 </html>
