@@ -70,9 +70,13 @@ button,input{font:inherit}
 .picon{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:900;margin-bottom:15px;background:#171d28}
 .product h4{margin:0 0 5px}.product p{margin:0;color:var(--muted);font-size:12px;line-height:1.45}
 .product .status{display:inline-block;margin-top:14px;font-size:11px;color:var(--good)}
-.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
-.q{padding:14px;border-radius:14px;background:#0c0f15;border:1px solid #1c2230}
-.q small{color:var(--muted)}.q b{display:block;font-size:20px;margin-top:5px}
+.overview-strip{margin:-4px 0 18px}
+.overview-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.overview-head h3{margin:0;font-size:14px}
+.overview-head span{color:var(--muted);font-size:11px}
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0}
+.q{min-height:56px;padding:9px 12px;border-radius:11px;background:#0c0f15;border:1px solid #1c2230;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.q small{color:var(--muted);font-size:11.5px}.q b{display:block;font-size:17px;margin:0}
 .modal{
   position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;place-items:center;padding:20px;z-index:20
 }
@@ -115,6 +119,19 @@ button,input{font:inherit}
         <button class="primary" onclick="openProduct('G·IOS','Goals Intelligence Operating System')">Open G·IOS</button>
       </div>
     </div>
+
+    <section class="overview-strip">
+      <div class="overview-head">
+        <h3>Intelligence Overview</h3>
+        <span>Live H·IOS signals</span>
+      </div>
+      <div class="quick">
+        <div class="q"><small>Active goals</small><b>7</b></div>
+        <div class="q"><small>High priority</small><b>2</b></div>
+        <div class="q"><small>Connected ·IOS</small><b>3</b></div>
+        <div class="q"><small>On track</small><b>5</b></div>
+      </div>
+    </section>
 
     <section class="grid">
       <div class="card">
@@ -196,16 +213,6 @@ button,input{font:inherit}
       </div>
     </section>
 
-    <div class="section-title">
-      <h3>Intelligence Overview</h3>
-      <span>Live signals feeding your H·IOS context</span>
-    </div>
-    <section class="quick">
-      <div class="q"><small>Active goals</small><b>7</b></div>
-      <div class="q"><small>High-priority items</small><b>2</b></div>
-      <div class="q"><small>Connected ·IOS</small><b>3</b></div>
-      <div class="q"><small>On-track goals</small><b>5</b></div>
-    </section>
   </main>
 </div>
 
