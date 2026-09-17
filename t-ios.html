@@ -6251,6 +6251,11 @@ let editingTradeId = null;
 let journalPage = 1;
 const JOURNAL_PAGE_SIZE = 25;
 
+// Preserve unsaved R-configuration inputs while MT5 realtime heartbeats
+// refresh account data in the background.
+let rConfigDraftDirty = false;
+let rConfigDraftAccountId = null;
+
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 
@@ -6474,6 +6479,8 @@ async function initializeSupabase(){
   db.auth.onAuthStateChange(async (event)=>{
     if(event === 'SIGNED_OUT'){
       currentUser = null;
+      rConfigDraftDirty=false;
+      rConfigDraftAccountId=null;
 
       if(mt5RealtimeChannel && db){
         db.removeChannel(mt5RealtimeChannel);
@@ -7172,6 +7179,8 @@ async function switchTradingAccount(accountId){
   if(!next || next.id===tradingAccount?.id) return;
 
   tradingAccount=next;
+  rConfigDraftDirty=false;
+  rConfigDraftAccountId=next.id;
 
   localStorage.setItem(
     `te_active_account_${currentUser.id}`,
@@ -7448,8 +7457,26 @@ function updateRConfigFields(){
   $('#rConfigNote').textContent=notes[basis] || notes.planned_cash;
 }
 
-function renderRConfigSettings(){
+function markRConfigDraftDirty(){
+  if(!tradingAccount) return;
+  rConfigDraftDirty=true;
+  rConfigDraftAccountId=tradingAccount.id;
+}
+
+function renderRConfigSettings({force=false}={}){
   if(!tradingAccount || !$('#defaultRBasis')) return;
+
+  // MT5 updates the active trading_accounts row every few seconds. Those
+  // realtime updates call renderSettings(). Never overwrite values the trader
+  // is currently typing with the last saved database/local configuration.
+  if(
+    !force &&
+    rConfigDraftDirty &&
+    rConfigDraftAccountId===tradingAccount.id
+  ){
+    updateRConfigFields();
+    return;
+  }
 
   const config=getAccountRConfig();
   $('#defaultRBasis').value=config.basis;
@@ -7458,6 +7485,9 @@ function renderRConfigSettings(){
   $('#defaultRiskPercentMin').value=config.riskPercentMin>0 ? config.riskPercentMin : '';
   $('#defaultRiskPercentMax').value=config.riskPercentMax>0 ? config.riskPercentMax : '';
   $('#fixedRiskUnit').value=config.fixedRiskUnit>0 ? config.fixedRiskUnit : '';
+
+  rConfigDraftDirty=false;
+  rConfigDraftAccountId=tradingAccount.id;
   updateRConfigFields();
 }
 
@@ -7509,6 +7539,8 @@ async function saveRConfiguration(){
 
   // Keep a local fallback so risk ranges work before/without the optional migration.
   saveAccountRConfigLocal(config);
+  rConfigDraftDirty=false;
+  rConfigDraftAccountId=tradingAccount.id;
 
   if(accountHasPersistentRConfig()){
     const updatePayload={
@@ -7537,7 +7569,7 @@ async function saveRConfiguration(){
     if(error){
       console.error(error);
       showStatus('R range saved locally; Supabase persistence failed',4000);
-      renderRConfigSettings();
+      renderRConfigSettings({force:true});
       return;
     }
 
@@ -7546,7 +7578,7 @@ async function saveRConfiguration(){
     if(idx>=0) tradingAccounts[idx]=data;
   }
 
-  renderRConfigSettings();
+  renderRConfigSettings({force:true});
   showStatus(
     accountSupportsRiskRangeColumns()
       ? 'R risk range saved to T·IOS'
@@ -7685,7 +7717,20 @@ function renderSettings(){
       : '—';
 }
 
-$('#defaultRBasis').addEventListener('change',updateRConfigFields);
+$('#defaultRBasis').addEventListener('change',()=>{
+  markRConfigDraftDirty();
+  updateRConfigFields();
+});
+
+[
+  'defaultCashRiskMin',
+  'defaultCashRiskMax',
+  'defaultRiskPercentMin',
+  'defaultRiskPercentMax',
+  'fixedRiskUnit'
+].forEach(id=>{
+  $(`#${id}`).addEventListener('input',markRConfigDraftDirty);
+});
 
 $('#saveRConfigBtn').addEventListener('click',saveRConfiguration);
 
