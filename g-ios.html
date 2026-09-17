@@ -124,6 +124,58 @@ button{cursor:pointer}
   color:var(--text);
 }
 
+
+/* ================= SINGLE-FILE PAGE ROUTING ================= */
+.page{display:none}
+.page.active{display:block}
+.page-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:20px;
+  margin-bottom:18px;
+}
+.page-head h2{
+  margin:0;
+  font-size:28px;
+  letter-spacing:-.02em;
+}
+.page-head p{
+  margin:6px 0 0;
+  color:var(--muted);
+  font-size:13px;
+}
+.page-kicker{
+  color:#9cbdf0;
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.09em;
+  margin-bottom:6px;
+}
+.page-intro-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+  margin-top:18px;
+}
+.quick-link{
+  border:1px solid var(--line);
+  background:var(--panel);
+  border-radius:16px;
+  padding:16px;
+}
+.quick-link h4{margin:0 0 6px;font-size:14px}
+.quick-link p{margin:0;color:var(--muted);font-size:11px;line-height:1.5}
+.quick-link button{margin-top:12px}
+.review-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:18px;
+}
+@media(max-width:900px){
+  .page-intro-grid,.review-grid{grid-template-columns:1fr}
+}
+
 /* ================= MAIN ================= */
 .main{
   width:100%;
@@ -637,12 +689,12 @@ textarea{
     </div>
 
     <nav class="nav">
-      <button class="active">Overview</button>
-      <button onclick="scrollToId('planningSection')">Goal System</button>
-      <button onclick="scrollToId('goalsSection')">Goals</button>
-      <button onclick="scrollToId('focusSection')">Priorities</button>
-      <button onclick="scrollToId('milestonesSection')">Milestones</button>
-      <button onclick="showToast('Goal reviews will be added in the next G·IOS build.')">Reviews</button>
+      <button class="active" data-page="overview">Overview</button>
+      <button data-page="goal-system">Goal System</button>
+      <button data-page="goals">Goals</button>
+      <button data-page="priorities">Priorities</button>
+      <button data-page="milestones">Milestones</button>
+      <button data-page="reviews">Reviews</button>
     </nav>
 
     <div class="sidebar-note">
@@ -652,141 +704,80 @@ textarea{
 
   <main class="main">
 
-    <header class="topbar">
-      <div>
-        <h2>Goal Intelligence Dashboard</h2>
-        <p>Yearly → Monthly → Weekly → Daily goals, translated into current priorities.</p>
+    <!-- =====================================================
+         OVERVIEW PAGE
+    ====================================================== -->
+    <section class="page active" id="page-overview">
+      <header class="page-head">
+        <div>
+          <div class="page-kicker">Overview</div>
+          <h2>Goal Intelligence Dashboard</h2>
+          <p>See the current state of your goal system without placing the whole application on one screen.</p>
+        </div>
+
+        <div class="actions">
+          <button class="btn" onclick="navigate('priorities')">View priorities</button>
+          <button class="btn primary" onclick="openGoalModal()">+ Add Goal</button>
+        </div>
+      </header>
+
+      <div class="section-head">
+        <h3>Intelligence Overview</h3>
+        <span>Your current goal state</span>
       </div>
 
-      <div class="actions">
-        <button class="btn" onclick="showToast('G·IOS currently ranks goals using priority, time horizon, progress and deadline.')">Why this order?</button>
-        <button class="btn primary" onclick="openGoalModal()">+ Add Goal</button>
-      </div>
-    </header>
+      <section class="metrics">
+        <div class="metric">
+          <small>Active goals</small>
+          <b id="mActive">0</b>
+          <em>All time horizons</em>
+        </div>
+        <div class="metric">
+          <small>High priority</small>
+          <b id="mHigh">0</b>
+          <em>Need attention</em>
+        </div>
+        <div class="metric">
+          <small>On track</small>
+          <b id="mTrack">0</b>
+          <em>Progress ≥ 50%</em>
+        </div>
+        <div class="metric">
+          <small>At risk</small>
+          <b id="mRisk">0</b>
+          <em>High priority + low progress</em>
+        </div>
+      </section>
 
-    <div class="section-head">
-      <h3>Intelligence Overview</h3>
-      <span>Your current goal state</span>
-    </div>
+      <div class="page-intro-grid">
+        <div class="quick-link">
+          <h4>Goal System</h4>
+          <p>Work with the Yearly → Monthly → Weekly → Daily structure and inspect the hierarchy of a selected goal.</p>
+          <button class="btn" onclick="navigate('goal-system')">Open Goal System</button>
+        </div>
 
-    <section class="metrics">
-      <div class="metric">
-        <small>Active goals</small>
-        <b id="mActive">0</b>
-        <em>All time horizons</em>
-      </div>
-      <div class="metric">
-        <small>High priority</small>
-        <b id="mHigh">0</b>
-        <em>Need attention</em>
-      </div>
-      <div class="metric">
-        <small>On track</small>
-        <b id="mTrack">0</b>
-        <em>Progress ≥ 50%</em>
-      </div>
-      <div class="metric">
-        <small>At risk</small>
-        <b id="mRisk">0</b>
-        <em>High priority + low progress</em>
-      </div>
-    </section>
+        <div class="quick-link">
+          <h4>Current Priorities</h4>
+          <p>Open the dedicated priorities page to see what G·IOS currently considers most important.</p>
+          <button class="btn" onclick="navigate('priorities')">Open Priorities</button>
+        </div>
 
-    <section class="grid">
+        <div class="quick-link">
+          <h4>Goals</h4>
+          <p>Create, inspect and update goals without mixing them into the overview dashboard.</p>
+          <button class="btn" onclick="navigate('goals')">Open Goals</button>
+        </div>
 
-      <div class="card" id="focusSection">
-        <h3>Today's Dynamic Priorities</h3>
-        <div class="sub">G·IOS highlights what deserves attention now.</div>
-
-        <div class="focus-list" id="focusList"></div>
-
-        <div class="intel">
-          <strong>Priority Intelligence</strong>
-          <p id="priorityInsight">
-            G·IOS will later combine goal data with live signals from T·IOS, S·IOS and future H·IOS products.
-          </p>
+        <div class="quick-link">
+          <h4>Milestones & Reviews</h4>
+          <p>Track upcoming milestones separately, then use Reviews for structured reflection.</p>
+          <button class="btn" onclick="navigate('milestones')">Open Milestones</button>
         </div>
       </div>
 
-      <div class="card">
-        <h3>Selected Goal Ladder</h3>
-        <div class="sub">Select any goal below to view its hierarchy.</div>
-
-        <div class="ladder">
-          <div class="level">
-            <span>Yearly goal</span>
-            <b id="ladderYear">Choose a goal below</b>
-          </div>
-          <div class="level">
-            <span>Monthly milestone</span>
-            <b id="ladderMonth">—</b>
-          </div>
-          <div class="level">
-            <span>Weekly target</span>
-            <b id="ladderWeek">—</b>
-          </div>
-          <div class="level">
-            <span>Daily action</span>
-            <b id="ladderDay">—</b>
-          </div>
-        </div>
-      </div>
-
-    </section>
-
-    <div class="section-head" id="planningSection" style="margin-top:25px">
-      <h3>Systematic Goal Planning</h3>
-      <span>Build from long-term direction down to today's action</span>
-    </div>
-
-    <section class="plan-grid">
-      <div class="plan-card">
-        <div class="kicker">Yearly</div>
-        <h4>Direction</h4>
-        <p>Defines the major outcome you want to achieve this year.</p>
-        <div class="count" id="yearCount">0 yearly goals</div>
-      </div>
-
-      <div class="plan-card">
-        <div class="kicker">Monthly</div>
-        <h4>Milestones</h4>
-        <p>Breaks yearly goals into measurable monthly progress.</p>
-        <div class="count" id="monthCount">0 monthly goals</div>
-      </div>
-
-      <div class="plan-card">
-        <div class="kicker">Weekly</div>
-        <h4>Execution Targets</h4>
-        <p>Defines what must be completed this week to stay on track.</p>
-        <div class="count" id="weekCount">0 weekly goals</div>
-      </div>
-
-      <div class="plan-card">
-        <div class="kicker">Daily</div>
-        <h4>Immediate Action</h4>
-        <p>Converts your goals into concrete actions that can be executed today.</p>
-        <div class="count" id="dayCount">0 daily goals</div>
-      </div>
-    </section>
-
-    <div class="section-head" id="goalsSection" style="margin-top:25px">
-      <h3>Goals</h3>
-      <span>Click a goal to view its Yearly → Monthly → Weekly → Daily ladder</span>
-    </div>
-
-    <section class="goal-grid" id="goalGrid"></section>
-
-    <section class="bottom-grid" id="milestonesSection">
-
-      <div class="card">
-        <h3>Upcoming Milestones</h3>
-        <div class="sub">What is approaching next.</div>
-        <div class="list" id="milestoneList"></div>
-      </div>
-
-      <div class="card">
+      <section class="card" style="margin-top:18px">
         <h3>Future Cross-Intelligence Inputs</h3>
-        <div class="sub">These will be connected after the standalone G·IOS page is stable.</div>
+        <div class="sub">These can be connected after the standalone G·IOS structure is stable.</div>
 
         <div class="list">
           <div class="list-item">
@@ -813,8 +804,190 @@ textarea{
             <b>Expandable</b>
           </div>
         </div>
-      </div>
+      </section>
+    </section>
 
+
+    <!-- =====================================================
+         GOAL SYSTEM PAGE
+    ====================================================== -->
+    <section class="page" id="page-goal-system">
+      <header class="page-head">
+        <div>
+          <div class="page-kicker">Goal System</div>
+          <h2>Systematic Goal Planning</h2>
+          <p>Build from long-term direction down to the action that should be executed now.</p>
+        </div>
+
+        <div class="actions">
+          <button class="btn" onclick="navigate('goals')">View all goals</button>
+          <button class="btn primary" onclick="openGoalModal()">+ Add Goal</button>
+        </div>
+      </header>
+
+      <section class="plan-grid">
+        <div class="plan-card">
+          <div class="kicker">Yearly</div>
+          <h4>Direction</h4>
+          <p>Defines the major outcome you want to achieve this year.</p>
+          <div class="count" id="yearCount">0 yearly goals</div>
+        </div>
+
+        <div class="plan-card">
+          <div class="kicker">Monthly</div>
+          <h4>Milestones</h4>
+          <p>Breaks yearly goals into measurable monthly progress.</p>
+          <div class="count" id="monthCount">0 monthly goals</div>
+        </div>
+
+        <div class="plan-card">
+          <div class="kicker">Weekly</div>
+          <h4>Execution Targets</h4>
+          <p>Defines what must be completed this week to stay on track.</p>
+          <div class="count" id="weekCount">0 weekly goals</div>
+        </div>
+
+        <div class="plan-card">
+          <div class="kicker">Daily</div>
+          <h4>Immediate Action</h4>
+          <p>Converts your goals into concrete actions that can be executed today.</p>
+          <div class="count" id="dayCount">0 daily goals</div>
+        </div>
+      </section>
+
+      <section class="card" style="margin-top:18px">
+        <h3>Selected Goal Ladder</h3>
+        <div class="sub">Select a goal from the Goals page to inspect its full hierarchy.</div>
+
+        <div class="ladder">
+          <div class="level">
+            <span>Yearly goal</span>
+            <b id="ladderYear">Choose a goal from the Goals page</b>
+          </div>
+          <div class="level">
+            <span>Monthly milestone</span>
+            <b id="ladderMonth">—</b>
+          </div>
+          <div class="level">
+            <span>Weekly target</span>
+            <b id="ladderWeek">—</b>
+          </div>
+          <div class="level">
+            <span>Daily action</span>
+            <b id="ladderDay">—</b>
+          </div>
+        </div>
+      </section>
+    </section>
+
+
+    <!-- =====================================================
+         GOALS PAGE
+    ====================================================== -->
+    <section class="page" id="page-goals">
+      <header class="page-head">
+        <div>
+          <div class="page-kicker">Goals</div>
+          <h2>Goals</h2>
+          <p>Create and manage goals. Select a goal to open its hierarchy in the Goal System page.</p>
+        </div>
+
+        <div class="actions">
+          <button class="btn primary" onclick="openGoalModal()">+ Add Goal</button>
+        </div>
+      </header>
+
+      <section class="goal-grid" id="goalGrid"></section>
+    </section>
+
+
+    <!-- =====================================================
+         PRIORITIES PAGE
+    ====================================================== -->
+    <section class="page" id="page-priorities">
+      <header class="page-head">
+        <div>
+          <div class="page-kicker">Priorities</div>
+          <h2>Dynamic Priorities</h2>
+          <p>G·IOS ranks active goals using priority, time horizon, progress and deadline.</p>
+        </div>
+
+        <div class="actions">
+          <button class="btn" onclick="showToast('G·IOS currently ranks goals using priority, time horizon, progress and deadline.')">How ranking works</button>
+        </div>
+      </header>
+
+      <section class="card">
+        <h3>Today's Dynamic Priorities</h3>
+        <div class="sub">What deserves attention now.</div>
+
+        <div class="focus-list" id="focusList"></div>
+
+        <div class="intel">
+          <strong>Priority Intelligence</strong>
+          <p id="priorityInsight">
+            G·IOS will identify the strongest current attention signal from your active goals.
+          </p>
+        </div>
+      </section>
+    </section>
+
+
+    <!-- =====================================================
+         MILESTONES PAGE
+    ====================================================== -->
+    <section class="page" id="page-milestones">
+      <header class="page-head">
+        <div>
+          <div class="page-kicker">Milestones</div>
+          <h2>Upcoming Milestones</h2>
+          <p>Keep approaching targets separate from the general goals view.</p>
+        </div>
+
+        <div class="actions">
+          <button class="btn primary" onclick="openGoalModal()">+ Add Goal</button>
+        </div>
+      </header>
+
+      <section class="card">
+        <h3>Upcoming Milestones</h3>
+        <div class="sub">What is approaching next.</div>
+        <div class="list" id="milestoneList"></div>
+      </section>
+    </section>
+
+
+    <!-- =====================================================
+         REVIEWS PAGE
+    ====================================================== -->
+    <section class="page" id="page-reviews">
+      <header class="page-head">
+        <div>
+          <div class="page-kicker">Reviews</div>
+          <h2>Goal Reviews</h2>
+          <p>A dedicated area for reviewing progress without mixing reflection into the other G·IOS pages.</p>
+        </div>
+      </header>
+
+      <div class="review-grid">
+        <section class="card">
+          <h3>Weekly Review</h3>
+          <div class="sub">Review execution, progress, missed actions and the next week's priorities.</div>
+          <div class="intel">
+            <strong>Next build</strong>
+            <p>The review data model can be added here while keeping it inside the same single HTML file.</p>
+          </div>
+        </section>
+
+        <section class="card">
+          <h3>Monthly Review</h3>
+          <div class="sub">Evaluate milestone completion and whether the monthly plan still supports the yearly direction.</div>
+          <div class="intel">
+            <strong>Next build</strong>
+            <p>This page is already separated structurally, so new review tools can be added without crowding the Overview page.</p>
+          </div>
+        </section>
+      </div>
     </section>
 
   </main>
@@ -1273,6 +1446,7 @@ function selectGoal(id){
   ladderWeek.textContent = chain.weekly?.title || "—";
   ladderDay.textContent = chain.daily?.title || "—";
 
+  navigate("goal-system");
   window.scrollTo({
     top:0,
     behavior:"smooth"
@@ -1407,7 +1581,39 @@ function escapeHtml(value){
     .replaceAll("'","&#039;");
 }
 
+
+/* ================= SINGLE-FILE NAVIGATION ================= */
+const GIOS_PAGES = ["overview","goal-system","goals","priorities","milestones","reviews"];
+
+function navigate(page, updateHash = true){
+  if(!GIOS_PAGES.includes(page)) page = "overview";
+
+  document.querySelectorAll(".nav button[data-page]").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.page === page);
+  });
+
+  document.querySelectorAll(".page").forEach(section => {
+    section.classList.toggle("active", section.id === "page-" + page);
+  });
+
+  if(updateHash){
+    history.replaceState(null, "", "#" + page);
+  }
+
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+document.querySelectorAll(".nav button[data-page]").forEach(btn => {
+  btn.addEventListener("click", () => navigate(btn.dataset.page));
+});
+
+window.addEventListener("hashchange", () => {
+  const page = location.hash.replace("#","") || "overview";
+  navigate(page, false);
+});
+
 init();
+navigate(location.hash.replace('#','') || 'overview', false);
 </script>
 
 </body>
