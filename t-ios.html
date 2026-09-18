@@ -592,6 +592,14 @@ input:focus,select:focus,textarea:focus{
   line-height:1.6;
 }
 
+/* Compact default dashboard */
+.dashboard-intelligence .intelligence-hero{padding:16px 18px}
+.dashboard-intelligence .intelligence-kicker{margin-bottom:5px}
+.dashboard-intelligence .intelligence-hero h2{font-size:20px}
+.dashboard-intelligence .personal-intelligence-copy{margin-top:11px;line-height:1.55}
+#page-dashboard .dashboard-layout{gap:12px}
+#page-dashboard .right-side{gap:12px}
+
 /* DASHBOARD */
 .metrics{
   display:grid;
@@ -619,13 +627,13 @@ input:focus,select:focus,textarea:focus{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:16px;
+  padding:12px 14px;
   border-bottom:1px solid var(--line);
 }
 .month-nav{display:flex;align-items:center;gap:10px}
-.month-title{font-size:20px;font-weight:750;min-width:180px;text-align:center}
+.month-title{font-size:18px;font-weight:750;min-width:165px;text-align:center}
 .icon-btn{
-  width:38px;height:38px;
+  width:34px;height:34px;
   border-radius:11px;
   border:1px solid var(--line);
   background:#111823;
@@ -644,16 +652,16 @@ input:focus,select:focus,textarea:focus{
   font-weight:800;
   text-transform:uppercase;
   letter-spacing:.8px;
-  padding:11px;
+  padding:8px;
   border-right:1px solid var(--line);
   border-bottom:1px solid var(--line);
   text-align:center;
 }
 .day{
-  min-height:116px;
+  min-height:98px;
   border-right:1px solid var(--line);
   border-bottom:1px solid var(--line);
-  padding:9px;
+  padding:8px;
   position:relative;
   transition:.15s;
 }
@@ -662,28 +670,28 @@ input:focus,select:focus,textarea:focus{
 .day.empty{background:#090d12}
 .day.today{box-shadow:inset 0 0 0 1px var(--blue)}
 .date-num{font-size:12px;color:#aeb9c8;font-weight:700}
-.day-pnl{font-weight:800;margin-top:14px;font-size:18px}
+.day-pnl{font-weight:800;margin-top:10px;font-size:17px}
 .day-meta{font-size:11px;color:var(--muted);margin-top:5px}
 .tag{
   display:inline-block;
-  margin-top:9px;
-  font-size:10px;
+  margin-top:6px;
+  font-size:9px;
   padding:4px 7px;
   border-radius:999px;
   border:1px solid var(--line);
   color:#bec8d6;
 }
 .week-total{
-  min-height:116px;
+  min-height:98px;
   border-bottom:1px solid var(--line);
-  padding:14px 12px;
+  padding:10px 10px;
   display:flex;
   flex-direction:column;
   justify-content:center;
   background:#0a1017;
 }
 .week-total .label{font-size:11px;color:var(--muted);margin-bottom:8px}
-.week-total .value{font-size:19px;font-weight:800}
+.week-total .value{font-size:17px;font-weight:800}
 
 .right-side{
   display:flex;
@@ -3842,18 +3850,7 @@ textarea{resize:vertical;min-height:90px}
 
     <!-- DASHBOARD -->
     <section class="page active" id="page-dashboard">
-      <header class="page-head">
-        <div>
-          <h1>Dashboard</h1>
-          <p>Personal intelligence, key performance and your trading calendar.</p>
-        </div>
-        <div class="top-actions">
-          <button class="btn" id="exportBtn">Export CSV</button>
-          <button class="btn primary addTradeTrigger">+ Add Trade</button>
-        </div>
-      </header>
-
-      <div class="intelligence-overview" style="margin-bottom:16px">
+<div class="intelligence-overview dashboard-intelligence" style="margin-bottom:12px">
         <section class="panel intelligence-hero">
           <div class="intelligence-hero-top">
             <div>
@@ -3873,7 +3870,7 @@ textarea{resize:vertical;min-height:90px}
           <div class="calendar-head">
             <div>
               <div style="font-size:12px;color:var(--muted)">Trading Calendar</div>
-              <div style="font-size:12px;color:#d7dfeb;margin-top:3px">Click any date to add or review trades</div>
+              <div style="font-size:12px;color:#d7dfeb;margin-top:3px">Click any date to review trades</div>
             </div>
             <div class="month-nav">
               <button class="icon-btn" id="prevMonth">←</button>
