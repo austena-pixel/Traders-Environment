@@ -1479,99 +1479,129 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 
 /* ================= HOVER-TO-FOCUS: HOME SECTIONS B + C =================
    A = Intelligence Calendar, B = Goal Progress, C = Today's Focus.
-   Desktop only: moving the pointer into B or C gives that panel more room,
-   while A and the sibling panel contract slightly. Leaving the right sidebar
-   restores the exact default layout. No click is required.
+   This version uses BOTH :has(:hover) (direct CSS) and JS classes as fallback,
+   so the effect works as soon as the pointer is inside B or C.
 ======================================================================= */
 @media (min-width:951px){
   .home-layout{
-    transition:grid-template-columns .30s cubic-bezier(.2,.78,.25,1), gap .30s ease;
+    transition:grid-template-columns .34s cubic-bezier(.2,.78,.25,1), gap .34s ease;
   }
 
   .calendar-card{
     min-width:0;
     transform-origin:left center;
-    transition:opacity .30s ease, border-color .30s ease;
+    transition:transform .34s cubic-bezier(.2,.78,.25,1), opacity .34s ease, border-color .34s ease;
   }
 
   .home-sidebar{
-    overflow:hidden;
+    min-width:0;
+    overflow:visible !important;
+    transition:width .34s cubic-bezier(.2,.78,.25,1);
   }
 
   .goal-status-card,
   .focus-card{
     min-height:0;
-    transform-origin:right center;
+    transform-origin:center center;
     transition:
-      flex-basis .30s cubic-bezier(.2,.78,.25,1),
-      opacity .30s ease,
-      border-color .30s ease,
-      background .30s ease,
-      box-shadow .30s ease;
+      flex-basis .34s cubic-bezier(.2,.78,.25,1),
+      transform .34s cubic-bezier(.2,.78,.25,1),
+      opacity .34s ease,
+      border-color .34s ease,
+      background .34s ease,
+      box-shadow .34s ease;
+    will-change:transform;
   }
 
-  /* B or C under the pointer => widen the right column a little. */
+  /* ---------------- B: GOAL PROGRESS ---------------- */
   .home-layout.panel-b-hover,
-  .home-layout.panel-c-hover{
-    grid-template-columns:minmax(0,1fr) 420px;
+  .home-layout:has(.goal-status-card:hover){
+    grid-template-columns:minmax(0,1fr) 520px !important;
   }
 
   .home-layout.panel-b-hover .calendar-card,
-  .home-layout.panel-c-hover .calendar-card{
-    opacity:.96;
+  .home-layout:has(.goal-status-card:hover) .calendar-card{
+    transform:scale(.982);
+    opacity:.94;
   }
 
-  /* B — Goal Progress gets more vertical room. */
-  .home-layout.panel-b-hover .goal-status-card{
-    flex:0 0 172px !important;
-    border-color:rgba(116,140,255,.42);
-    background:linear-gradient(180deg,rgba(22,28,43,.995),rgba(14,18,28,.995));
-    box-shadow:inset 0 0 0 1px rgba(124,92,246,.07);
+  .home-layout.panel-b-hover .goal-status-card,
+  .home-layout:has(.goal-status-card:hover) .goal-status-card{
+    flex:0 0 220px !important;
+    transform:scale(1.055);
+    border-color:rgba(116,140,255,.58) !important;
+    background:linear-gradient(180deg,rgba(23,30,47,.998),rgba(14,18,28,.998));
+    box-shadow:0 12px 30px rgba(4,9,20,.28), inset 0 0 0 1px rgba(124,92,246,.10);
+    z-index:4;
   }
 
-  .home-layout.panel-b-hover .focus-card{
+  .home-layout.panel-b-hover .focus-card,
+  .home-layout:has(.goal-status-card:hover) .focus-card{
     flex:1 1 0 !important;
-    opacity:.90;
+    transform:scale(.94);
+    opacity:.82;
   }
 
-  .home-layout.panel-b-hover .goal-status-card .goal-row{
-    margin-top:12px;
+  .home-layout.panel-b-hover .goal-status-card .goal-row,
+  .home-layout:has(.goal-status-card:hover) .goal-status-card .goal-row{
+    margin-top:14px;
   }
-  .home-layout.panel-b-hover .goal-status-card .goal-head{
-    font-size:11px;
+  .home-layout.panel-b-hover .goal-status-card .goal-head,
+  .home-layout:has(.goal-status-card:hover) .goal-status-card .goal-head{
+    font-size:12px;
   }
-  .home-layout.panel-b-hover .goal-status-card .bar{
-    height:8px;
+  .home-layout.panel-b-hover .goal-status-card .bar,
+  .home-layout:has(.goal-status-card:hover) .goal-status-card .bar{
+    height:9px;
   }
 
-  /* C — Today's Focus gets almost all remaining vertical space. */
-  .home-layout.panel-c-hover .goal-status-card{
-    flex:0 0 94px !important;
-    opacity:.88;
+  /* ---------------- C: TODAY'S FOCUS ---------------- */
+  .home-layout.panel-c-hover,
+  .home-layout:has(.focus-card:hover){
+    grid-template-columns:minmax(0,1fr) 520px !important;
+  }
+
+  .home-layout.panel-c-hover .calendar-card,
+  .home-layout:has(.focus-card:hover) .calendar-card{
+    transform:scale(.982);
+    opacity:.94;
+  }
+
+  .home-layout.panel-c-hover .goal-status-card,
+  .home-layout:has(.focus-card:hover) .goal-status-card{
+    flex:0 0 82px !important;
+    transform:scale(.94);
+    opacity:.78;
     overflow:hidden;
   }
 
-  .home-layout.panel-c-hover .focus-card{
+  .home-layout.panel-c-hover .focus-card,
+  .home-layout:has(.focus-card:hover) .focus-card{
     flex:1 1 0 !important;
-    border-color:rgba(116,140,255,.42);
-    background:linear-gradient(180deg,rgba(22,28,43,.995),rgba(14,18,28,.995));
-    box-shadow:inset 0 0 0 1px rgba(124,92,246,.07);
+    transform:scale(1.05);
+    border-color:rgba(116,140,255,.58) !important;
+    background:linear-gradient(180deg,rgba(23,30,47,.998),rgba(14,18,28,.998));
+    box-shadow:0 12px 30px rgba(4,9,20,.28), inset 0 0 0 1px rgba(124,92,246,.10);
+    z-index:4;
   }
 
-  .home-layout.panel-c-hover .focus-card .focus-item{
-    padding:9px 10px;
-  }
-  .home-layout.panel-c-hover .focus-card .focus-item b{
-    font-size:11px;
-  }
-  .home-layout.panel-c-hover .focus-card .focus-item small{
-    font-size:8.5px;
+  .home-layout.panel-c-hover .focus-card .focus-scroll,
+  .home-layout:has(.focus-card:hover) .focus-card .focus-scroll{
+    max-height:none !important;
+    overflow-y:auto;
   }
 
-  /* Keep the focused section obviously interactive without requiring a click. */
-  .goal-status-card:hover,
-  .focus-card:hover{
-    border-color:rgba(116,140,255,.42);
+  .home-layout.panel-c-hover .focus-card .focus-item,
+  .home-layout:has(.focus-card:hover) .focus-card .focus-item{
+    padding:10px 11px;
+  }
+  .home-layout.panel-c-hover .focus-card .focus-item b,
+  .home-layout:has(.focus-card:hover) .focus-card .focus-item b{
+    font-size:11.5px;
+  }
+  .home-layout.panel-c-hover .focus-card .focus-item small,
+  .home-layout:has(.focus-card:hover) .focus-card .focus-item small{
+    font-size:9px;
   }
 }
 
@@ -2698,42 +2728,137 @@ restoreExistingSession();
 
 
 /* =========================================================
-   H·IOS HOME — HOVER-TO-FOCUS PANELS
-   B = Goal Progress, C = Today's Focus.
-   Pointer enters B/C -> that section receives more room.
-   Pointer leaves the right sidebar -> exact default sizing returns.
+   H·IOS HOME — POINTER-FOCUS PANELS
+   A = calendar, B = Goal Progress, C = Today's Focus.
+   The effect is applied directly with inline styles so it cannot be lost to
+   earlier CSS rules. No click is required.
 ========================================================= */
 (function initHiosHomePanelHoverFocus(){
   const layout = document.querySelector('.home-layout');
   const sidebar = layout?.querySelector('.home-sidebar');
+  const calendar = layout?.querySelector('.calendar-card');
   const panelB = sidebar?.querySelector('[data-home-panel="b"]');
   const panelC = sidebar?.querySelector('[data-home-panel="c"]');
-  if(!layout || !sidebar || !panelB || !panelC) return;
+  if(!layout || !sidebar || !calendar || !panelB || !panelC) return;
 
   const DESKTOP_MIN = 951;
+  let active = null;
 
-  function clearHoverFocus(){
-    layout.classList.remove('panel-b-hover','panel-c-hover');
+  function important(el, prop, value){
+    el.style.setProperty(prop, value, 'important');
   }
 
-  function setHoverFocus(which){
-    if(window.innerWidth < DESKTOP_MIN){
-      clearHoverFocus();
-      return;
+  function removeInlineFocusStyles(){
+    [layout, calendar, sidebar, panelB, panelC].forEach(el=>{
+      if(!el) return;
+    });
+
+    layout.style.removeProperty('grid-template-columns');
+    calendar.style.removeProperty('transform');
+    calendar.style.removeProperty('opacity');
+
+    panelB.style.removeProperty('flex');
+    panelB.style.removeProperty('transform');
+    panelB.style.removeProperty('opacity');
+    panelB.style.removeProperty('z-index');
+    panelB.style.removeProperty('border-color');
+    panelB.style.removeProperty('box-shadow');
+
+    panelC.style.removeProperty('flex');
+    panelC.style.removeProperty('transform');
+    panelC.style.removeProperty('opacity');
+    panelC.style.removeProperty('z-index');
+    panelC.style.removeProperty('border-color');
+    panelC.style.removeProperty('box-shadow');
+
+    const focusScroll = panelC.querySelector('.focus-scroll');
+    if(focusScroll){
+      focusScroll.style.removeProperty('max-height');
+      focusScroll.style.removeProperty('overflow-y');
     }
-    layout.classList.toggle('panel-b-hover', which === 'b');
-    layout.classList.toggle('panel-c-hover', which === 'c');
   }
 
-  panelB.addEventListener('pointerenter', ()=>setHoverFocus('b'));
-  panelC.addEventListener('pointerenter', ()=>setHoverFocus('c'));
+  function resetFocus(){
+    active = null;
+    layout.classList.remove('panel-b-hover','panel-c-hover');
+    removeInlineFocusStyles();
+  }
 
-  /* Reset only when the pointer leaves the entire B/C sidebar. This prevents
-     flicker while moving directly from B to C or C to B. */
-  sidebar.addEventListener('pointerleave', clearHoverFocus);
+  function focusB(){
+    if(window.innerWidth < DESKTOP_MIN){ resetFocus(); return; }
+    active = 'b';
+    layout.classList.add('panel-b-hover');
+    layout.classList.remove('panel-c-hover');
+
+    important(layout, 'grid-template-columns', 'minmax(0, 1fr) 520px');
+    important(calendar, 'transform', 'scale(.965)');
+    important(calendar, 'opacity', '.91');
+
+    important(panelB, 'flex', '0 0 220px');
+    important(panelB, 'transform', 'scale(1.055)');
+    important(panelB, 'opacity', '1');
+    important(panelB, 'z-index', '6');
+    important(panelB, 'border-color', 'rgba(116,140,255,.66)');
+    important(panelB, 'box-shadow', '0 14px 34px rgba(4,9,20,.34), inset 0 0 0 1px rgba(124,92,246,.12)');
+
+    important(panelC, 'flex', '1 1 0');
+    important(panelC, 'transform', 'scale(.94)');
+    important(panelC, 'opacity', '.72');
+    important(panelC, 'z-index', '1');
+  }
+
+  function focusC(){
+    if(window.innerWidth < DESKTOP_MIN){ resetFocus(); return; }
+    active = 'c';
+    layout.classList.add('panel-c-hover');
+    layout.classList.remove('panel-b-hover');
+
+    important(layout, 'grid-template-columns', 'minmax(0, 1fr) 520px');
+    important(calendar, 'transform', 'scale(.965)');
+    important(calendar, 'opacity', '.91');
+
+    important(panelB, 'flex', '0 0 82px');
+    important(panelB, 'transform', 'scale(.94)');
+    important(panelB, 'opacity', '.72');
+    important(panelB, 'z-index', '1');
+
+    important(panelC, 'flex', '1 1 0');
+    important(panelC, 'transform', 'scale(1.05)');
+    important(panelC, 'opacity', '1');
+    important(panelC, 'z-index', '6');
+    important(panelC, 'border-color', 'rgba(116,140,255,.66)');
+    important(panelC, 'box-shadow', '0 14px 34px rgba(4,9,20,.34), inset 0 0 0 1px rgba(124,92,246,.12)');
+
+    const focusScroll = panelC.querySelector('.focus-scroll');
+    if(focusScroll){
+      important(focusScroll, 'max-height', 'none');
+      important(focusScroll, 'overflow-y', 'auto');
+    }
+  }
+
+  panelB.addEventListener('mouseenter', focusB);
+  panelC.addEventListener('mouseenter', focusC);
+
+  panelB.addEventListener('mouseleave', (event)=>{
+    if(panelC.contains(event.relatedTarget)) return;
+    resetFocus();
+  });
+
+  panelC.addEventListener('mouseleave', (event)=>{
+    if(panelB.contains(event.relatedTarget)) return;
+    resetFocus();
+  });
+
+  /* If the pointer moves into the empty sidebar gap, restore default immediately. */
+  sidebar.addEventListener('mousemove', (event)=>{
+    const card = event.target.closest?.('[data-home-panel]');
+    if(!card && active) resetFocus();
+  });
+
+  sidebar.addEventListener('mouseleave', resetFocus);
 
   window.addEventListener('resize', ()=>{
-    if(window.innerWidth < DESKTOP_MIN) clearHoverFocus();
+    if(window.innerWidth < DESKTOP_MIN) resetFocus();
   });
 })();
 
