@@ -949,6 +949,122 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   }
 }
 
+
+
+/* ================= JOINED TOP ROW (A + B) ================= */
+@media (min-width:951px){
+  .hios-top-row{
+    position:relative;
+    display:grid !important;
+    grid-template-columns:240px minmax(0,1fr);
+    gap:0 !important;
+    padding:12px 18px 0 !important;
+    align-items:stretch;
+    overflow:hidden;
+    border:1px solid #273248;
+    border-radius:18px;
+    background:
+      radial-gradient(circle at 96% 0%,rgba(110,168,255,.14),transparent 23%),
+      linear-gradient(135deg,rgba(12,26,31,.98),rgba(18,25,40,.98));
+  }
+
+  .hios-top-row::after{
+    content:'';
+    position:absolute;
+    right:-42px;
+    top:-56px;
+    width:160px;
+    height:160px;
+    border-radius:50%;
+    border:1px solid rgba(110,168,255,.12);
+    pointer-events:none;
+  }
+
+  /* Left part of the long top row: intentionally empty, but visually joined */
+  .top-k-panel{
+    min-height:145px;
+    border:0 !important;
+    border-radius:0 !important;
+    background:
+      linear-gradient(
+        90deg,
+        rgba(12,26,31,0) 0%,
+        rgba(40,46,86,.16) 58%,
+        rgba(86,77,166,.22) 100%
+      ) !important;
+    position:relative;
+  }
+
+  .top-k-panel::after{
+    content:'';
+    position:absolute;
+    right:-52px;
+    top:0;
+    bottom:0;
+    width:120px;
+    pointer-events:none;
+    background:linear-gradient(
+      90deg,
+      rgba(78,90,160,0) 0%,
+      rgba(88,83,170,.12) 35%,
+      rgba(96,82,182,.22) 72%,
+      rgba(96,82,182,.28) 100%
+    );
+  }
+
+  /* Right part: keep the intelligence content, remove separate panel look */
+  .hios-top-row > .hios-intelligence{
+    margin:0 !important;
+    min-height:145px;
+    border:0 !important;
+    border-radius:0 !important;
+    background:transparent !important;
+    padding:0 !important;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 390px;
+    align-items:stretch;
+  }
+
+  .hios-top-row > .hios-intelligence::after{
+    display:none !important;
+  }
+
+  .hios-top-row > .hios-intelligence .hios-intelligence-main{
+    padding:14px 16px 14px 18px;
+  }
+
+  .hios-top-row > .hios-intelligence .hios-intelligence-side{
+    background:
+      linear-gradient(
+        90deg,
+        rgba(70,82,150,0) 0%,
+        rgba(76,92,169,.08) 20%,
+        rgba(103,83,188,.17) 60%,
+        rgba(75,101,174,.12) 100%
+      ) !important;
+  }
+
+  .hios-top-row > .hios-intelligence .hios-intelligence-side::before{
+    display:none !important;
+  }
+
+  /* avoid extra separation below the new long top row */
+  #appScreen .sidebar{
+    padding-top:10px !important;
+  }
+}
+
+@media(max-width:950px){
+  .hios-top-row{
+    border:1px solid #273248;
+    border-radius:18px;
+    overflow:hidden;
+    background:
+      radial-gradient(circle at 96% 0%,rgba(110,168,255,.14),transparent 23%),
+      linear-gradient(135deg,rgba(12,26,31,.98),rgba(18,25,40,.98));
+  }
+}
+
 </style>
 </head>
 <body>
