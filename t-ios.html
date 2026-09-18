@@ -3713,7 +3713,7 @@ textarea{resize:vertical;min-height:90px}
 <body>
 
 <!-- LOGIN -->
-<section class="auth-screen hidden" id="authScreen">
+<section class="auth-screen" id="authScreen">
   <div class="auth-bg" aria-hidden="true">
     <canvas id="intelligenceCanvas" class="intelligence-canvas"></canvas>
     <div class="intelligence-grid"></div>
@@ -6471,8 +6471,9 @@ function setLoggedInUI(loggedIn){
 
 async function initializeSupabase(){
   if(!isConfigured){
+    $('#authMessage').textContent =
+      'Supabase is not configured yet. Paste the Project URL and Publishable Key into this HTML file.';
     $('#configWarning').classList.remove('hidden');
-    window.location.replace('index.html');
     return;
   }
 
@@ -6483,27 +6484,20 @@ async function initializeSupabase(){
     SUPABASE_PUBLISHABLE_KEY
   );
 
-  /*
-    H·IOS is the authentication owner.
-    Because H·IOS and T·IOS are on the same origin and use the same
-    Supabase project, the authenticated Supabase session is shared
-    through the browser's normal Supabase storage.
-  */
   const { data:{ session }, error } = await db.auth.getSession();
 
   if(error){
-    console.warn('Could not restore H·IOS session in T·IOS:', error);
+    $('#authMessage').textContent = error.message;
+    return;
   }
 
   if(session?.user){
     await enterApp(session.user);
   }else{
-    // No ecosystem session: return to H·IOS instead of showing a second login.
-    window.location.replace('index.html');
-    return;
+    setLoggedInUI(false);
   }
 
-  db.auth.onAuthStateChange(async (event, authSession)=>{
+  db.auth.onAuthStateChange(async (event)=>{
     if(event === 'SIGNED_OUT'){
       currentUser = null;
       rConfigDraftDirty=false;
@@ -6538,17 +6532,7 @@ async function initializeSupabase(){
       editingGoalId = null;
       selectedPhaseWorkspaceNumber = 1;
 
-      // Authentication belongs to H·IOS.
-      window.location.replace('index.html');
-      return;
-    }
-
-    if(
-      (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') &&
-      authSession?.user &&
-      !currentUser
-    ){
-      await enterApp(authSession.user);
+      setLoggedInUI(false);
     }
   });
 }
