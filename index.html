@@ -1478,11 +1478,11 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 
 
 
-/* ================= H·IOS HOME — AUTO ZOOM (B + C ONLY) =================
-   A = Intelligence Calendar (fixed; never zooms)
+/* ================= H·IOS HOME — AUTO ZOOM =================
+   Calendar itself stays fixed, but individual calendar DAY cells may zoom.
    B = Goal Progress | C = Today's Focus
-   When Auto Zoom is enabled, only B or C enlarges slightly on hover.
-   The other right-side panel contracts a little. The calendar remains unchanged.
+   When Auto Zoom is enabled, hovering B or C enlarges that panel modestly.
+   Hovering an individual calendar day enlarges only that day cell.
 =============================================================================== */
 @media (min-width: 900px){
   .home-layout{
@@ -1537,7 +1537,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     grid-template-rows:185px minmax(0,1fr) !important;
   }
   .home-layout.hios-focus-b .goal-status-card{
-    transform:scale(1.018) !important;
+    transform:scale(1.035) !important;
     opacity:1 !important;
     filter:none !important;
     z-index:25 !important;
@@ -1546,7 +1546,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     box-shadow:0 12px 28px rgba(2,8,18,.30), inset 0 0 0 1px rgba(139,92,246,.10) !important;
   }
   .home-layout.hios-focus-b .focus-card{
-    transform:scale(.985) !important;
+    transform:scale(.975) !important;
     opacity:.84 !important;
     filter:saturate(.88) brightness(.92) !important;
   }
@@ -1559,12 +1559,12 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     grid-template-rows:118px minmax(0,1fr) !important;
   }
   .home-layout.hios-focus-c .goal-status-card{
-    transform:scale(.985) !important;
+    transform:scale(.975) !important;
     opacity:.84 !important;
     filter:saturate(.88) brightness(.92) !important;
   }
   .home-layout.hios-focus-c .focus-card{
-    transform:scale(1.018) !important;
+    transform:scale(1.035) !important;
     opacity:1 !important;
     filter:none !important;
     z-index:25 !important;
@@ -1580,9 +1580,37 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     padding:10px 12px !important;
   }
 
-  /* CSS fallback: only B and C react when Auto Zoom is enabled. */
-  .home-layout.auto-zoom-enabled [data-home-panel="b"]:hover{transform:scale(1.018) !important;z-index:30 !important}
-  .home-layout.auto-zoom-enabled [data-home-panel="c"]:hover{transform:scale(1.018) !important;z-index:30 !important}
+  /* Calendar: only the hovered DAY cell zooms. The calendar section itself never changes size. */
+  .calendar-card,
+  .hios-calendar{
+    overflow:visible !important;
+  }
+  .calendar-day{
+    position:relative !important;
+    transform:scale(1);
+    transform-origin:center center;
+    z-index:1;
+    transition:
+      transform .18s cubic-bezier(.2,.8,.2,1),
+      background .14s ease,
+      box-shadow .18s ease,
+      border-color .18s ease !important;
+    will-change:transform;
+  }
+  .home-layout.auto-zoom-enabled .calendar-day:hover{
+    transform:scale(1.07) !important;
+    z-index:45 !important;
+    background:#101925 !important;
+    border-color:rgba(110,168,255,.48) !important;
+    box-shadow:0 10px 26px rgba(0,0,0,.38), 0 0 0 1px rgba(110,168,255,.22), 0 0 20px rgba(110,168,255,.10) !important;
+  }
+  .home-layout.auto-zoom-enabled .calendar-day.today:hover{
+    box-shadow:0 10px 26px rgba(0,0,0,.38), inset 0 0 0 1px #36d399, 0 0 20px rgba(54,211,153,.13) !important;
+  }
+
+  /* CSS fallback for B and C when Auto Zoom is enabled. */
+  .home-layout.auto-zoom-enabled [data-home-panel="b"]:hover{transform:scale(1.035) !important;z-index:30 !important}
+  .home-layout.auto-zoom-enabled [data-home-panel="c"]:hover{transform:scale(1.035) !important;z-index:30 !important}
 }
 
 /* Auto Zoom control */
@@ -1686,7 +1714,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     if(toggle){
       toggle.classList.toggle('is-on', enabled);
       toggle.setAttribute('aria-pressed', enabled ? 'true' : 'false');
-      toggle.setAttribute('title', enabled ? 'Auto Zoom is on. Click to turn it off.' : 'Auto Zoom is off. Click to turn it on.');
+      toggle.setAttribute('title', enabled ? 'Auto Zoom is on for calendar days, Goal Progress and Today\'s Focus. Click to turn it off.' : 'Auto Zoom is off. Click to turn it on.');
     }
     if(state) state.textContent = enabled ? 'On' : 'Off';
   }
