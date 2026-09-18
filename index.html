@@ -1631,11 +1631,24 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   .calendar-day .calendar-events::-webkit-scrollbar-thumb{background:#3b4960;border-radius:999px}
   .calendar-day .calendar-events::-webkit-scrollbar-thumb:hover{background:#5a6b86}
   .home-layout.auto-zoom-enabled .calendar-day:hover{
-    transform:scale(1.20) !important;
-    z-index:45 !important;
+    transform:scale(1.82) !important;
+    z-index:60 !important;
     background:#101925 !important;
     border-color:rgba(110,168,255,.48) !important;
-    box-shadow:0 10px 26px rgba(0,0,0,.38), 0 0 0 1px rgba(110,168,255,.22), 0 0 20px rgba(110,168,255,.10) !important;
+    box-shadow:0 16px 38px rgba(0,0,0,.48), 0 0 0 1px rgba(110,168,255,.28), 0 0 28px rgba(110,168,255,.14) !important;
+  }
+  .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-date{
+    font-size:11px !important;
+    margin-bottom:6px !important;
+  }
+  .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-events{
+    padding:2px 4px 4px 2px !important;
+    scrollbar-width:thin;
+  }
+  .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event{
+    font-size:9px !important;
+    line-height:1.2 !important;
+    padding:4px 6px !important;
   }
   .home-layout.auto-zoom-enabled .calendar-day.today:hover{
     box-shadow:0 10px 26px rgba(0,0,0,.38), inset 0 0 0 1px #36d399, 0 0 20px rgba(54,211,153,.13) !important;
@@ -1654,16 +1667,16 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     overflow:visible !important;
   }
   .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event:hover{
-    transform:scale(1.28) !important;
-    z-index:80 !important;
+    transform:scale(1.38) !important;
+    z-index:90 !important;
     border-color:rgba(110,168,255,.72) !important;
-    box-shadow:0 8px 20px rgba(0,0,0,.40), 0 0 0 1px rgba(110,168,255,.24), 0 0 16px rgba(110,168,255,.16) !important;
+    box-shadow:0 10px 24px rgba(0,0,0,.46), 0 0 0 1px rgba(110,168,255,.30), 0 0 20px rgba(110,168,255,.20) !important;
   }
   .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event.high:hover,
   .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event.manual.test:hover,
   .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event.manual.assessment:hover{
     border-color:rgba(251,113,133,.72) !important;
-    box-shadow:0 8px 20px rgba(0,0,0,.40), 0 0 0 1px rgba(251,113,133,.24), 0 0 16px rgba(251,113,133,.14) !important;
+    box-shadow:0 10px 24px rgba(0,0,0,.46), 0 0 0 1px rgba(251,113,133,.30), 0 0 20px rgba(251,113,133,.18) !important;
   }
 
   /* CSS fallback for B and C when Auto Zoom is enabled. */
