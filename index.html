@@ -1476,91 +1476,103 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 }
 
 
+
 /* ================= HOVER-TO-FOCUS: HOME SECTIONS B + C =================
-   B = Goal Progress, C = Today's Focus.
-   Desktop only: when the pointer is inside B or C, that section gets more
-   room while the calendar and sibling section contract slightly. Moving the
-   pointer out restores the exact default layout automatically.
+   A = Intelligence Calendar, B = Goal Progress, C = Today's Focus.
+   Desktop only: moving the pointer into B or C gives that panel more room,
+   while A and the sibling panel contract slightly. Leaving the right sidebar
+   restores the exact default layout. No click is required.
 ======================================================================= */
 @media (min-width:951px){
   .home-layout{
-    transition:grid-template-columns .32s cubic-bezier(.2,.78,.25,1), gap .32s ease;
-  }
-
-  /* A contracts a little because the right column grows from 350px to 420px. */
-  .home-layout.panel-b-active,
-  .home-layout.panel-c-active{
-    grid-template-columns:minmax(0,1fr) 420px;
+    transition:grid-template-columns .30s cubic-bezier(.2,.78,.25,1), gap .30s ease;
   }
 
   .calendar-card{
     min-width:0;
-    transition:opacity .28s ease, border-color .28s ease;
-  }
-
-  .home-layout.panel-b-active .calendar-card,
-  .home-layout.panel-c-active .calendar-card{
-    opacity:.965;
+    transform-origin:left center;
+    transition:opacity .30s ease, border-color .30s ease;
   }
 
   .home-sidebar{
-    transition:gap .32s ease;
+    overflow:hidden;
   }
 
   .goal-status-card,
   .focus-card{
-    min-width:0;
-    overflow:hidden;
+    min-height:0;
+    transform-origin:right center;
     transition:
-      flex-basis .32s cubic-bezier(.2,.78,.25,1),
-      flex-grow .32s cubic-bezier(.2,.78,.25,1),
-      transform .32s cubic-bezier(.2,.78,.25,1),
-      opacity .28s ease,
-      border-color .28s ease,
-      background .28s ease,
-      box-shadow .28s ease;
+      flex-basis .30s cubic-bezier(.2,.78,.25,1),
+      opacity .30s ease,
+      border-color .30s ease,
+      background .30s ease,
+      box-shadow .30s ease;
   }
 
-  /* B hovered: widen the right column and give Goal Progress more height. */
-  .home-layout.panel-b-active .goal-status-card{
-    flex:0 0 180px !important;
-    transform:scale(1.008);
-    transform-origin:right top;
-    border-color:rgba(116,140,255,.38);
-    background:linear-gradient(180deg,rgba(21,27,40,.99),rgba(14,18,27,.99));
-    box-shadow:0 12px 30px rgba(0,0,0,.20), inset 0 0 0 1px rgba(124,92,246,.05);
+  /* B or C under the pointer => widen the right column a little. */
+  .home-layout.panel-b-hover,
+  .home-layout.panel-c-hover{
+    grid-template-columns:minmax(0,1fr) 420px;
   }
-  .home-layout.panel-b-active .focus-card{
+
+  .home-layout.panel-b-hover .calendar-card,
+  .home-layout.panel-c-hover .calendar-card{
+    opacity:.96;
+  }
+
+  /* B — Goal Progress gets more vertical room. */
+  .home-layout.panel-b-hover .goal-status-card{
+    flex:0 0 172px !important;
+    border-color:rgba(116,140,255,.42);
+    background:linear-gradient(180deg,rgba(22,28,43,.995),rgba(14,18,28,.995));
+    box-shadow:inset 0 0 0 1px rgba(124,92,246,.07);
+  }
+
+  .home-layout.panel-b-hover .focus-card{
     flex:1 1 0 !important;
-    transform:scale(.992);
-    transform-origin:right bottom;
+    opacity:.90;
+  }
+
+  .home-layout.panel-b-hover .goal-status-card .goal-row{
+    margin-top:12px;
+  }
+  .home-layout.panel-b-hover .goal-status-card .goal-head{
+    font-size:11px;
+  }
+  .home-layout.panel-b-hover .goal-status-card .bar{
+    height:8px;
+  }
+
+  /* C — Today's Focus gets almost all remaining vertical space. */
+  .home-layout.panel-c-hover .goal-status-card{
+    flex:0 0 94px !important;
     opacity:.88;
+    overflow:hidden;
   }
 
-  /* C hovered: keep Goal Progress readable, but give Today's Focus more room. */
-  .home-layout.panel-c-active .goal-status-card{
-    flex:0 0 110px !important;
-    transform:scale(.985);
-    transform-origin:right top;
-    opacity:.86;
-  }
-  .home-layout.panel-c-active .focus-card{
+  .home-layout.panel-c-hover .focus-card{
     flex:1 1 0 !important;
-    transform:scale(1.006);
-    transform-origin:right bottom;
-    border-color:rgba(116,140,255,.38);
-    background:linear-gradient(180deg,rgba(21,27,40,.99),rgba(14,18,27,.99));
-    box-shadow:0 12px 30px rgba(0,0,0,.20), inset 0 0 0 1px rgba(124,92,246,.05);
+    border-color:rgba(116,140,255,.42);
+    background:linear-gradient(180deg,rgba(22,28,43,.995),rgba(14,18,28,.995));
+    box-shadow:inset 0 0 0 1px rgba(124,92,246,.07);
   }
 
-  /* Small content lift so the selected section actually feels more visible. */
-  .home-layout.panel-b-active .goal-status-card .goal-row{margin-top:10px}
-  .home-layout.panel-b-active .goal-status-card .goal-head{font-size:10.5px}
-  .home-layout.panel-b-active .goal-status-card .bar{height:8px}
+  .home-layout.panel-c-hover .focus-card .focus-item{
+    padding:9px 10px;
+  }
+  .home-layout.panel-c-hover .focus-card .focus-item b{
+    font-size:11px;
+  }
+  .home-layout.panel-c-hover .focus-card .focus-item small{
+    font-size:8.5px;
+  }
 
-  .home-layout.panel-c-active .focus-card .focus-item{padding:8px 9px}
-  .home-layout.panel-c-active .focus-card .focus-item b{font-size:10.5px}
-  .home-layout.panel-c-active .focus-card .focus-item small{font-size:8.25px}
+  /* Keep the focused section obviously interactive without requiring a click. */
+  .goal-status-card:hover,
+  .focus-card:hover{
+    border-color:rgba(116,140,255,.42);
+  }
 }
 
 </style>
@@ -1801,7 +1813,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
         </div>
 
         <aside class="home-sidebar">
-          <div class="card goal-status-card" data-home-panel="b" tabindex="0">
+          <div class="card goal-status-card" data-home-panel="b">
             <h3>Goal Progress</h3>
             <div class="sub">Progress across connected domains.</div>
             <div class="goal-row"><div class="goal-head"><span>Engineering</span><b>72%</b></div><div class="bar"><span style="width:72%"></span></div></div>
@@ -1809,7 +1821,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
             <div class="goal-row"><div class="goal-head"><span>Fitness</span><b>88%</b></div><div class="bar"><span style="width:88%"></span></div></div>
           </div>
 
-          <div class="card focus-card" data-home-panel="c" tabindex="0">
+          <div class="card focus-card" data-home-panel="c">
             <h3>Today's Focus</h3>
             <div class="sub">G·IOS dynamically ranked from connected intelligence.</div>
             <div class="focus-list focus-scroll">
@@ -2684,11 +2696,12 @@ restoreExistingSession();
 
 
 
+
 /* =========================================================
    H·IOS HOME — HOVER-TO-FOCUS PANELS
    B = Goal Progress, C = Today's Focus.
-   No click is required. Entering a panel gives it more room;
-   leaving it restores the default layout automatically.
+   Pointer enters B/C -> that section receives more room.
+   Pointer leaves the right sidebar -> exact default sizing returns.
 ========================================================= */
 (function initHiosHomePanelHoverFocus(){
   const layout = document.querySelector('.home-layout');
@@ -2698,48 +2711,29 @@ restoreExistingSession();
   if(!layout || !sidebar || !panelB || !panelC) return;
 
   const DESKTOP_MIN = 951;
-  let active = null;
 
-  function isDesktop(){
-    return window.innerWidth >= DESKTOP_MIN;
+  function clearHoverFocus(){
+    layout.classList.remove('panel-b-hover','panel-c-hover');
   }
 
-  function setActive(which){
-    if(!isDesktop()) return;
-    active = which;
-    layout.classList.toggle('panel-b-active', which === 'b');
-    layout.classList.toggle('panel-c-active', which === 'c');
+  function setHoverFocus(which){
+    if(window.innerWidth < DESKTOP_MIN){
+      clearHoverFocus();
+      return;
+    }
+    layout.classList.toggle('panel-b-hover', which === 'b');
+    layout.classList.toggle('panel-c-hover', which === 'c');
   }
 
-  function clearActive(){
-    active = null;
-    layout.classList.remove('panel-b-active','panel-c-active');
-  }
+  panelB.addEventListener('pointerenter', ()=>setHoverFocus('b'));
+  panelC.addEventListener('pointerenter', ()=>setHoverFocus('c'));
 
-  panelB.addEventListener('mouseenter', ()=>setActive('b'));
-  panelC.addEventListener('mouseenter', ()=>setActive('c'));
-
-  panelB.addEventListener('mouseleave', (event)=>{
-    if(panelC.contains(event.relatedTarget)) return;
-    clearActive();
-  });
-  panelC.addEventListener('mouseleave', (event)=>{
-    if(panelB.contains(event.relatedTarget)) return;
-    clearActive();
-  });
-
-  /* Keyboard users get the same focus behavior without changing click actions. */
-  panelB.addEventListener('focusin', ()=>setActive('b'));
-  panelC.addEventListener('focusin', ()=>setActive('c'));
-  sidebar.addEventListener('focusout', ()=>{
-    requestAnimationFrame(()=>{
-      if(!sidebar.contains(document.activeElement)) clearActive();
-    });
-  });
+  /* Reset only when the pointer leaves the entire B/C sidebar. This prevents
+     flicker while moving directly from B to C or C to B. */
+  sidebar.addEventListener('pointerleave', clearHoverFocus);
 
   window.addEventListener('resize', ()=>{
-    if(!isDesktop()) clearActive();
-    else if(active) setActive(active);
+    if(window.innerWidth < DESKTOP_MIN) clearHoverFocus();
   });
 })();
 
