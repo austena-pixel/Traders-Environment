@@ -336,6 +336,33 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   .quick{grid-template-columns:repeat(2,1fr)}.focus-item{grid-template-columns:32px 1fr}.tag{grid-column:2;justify-self:start}
   .main{padding:16px}.card{padding:16px}
 }
+
+
+/* ================= H·IOS INTELLIGENCE + CALENDAR ================= */
+.hios-intelligence{position:relative;margin-bottom:14px;padding:18px 20px;border:1px solid #273248;border-radius:18px;overflow:hidden;background:radial-gradient(circle at 95% 0%,rgba(110,168,255,.14),transparent 31%),linear-gradient(135deg,rgba(12,26,31,.98),rgba(18,25,40,.98))}
+.hios-intelligence::after{content:'';position:absolute;right:-42px;top:-56px;width:160px;height:160px;border-radius:50%;border:1px solid rgba(110,168,255,.12);pointer-events:none}
+.hios-intelligence-top{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;position:relative;z-index:1}
+.hios-intelligence-kicker{color:#83c6ff;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.hios-intelligence h2{margin:0;font-size:22px;letter-spacing:-.02em}
+.hios-intelligence p{margin:12px 0 0;max-width:980px;color:#c5cedb;font-size:13px;line-height:1.65;position:relative;z-index:1}
+.hios-intelligence-status{display:inline-flex;margin-top:11px;padding:5px 8px;border-radius:999px;border:1px solid #2c3a50;background:#0c1420;color:#a9c8ef;font-size:10px}
+.home-layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:14px;align-items:start}
+.calendar-card{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:linear-gradient(180deg,rgba(14,18,25,.98),rgba(10,13,18,.98))}
+.calendar-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 15px;border-bottom:1px solid var(--line)}
+.calendar-head h3{margin:0 0 3px;font-size:15px}.calendar-head p{margin:0;color:var(--muted);font-size:11px}
+.calendar-nav{display:flex;align-items:center;gap:9px}.calendar-nav strong{min-width:126px;text-align:center;font-size:14px}
+.calendar-nav-btn{width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:#111722;color:#dbe5f3;cursor:pointer}
+.calendar-weekdays,.hios-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.calendar-weekdays>div{padding:8px 5px;text-align:center;color:#8491a5;font-size:9px;font-weight:800;text-transform:uppercase;border-bottom:1px solid var(--line)}
+.calendar-day{min-height:79px;padding:7px;border-right:1px solid #1b2230;border-bottom:1px solid #1b2230;overflow:hidden;background:#0a0e14}
+.calendar-day:nth-child(7n){border-right:0}.calendar-day.outside{background:#080b10;color:#525d6d}.calendar-day.today{box-shadow:inset 0 0 0 1px #659fe9}
+.calendar-date{font-size:10px;font-weight:800;color:#aab7c9;margin-bottom:5px}.calendar-day.outside .calendar-date{color:#46515f}
+.calendar-events{display:grid;gap:4px}.calendar-event{width:100%;border:1px solid #28364a;border-radius:6px;padding:4px 5px;background:#101927;color:#dbe8f8;font-size:8px;line-height:1.25;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.calendar-event.high{border-color:rgba(251,113,133,.28);background:rgba(251,113,133,.08);color:#ffc1ca}.calendar-event.medium{border-color:rgba(110,168,255,.28);background:rgba(110,168,255,.08);color:#c9e0ff}.calendar-event.low{color:#9facbd}.calendar-more{color:#7f8b9e;font-size:8px;padding-left:3px}
+.home-sidebar{display:grid;gap:12px}.home-sidebar .card{padding:15px;border-radius:16px}.home-sidebar .focus-list{gap:7px;margin-top:12px}.home-sidebar .focus-item{grid-template-columns:28px 1fr;padding:9px 10px;gap:9px}.home-sidebar .rank{width:27px;height:27px;font-size:11px}.home-sidebar .focus-item b{font-size:11px}.home-sidebar .focus-item small{display:block;margin-top:2px;font-size:9px;line-height:1.35}.home-sidebar .tag{grid-column:2;justify-self:start;padding:4px 6px;font-size:9px}.home-sidebar .alert{margin-top:10px;padding:10px}.home-sidebar .alert span{font-size:10px;line-height:1.45}.home-sidebar .goal-row{margin-top:11px}
+@media(max-width:1180px){.home-layout{grid-template-columns:1fr}.home-sidebar{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.hios-intelligence-top{flex-direction:column}.home-sidebar{grid-template-columns:1fr}.calendar-card{overflow:auto}.calendar-weekdays,.hios-calendar{min-width:700px}}
+
 </style>
 </head>
 <body>
@@ -419,79 +446,65 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     </aside>
 
     <main class="main">
-      <div class="topbar">
-        <div class="hello">
-          <h2>Good afternoon</h2>
-          <p>Your intelligence ecosystem is prioritizing what matters now.</p>
+      <!-- OVERALL H·IOS INTELLIGENCE -->
+      <section class="hios-intelligence">
+        <div class="hios-intelligence-top">
+          <div>
+            <div class="hios-intelligence-kicker">H·IOS Intelligence</div>
+            <h2>What currently needs your attention?</h2>
+          </div>
+          <div class="actions">
+            <button class="chip add-product-btn" onclick="openProductModal()">Add Product</button>
+            <button class="chip" onclick="showMessage('Priority Logic','G·IOS weighs urgency, importance, progress, dependencies and signals from connected intelligence systems.')">Why these priorities?</button>
+            <button class="chip" onclick="logout()">Sign out</button>
+          </div>
         </div>
-        <div class="actions">
-          <button class="chip add-product-btn" onclick="openProductModal()">Add Product</button>
-          <button class="chip" onclick="showMessage('Priority Logic','G·IOS weighs urgency, importance, progress, dependencies and signals from connected intelligence systems.')">Why these priorities?</button>
-          <button class="chip" onclick="logout()">Sign out</button>
-        </div>
-      </div>
-
-      <div class="overview-head">
-        <h3>Intelligence Overview</h3>
-        <span>Live signals feeding your H·IOS context</span>
-      </div>
-      <section class="quick">
-        <div class="q"><small>Active goals</small><b>7</b></div>
-        <div class="q"><small>High-priority items</small><b>2</b></div>
-        <div class="q"><small>Connected ·IOS</small><b id="connectedProductsCount">0</b></div>
-        <div class="q"><small>On-track goals</small><b>5</b></div>
+        <div class="hios-intelligence-status" id="hiosIntelligenceStatus">Building ecosystem context</div>
+        <p id="hiosIntelligenceSummary">H·IOS is connecting goals, deadlines and specialized intelligence to determine what deserves attention now.</p>
       </section>
 
-      <section class="grid">
-        <div class="card">
-          <h3>Today's Focus</h3>
-          <div class="sub">G·IOS dynamically ranked from connected intelligence.</div>
-          <div class="focus-list">
-            <div class="focus-item">
-              <div class="rank">1</div>
-              <div><b>Complete engineering assignment</b><small>S·IOS · due tomorrow · 62% complete</small></div>
-              <span class="tag">Very high</span>
+      <!-- CALENDAR + PRIORITY SIDEBAR -->
+      <section class="home-layout">
+        <div class="calendar-card">
+          <div class="calendar-head">
+            <div>
+              <h3>Intelligence Calendar</h3>
+              <p>Due dates, tests, milestones and dated goals from G·IOS.</p>
             </div>
-            <div class="focus-item">
-              <div class="rank">2</div>
-              <div><b>Study Test 2 scope</b><small>S·IOS · assessment in 3 days · behind plan</small></div>
-              <span class="tag">High</span>
-            </div>
-            <div class="focus-item">
-              <div class="rank">3</div>
-              <div><b>Review trading execution</b><small>T·IOS · execution quality below target</small></div>
-              <span class="tag">Moderate</span>
-            </div>
-            <div class="focus-item">
-              <div class="rank">4</div>
-              <div><b>Continue trading sample</b><small>T·IOS · active milestone · no immediate deadline</small></div>
-              <span class="tag">Maintain</span>
+            <div class="calendar-nav">
+              <button type="button" class="calendar-nav-btn" id="hiosPrevMonth" aria-label="Previous month">←</button>
+              <strong id="hiosCalendarMonth">Month</strong>
+              <button type="button" class="calendar-nav-btn" id="hiosNextMonth" aria-label="Next month">→</button>
             </div>
           </div>
-          <div class="alert">
-            <strong>Priority alert</strong>
-            <span>Your academic workload increased today. G·IOS recommends protecting your first two focus blocks for study before returning to trading work.</span>
-          </div>
+          <div class="calendar-weekdays"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
+          <div class="hios-calendar" id="hiosCalendar"></div>
         </div>
 
-        <div class="card">
-          <h3>Goal Status</h3>
-          <div class="sub">Progress across connected domains.</div>
-          <div class="goal-row"><div class="goal-head"><span>Engineering</span><b>72%</b></div><div class="bar"><span style="width:72%"></span></div></div>
-          <div class="goal-row"><div class="goal-head"><span>Trading</span><b>61%</b></div><div class="bar"><span style="width:61%"></span></div></div>
-          <div class="goal-row"><div class="goal-head"><span>Fitness</span><b>88%</b></div><div class="bar"><span style="width:88%"></span></div></div>
-          <div class="insight">
-            <b>Cross-intelligence insight</b>
-            <p>Your study deadlines are temporarily more urgent than your current trading milestone. Your long-term trading goal remains unchanged; only today's attention allocation has shifted.</p>
+        <aside class="home-sidebar">
+          <div class="card focus-card">
+            <h3>Today's Focus</h3>
+            <div class="sub">G·IOS dynamically ranked from connected intelligence.</div>
+            <div class="focus-list">
+              <div class="focus-item"><div class="rank">1</div><div><b>Complete engineering assignment</b><small>S·IOS · due tomorrow · 62% complete</small></div><span class="tag">Very high</span></div>
+              <div class="focus-item"><div class="rank">2</div><div><b>Study Test 2 scope</b><small>S·IOS · assessment in 3 days · behind plan</small></div><span class="tag">High</span></div>
+              <div class="focus-item"><div class="rank">3</div><div><b>Review trading execution</b><small>T·IOS · execution quality below target</small></div><span class="tag">Moderate</span></div>
+              <div class="focus-item"><div class="rank">4</div><div><b>Continue trading sample</b><small>T·IOS · active milestone · no immediate deadline</small></div><span class="tag">Maintain</span></div>
+            </div>
+            <div class="alert"><strong>Priority alert</strong><span>Your academic workload increased today. G·IOS recommends protecting your first two focus blocks for study before returning to trading work.</span></div>
           </div>
-        </div>
+
+          <div class="card goal-status-card">
+            <h3>Goal Status</h3>
+            <div class="sub">Progress across connected domains.</div>
+            <div class="goal-row"><div class="goal-head"><span>Engineering</span><b>72%</b></div><div class="bar"><span style="width:72%"></span></div></div>
+            <div class="goal-row"><div class="goal-head"><span>Trading</span><b>61%</b></div><div class="bar"><span style="width:61%"></span></div></div>
+            <div class="goal-row"><div class="goal-head"><span>Fitness</span><b>88%</b></div><div class="bar"><span style="width:88%"></span></div></div>
+          </div>
+        </aside>
       </section>
 
-      <div class="section-title">
-        <h3>Your ·IOS</h3>
-        <span>Specialized intelligence connected through H·IOS</span>
-      </div>
-
+      <div class="section-title"><h3>Your ·IOS</h3><span>Specialized intelligence connected through H·IOS</span></div>
       <section class="products" id="productsGrid"></section>
     </main>
   </div>
@@ -707,6 +720,67 @@ document.addEventListener('keydown', event => {
 
 renderProductManager();
 
+/* =========================================================
+   H·IOS HOME INTELLIGENCE + G·IOS CALENDAR BRIDGE
+   Read-only: H·IOS consumes the existing G·IOS goal data.
+========================================================= */
+const HIOS_GIOS_GOALS_KEY = 'gios_standalone_goals_v1';
+let hiosCalendarCursor = new Date();
+hiosCalendarCursor = new Date(hiosCalendarCursor.getFullYear(), hiosCalendarCursor.getMonth(), 1);
+
+function hiosEscape(value){return String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
+function loadHiosGoals(){try{const raw=localStorage.getItem(HIOS_GIOS_GOALS_KEY);const parsed=raw?JSON.parse(raw):[];return Array.isArray(parsed)?parsed:[]}catch(error){console.warn('Could not read G·IOS goals for H·IOS:',error);return []}}
+function parseHiosDate(value){if(!value)return null;const parts=String(value).split('-').map(Number);if(parts.length!==3||parts.some(v=>!Number.isFinite(v)))return null;return new Date(parts[0],parts[1]-1,parts[2])}
+function hiosDateKey(date){const y=date.getFullYear();const m=String(date.getMonth()+1).padStart(2,'0');const d=String(date.getDate()).padStart(2,'0');return `${y}-${m}-${d}`}
+
+function renderHiosIntelligence(){
+  const goals=loadHiosGoals();
+  const active=goals.filter(goal=>Number(goal.progress||0)<100);
+  const high=active.filter(goal=>String(goal.priority||'').toLowerCase()==='high');
+  const connected=Array.isArray(addedProductIds)?addedProductIds.length:0;
+  const today=new Date();today.setHours(0,0,0,0);
+  const dated=active.map(goal=>({goal,date:parseHiosDate(goal.targetDate)})).filter(item=>item.date).sort((a,b)=>a.date-b.date);
+  const upcoming=dated.filter(item=>item.date>=today);
+  const overdue=dated.filter(item=>item.date<today);
+  const next=upcoming[0]||null;
+  const status=document.getElementById('hiosIntelligenceStatus');
+  const summary=document.getElementById('hiosIntelligenceSummary');
+  if(!status||!summary)return;
+  status.textContent=`${connected} connected ·IOS · ${active.length} active goals`;
+  if(!goals.length){summary.textContent='H·IOS is waiting for G·IOS goal evidence. Add dated goals, tests, assessments or milestones in G·IOS and they will appear here automatically.';return}
+  const pieces=[];
+  pieces.push(`G·IOS currently contributes ${active.length} active goal${active.length===1?'':'s'}, including ${high.length} high-priority item${high.length===1?'':'s'}.`);
+  if(overdue.length)pieces.push(`${overdue.length} dated commitment${overdue.length===1?' is':'s are'} overdue and should be reviewed.`);
+  if(next)pieces.push(`Your next dated commitment is “${next.goal.title}” on ${next.date.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}.`);else pieces.push('No upcoming dated goal is currently recorded.');
+  pieces.push('As more specialized ·IOS products contribute evidence, H·IOS can expand this into broader cross-intelligence.');
+  summary.textContent=pieces.join(' ');
+}
+
+function renderHiosCalendar(){
+  const root=document.getElementById('hiosCalendar');
+  const monthLabel=document.getElementById('hiosCalendarMonth');
+  if(!root||!monthLabel)return;
+  const goals=loadHiosGoals();
+  const events=goals.filter(goal=>goal.targetDate).map(goal=>({...goal,_date:parseHiosDate(goal.targetDate)})).filter(goal=>goal._date);
+  monthLabel.textContent=hiosCalendarCursor.toLocaleDateString(undefined,{month:'long',year:'numeric'});
+  const year=hiosCalendarCursor.getFullYear(),month=hiosCalendarCursor.getMonth();
+  const first=new Date(year,month,1);const gridStart=new Date(year,month,1-first.getDay());const today=new Date();today.setHours(0,0,0,0);
+  let markup='';
+  for(let i=0;i<42;i++){
+    const date=new Date(gridStart);date.setDate(gridStart.getDate()+i);const key=hiosDateKey(date);const dayEvents=events.filter(event=>event.targetDate===key);const outside=date.getMonth()!==month;const isToday=date.getTime()===today.getTime();
+    markup+=`<div class="calendar-day${outside?' outside':''}${isToday?' today':''}"><div class="calendar-date">${date.getDate()}</div><div class="calendar-events">`;
+    dayEvents.slice(0,3).forEach(event=>{const priority=['high','medium','low'].includes(String(event.priority).toLowerCase())?String(event.priority).toLowerCase():'medium';const label=event.domain?`${event.domain}: ${event.title}`:event.title;markup+=`<button type="button" class="calendar-event ${priority}" title="${hiosEscape(label)}" onclick="openProduct('gios')">${hiosEscape(label)}</button>`});
+    if(dayEvents.length>3)markup+=`<div class="calendar-more">+${dayEvents.length-3} more</div>`;
+    markup+='</div></div>';
+  }
+  root.innerHTML=markup;
+}
+function renderHiosHome(){renderHiosIntelligence();renderHiosCalendar()}
+const hiosPrevMonth=document.getElementById('hiosPrevMonth');const hiosNextMonth=document.getElementById('hiosNextMonth');
+if(hiosPrevMonth)hiosPrevMonth.addEventListener('click',()=>{hiosCalendarCursor=new Date(hiosCalendarCursor.getFullYear(),hiosCalendarCursor.getMonth()-1,1);renderHiosCalendar()});
+if(hiosNextMonth)hiosNextMonth.addEventListener('click',()=>{hiosCalendarCursor=new Date(hiosCalendarCursor.getFullYear(),hiosCalendarCursor.getMonth()+1,1);renderHiosCalendar()});
+window.addEventListener('storage',event=>{if(event.key===HIOS_GIOS_GOALS_KEY)renderHiosHome()});
+window.addEventListener('pageshow',renderHiosHome);
 
 
 const authScreen = document.getElementById('authScreen');
@@ -789,6 +863,7 @@ function showApp(){
   authScreen.classList.add('hidden');
   appScreen.classList.remove('hidden');
   renderProductManager();
+  renderHiosHome();
   window.scrollTo({top:0,behavior:'instant'});
 }
 
