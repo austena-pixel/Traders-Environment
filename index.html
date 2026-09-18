@@ -2663,14 +2663,14 @@ function renderHiosCalendar(){
         const type=String(event.type||'other').toLowerCase();
         const label=`${hiosEventTypeLabel(type)}: ${event.title}`;
         const eventStatus=isPast?'event-past':(isToday?'event-today':'event-upcoming');
-        markup+=`<button type="button" class="calendar-event manual ${hiosEscape(type)} ${eventStatus}" title="${hiosEscape(label)}" onclick="event.stopPropagation();editCalendarEntry('${hiosEscape(event.id)}')">${hiosEscape(label)}</button>`;
+        markup+=`<button type="button" class="calendar-event manual ${hiosEscape(type)} ${eventStatus}" onclick="event.stopPropagation();editCalendarEntry('${hiosEscape(event.id)}')">${hiosEscape(label)}</button>`;
       }else{
         const priority=['high','medium','low'].includes(String(event.priority).toLowerCase())
           ? String(event.priority).toLowerCase()
           : 'medium';
         const label=event.domain?`${event.domain}: ${event.title}`:event.title;
         const eventStatus=isPast?'event-past':(isToday?'event-today':'event-upcoming');
-        markup+=`<button type="button" class="calendar-event ${priority} ${eventStatus}" title="${hiosEscape(label)}" onclick="event.stopPropagation();openProduct('gios')">${hiosEscape(label)}</button>`;
+        markup+=`<button type="button" class="calendar-event ${priority} ${eventStatus}" onclick="event.stopPropagation();openProduct('gios')">${hiosEscape(label)}</button>`;
       }
     });
 
