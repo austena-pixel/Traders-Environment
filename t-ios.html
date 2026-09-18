@@ -3713,7 +3713,7 @@ textarea{resize:vertical;min-height:90px}
 <body>
 
 <!-- LOGIN -->
-<section class="auth-screen" id="authScreen">
+<section class="auth-screen hidden" id="authScreen">
   <div class="auth-bg" aria-hidden="true">
     <canvas id="intelligenceCanvas" class="intelligence-canvas"></canvas>
     <div class="intelligence-grid"></div>
@@ -6471,68 +6471,52 @@ function setLoggedInUI(loggedIn){
 
 async function initializeSupabase(){
   if(!isConfigured){
-    $('#authMessage').textContent =
-      'Supabase is not configured yet. Paste the Project URL and Publishable Key into this HTML file.';
-    $('#configWarning').classList.remove('hidden');
+    console.error('T·IOS Supabase configuration is missing.');
+    window.location.replace('index.html?view=home');
     return;
   }
-
-  $('#configWarning').classList.add('hidden');
 
   db = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_PUBLISHABLE_KEY
   );
 
+  /*
+    H·IOS is the ecosystem sign-in point.
+    H·IOS and T·IOS use the same origin and the same Supabase project,
+    so T·IOS reuses the Supabase session already stored by H·IOS.
+  */
   const { data:{ session }, error } = await db.auth.getSession();
 
   if(error){
-    $('#authMessage').textContent = error.message;
+    console.warn('Could not restore the H·IOS session in T·IOS:', error);
+    window.location.replace('index.html?view=home');
     return;
   }
 
   if(session?.user){
     await enterApp(session.user);
   }else{
-    setLoggedInUI(false);
+    // Never ask the user to sign in again inside T·IOS.
+    window.location.replace('index.html?view=home');
+    return;
   }
 
-  db.auth.onAuthStateChange(async (event)=>{
+  db.auth.onAuthStateChange(async (event, authSession)=>{
     if(event === 'SIGNED_OUT'){
       currentUser = null;
-      rConfigDraftDirty=false;
-      rConfigDraftAccountId=null;
+      window.location.replace('index.html?view=home');
+      return;
+    }
 
-      if(mt5RealtimeChannel && db){
-        db.removeChannel(mt5RealtimeChannel);
-        mt5RealtimeChannel=null;
-      }
-
-      tradingAccounts = [];
-      tradingAccount = null;
-      trades = [];
-      psychologySessions = [];
-      identityScores = [];
-      ruleChecks = [];
-      editingPsychSessionId = null;
-
-      planReviews = [];
-      planChecks = [];
-      selectedEdgeTradeId = null;
-
-      executionReviews = [];
-      executionChecks = [];
-      selectedExecutionTradeId = null;
-
-      tradingPhases = [];
-      goals = [];
-      goalLinks = [];
-      goalProgressLogs = [];
-      phaseReviews = [];
-      editingGoalId = null;
-      selectedPhaseWorkspaceNumber = 1;
-
-      setLoggedInUI(false);
+    if(
+      (event === 'SIGNED_IN' ||
+       event === 'TOKEN_REFRESHED' ||
+       event === 'INITIAL_SESSION') &&
+      authSession?.user &&
+      !currentUser
+    ){
+      await enterApp(authSession.user);
     }
   });
 }
@@ -6541,7 +6525,7 @@ $('#loginForm').addEventListener('submit', async e=>{
   e.preventDefault();
 
   if(!db){
-    $('#authMessage').textContent='Supabase configuration is missing.';
+    window.location.replace('index.html?view=home');
     return;
   }
 
@@ -8208,34 +8192,6 @@ function renderMetrics(){
   $('#worstDay').textContent=worst?signedMoney(worst[1].pnl):money(0);
   $('#worstDay').className='value '+(worst?pnlClass(worst[1].pnl):'neutral');
   $('#worstDayDate').textContent=worst?formatDate(worst[0]):'—';
-
-  let wd=0,ld=0,be=0;
-  days.forEach(([,x])=>x.pnl>0?wd++:x.pnl<0?ld++:be++);
-
-  $('#winningDays').textContent=wd;
-  $('#losingDays').textContent=ld;
-  $('#beDays').textContent=be;
-
-  const inst={};
-
-  mt.forEach(t=>{
-    const k=(t.instrument||'Unknown').trim();
-    inst[k]=(inst[k]||0)+(Number(t.pnl)||0);
-  });
-
-  const bestInst=Object.entries(inst).sort((a,b)=>b[1]-a[1])[0];
-
-  $('#bestInstrument').textContent=bestInst
-    ? `${bestInst[0]} (${signedMoney(bestInst[1])})`
-    : '—';
-
-  const execs=mt
-    .map(t=>Number(t.execution_score))
-    .filter(n=>Number.isFinite(n) && n>=0);
-
-  $('#avgExec').textContent=execs.length
-    ? (execs.reduce((a,b)=>a+b,0)/execs.length).toFixed(1)+'/10'
-    : '—';
 
   const allPnl=trades.reduce((s,t)=>s+(Number(t.pnl)||0),0);
 
@@ -14190,9 +14146,12 @@ function exportTrades(sourceTrades, filename){
   URL.revokeObjectURL(a.href);
 }
 
-$('#exportBtn').addEventListener('click',()=>{
-  exportTrades(trades,'tradersios-trades.csv');
-});
+const dashboardExportBtn=$('#exportBtn');
+if(dashboardExportBtn){
+  dashboardExportBtn.addEventListener('click',()=>{
+    exportTrades(trades,'tradersios-trades.csv');
+  });
+}
 
 $('#journalExportBtn').addEventListener('click',()=>{
   exportTrades(filteredJournalTrades(),'tradersios-journal-filtered.csv');
@@ -14823,7 +14782,6 @@ $('#logoutBtn').addEventListener('click',async()=>{
 function renderDashboard(){
   renderCalendar();
   renderMetrics();
-  renderRecent();
 }
 
 function renderAll(){
