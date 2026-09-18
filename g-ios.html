@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- G-IOS BUILD: DEFAULT-OVERVIEW-V2 | 2026-09-18 -->
+<!-- G-IOS BUILD: PROGRESS-COMPOUNDING-V1 | 2026-09-19 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -7,67 +7,31 @@
 <title>G·IOS — Goals Intelligence Operating System</title>
 <style>
 :root{
-  --bg:#060a10;
-  --panel:#0d131d;
-  --panel2:#111927;
-  --panel3:#0a1018;
-  --line:#1c2a3a;
-  --line2:#26384d;
-  --text:#f4f7fb;
-  --muted:#8594a8;
-  --blue:#5aa7ff;
-  --cyan:#4fdcff;
-  --violet:#8b5cf6;
-  --green:#34d399;
-  --amber:#fbbf24;
-  --red:#fb7185;
+  --bg:#060a10;--panel:#0d131d;--panel2:#111927;--panel3:#0a1018;--line:#1c2a3a;--line2:#26384d;
+  --text:#f4f7fb;--muted:#8594a8;--blue:#5aa7ff;--cyan:#4fdcff;--violet:#8b5cf6;--green:#34d399;--amber:#fbbf24;--red:#fb7185;
 }
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
-body{
-  background:
-    radial-gradient(circle at 78% 0%,rgba(90,167,255,.10),transparent 28%),
-    radial-gradient(circle at 18% 0%,rgba(139,92,246,.08),transparent 26%),
-    var(--bg);
-}
-button,input,select,textarea{font:inherit}
-button{cursor:pointer}
+body{background:radial-gradient(circle at 78% 0%,rgba(90,167,255,.10),transparent 28%),radial-gradient(circle at 18% 0%,rgba(139,92,246,.08),transparent 26%),var(--bg)}
+button,input,select,textarea{font:inherit}button{cursor:pointer}
 .app{min-height:100vh;display:grid;grid-template-columns:238px minmax(0,1fr)}
-.sidebar{
-  position:sticky;top:0;height:100vh;padding:20px 16px;border-right:1px solid #142131;
-  background:linear-gradient(180deg,rgba(7,12,19,.97),rgba(5,9,14,.98));
-}
-.brand{display:flex;align-items:center;gap:11px;padding:4px 8px 22px}
-.logo{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-weight:900;font-size:18px;background:linear-gradient(135deg,var(--blue),var(--violet));box-shadow:0 0 28px rgba(90,167,255,.16)}
-.brand h1{font-size:18px;margin:0;letter-spacing:.04em}.brand small{display:block;color:var(--muted);font-size:10px;margin-top:3px}
-.nav{display:grid;gap:6px}
-.nav button{width:100%;border:1px solid transparent;background:transparent;color:#8795a9;text-align:left;padding:11px 12px;border-radius:10px}
-.nav button.active{color:white;background:#111a27;border-color:#1c2a3b}.nav button:not(.active):hover{background:#0c131d;color:#dce6f3}
-.nav-note{position:absolute;left:16px;right:16px;bottom:18px}
-.family{width:100%;border:1px solid #223145;background:#0b1119;color:#cbd7e5;border-radius:11px;padding:10px 12px;font-weight:700}
-.family:hover{background:#101927}
-.main{padding:22px 26px 38px;max-width:1540px;width:100%;margin:0 auto}
-.topbar{display:flex;justify-content:space-between;gap:18px;align-items:center;margin-bottom:16px}
-.topbar .eyebrow{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#74b9ff;font-weight:800}
-.topbar h2{margin:4px 0 0;font-size:24px;letter-spacing:-.02em}.topbar p{margin:6px 0 0;color:var(--muted);font-size:12px}
-.actions{display:flex;gap:9px;flex-wrap:wrap}.btn{border:1px solid #26364a;background:#0f1723;color:#eaf1f8;border-radius:10px;padding:9px 13px}.btn.primary{border:0;font-weight:800;background:linear-gradient(135deg,var(--blue),var(--violet))}.btn:hover{filter:brightness(1.08)}
-.hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);gap:12px;margin-bottom:12px}
-.hero-main,.hero-side,.card{border:1px solid #1b2939;background:linear-gradient(180deg,rgba(15,23,34,.96),rgba(9,15,23,.96));border-radius:15px}
-.hero-main{padding:18px 20px;min-height:150px;position:relative;overflow:hidden}
-.hero-main:after{content:"";position:absolute;right:-80px;top:-130px;width:320px;height:320px;border:1px solid rgba(90,167,255,.16);border-radius:50%;box-shadow:0 0 0 46px rgba(139,92,246,.03),0 0 0 92px rgba(90,167,255,.025)}
-.hero-main .kicker{font-size:10px;color:#71c9ff;font-weight:900;text-transform:uppercase;letter-spacing:.11em}.hero-main h1{font-size:28px;margin:8px 0 5px;letter-spacing:-.035em}.hero-main p{max-width:820px;color:#9aa8ba;font-size:12px;line-height:1.6;margin:0}.hero-summary{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap}.pill{border:1px solid #26364b;background:#0a111a;color:#aebdd0;border-radius:999px;padding:7px 10px;font-size:10px}.pill strong{color:#fff}
-.hero-side{padding:16px}.hero-side-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.hero-side h3{font-size:13px;margin:0}.live{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#61e7b2;border:1px solid rgba(52,211,153,.28);background:rgba(52,211,153,.06);padding:5px 8px;border-radius:999px}.sync-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid #172334}.sync-row:first-of-type{border-top:0}.sync-row b{font-size:11px}.sync-row span{display:block;color:var(--muted);font-size:9px;margin-top:2px}.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px rgba(52,211,153,.5)}
+.sidebar{position:sticky;top:0;height:100vh;padding:20px 16px;border-right:1px solid #142131;background:linear-gradient(180deg,rgba(7,12,19,.97),rgba(5,9,14,.98))}
+.brand{display:flex;align-items:center;gap:11px;padding:4px 8px 22px}.logo{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-weight:900;font-size:18px;background:linear-gradient(135deg,var(--blue),var(--violet));box-shadow:0 0 28px rgba(90,167,255,.16)}
+.brand h1{margin:0;font-size:17px}.brand small{color:#728095;font-size:9px}.nav{display:grid;gap:7px}.nav button,.family{width:100%;border:1px solid transparent;background:transparent;color:#8c9aad;text-align:left;border-radius:10px;padding:11px 12px;font-size:11px}.nav button.active{background:#101a27;color:#fff;border-color:#1f3146}.nav button:hover,.family:hover{background:#0d1621;color:#fff}.nav-note{position:absolute;left:16px;right:16px;bottom:18px}.family{border-color:#1b2b3d;background:#08111a;color:#9cadc1;text-align:center}
+.main{padding:22px;min-width:0}.topbar{display:flex;justify-content:space-between;gap:18px;align-items:center;margin-bottom:14px}.eyebrow{color:#69bcff;text-transform:uppercase;letter-spacing:.12em;font-size:9px;font-weight:900}.topbar h2{margin:4px 0 2px;font-size:20px}.topbar p{margin:0;color:#8a99ac;font-size:10px}.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid #26384d;background:#0c1520;color:#dce8f7;border-radius:9px;padding:9px 11px;font-size:9px;font-weight:800}.btn.primary{background:linear-gradient(135deg,#5aa7ff,#8b5cf6);border-color:transparent;color:white}.btn.success{background:rgba(52,211,153,.11);border-color:rgba(52,211,153,.35);color:#75e8be}
+.hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(310px,.65fr);border:1px solid #1b2938;background:linear-gradient(135deg,#0b141f,#0f1b2b 60%,#18213d);border-radius:16px;overflow:hidden;margin-bottom:12px}.hero-main{padding:20px}.kicker{color:#68c7ff;text-transform:uppercase;font-size:9px;letter-spacing:.1em;font-weight:900}.hero h1{font-size:24px;margin:7px 0 8px;line-height:1.06}.hero p{margin:0;color:#9aa9bb;font-size:10px;line-height:1.55;max-width:760px}.hero-summary{display:flex;gap:7px;flex-wrap:wrap;margin-top:15px}.pill{padding:7px 9px;border:1px solid #24374e;background:#0a121c;border-radius:999px;color:#9eb0c5;font-size:9px}.pill strong{color:#fff}.hero-side{padding:18px;border-left:1px solid #1c2b3d;background:rgba(4,9,16,.18)}.hero-side-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.hero-side h3{margin:0;font-size:12px}.live{font-size:8px;padding:4px 7px;border-radius:999px;border:1px solid rgba(52,211,153,.32);color:#64deb1;background:rgba(52,211,153,.06)}
+.progress-spotlight{margin-top:13px;padding:13px;border:1px solid rgba(90,167,255,.18);border-radius:12px;background:linear-gradient(135deg,rgba(90,167,255,.07),rgba(139,92,246,.05))}.progress-spotlight .head{display:flex;justify-content:space-between;gap:12px;align-items:end}.progress-spotlight b{font-size:12px}.progress-spotlight strong{font-size:20px}.mini-bar{height:8px;margin-top:9px;border-radius:999px;background:#070d14;border:1px solid #152233;overflow:hidden}.mini-bar span{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--violet));border-radius:inherit}.progress-spotlight small{display:block;color:#7f90a5;font-size:8px;margin-top:6px}
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}.metric{padding:14px 15px;border:1px solid #1b2938;background:#0c131d;border-radius:13px}.metric small{display:block;color:#7f8da0;font-size:9px;text-transform:uppercase;letter-spacing:.08em}.metric b{display:block;font-size:23px;margin-top:6px}.metric em{display:block;font-style:normal;color:#738096;font-size:9px;margin-top:3px}
-.main-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(320px,.75fr);gap:12px}.card{padding:16px}.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}.card h3{margin:0;font-size:14px}.sub{color:var(--muted);font-size:10px;margin-top:4px;line-height:1.45}
-.priority-list{display:grid;gap:8px}.priority-item{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px;border:1px solid #1a2737;background:#091019;border-radius:11px}.rank{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:#102039;color:#8fc0ff;font-weight:900;font-size:11px}.priority-item b{font-size:11px}.priority-item small{display:block;color:#758399;font-size:9px;margin-top:3px}.tag{font-size:8px;border:1px solid #2a3e59;color:#a9c7ef;border-radius:999px;padding:5px 7px}.tag.high{border-color:rgba(251,113,133,.3);color:#ff9aac;background:rgba(251,113,133,.05)}
+.grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr);gap:12px}.card{padding:16px;border:1px solid #1b2938;background:#0d131d;border-radius:14px;min-width:0}.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}.card h3{margin:0;font-size:14px}.sub{color:var(--muted);font-size:10px;margin-top:4px;line-height:1.45}
+.chain-card{grid-column:1/-1}.chain-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chain-toolbar select{border:1px solid #26384d;background:#091019;color:#e9f1fb;border-radius:9px;padding:8px 10px;font-size:9px}.chain-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.stage{position:relative;padding:14px;border:1px solid #1c2a3c;background:#0a111a;border-radius:12px;min-height:156px}.stage:not(:last-child):after{content:"→";position:absolute;right:-9px;top:45%;z-index:2;color:#5da7ff;font-weight:900}.stage .label{font-size:9px;color:#78b9ff;text-transform:uppercase;letter-spacing:.09em}.stage h4{margin:7px 0 4px;font-size:11px;min-height:30px}.stage p{margin:0;color:#748297;font-size:8.5px;line-height:1.45;min-height:36px}.stage .count{margin-top:8px;font-size:8px;color:#748297}.stage .pct{display:flex;justify-content:space-between;align-items:center;margin-top:9px;font-size:9px}.stage .pct b{font-size:13px}.stage .remaining{font-size:8px;color:#77879b;margin-top:5px}
+.execution-list,.priority-list,.deadline-list{display:grid;gap:8px}.exec-item,.priority-item,.deadline-item{padding:11px;border:1px solid #1a2737;background:#091019;border-radius:11px}.exec-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}.exec-item b,.priority-item b,.deadline-item b{font-size:10.5px}.exec-item small,.priority-item small,.deadline-item small{display:block;color:#758399;font-size:8.5px;margin-top:3px}.exec-controls{display:flex;gap:5px;align-items:center}.exec-controls button{width:30px;height:28px;border-radius:8px;border:1px solid #24374e;background:#0d1722;color:#dce9f8;font-size:11px}.exec-controls button.done{width:auto;padding:0 8px;color:#75e8be;border-color:rgba(52,211,153,.28);background:rgba(52,211,153,.05)}
+.priority-item{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:9px;align-items:center}.rank{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:#102039;color:#8fc0ff;font-weight:900;font-size:10px}.tag{font-size:8px;border:1px solid #2a3e59;color:#a9c7ef;border-radius:999px;padding:5px 7px}.tag.high{border-color:rgba(251,113,133,.3);color:#ff9aac;background:rgba(251,113,133,.05)}
 .domain-list{display:grid;gap:12px}.domain-row{display:grid;gap:6px}.domain-head{display:flex;justify-content:space-between;font-size:10px}.domain-head span{color:#cbd5e1}.domain-head b{font-size:10px}.bar{height:7px;border-radius:999px;background:#091018;overflow:hidden;border:1px solid #152233}.bar span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--blue),var(--violet))}
-.hierarchy{grid-column:1/-1}.hierarchy-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stage{position:relative;padding:14px;border:1px solid #1c2a3c;background:#0a111a;border-radius:12px;min-height:112px}.stage:not(:last-child):after{content:"→";position:absolute;right:-9px;top:42%;z-index:2;color:#5da7ff;font-weight:900}.stage .label{font-size:9px;color:#78b9ff;text-transform:uppercase;letter-spacing:.09em}.stage h4{margin:7px 0 4px;font-size:12px}.stage p{margin:0;color:#748297;font-size:9px;line-height:1.5}.stage .count{margin-top:10px;font-size:10px;font-weight:800;color:#d9e4f2}
-.bottom-grid{grid-column:1/-1;display:grid;grid-template-columns:1fr .8fr;gap:12px}.commitments{display:grid;gap:8px}.commitment{display:grid;grid-template-columns:78px 1fr auto;gap:10px;align-items:center;padding:10px 11px;border:1px solid #1a2737;background:#091019;border-radius:10px}.date-badge{font-size:9px;color:#80baff}.commitment b{font-size:10px}.commitment small{display:block;color:#748196;font-size:9px;margin-top:2px}.commitment .state{font-size:8px;color:#a9c7ef}
-.intel-box{padding:14px;border:1px solid rgba(90,167,255,.20);background:linear-gradient(135deg,rgba(90,167,255,.07),rgba(139,92,246,.05));border-radius:12px}.intel-box strong{font-size:11px}.intel-box p{margin:6px 0 0;color:#8e9db0;font-size:9px;line-height:1.55}.sync-schema{margin-top:12px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}.sync-node{padding:9px;border-radius:9px;border:1px solid #26364a;background:#091019;font-size:9px;text-align:center}.sync-arrow{color:#66b0ff;font-weight:900}
-.empty{padding:16px;border:1px dashed #26364a;border-radius:10px;color:#7d8b9f;font-size:10px;text-align:center}
-.modal{position:fixed;inset:0;display:none;place-items:center;background:rgba(0,0,0,.67);z-index:20;padding:18px}.modal.show{display:grid}.modal-box{width:min(650px,100%);border:1px solid #26364a;background:#0c131d;border-radius:16px;padding:18px}.modal-box h3{margin:0}.modal-box p{color:var(--muted);font-size:10px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:grid;gap:5px}.field.full{grid-column:1/-1}.field label{font-size:9px;color:#96a5b7}.field input,.field select,.field textarea{width:100%;border:1px solid #25364a;background:#091019;color:#edf3f9;border-radius:9px;padding:10px;outline:none}.field textarea{min-height:72px;resize:vertical}.form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.toast{position:fixed;right:18px;bottom:18px;background:#111c29;border:1px solid #28415d;color:white;padding:10px 13px;border-radius:10px;font-size:10px;opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:none}
-@media(max-width:1050px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid #182536}.nav{grid-template-columns:repeat(3,1fr)}.nav-note{position:static;margin-top:14px}.hero,.main-grid,.bottom-grid{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}.hierarchy-grid{grid-template-columns:1fr 1fr}.stage:after{display:none}}
-@media(max-width:650px){.main{padding:16px}.topbar{align-items:flex-start;flex-direction:column}.metrics,.hierarchy-grid,.form-grid{grid-template-columns:1fr}.nav{grid-template-columns:1fr 1fr}.commitment{grid-template-columns:1fr}.hero{grid-template-columns:1fr}}
+.signal-box{margin-top:12px;padding:12px;border:1px solid #1b2d42;background:#0a111a;border-radius:11px}.signal-box strong{font-size:10px}.signal-box p{margin:5px 0 0;color:#7f90a5;font-size:8.5px;line-height:1.5}.sync-schema{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-top:10px}.sync-node{padding:9px;border-radius:9px;border:1px solid #26364a;background:#091019;font-size:9px;text-align:center}.sync-arrow{color:#66b0ff;font-weight:900}.empty{padding:16px;border:1px dashed #26364a;border-radius:10px;color:#7d8b9f;font-size:10px;text-align:center}
+.modal{position:fixed;inset:0;display:none;place-items:center;background:rgba(0,0,0,.67);z-index:20;padding:18px}.modal.show{display:grid}.modal-box{width:min(720px,100%);max-height:92vh;overflow:auto;border:1px solid #26364a;background:#0c131d;border-radius:16px;padding:18px}.modal-box h3{margin:0}.modal-box p{color:var(--muted);font-size:10px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:grid;gap:5px}.field.full{grid-column:1/-1}.field label{font-size:9px;color:#96a5b7}.field input,.field select,.field textarea{width:100%;border:1px solid #25364a;background:#091019;color:#edf3f9;border-radius:9px;padding:10px;outline:none}.field textarea{min-height:72px;resize:vertical}.field .hint{font-size:8px;color:#6f7f93}.form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.toast{position:fixed;right:18px;bottom:18px;background:#111c29;border:1px solid #28415d;color:white;padding:10px 13px;border-radius:10px;font-size:10px;opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:none}
+@media(max-width:1180px){.chain-grid{grid-template-columns:repeat(3,1fr)}.stage:after{display:none}}
+@media(max-width:1050px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid #182536}.nav{grid-template-columns:repeat(3,1fr)}.nav-note{position:static;margin-top:14px}.hero,.grid{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}.chain-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:650px){.main{padding:16px}.topbar{align-items:flex-start;flex-direction:column}.metrics,.chain-grid,.form-grid{grid-template-columns:1fr}.nav{grid-template-columns:1fr 1fr}.exec-item{grid-template-columns:1fr}.hero{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -76,10 +40,10 @@ button{cursor:pointer}
     <div class="brand"><div class="logo">G</div><div><h1>G·IOS</h1><small>Goals Intelligence Operating System</small></div></div>
     <nav class="nav">
       <button class="active">Overview</button>
-      <button type="button" data-next="Goal System">Goal System</button>
+      <button type="button" data-next="Goal Structure">Goal Structure</button>
       <button type="button" data-next="Goals">Goals</button>
+      <button type="button" data-next="Progress">Progress</button>
       <button type="button" data-next="Priorities">Priorities</button>
-      <button type="button" data-next="Calendar">Calendar</button>
       <button type="button" data-next="Reviews">Reviews</button>
     </nav>
     <div class="nav-note"><button class="family" id="backToHios">← H·IOS Family</button></div>
@@ -87,73 +51,75 @@ button{cursor:pointer}
 
   <main class="main">
     <div class="topbar">
-      <div>
-        <div class="eyebrow">G·IOS Intelligence</div>
-        <h2>Goal Intelligence</h2>
-        <p>Turn long-term direction into priorities, milestones and daily action.</p>
-      </div>
-      <div class="actions"><button class="btn" id="syncNow">Sync dashboard</button><button class="btn primary" id="addGoal">+ Add Goal</button></div>
+      <div><div class="eyebrow">G·IOS Intelligence</div><h2>Progress Intelligence</h2><p>Daily execution compounds upward into long-term progress.</p></div>
+      <div class="actions"><button class="btn" id="syncNow">Sync H·IOS</button><button class="btn primary" id="addGoal">+ Add Goal</button></div>
     </div>
 
     <section class="hero">
       <div class="hero-main">
-        <div class="kicker">Current direction</div>
-        <h1 id="heroTitle">What deserves your attention now?</h1>
-        <p id="heroSummary">G·IOS is reading your active goals, deadlines, progress and time horizons to decide what should move forward next.</p>
-        <div class="hero-summary">
-          <span class="pill"><strong id="heroActive">0</strong> active goals</span>
-          <span class="pill"><strong id="heroHigh">0</strong> high priority</span>
-          <span class="pill"><strong id="heroDue">0</strong> due soon</span>
-        </div>
+        <div class="kicker">Core principle</div>
+        <h1>Progress first. Time supports the plan - it does not define success.</h1>
+        <p>G·IOS tracks connected execution from daily actions to weekly targets, monthly milestones, semester outcomes and yearly / long-term goals. When work is completed at the bottom, progress rolls upward automatically.</p>
+        <div class="hero-summary"><span class="pill"><strong id="heroDaily">0%</strong> daily execution</span><span class="pill"><strong id="heroWeekly">0%</strong> weekly progress</span><span class="pill"><strong id="heroRemaining">0%</strong> remaining to primary goal</span></div>
       </div>
       <aside class="hero-side">
-        <div class="hero-side-head"><h3>H·IOS Dashboard Connection</h3><span class="live">Live contract</span></div>
-        <div class="sync-row"><div><b>Goal progress</b><span>Domain progress is prepared for the H·IOS dashboard.</span></div><div class="sync-dot"></div></div>
-        <div class="sync-row"><div><b>Today's Focus</b><span>Top ranked G·IOS priorities are published for H·IOS.</span></div><div class="sync-dot"></div></div>
-        <div class="sync-row"><div><b>Calendar items</b><span>Dated goals and milestones are included in the shared snapshot.</span></div><div class="sync-dot"></div></div>
+        <div class="hero-side-head"><h3>Primary Long-Term Goal</h3><span class="live">Progress-linked</span></div>
+        <div class="progress-spotlight">
+          <div class="head"><div><b id="primaryGoalTitle">No yearly goal selected</b><small id="primaryGoalDomain">Create a yearly goal to start the chain.</small></div><strong id="primaryGoalProgress">0%</strong></div>
+          <div class="mini-bar"><span id="primaryGoalBar" style="width:0%"></span></div>
+          <small id="primaryGoalDistance">100% of the outcome is still ahead.</small>
+        </div>
       </aside>
     </section>
 
     <section class="metrics">
-      <div class="metric"><small>Active goals</small><b id="mActive">0</b><em>Across all horizons</em></div>
-      <div class="metric"><small>High priority</small><b id="mHigh">0</b><em>Need attention</em></div>
-      <div class="metric"><small>Due in 7 days</small><b id="mDue">0</b><em>Upcoming commitments</em></div>
-      <div class="metric"><small>Overall progress</small><b id="mProgress">0%</b><em>Average active-goal progress</em></div>
+      <div class="metric"><small>Long-term progress</small><b id="mLong">0%</b><em>Rolled up from connected lower-level goals</em></div>
+      <div class="metric"><small>Daily execution</small><b id="mDaily">0%</b><em>Average active daily-action progress</em></div>
+      <div class="metric"><small>Weekly progress</small><b id="mWeekly">0%</b><em>Compounded from daily actions</em></div>
+      <div class="metric"><small>Distance remaining</small><b id="mRemaining">100%</b><em>To the selected long-term outcome</em></div>
     </section>
 
-    <section class="main-grid">
+    <section class="grid">
+      <section class="card chain-card">
+        <div class="card-head">
+          <div><h3>Compounding Goal Chain</h3><div class="sub">Daily → Weekly → Monthly → Semester → Yearly / Long-term. Periods are planning layers, not rigid promises.</div></div>
+          <div class="chain-toolbar"><label class="sub" for="chainRoot">View:</label><select id="chainRoot"></select></div>
+        </div>
+        <div class="chain-grid">
+          <div class="stage" data-level="yearly"><div class="label">Yearly / Long-term</div><h4 id="stageYearlyTitle">—</h4><p>Defines the major outcome and direction.</p><div class="pct"><span>Progress</span><b id="stageYearlyPct">0%</b></div><div class="bar"><span id="stageYearlyBar" style="width:0%"></span></div><div class="remaining" id="stageYearlyRemaining">100% remaining</div><div class="count" id="stageYearlyCount">0 linked goals</div></div>
+          <div class="stage" data-level="semester"><div class="label">Semester</div><h4 id="stageSemesterTitle">—</h4><p>Major medium-term outcomes that move the yearly direction.</p><div class="pct"><span>Progress</span><b id="stageSemesterPct">0%</b></div><div class="bar"><span id="stageSemesterBar" style="width:0%"></span></div><div class="remaining" id="stageSemesterRemaining">100% remaining</div><div class="count" id="stageSemesterCount">0 linked goals</div></div>
+          <div class="stage" data-level="monthly"><div class="label">Monthly</div><h4 id="stageMonthlyTitle">—</h4><p>Milestones that show measurable advancement.</p><div class="pct"><span>Progress</span><b id="stageMonthlyPct">0%</b></div><div class="bar"><span id="stageMonthlyBar" style="width:0%"></span></div><div class="remaining" id="stageMonthlyRemaining">100% remaining</div><div class="count" id="stageMonthlyCount">0 linked goals</div></div>
+          <div class="stage" data-level="weekly"><div class="label">Weekly</div><h4 id="stageWeeklyTitle">—</h4><p>Execution targets that protect monthly progress.</p><div class="pct"><span>Progress</span><b id="stageWeeklyPct">0%</b></div><div class="bar"><span id="stageWeeklyBar" style="width:0%"></span></div><div class="remaining" id="stageWeeklyRemaining">100% remaining</div><div class="count" id="stageWeeklyCount">0 linked goals</div></div>
+          <div class="stage" data-level="daily"><div class="label">Daily</div><h4 id="stageDailyTitle">—</h4><p>Concrete actions. This is where progress is created.</p><div class="pct"><span>Progress</span><b id="stageDailyPct">0%</b></div><div class="bar"><span id="stageDailyBar" style="width:0%"></span></div><div class="remaining" id="stageDailyRemaining">100% remaining</div><div class="count" id="stageDailyCount">0 linked goals</div></div>
+        </div>
+      </section>
+
       <section class="card">
-        <div class="card-head"><div><h3>Today's Priorities</h3><div class="sub">Ranked from urgency, importance, progress, deadline and time horizon.</div></div><button class="btn" id="reRank">Re-rank</button></div>
+        <div class="card-head"><div><h3>Today's Execution</h3><div class="sub">Update leaf-level actions here. Parent progress recalculates automatically.</div></div></div>
+        <div class="execution-list" id="executionList"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><div><h3>Progress by Domain</h3><div class="sub">Uses top-level goal progress to avoid double-counting child goals.</div></div></div>
+        <div class="domain-list" id="domainList"></div>
+        <div class="signal-box"><strong>Distance, not false certainty</strong><p id="paceSignal">G·IOS currently reports how much of the goal remains. A time estimate will only appear after enough real progress history exists.</p></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><div><h3>Progress Priorities</h3><div class="sub">Progress gaps and importance carry more weight than arbitrary dates.</div></div><button class="btn" id="reRank">Re-rank</button></div>
         <div class="priority-list" id="priorityList"></div>
       </section>
 
       <section class="card">
-        <div class="card-head"><div><h3>Goal Progress</h3><div class="sub">Average progress across active goals in each domain.</div></div></div>
-        <div class="domain-list" id="domainList"></div>
+        <div class="card-head"><div><h3>Hard Deadlines</h3><div class="sub">Dates remain important when the real-world outcome genuinely has a deadline.</div></div></div>
+        <div class="deadline-list" id="deadlineList"></div>
       </section>
 
-      <section class="card hierarchy">
-        <div class="card-head"><div><h3>Goal System</h3><div class="sub">G·IOS converts direction into execution through one connected hierarchy.</div></div></div>
-        <div class="hierarchy-grid">
-          <div class="stage"><div class="label">Yearly</div><h4>Direction</h4><p>The major outcome that defines where the system is trying to go.</p><div class="count" id="countYearly">0 yearly goals</div></div>
-          <div class="stage"><div class="label">Monthly</div><h4>Milestones</h4><p>Measurable checkpoints that prove the yearly direction is advancing.</p><div class="count" id="countMonthly">0 monthly goals</div></div>
-          <div class="stage"><div class="label">Weekly</div><h4>Execution targets</h4><p>The work that must happen this week to protect monthly progress.</p><div class="count" id="countWeekly">0 weekly goals</div></div>
-          <div class="stage"><div class="label">Daily</div><h4>Immediate action</h4><p>The specific action that should be executed now.</p><div class="count" id="countDaily">0 daily goals</div></div>
-        </div>
+      <section class="card">
+        <div class="card-head"><div><h3>H·IOS Dashboard Connection</h3><div class="sub">G·IOS publishes progress, focus and dated commitments to the H·IOS home dashboard.</div></div><button class="btn success" id="syncNow2">Publish</button></div>
+        <div class="sync-schema"><div class="sync-node">G·IOS progress engine</div><div class="sync-arrow">→</div><div class="sync-node">H·IOS dashboard snapshot</div></div>
+        <div class="signal-box"><strong>Shared snapshot</strong><p id="syncText">Waiting for the first dashboard snapshot.</p></div>
       </section>
-
-      <div class="bottom-grid">
-        <section class="card">
-          <div class="card-head"><div><h3>Upcoming Commitments</h3><div class="sub">Dated goals that can feed the H·IOS Intelligence Calendar.</div></div></div>
-          <div class="commitments" id="commitmentList"></div>
-        </section>
-
-        <section class="card">
-          <div class="card-head"><div><h3>Shared Intelligence Output</h3><div class="sub">This default page already prepares the data contract H·IOS will consume.</div></div></div>
-          <div class="intel-box"><strong>G·IOS → H·IOS</strong><p id="syncText">Waiting for the first dashboard snapshot.</p></div>
-          <div class="sync-schema"><div class="sync-node">G·IOS goals</div><div class="sync-arrow">→</div><div class="sync-node">H·IOS dashboard snapshot</div></div>
-        </section>
-      </div>
     </section>
   </main>
 </div>
@@ -161,226 +127,122 @@ button{cursor:pointer}
 <div class="modal" id="goalModal">
   <div class="modal-box">
     <h3>Add Goal</h3>
-    <p>Create a goal now. Later, the dedicated Goal System page will handle deeper hierarchy editing.</p>
+    <p>Create a goal inside the compounding hierarchy. Target dates are optional unless the outcome truly has a deadline.</p>
     <form id="goalForm">
       <div class="form-grid">
-        <div class="field full"><label>Goal title</label><input id="goalTitle" required placeholder="e.g. Complete engineering assignment" /></div>
-        <div class="field"><label>Time horizon</label><select id="goalHorizon"><option value="yearly">Yearly</option><option value="monthly">Monthly</option><option value="weekly">Weekly</option><option value="daily">Daily</option></select></div>
-        <div class="field"><label>Domain</label><select id="goalDomain"><option>Engineering</option><option>Trading</option><option>Education</option><option>Fitness</option><option>Business</option><option>Career</option><option>Personal</option><option>Other</option></select></div>
-        <div class="field"><label>Priority</label><select id="goalPriority"><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></div>
-        <div class="field"><label>Progress (%)</label><input id="goalProgress" type="number" min="0" max="100" value="0" /></div>
-        <div class="field"><label>Target date</label><input id="goalDate" type="date" /></div>
-        <div class="field full"><label>Why this matters</label><textarea id="goalWhy" placeholder="Reason this goal matters"></textarea></div>
+        <div class="field full"><label>Goal title</label><input id="goalTitle" required placeholder="e.g. Complete Test 2 preparation" /></div>
+        <div class="field"><label>Planning level</label><select id="goalLevel"><option value="yearly">Yearly / Long-term</option><option value="semester">Semester</option><option value="monthly">Monthly</option><option value="weekly">Weekly</option><option value="daily">Daily</option></select></div>
+        <div class="field"><label>Domain</label><select id="goalDomain"><option>Engineering</option><option>Trading</option><option>Fitness</option><option>Business</option><option>Career</option><option>Personal</option><option>Other</option></select></div>
+        <div class="field"><label>Priority</label><select id="goalPriority"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select></div>
+        <div class="field"><label>Starting progress (%)</label><input id="goalProgress" type="number" min="0" max="100" value="0" /></div>
+        <div class="field full"><label>Parent goal</label><select id="goalParent"><option value="">No parent - top-level goal</option></select><div class="hint">G·IOS allows flexible structures, but lower-level goals should normally connect to a higher planning level.</div></div>
+        <div class="field"><label>Hard deadline (optional)</label><input id="goalDate" type="date" /><div class="hint">Leave blank when the outcome has no true deadline.</div></div>
+        <div class="field"><label>Progress weight</label><input id="goalWeight" type="number" min="0.1" max="10" step="0.1" value="1" /><div class="hint">Higher weight means this child contributes more to its parent progress.</div></div>
+        <div class="field full"><label>Why this goal matters</label><textarea id="goalWhy" placeholder="What larger outcome does this support?"></textarea></div>
       </div>
-      <div class="form-actions"><button class="btn" type="button" id="cancelGoal">Cancel</button><button class="btn primary" type="submit">Create Goal</button></div>
+      <div class="form-actions"><button class="btn" type="button" id="cancelGoal">Cancel</button><button class="btn primary" type="submit">Add Goal</button></div>
     </form>
   </div>
 </div>
 <div class="toast" id="toast"></div>
 
 <script>
-const GOALS_KEY = 'hios_gios_goals_v1';
-const LEGACY_KEY = 'gios_standalone_goals_v1';
-const SNAPSHOT_KEY = 'hios_gios_dashboard_v1';
-let goals = [];
-
-const $ = s => document.querySelector(s);
-const $$ = s => [...document.querySelectorAll(s)];
-const clamp = (v,min,max) => Math.max(min,Math.min(max,v));
-const escapeHtml = value => String(value ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
-const cap = s => s ? s[0].toUpperCase()+s.slice(1) : '';
-
-function datePlus(days){
-  const d = new Date();
-  d.setHours(0,0,0,0);
-  d.setDate(d.getDate()+days);
-  return d.toISOString().slice(0,10);
+const GOALS_KEY='hios_gios_goals_v2';
+const OLD_GOALS_KEYS=['hios_gios_goals_v1','gios_standalone_goals_v1'];
+const SNAPSHOT_KEY='hios_gios_dashboard_v1';
+const LEVELS=['yearly','semester','monthly','weekly','daily'];
+const LEVEL_LABEL={yearly:'Yearly / Long-term',semester:'Semester',monthly:'Monthly',weekly:'Weekly',daily:'Daily'};
+const LEVEL_RANK={yearly:5,semester:4,monthly:3,weekly:2,daily:1};
+let goals=[];
+let selectedRootId='';
+const $=s=>document.querySelector(s);const $$=s=>[...document.querySelectorAll(s)];
+const clamp=(v,a=0,b=100)=>Math.max(a,Math.min(b,Number(v)||0));
+const escapeHtml=v=>String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
+const cap=s=>s?s[0].toUpperCase()+s.slice(1):'';
+function datePlus(days){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()+days);return d.toISOString().slice(0,10)}
+function starterGoals(){return[
+{id:'eng_year',title:'Complete the engineering academic year successfully',level:'yearly',domain:'Engineering',priority:'high',manualProgress:0,parentId:'',weight:1,targetDate:'',why:'Advance toward professional engineering competence.',history:[]},
+{id:'eng_sem',title:'Complete the current semester successfully',level:'semester',domain:'Engineering',priority:'high',manualProgress:0,parentId:'eng_year',weight:1,targetDate:'',why:'Build the academic results required by the yearly direction.',history:[]},
+{id:'eng_month',title:'Complete current assessment cycle',level:'monthly',domain:'Engineering',priority:'high',manualProgress:0,parentId:'eng_sem',weight:1,targetDate:'',why:'Convert semester direction into measurable assessment progress.',history:[]},
+{id:'eng_week',title:'Finish Test 2 revision and practice',level:'weekly',domain:'Engineering',priority:'high',manualProgress:0,parentId:'eng_month',weight:1,targetDate:'',why:'Protect the nearest academic progress block.',history:[]},
+{id:'eng_day1',title:'Complete bending-stress revision',level:'daily',domain:'Engineering',priority:'high',manualProgress:100,parentId:'eng_week',weight:1,targetDate:'',why:'Complete one concrete part of the weekly target.',history:[]},
+{id:'eng_day2',title:'Complete Tutorial 3 practice',level:'daily',domain:'Engineering',priority:'high',manualProgress:65,parentId:'eng_week',weight:1,targetDate:datePlus(2),why:'Build exam readiness through active practice.',history:[]},
+{id:'eng_day3',title:'Complete one mixed Test 2 paper',level:'daily',domain:'Engineering',priority:'high',manualProgress:20,parentId:'eng_week',weight:1,targetDate:datePlus(3),why:'Test the full topic chain under exam conditions.',history:[]},
+{id:'trade_year',title:'Become consistently disciplined in trading execution',level:'yearly',domain:'Trading',priority:'high',manualProgress:0,parentId:'',weight:1,targetDate:'',why:'Build professional trading behavior before wealth accumulation.',history:[]},
+{id:'trade_sem',title:'Complete execution and edge-development phases',level:'semester',domain:'Trading',priority:'medium',manualProgress:0,parentId:'trade_year',weight:1,targetDate:'',why:'Advance the long-term trading development process.',history:[]},
+{id:'trade_month',title:'Complete current Phase 1 execution sample',level:'monthly',domain:'Trading',priority:'high',manualProgress:0,parentId:'trade_sem',weight:1,targetDate:'',why:'Prove execution quality over a complete sample.',history:[]},
+{id:'trade_week',title:'Complete remaining clean trades this week',level:'weekly',domain:'Trading',priority:'medium',manualProgress:0,parentId:'trade_month',weight:1,targetDate:'',why:'Move the active sample forward without breaking rules.',history:[]},
+{id:'trade_day',title:'Execute only predefined setups and complete reflection',level:'daily',domain:'Trading',priority:'medium',manualProgress:55,parentId:'trade_week',weight:1,targetDate:'',why:'Protect execution quality today.',history:[]},
+{id:'fit_year',title:'Maintain strong physical conditioning',level:'yearly',domain:'Fitness',priority:'medium',manualProgress:0,parentId:'',weight:1,targetDate:'',why:'Support long-term energy and performance.',history:[]},
+{id:'fit_week',title:'Complete weekly training target',level:'weekly',domain:'Fitness',priority:'medium',manualProgress:0,parentId:'fit_year',weight:1,targetDate:'',why:'Maintain consistent training execution.',history:[]},
+{id:'fit_day',title:'Complete today\'s training session',level:'daily',domain:'Fitness',priority:'low',manualProgress:88,parentId:'fit_week',weight:1,targetDate:'',why:'Protect the current routine.',history:[]}
+]}
+function normalizeGoal(g){
+ const level=g.level||g.horizon||'monthly';
+ return {id:g.id||('g_'+Date.now()+Math.random().toString(16).slice(2)),title:g.title||'Untitled goal',level:LEVELS.includes(level)?level:'monthly',domain:g.domain||'Other',priority:['high','medium','low'].includes(g.priority)?g.priority:'medium',manualProgress:clamp(g.manualProgress??g.progress??0),parentId:g.parentId||'',weight:Math.max(.1,Number(g.weight||1)),targetDate:g.targetDate||'',why:g.why||'',history:Array.isArray(g.history)?g.history:[]};
 }
-
-function starterGoals(){
-  return [
-    {id:'g1',title:'Complete engineering assignment',horizon:'daily',domain:'Engineering',priority:'high',progress:62,targetDate:datePlus(1),why:'Protect the nearest academic deadline.'},
-    {id:'g2',title:'Study Test 2 scope',horizon:'weekly',domain:'Engineering',priority:'high',progress:45,targetDate:datePlus(3),why:'Prepare before the assessment window closes.'},
-    {id:'g3',title:'Review trading execution',horizon:'weekly',domain:'Trading',priority:'medium',progress:61,targetDate:datePlus(7),why:'Improve execution quality before scaling the sample.'},
-    {id:'g4',title:'Continue trading sample',horizon:'monthly',domain:'Trading',priority:'medium',progress:61,targetDate:datePlus(18),why:'Complete the active phase milestone.'},
-    {id:'g5',title:'Maintain weekly fitness target',horizon:'weekly',domain:'Fitness',priority:'low',progress:88,targetDate:datePlus(5),why:'Protect physical performance and routine.'},
-    {id:'g6',title:'Complete engineering semester successfully',horizon:'yearly',domain:'Engineering',priority:'high',progress:72,targetDate:datePlus(90),why:'Advance the long-term engineering objective.'}
-  ];
-}
-
 function loadGoals(){
-  try{
-    let raw = localStorage.getItem(GOALS_KEY);
-    if(!raw){
-      raw = localStorage.getItem(LEGACY_KEY);
-      if(raw) localStorage.setItem(GOALS_KEY, raw);
-    }
-    const parsed = raw ? JSON.parse(raw) : null;
-    goals = Array.isArray(parsed) && parsed.length ? parsed : starterGoals();
-  }catch(error){
-    console.warn('Could not load G·IOS goals:', error);
-    goals = starterGoals();
-  }
-  saveGoals(false);
+ try{
+  let raw=localStorage.getItem(GOALS_KEY);
+  if(!raw){for(const key of OLD_GOALS_KEYS){const r=localStorage.getItem(key);if(r){raw=r;break}}}
+  const parsed=raw?JSON.parse(raw):null;
+  goals=Array.isArray(parsed)&&parsed.length?parsed.map(normalizeGoal):starterGoals();
+ }catch(e){console.warn('Could not load G·IOS data:',e);goals=starterGoals()}
+ // If migrated data has no parent links, keep it rather than guessing. New goals can be linked from here forward.
+ saveGoals(false);
 }
-
-function saveGoals(render=true){
-  localStorage.setItem(GOALS_KEY, JSON.stringify(goals));
-  if(render) renderAll();
+function saveGoals(render=true){localStorage.setItem(GOALS_KEY,JSON.stringify(goals));if(render)renderAll()}
+function childrenOf(id){return goals.filter(g=>g.parentId===id)}
+function weightedAverage(items,getValue){let sum=0,w=0;items.forEach(item=>{const weight=Math.max(.1,Number(item.weight||1));sum+=getValue(item)*weight;w+=weight});return w?sum/w:0}
+function effectiveProgress(goalOrId,seen=new Set()){
+ const g=typeof goalOrId==='string'?goals.find(x=>x.id===goalOrId):goalOrId;if(!g)return 0;if(seen.has(g.id))return clamp(g.manualProgress);seen.add(g.id);
+ const kids=childrenOf(g.id);if(!kids.length)return clamp(g.manualProgress);
+ return clamp(Math.round(weightedAverage(kids,k=>effectiveProgress(k,new Set(seen)))));
 }
-
-function daysUntil(date){
-  if(!date) return Infinity;
-  const today = new Date(); today.setHours(0,0,0,0);
-  const due = new Date(date+'T00:00:00');
-  return Math.ceil((due-today)/86400000);
-}
-
-function formatDue(date){
-  const d = daysUntil(date);
-  if(d === Infinity) return 'No deadline';
-  if(d < 0) return Math.abs(d)+'d overdue';
-  if(d === 0) return 'Due today';
-  if(d === 1) return 'Due tomorrow';
-  if(d <= 30) return 'Due in '+d+'d';
-  return new Date(date+'T00:00:00').toLocaleDateString(undefined,{day:'numeric',month:'short'});
-}
-
-function scoreGoal(goal){
-  let s = goal.priority === 'high' ? 60 : goal.priority === 'medium' ? 35 : 15;
-  const p = Number(goal.progress||0);
-  if(p < 25) s += 20; else if(p < 60) s += 10;
-  if(goal.horizon === 'daily') s += 20; else if(goal.horizon === 'weekly') s += 12; else if(goal.horizon === 'monthly') s += 6;
-  const d = daysUntil(goal.targetDate);
-  if(d <= 0) s += 45; else if(d <= 2) s += 35; else if(d <= 7) s += 22; else if(d <= 30) s += 8;
-  return s;
-}
-
-function urgency(goal){
-  const s = scoreGoal(goal);
-  if(s >= 90) return 'Very high';
-  if(s >= 65) return 'High';
-  if(s >= 40) return 'Moderate';
-  return 'Maintain';
-}
-
-function activeGoals(){ return goals.filter(g => Number(g.progress||0) < 100); }
-function rankedGoals(){ return activeGoals().slice().sort((a,b)=>scoreGoal(b)-scoreGoal(a)); }
-
-function domainProgress(){
-  const groups = {};
-  activeGoals().forEach(g => {
-    (groups[g.domain] ||= []).push(Number(g.progress||0));
-  });
-  return Object.entries(groups).map(([domain,vals]) => ({
-    domain,
-    progress: Math.round(vals.reduce((a,b)=>a+b,0)/vals.length)
-  })).sort((a,b)=>b.progress-a.progress);
-}
-
-function renderMetrics(){
-  const active = activeGoals();
-  const high = active.filter(g=>g.priority==='high');
-  const due = active.filter(g=>daysUntil(g.targetDate)>=0 && daysUntil(g.targetDate)<=7);
-  const avg = active.length ? Math.round(active.reduce((s,g)=>s+Number(g.progress||0),0)/active.length) : 0;
-  $('#mActive').textContent = active.length;
-  $('#mHigh').textContent = high.length;
-  $('#mDue').textContent = due.length;
-  $('#mProgress').textContent = avg+'%';
-  $('#heroActive').textContent = active.length;
-  $('#heroHigh').textContent = high.length;
-  $('#heroDue').textContent = due.length;
-}
-
-function renderPriorities(){
-  const list = rankedGoals().slice(0,4);
-  const box = $('#priorityList');
-  if(!list.length){ box.innerHTML = '<div class="empty">No active priorities.</div>'; return; }
-  box.innerHTML = list.map((g,i)=>{
-    const u = urgency(g);
-    const cls = (u==='Very high'||u==='High') ? 'high' : '';
-    return `<div class="priority-item">
-      <div class="rank">${i+1}</div>
-      <div><b>${escapeHtml(g.title)}</b><small>${escapeHtml(g.domain)} · ${cap(g.horizon)} · ${formatDue(g.targetDate)} · ${Number(g.progress||0)}%</small></div>
-      <span class="tag ${cls}">${u}</span>
-    </div>`;
-  }).join('');
-  const top = list[0];
-  $('#heroTitle').textContent = top ? top.title : 'What deserves your attention now?';
-  $('#heroSummary').textContent = top
-    ? `${top.domain} currently carries the strongest attention signal. ${top.why || 'G·IOS is prioritizing it from the available goal evidence.'}`
-    : 'G·IOS is reading your active goals, deadlines, progress and time horizons to decide what should move forward next.';
-}
-
-function renderDomains(){
-  const items = domainProgress().slice(0,5);
-  const box = $('#domainList');
-  if(!items.length){ box.innerHTML='<div class="empty">No domain progress yet.</div>'; return; }
-  box.innerHTML = items.map(d=>`<div class="domain-row"><div class="domain-head"><span>${escapeHtml(d.domain)}</span><b>${d.progress}%</b></div><div class="bar"><span style="width:${clamp(d.progress,0,100)}%"></span></div></div>`).join('');
-}
-
-function renderHierarchy(){
-  ['yearly','monthly','weekly','daily'].forEach(h=>{
-    const n = goals.filter(g=>g.horizon===h).length;
-    $('#count'+cap(h)).textContent = `${n} ${h} goal${n===1?'':'s'}`;
-  });
-}
-
-function renderCommitments(){
-  const items = activeGoals().filter(g=>g.targetDate).sort((a,b)=>new Date(a.targetDate)-new Date(b.targetDate)).slice(0,5);
-  const box = $('#commitmentList');
-  if(!items.length){ box.innerHTML='<div class="empty">No dated goals yet.</div>'; return; }
-  box.innerHTML = items.map(g=>{
-    const d = new Date(g.targetDate+'T00:00:00');
-    const label = d.toLocaleDateString(undefined,{day:'2-digit',month:'short'});
-    return `<div class="commitment"><div class="date-badge">${label}</div><div><b>${escapeHtml(g.title)}</b><small>${escapeHtml(g.domain)} · ${cap(g.horizon)}</small></div><div class="state">${formatDue(g.targetDate)}</div></div>`;
-  }).join('');
-}
-
-function publishDashboardSnapshot(showMessage=false){
-  const active = activeGoals();
-  const snapshot = {
-    source:'G-IOS',
-    version:1,
-    updatedAt:new Date().toISOString(),
-    activeGoals:active.length,
-    highPriority:active.filter(g=>g.priority==='high').length,
-    calendarItems:active.filter(g=>g.targetDate).map(g=>({id:g.id,title:g.title,date:g.targetDate,domain:g.domain,horizon:g.horizon,progress:Number(g.progress||0)})),
-    domainProgress:domainProgress(),
-    focusItems:rankedGoals().slice(0,4).map((g,i)=>({rank:i+1,id:g.id,title:g.title,domain:g.domain,horizon:g.horizon,progress:Number(g.progress||0),targetDate:g.targetDate,urgency:urgency(g),reason:g.why||''})),
-    hierarchyCounts:{yearly:goals.filter(g=>g.horizon==='yearly').length,monthly:goals.filter(g=>g.horizon==='monthly').length,weekly:goals.filter(g=>g.horizon==='weekly').length,daily:goals.filter(g=>g.horizon==='daily').length},
-    goals:goals.map(g=>({...g}))
-  };
-  localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(snapshot));
-  $('#syncText').textContent = `Snapshot updated ${new Date(snapshot.updatedAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}. H·IOS can now read ${snapshot.focusItems.length} focus items, ${snapshot.domainProgress.length} domain progress values and ${snapshot.calendarItems.length} calendar items.`;
-  if(showMessage) toast('G·IOS dashboard snapshot updated.');
-}
-
-function renderAll(){
-  renderMetrics(); renderPriorities(); renderDomains(); renderHierarchy(); renderCommitments(); publishDashboardSnapshot(false);
-}
-
-function toast(message){
-  const t = $('#toast'); t.textContent = message; t.classList.add('show'); clearTimeout(window.__toast); window.__toast = setTimeout(()=>t.classList.remove('show'),2200);
-}
-
-$('#addGoal').addEventListener('click',()=>$('#goalModal').classList.add('show'));
+function descendants(rootId){const out=[];const stack=[rootId];const seen=new Set();while(stack.length){const id=stack.pop();if(seen.has(id))continue;seen.add(id);childrenOf(id).forEach(c=>{out.push(c);stack.push(c.id)})}return out}
+function topGoals(){return goals.filter(g=>!g.parentId||!goals.some(p=>p.id===g.parentId))}
+function yearlyRoots(){const roots=goals.filter(g=>g.level==='yearly');return roots.length?roots:topGoals()}
+function primaryRoot(){const roots=yearlyRoots();if(!roots.length)return null;return roots.slice().sort((a,b)=>priorityScore(b)-priorityScore(a)||effectiveProgress(a)-effectiveProgress(b))[0]}
+function levelItemsForRoot(root,level){if(!root)return[];if(root.level===level)return[root];return descendants(root.id).filter(g=>g.level===level)}
+function levelProgressForRoot(root,level){const items=levelItemsForRoot(root,level);return items.length?Math.round(weightedAverage(items,g=>effectiveProgress(g))):0}
+function levelHeadline(root,level){const items=levelItemsForRoot(root,level);if(!items.length)return'No linked '+LEVEL_LABEL[level].toLowerCase()+' goals';if(items.length===1)return items[0].title;return items.length+' linked '+LEVEL_LABEL[level].toLowerCase()+' goals'}
+function dailyGoals(){return goals.filter(g=>g.level==='daily'&&effectiveProgress(g)<100)}
+function dailyExecution(root=null){const items=root?levelItemsForRoot(root,'daily'):goals.filter(g=>g.level==='daily');return items.length?Math.round(weightedAverage(items,g=>effectiveProgress(g))):0}
+function weeklyProgress(root=null){const items=root?levelItemsForRoot(root,'weekly'):goals.filter(g=>g.level==='weekly');return items.length?Math.round(weightedAverage(items,g=>effectiveProgress(g))):0}
+function topLevelDomainProgress(){const groups={};topGoals().forEach(g=>{(groups[g.domain]||=[]).push(g)});return Object.entries(groups).map(([domain,items])=>({domain,progress:Math.round(weightedAverage(items,g=>effectiveProgress(g)))})).sort((a,b)=>b.progress-a.progress)}
+function daysUntil(date){if(!date)return Infinity;const today=new Date();today.setHours(0,0,0,0);const due=new Date(date+'T00:00:00');return Math.ceil((due-today)/86400000)}
+function formatDue(date){const d=daysUntil(date);if(d===Infinity)return'No deadline';if(d<0)return Math.abs(d)+'d overdue';if(d===0)return'Due today';if(d===1)return'Due tomorrow';if(d<=30)return'Due in '+d+'d';return new Date(date+'T00:00:00').toLocaleDateString(undefined,{day:'numeric',month:'short'})}
+function priorityScore(g){let s=g.priority==='high'?50:g.priority==='medium'?30:15;const p=effectiveProgress(g);s+=(100-p)*.30;if(g.level==='daily')s+=18;else if(g.level==='weekly')s+=10;else if(g.level==='monthly')s+=5;const d=daysUntil(g.targetDate);if(d<=0)s+=28;else if(d<=3)s+=18;else if(d<=7)s+=10;return s}
+function urgency(g){const s=priorityScore(g);if(s>=90)return'Very high';if(s>=68)return'High';if(s>=45)return'Moderate';return'Maintain'}
+function rankedFocus(){return goals.filter(g=>effectiveProgress(g)<100).slice().sort((a,b)=>priorityScore(b)-priorityScore(a))}
+function renderRootSelect(){const select=$('#chainRoot');const roots=yearlyRoots();if(!roots.length){select.innerHTML='<option value="">No long-term goals</option>';selectedRootId='';return}if(!selectedRootId||!roots.some(g=>g.id===selectedRootId))selectedRootId=(primaryRoot()||roots[0]).id;select.innerHTML=roots.map(g=>`<option value="${escapeHtml(g.id)}" ${g.id===selectedRootId?'selected':''}>${escapeHtml(g.domain+' — '+g.title)}</option>`).join('')}
+function renderMetrics(){const root=goals.find(g=>g.id===selectedRootId)||primaryRoot();const long=root?effectiveProgress(root):0;const daily=dailyExecution(root);const weekly=weeklyProgress(root);const remaining=100-long;$('#mLong').textContent=long+'%';$('#mDaily').textContent=daily+'%';$('#mWeekly').textContent=weekly+'%';$('#mRemaining').textContent=remaining+'%';$('#heroDaily').textContent=daily+'%';$('#heroWeekly').textContent=weekly+'%';$('#heroRemaining').textContent=remaining+'%';$('#primaryGoalTitle').textContent=root?root.title:'No yearly goal selected';$('#primaryGoalDomain').textContent=root?root.domain+' · '+LEVEL_LABEL[root.level]:'Create a yearly goal to start the chain.';$('#primaryGoalProgress').textContent=long+'%';$('#primaryGoalBar').style.width=long+'%';$('#primaryGoalDistance').textContent=root?(remaining+'% of this outcome remains based on connected progress.'):'100% of the outcome is still ahead.'}
+function renderChain(){const root=goals.find(g=>g.id===selectedRootId)||primaryRoot();LEVELS.forEach(level=>{const pct=levelProgressForRoot(root,level);const items=levelItemsForRoot(root,level);const key=cap(level);$('#stage'+key+'Title').textContent=levelHeadline(root,level);$('#stage'+key+'Pct').textContent=pct+'%';$('#stage'+key+'Bar').style.width=pct+'%';$('#stage'+key+'Remaining').textContent=(100-pct)+'% remaining';$('#stage'+key+'Count').textContent=items.length+' linked goal'+(items.length===1?'':'s')})}
+function renderExecution(){const root=goals.find(g=>g.id===selectedRootId)||primaryRoot();let items=root?levelItemsForRoot(root,'daily').filter(g=>effectiveProgress(g)<100):dailyGoals();if(!items.length)items=dailyGoals();const box=$('#executionList');if(!items.length){box.innerHTML='<div class="empty">No active daily actions. Add a daily goal to create execution-level tracking.</div>';return}box.innerHTML=items.slice(0,6).map(g=>`<div class="exec-item"><div><b>${escapeHtml(g.title)}</b><small>${escapeHtml(g.domain)} · ${effectiveProgress(g)}% complete${g.targetDate?' · '+formatDue(g.targetDate):''}</small><div class="bar" style="margin-top:7px"><span style="width:${effectiveProgress(g)}%"></span></div></div><div class="exec-controls"><button type="button" data-adjust="-10" data-id="${g.id}" title="Reduce progress">−</button><button type="button" data-adjust="10" data-id="${g.id}" title="Add progress">+</button><button type="button" class="done" data-complete="${g.id}">Done</button></div></div>`).join('')}
+function renderDomains(){const items=topLevelDomainProgress();const box=$('#domainList');if(!items.length){box.innerHTML='<div class="empty">No domain progress yet.</div>';return}box.innerHTML=items.map(d=>`<div class="domain-row"><div class="domain-head"><span>${escapeHtml(d.domain)}</span><b>${d.progress}%</b></div><div class="bar"><span style="width:${d.progress}%"></span></div></div>`).join('')}
+function renderPriorities(){const list=rankedFocus().slice(0,5);const box=$('#priorityList');if(!list.length){box.innerHTML='<div class="empty">No active priorities.</div>';return}box.innerHTML=list.map((g,i)=>{const u=urgency(g);const cls=(u==='Very high'||u==='High')?'high':'';return`<div class="priority-item"><div class="rank">${i+1}</div><div><b>${escapeHtml(g.title)}</b><small>${escapeHtml(g.domain)} · ${LEVEL_LABEL[g.level]} · ${effectiveProgress(g)}% · ${100-effectiveProgress(g)}% remaining${g.targetDate?' · '+formatDue(g.targetDate):''}</small></div><span class="tag ${cls}">${u}</span></div>`}).join('')}
+function renderDeadlines(){const items=goals.filter(g=>g.targetDate&&effectiveProgress(g)<100).sort((a,b)=>new Date(a.targetDate)-new Date(b.targetDate)).slice(0,5);const box=$('#deadlineList');if(!items.length){box.innerHTML='<div class="empty">No hard deadlines. That is fine - dates are optional in G·IOS.</div>';return}box.innerHTML=items.map(g=>`<div class="deadline-item"><b>${escapeHtml(g.title)}</b><small>${escapeHtml(g.domain)} · ${LEVEL_LABEL[g.level]} · ${formatDue(g.targetDate)}</small></div>`).join('')}
+function buildHistoryForecast(root){if(!root)return'Create a long-term goal to begin progress tracking.';const relevant=[root,...descendants(root.id)];const points=[];relevant.forEach(g=>(g.history||[]).forEach(h=>{if(h&&h.at&&Number.isFinite(Number(h.progress)))points.push({at:new Date(h.at).getTime(),progress:Number(h.progress)})}));points.sort((a,b)=>a.at-b.at);if(points.length<3)return'G·IOS currently reports '+(100-effectiveProgress(root))+'% remaining. A time forecast will appear after more real progress updates are recorded.';const first=points[0],last=points[points.length-1];const days=(last.at-first.at)/86400000;const gain=last.progress-first.progress;if(days<=0||gain<=0)return'Progress history exists, but the current pace is not stable enough for a useful completion estimate.';const perDay=gain/days;const remaining=100-effectiveProgress(root);const est=Math.ceil(remaining/perDay);return'Current evidence suggests roughly '+est+' days of similar progress would be required. This is an estimate, not a deadline.'}
+function renderForecast(){const root=goals.find(g=>g.id===selectedRootId)||primaryRoot();$('#paceSignal').textContent=buildHistoryForecast(root)}
+function parentCandidates(level,domain,currentId=''){const rank=LEVEL_RANK[level]||0;return goals.filter(g=>g.id!==currentId&&LEVEL_RANK[g.level]>rank&&(!domain||g.domain===domain)).sort((a,b)=>LEVEL_RANK[a.level]-LEVEL_RANK[b.level])}
+function renderParentOptions(){const level=$('#goalLevel').value;const domain=$('#goalDomain').value;const options=parentCandidates(level,domain);$('#goalParent').innerHTML='<option value="">No parent - top-level goal</option>'+options.map(g=>`<option value="${g.id}">${LEVEL_LABEL[g.level]} · ${escapeHtml(g.title)}</option>`).join('')}
+function recordProgress(g,newValue){const old=clamp(g.manualProgress);const next=clamp(newValue);g.manualProgress=next;if(old!==next){g.history=g.history||[];g.history.push({at:new Date().toISOString(),progress:next});if(g.history.length>50)g.history=g.history.slice(-50)}}
+function adjustProgress(id,delta){const g=goals.find(x=>x.id===id);if(!g)return;if(childrenOf(g.id).length){toast('This goal rolls up from child goals. Update the lower-level goals instead.');return}recordProgress(g,clamp(g.manualProgress+delta));saveGoals()}
+function completeGoal(id){const g=goals.find(x=>x.id===id);if(!g)return;if(childrenOf(g.id).length){toast('This goal rolls up from child goals. Complete the lower-level goals instead.');return}recordProgress(g,100);saveGoals();toast('Daily action completed. Parent progress recalculated.')}
+function publishDashboardSnapshot(showMessage=false){const root=goals.find(g=>g.id===selectedRootId)||primaryRoot();const active=goals.filter(g=>effectiveProgress(g)<100);const snapshot={source:'G-IOS',version:2,updatedAt:new Date().toISOString(),primaryGoal:root?{id:root.id,title:root.title,domain:root.domain,progress:effectiveProgress(root),remaining:100-effectiveProgress(root)}:null,activeGoals:active.length,highPriority:active.filter(g=>g.priority==='high').length,calendarItems:active.filter(g=>g.targetDate).map(g=>({id:g.id,title:g.title,date:g.targetDate,domain:g.domain,horizon:g.level,level:g.level,progress:effectiveProgress(g)})),domainProgress:topLevelDomainProgress(),focusItems:rankedFocus().slice(0,4).map((g,i)=>({rank:i+1,id:g.id,title:g.title,domain:g.domain,horizon:g.level,level:g.level,progress:effectiveProgress(g),remaining:100-effectiveProgress(g),targetDate:g.targetDate,urgency:urgency(g),reason:g.why||''})),progressChain:root?Object.fromEntries(LEVELS.map(level=>[level,{progress:levelProgressForRoot(root,level),count:levelItemsForRoot(root,level).length}])):{},goals:goals.map(g=>({...g,progress:effectiveProgress(g) }))};localStorage.setItem(SNAPSHOT_KEY,JSON.stringify(snapshot));$('#syncText').textContent='Snapshot updated '+new Date(snapshot.updatedAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'. H·IOS can read the primary goal, domain progress, ranked focus items and hard deadlines.';if(showMessage)toast('G·IOS progress snapshot published to H·IOS.')}
+function renderAll(){renderRootSelect();renderMetrics();renderChain();renderExecution();renderDomains();renderPriorities();renderDeadlines();renderForecast();renderParentOptions();publishDashboardSnapshot(false)}
+function toast(message){const t=$('#toast');t.textContent=message;t.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),2200)}
+$('#addGoal').addEventListener('click',()=>{$('#goalModal').classList.add('show');renderParentOptions()});
 $('#cancelGoal').addEventListener('click',()=>$('#goalModal').classList.remove('show'));
-$('#goalModal').addEventListener('click',e=>{ if(e.target.id==='goalModal') $('#goalModal').classList.remove('show'); });
-$('#goalForm').addEventListener('submit',e=>{
-  e.preventDefault();
-  goals.unshift({id:'g_'+Date.now(),title:$('#goalTitle').value.trim(),horizon:$('#goalHorizon').value,domain:$('#goalDomain').value,priority:$('#goalPriority').value,progress:clamp(Number($('#goalProgress').value||0),0,100),targetDate:$('#goalDate').value,why:$('#goalWhy').value.trim()});
-  localStorage.setItem(GOALS_KEY,JSON.stringify(goals));
-  renderAll(); e.target.reset(); $('#goalModal').classList.remove('show'); toast('Goal added to G·IOS.');
-});
-$('#syncNow').addEventListener('click',()=>publishDashboardSnapshot(true));
-$('#reRank').addEventListener('click',()=>{renderPriorities();toast('Priorities re-ranked from current goal data.');});
-$('#backToHios').addEventListener('click',()=>{window.location.href='./index.html?view=home';});
-$$('[data-next]').forEach(btn=>btn.addEventListener('click',()=>toast(btn.dataset.next+' will be the next G·IOS page we build.')));
-window.addEventListener('storage',e=>{ if(e.key===GOALS_KEY){ loadGoals(); renderAll(); }});
-
-loadGoals();
-renderAll();
+$('#goalModal').addEventListener('click',e=>{if(e.target.id==='goalModal')$('#goalModal').classList.remove('show')});
+$('#goalLevel').addEventListener('change',renderParentOptions);$('#goalDomain').addEventListener('change',renderParentOptions);
+$('#goalForm').addEventListener('submit',e=>{e.preventDefault();const g=normalizeGoal({id:'g_'+Date.now(),title:$('#goalTitle').value.trim(),level:$('#goalLevel').value,domain:$('#goalDomain').value,priority:$('#goalPriority').value,manualProgress:clamp($('#goalProgress').value),parentId:$('#goalParent').value,weight:Number($('#goalWeight').value||1),targetDate:$('#goalDate').value,why:$('#goalWhy').value.trim(),history:[]});goals.unshift(g);saveGoals();e.target.reset();$('#goalWeight').value=1;$('#goalPriority').value='medium';$('#goalModal').classList.remove('show');toast('Goal added to the compounding structure.')});
+$('#chainRoot').addEventListener('change',e=>{selectedRootId=e.target.value;renderAll()});
+$('#executionList').addEventListener('click',e=>{const adj=e.target.closest('[data-adjust]');if(adj){adjustProgress(adj.dataset.id,Number(adj.dataset.adjust));return}const done=e.target.closest('[data-complete]');if(done)completeGoal(done.dataset.complete)});
+$('#syncNow').addEventListener('click',()=>publishDashboardSnapshot(true));$('#syncNow2').addEventListener('click',()=>publishDashboardSnapshot(true));$('#reRank').addEventListener('click',()=>{renderPriorities();toast('Priorities re-ranked from progress, importance and real deadlines.')});
+$('#backToHios').addEventListener('click',()=>window.location.href='./index.html?view=home');$$('[data-next]').forEach(btn=>btn.addEventListener('click',()=>toast(btn.dataset.next+' will be expanded in the next G·IOS build.')));
+window.addEventListener('storage',e=>{if([GOALS_KEY,...OLD_GOALS_KEYS].includes(e.key)){loadGoals();renderAll()}});
+loadGoals();renderAll();
 </script>
 </body>
 </html>
