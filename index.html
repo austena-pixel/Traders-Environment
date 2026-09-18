@@ -831,7 +831,6 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 
 
 
-/* ================= SIDEBAR AREA C TRANSITION ================= */
 @media (min-width:951px){
   #appScreen .sidebar{
     padding-top:12px;
@@ -840,38 +839,6 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 
   /* Empty Area C. The color at the right edge visually continues
      the H·IOS Intelligence surface and fades into the dark sidebar. */
-  .sidebar-transition-space{
-    height:145px;
-    flex:0 0 145px;
-    margin:0 -18px 10px;
-    position:relative;
-    overflow:hidden;
-    background:
-      radial-gradient(
-        circle at 112% 8%,
-        rgba(110,168,255,.12),
-        transparent 38%
-      ),
-      linear-gradient(
-        270deg,
-        rgba(30,42,68,.92) 0%,
-        rgba(48,53,102,.34) 28%,
-        rgba(40,40,78,.17) 52%,
-        rgba(7,9,13,.02) 100%
-      );
-  }
-
-  .sidebar-transition-space::after{
-    content:'';
-    position:absolute;
-    right:-34px;
-    top:-50px;
-    width:150px;
-    height:150px;
-    border-radius:50%;
-    border:1px solid rgba(110,168,255,.08);
-    pointer-events:none;
-  }
 
   /* Keep the normal divider only below Area C, where Area B begins. */
   #appScreen .sidebar::after{
@@ -897,8 +864,88 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 }
 
 @media(max-width:950px){
-  .sidebar-transition-space{
+}
+
+
+
+/* ================= TOP ROW: K + H·IOS INTELLIGENCE ================= */
+@media (min-width:951px){
+  #appScreen .app{
+    display:grid;
+    grid-template-columns:240px minmax(0,1fr);
+    grid-template-rows:auto minmax(0,1fr);
+    min-height:100vh;
+  }
+
+  .hios-top-row{
+    grid-column:1 / -1;
+    grid-row:1;
+    display:grid;
+    grid-template-columns:240px minmax(0,1fr);
+    gap:12px;
+    padding:12px 18px 0;
+    align-items:stretch;
+  }
+
+  /* Section K — same visual language as Section A, but empty for now. */
+  .top-k-panel{
+    min-height:145px;
+    border:1px solid #273248;
+    border-radius:18px;
+    overflow:hidden;
+    background:
+      radial-gradient(circle at 95% 0%,rgba(110,168,255,.14),transparent 31%),
+      linear-gradient(135deg,rgba(12,26,31,.98),rgba(18,25,40,.98));
+    position:relative;
+  }
+
+  .top-k-panel::after{
+    content:'';
+    position:absolute;
+    right:-42px;
+    top:-56px;
+    width:160px;
+    height:160px;
+    border-radius:50%;
+    border:1px solid rgba(110,168,255,.12);
+    pointer-events:none;
+  }
+
+  .hios-top-row > .hios-intelligence{
+    margin:0 !important;
+    min-height:145px;
+  }
+
+  #appScreen .sidebar{
+    grid-column:1;
+    grid-row:2;
+    position:relative;
+    top:auto;
+    height:auto;
+    min-height:0;
+    border-right:1px solid var(--line);
+    padding-top:12px;
+  }
+
+  #appScreen .main{
+    grid-column:2;
+    grid-row:2;
+    height:auto;
+    min-height:0;
+    padding-top:10px;
+  }
+}
+
+@media(max-width:950px){
+  .hios-top-row{
+    display:block;
+    padding:12px 12px 0;
+  }
+  .top-k-panel{
     display:none;
+  }
+  .hios-top-row > .hios-intelligence{
+    margin-bottom:12px;
   }
 }
 
@@ -972,25 +1019,10 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 ========================================================= -->
 <section id="appScreen" class="hidden">
   <div class="app">
-    <aside class="sidebar">
-      <!-- Area C: intentionally empty for now. -->
-      <div class="sidebar-transition-space" aria-hidden="true"></div>
+    <div class="hios-top-row">
+      <!-- Section K: standalone top panel, intentionally empty for now. -->
+      <section class="top-k-panel" aria-hidden="true"></section>
 
-      <nav class="nav">
-        <button class="sidebar-add-product" type="button" onclick="openProductModal()">
-          <span class="product-nav-icon">+</span>
-          <span>Add Product</span>
-        </button>
-
-        <!-- Area B: products added through Add Product appear here. -->
-        <div class="product-nav" id="productSidebarNav"></div>
-      </nav>
-
-      <div class="side-foot">H·IOS family interface</div>
-    </aside>
-
-    <main class="main">
-      <!-- OVERALL H·IOS INTELLIGENCE -->
       <section class="hios-intelligence">
         <div class="hios-intelligence-main">
           <div class="hios-intelligence-kicker">H·IOS Intelligence</div>
@@ -1024,6 +1056,24 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
           </div>
         </aside>
       </section>
+    </div>
+    <aside class="sidebar">
+      <nav class="nav">
+        <button class="sidebar-add-product" type="button" onclick="openProductModal()">
+          <span class="product-nav-icon">+</span>
+          <span>Add Product</span>
+        </button>
+
+        <!-- Area B: products added through Add Product appear here. -->
+        <div class="product-nav" id="productSidebarNav"></div>
+      </nav>
+
+      <div class="side-foot">H·IOS family interface</div>
+    </aside>
+
+    <main class="main">
+      <!-- OVERALL H·IOS INTELLIGENCE -->
+      
 
       <!-- CALENDAR + PRIORITY SIDEBAR -->
       <section class="home-layout">
