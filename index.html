@@ -829,6 +829,79 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   .hios-intelligence-side::before{display:none}
 }
 
+
+
+/* ================= SIDEBAR AREA C TRANSITION ================= */
+@media (min-width:951px){
+  #appScreen .sidebar{
+    padding-top:12px;
+    border-right:0;
+  }
+
+  /* Empty Area C. The color at the right edge visually continues
+     the H·IOS Intelligence surface and fades into the dark sidebar. */
+  .sidebar-transition-space{
+    height:145px;
+    flex:0 0 145px;
+    margin:0 -18px 10px;
+    position:relative;
+    overflow:hidden;
+    background:
+      radial-gradient(
+        circle at 112% 8%,
+        rgba(110,168,255,.12),
+        transparent 38%
+      ),
+      linear-gradient(
+        270deg,
+        rgba(30,42,68,.92) 0%,
+        rgba(48,53,102,.34) 28%,
+        rgba(40,40,78,.17) 52%,
+        rgba(7,9,13,.02) 100%
+      );
+  }
+
+  .sidebar-transition-space::after{
+    content:'';
+    position:absolute;
+    right:-34px;
+    top:-50px;
+    width:150px;
+    height:150px;
+    border-radius:50%;
+    border:1px solid rgba(110,168,255,.08);
+    pointer-events:none;
+  }
+
+  /* Keep the normal divider only below Area C, where Area B begins. */
+  #appScreen .sidebar::after{
+    content:'';
+    position:absolute;
+    right:0;
+    top:167px;
+    bottom:0;
+    width:1px;
+    background:var(--line);
+    pointer-events:none;
+  }
+
+  /* Area B remains dedicated to Add Product + the added product list. */
+  #appScreen .sidebar .nav{
+    position:relative;
+    z-index:2;
+  }
+
+  #appScreen .product-nav{
+    margin-top:10px;
+  }
+}
+
+@media(max-width:950px){
+  .sidebar-transition-space{
+    display:none;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -900,18 +973,19 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 <section id="appScreen" class="hidden">
   <div class="app">
     <aside class="sidebar">
-      <div class="side-brand">
-        <div class="side-logo">H</div>
-        <div><h1>H·IOS</h1><small>Intelligence ecosystem</small></div>
-      </div>
+      <!-- Area C: intentionally empty for now. -->
+      <div class="sidebar-transition-space" aria-hidden="true"></div>
+
       <nav class="nav">
-        <button class="active" onclick="window.scrollTo({top:0,behavior:'smooth'})">Home</button>
         <button class="sidebar-add-product" type="button" onclick="openProductModal()">
           <span class="product-nav-icon">+</span>
           <span>Add Product</span>
         </button>
+
+        <!-- Area B: products added through Add Product appear here. -->
         <div class="product-nav" id="productSidebarNav"></div>
       </nav>
+
       <div class="side-foot">H·IOS family interface</div>
     </aside>
 
