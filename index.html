@@ -1477,177 +1477,214 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 
 
 
-/* ================= H·IOS HOME — HOVER FOCUS A / B / C =================
+/* ================= H·IOS HOME — DIRECT HOVER FOCUS A / B / C =================
    A = Intelligence Calendar
    B = Goal Progress
    C = Today's Focus
 
-   Desktop behaviour:
-   - Hover A: A expands; B and C contract.
-   - Hover B: B expands in width + height; A and C contract.
-   - Hover C: C expands in width + height; A and B contract.
-   - Leave the section: everything returns to default.
+   This version is intentionally driven by a data attribute that is set directly
+   by the hovered panel's inline mouse events. It does not depend on :has(),
+   delegated JS initialization, or click state.
 ======================================================================= */
 @media (min-width:951px){
   .home-layout{
     --side-default:350px;
-    --side-expanded:500px;
-    --side-contracted:285px;
+    --side-expanded:530px;
+    --side-contracted:270px;
     grid-template-columns:minmax(0,1fr) var(--side-default) !important;
-    gap:10px;
-    align-items:stretch;
-    transition:grid-template-columns .28s cubic-bezier(.2,.8,.2,1), gap .28s ease;
+    gap:10px !important;
+    align-items:stretch !important;
+    min-height:0;
+    transition:grid-template-columns .34s cubic-bezier(.2,.8,.2,1), gap .34s ease !important;
+  }
+
+  .home-sidebar{
+    display:grid !important;
+    grid-template-rows:145px minmax(0,1fr) !important;
+    gap:8px !important;
+    height:100% !important;
+    min-height:0 !important;
+    overflow:visible !important;
+    transition:grid-template-rows .34s cubic-bezier(.2,.8,.2,1) !important;
   }
 
   .calendar-card,
   .goal-status-card,
   .focus-card{
+    min-width:0 !important;
+    min-height:0 !important;
+    height:auto !important;
     transform:scale(1);
-    opacity:1;
     transform-origin:center;
+    opacity:1;
     transition:
-      transform .28s cubic-bezier(.2,.8,.2,1),
-      opacity .24s ease,
-      border-color .24s ease,
-      box-shadow .24s ease,
-      background .24s ease,
-      flex-basis .28s cubic-bezier(.2,.8,.2,1),
-      min-height .28s cubic-bezier(.2,.8,.2,1),
-      max-height .28s cubic-bezier(.2,.8,.2,1);
-    will-change:transform;
+      transform .34s cubic-bezier(.2,.8,.2,1),
+      opacity .28s ease,
+      border-color .28s ease,
+      box-shadow .28s ease,
+      background .28s ease !important;
   }
 
-  .home-sidebar{
-    min-width:0;
-    overflow:visible !important;
-    transition:width .28s ease;
-  }
-
-  /* Default vertical split on the right. */
-  .goal-status-card{
-    flex:0 0 auto !important;
-  }
+  .goal-status-card,
   .focus-card{
-    flex:1 1 auto !important;
+    flex:none !important;
+    overflow:hidden;
   }
 
-  /* ---------- A: INTELLIGENCE CALENDAR ---------- */
-  .home-layout.panel-a-hover,
-  .home-layout:has(.calendar-card:hover){
+  /* A — Calendar focus: calendar gets more width; right column contracts. */
+  .home-layout[data-focus-panel="a"]{
     grid-template-columns:minmax(0,1fr) var(--side-contracted) !important;
   }
-  .home-layout.panel-a-hover .calendar-card,
-  .home-layout:has(.calendar-card:hover) .calendar-card{
-    transform:scale(1.012);
-    border-color:rgba(110,168,255,.42) !important;
-    box-shadow:0 12px 28px rgba(4,9,20,.24), inset 0 0 0 1px rgba(110,168,255,.07);
-    z-index:3;
+  .home-layout[data-focus-panel="a"] .home-sidebar{
+    grid-template-rows:110px minmax(0,1fr) !important;
   }
-  .home-layout.panel-a-hover .goal-status-card,
-  .home-layout.panel-a-hover .focus-card,
-  .home-layout:has(.calendar-card:hover) .goal-status-card,
-  .home-layout:has(.calendar-card:hover) .focus-card{
-    transform:scale(.965);
-    opacity:.78;
+  .home-layout[data-focus-panel="a"] .calendar-card{
+    transform:scale(1.014);
+    opacity:1;
+    z-index:4;
+    border-color:rgba(110,168,255,.54) !important;
+    box-shadow:0 14px 34px rgba(3,8,18,.34), inset 0 0 0 1px rgba(110,168,255,.10) !important;
   }
-  .home-layout.panel-a-hover .goal-status-card,
-  .home-layout:has(.calendar-card:hover) .goal-status-card{
-    flex-basis:112px !important;
-    overflow:hidden;
+  .home-layout[data-focus-panel="a"] .goal-status-card,
+  .home-layout[data-focus-panel="a"] .focus-card{
+    transform:scale(.955);
+    opacity:.62;
   }
 
-  /* ---------- B: GOAL PROGRESS ---------- */
-  .home-layout.panel-b-hover,
-  .home-layout:has(.goal-status-card:hover){
+  /* B — Goal Progress focus: right column widens and B takes more height. */
+  .home-layout[data-focus-panel="b"]{
     grid-template-columns:minmax(0,1fr) var(--side-expanded) !important;
   }
-  .home-layout.panel-b-hover .calendar-card,
-  .home-layout:has(.goal-status-card:hover) .calendar-card{
-    transform:scale(.972);
-    opacity:.80;
+  .home-layout[data-focus-panel="b"] .home-sidebar{
+    grid-template-rows:255px minmax(0,1fr) !important;
   }
-  .home-layout.panel-b-hover .goal-status-card,
-  .home-layout:has(.goal-status-card:hover) .goal-status-card{
-    flex:0 0 235px !important;
+  .home-layout[data-focus-panel="b"] .calendar-card{
+    transform:scale(.965);
+    opacity:.64;
+  }
+  .home-layout[data-focus-panel="b"] .goal-status-card{
+    transform:scale(1.025);
+    opacity:1;
+    z-index:5;
+    border-color:rgba(139,92,246,.72) !important;
+    background:linear-gradient(180deg,rgba(27,34,53,.995),rgba(14,18,28,.995)) !important;
+    box-shadow:0 16px 38px rgba(3,8,18,.40), inset 0 0 0 1px rgba(139,92,246,.14) !important;
+  }
+  .home-layout[data-focus-panel="b"] .goal-status-card .goal-row{margin-top:18px !important}
+  .home-layout[data-focus-panel="b"] .goal-status-card .goal-head{font-size:12px !important}
+  .home-layout[data-focus-panel="b"] .goal-status-card .bar{height:10px !important}
+  .home-layout[data-focus-panel="b"] .focus-card{
+    transform:scale(.94);
+    opacity:.52;
+  }
+
+  /* C — Today's Focus focus: right column widens, B collapses, C dominates. */
+  .home-layout[data-focus-panel="c"]{
+    grid-template-columns:minmax(0,1fr) var(--side-expanded) !important;
+  }
+  .home-layout[data-focus-panel="c"] .home-sidebar{
+    grid-template-rows:92px minmax(0,1fr) !important;
+  }
+  .home-layout[data-focus-panel="c"] .calendar-card{
+    transform:scale(.965);
+    opacity:.64;
+  }
+  .home-layout[data-focus-panel="c"] .goal-status-card{
+    transform:scale(.94);
+    opacity:.50;
+  }
+  .home-layout[data-focus-panel="c"] .focus-card{
     transform:scale(1.018);
     opacity:1;
-    border-color:rgba(124,92,246,.60) !important;
-    background:linear-gradient(180deg,rgba(25,31,48,.995),rgba(14,18,28,.995));
-    box-shadow:0 14px 34px rgba(4,9,20,.34), inset 0 0 0 1px rgba(124,92,246,.12);
-    z-index:4;
+    z-index:5;
+    border-color:rgba(139,92,246,.72) !important;
+    background:linear-gradient(180deg,rgba(27,34,53,.995),rgba(14,18,28,.995)) !important;
+    box-shadow:0 16px 38px rgba(3,8,18,.40), inset 0 0 0 1px rgba(139,92,246,.14) !important;
   }
-  .home-layout.panel-b-hover .goal-status-card .goal-row,
-  .home-layout:has(.goal-status-card:hover) .goal-status-card .goal-row{
-    margin-top:16px;
-  }
-  .home-layout.panel-b-hover .goal-status-card .goal-head,
-  .home-layout:has(.goal-status-card:hover) .goal-status-card .goal-head{
-    font-size:12px;
-  }
-  .home-layout.panel-b-hover .goal-status-card .bar,
-  .home-layout:has(.goal-status-card:hover) .goal-status-card .bar{
-    height:10px;
-  }
-  .home-layout.panel-b-hover .focus-card,
-  .home-layout:has(.goal-status-card:hover) .focus-card{
-    flex:1 1 0 !important;
-    min-height:0;
-    transform:scale(.955);
-    opacity:.70;
-    overflow:hidden;
-  }
-
-  /* ---------- C: TODAY'S FOCUS ---------- */
-  .home-layout.panel-c-hover,
-  .home-layout:has(.focus-card:hover){
-    grid-template-columns:minmax(0,1fr) var(--side-expanded) !important;
-  }
-  .home-layout.panel-c-hover .calendar-card,
-  .home-layout:has(.focus-card:hover) .calendar-card{
-    transform:scale(.972);
-    opacity:.80;
-  }
-  .home-layout.panel-c-hover .goal-status-card,
-  .home-layout:has(.focus-card:hover) .goal-status-card{
-    flex:0 0 105px !important;
-    transform:scale(.955);
-    opacity:.68;
-    overflow:hidden;
-  }
-  .home-layout.panel-c-hover .focus-card,
-  .home-layout:has(.focus-card:hover) .focus-card{
-    flex:1 1 auto !important;
-    min-height:0;
-    transform:scale(1.012);
-    opacity:1;
-    border-color:rgba(124,92,246,.60) !important;
-    background:linear-gradient(180deg,rgba(25,31,48,.995),rgba(14,18,28,.995));
-    box-shadow:0 14px 34px rgba(4,9,20,.34), inset 0 0 0 1px rgba(124,92,246,.12);
-    z-index:4;
-  }
-  .home-layout.panel-c-hover .focus-card .focus-scroll,
-  .home-layout:has(.focus-card:hover) .focus-card .focus-scroll{
+  .home-layout[data-focus-panel="c"] .focus-card .focus-scroll{
     max-height:none !important;
     overflow-y:auto !important;
   }
-  .home-layout.panel-c-hover .focus-card .focus-item,
-  .home-layout:has(.focus-card:hover) .focus-card .focus-item{
-    padding:10px 11px;
+  .home-layout[data-focus-panel="c"] .focus-card .focus-item{
+    padding:10px 12px !important;
   }
-  .home-layout.panel-c-hover .focus-card .focus-item b,
-  .home-layout:has(.focus-card:hover) .focus-card .focus-item b{
-    font-size:11.5px;
-  }
-  .home-layout.panel-c-hover .focus-card .focus-item small,
-  .home-layout:has(.focus-card:hover) .focus-card .focus-item small{
-    font-size:9px;
-  }
-
-  /* Pointer cursor is intentionally unchanged: these are hover focus zones,
-     not buttons and do not require a click. */
+  .home-layout[data-focus-panel="c"] .focus-card .focus-item b{font-size:11.5px !important}
+  .home-layout[data-focus-panel="c"] .focus-card .focus-item small{font-size:9px !important}
 }
 
 </style>
+<script>
+/* H·IOS A/B/C direct hover sizing.
+   Defined before the page body so it is independent of all later app scripts. */
+window.hiosHomeFocus = function(panel){
+  var layout = document.querySelector('.home-layout');
+  if(!layout) return;
+  if(window.innerWidth < 951){ panel = ''; }
+
+  var sidebar = layout.querySelector('.home-sidebar');
+  var a = layout.querySelector('[data-home-panel="a"]');
+  var b = layout.querySelector('[data-home-panel="b"]');
+  var c = layout.querySelector('[data-home-panel="c"]');
+  if(!sidebar || !a || !b || !c) return;
+
+  layout.setAttribute('data-focus-panel', panel || '');
+
+  function imp(el, prop, value){
+    if(value){ el.style.setProperty(prop, value, 'important'); }
+    else{ el.style.removeProperty(prop); }
+  }
+
+  /* Reset first so every state starts from the same baseline. */
+  [a,b,c].forEach(function(el){
+    imp(el,'transform','');
+    imp(el,'opacity','');
+    imp(el,'z-index','');
+  });
+  imp(layout,'grid-template-columns','');
+  imp(sidebar,'grid-template-rows','');
+
+  if(!panel) return;
+
+  if(panel === 'a'){
+    /* A grows horizontally while B and C contract. */
+    imp(layout,'grid-template-columns','minmax(0,1fr) 270px');
+    imp(sidebar,'grid-template-rows','108px minmax(0,1fr)');
+    imp(a,'transform','scale(1.018)');
+    imp(a,'opacity','1');
+    imp(a,'z-index','6');
+    imp(b,'transform','scale(.92)');
+    imp(b,'opacity','.70');
+    imp(c,'transform','scale(.92)');
+    imp(c,'opacity','.70');
+  }
+
+  if(panel === 'b'){
+    /* B grows both horizontally and vertically. */
+    imp(layout,'grid-template-columns','minmax(0,1fr) 560px');
+    imp(sidebar,'grid-template-rows','270px minmax(0,1fr)');
+    imp(a,'transform','scale(.94)');
+    imp(a,'opacity','.68');
+    imp(b,'transform','scale(1.045)');
+    imp(b,'opacity','1');
+    imp(b,'z-index','6');
+    imp(c,'transform','scale(.91)');
+    imp(c,'opacity','.60');
+  }
+
+  if(panel === 'c'){
+    /* C gets the right-column space; A and B contract. */
+    imp(layout,'grid-template-columns','minmax(0,1fr) 560px');
+    imp(sidebar,'grid-template-rows','92px minmax(0,1fr)');
+    imp(a,'transform','scale(.94)');
+    imp(a,'opacity','.68');
+    imp(b,'transform','scale(.90)');
+    imp(b,'opacity','.58');
+    imp(c,'transform','scale(1.035)');
+    imp(c,'opacity','1');
+    imp(c,'z-index','6');
+  }
+};
+</script>
 </head>
 <body>
 
@@ -1867,8 +1904,8 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
       
 
       <!-- CALENDAR + PRIORITY SIDEBAR -->
-      <section class="home-layout">
-        <div class="calendar-card" data-home-panel="a">
+      <section class="home-layout" data-focus-panel="">
+        <div class="calendar-card" data-home-panel="a" onmouseenter="hiosHomeFocus('a')" onmouseleave="hiosHomeFocus('')">
           <div class="calendar-head">
             <div>
               <h3>Intelligence Calendar</h3>
@@ -1885,7 +1922,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
         </div>
 
         <aside class="home-sidebar">
-          <div class="card goal-status-card" data-home-panel="b">
+          <div class="card goal-status-card" data-home-panel="b" onmouseenter="hiosHomeFocus('b')" onmouseleave="hiosHomeFocus('')">
             <h3>Goal Progress</h3>
             <div class="sub">Progress across connected domains.</div>
             <div class="goal-row"><div class="goal-head"><span>Engineering</span><b>72%</b></div><div class="bar"><span style="width:72%"></span></div></div>
@@ -1893,7 +1930,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
             <div class="goal-row"><div class="goal-head"><span>Fitness</span><b>88%</b></div><div class="bar"><span style="width:88%"></span></div></div>
           </div>
 
-          <div class="card focus-card" data-home-panel="c">
+          <div class="card focus-card" data-home-panel="c" onmouseenter="hiosHomeFocus('c')" onmouseleave="hiosHomeFocus('')">
             <h3>Today's Focus</h3>
             <div class="sub">G·IOS dynamically ranked from connected intelligence.</div>
             <div class="focus-list focus-scroll">
@@ -2768,70 +2805,6 @@ restoreExistingSession();
 
 
 
-
-/* =========================================================
-   H·IOS HOME — POINTER HOVER FOCUS FOR A / B / C
-   Uses one delegated pointer listener on .home-layout so nested elements,
-   scrollbars, text and calendar cells cannot break the hover detection.
-========================================================= */
-(function initHiosHomeHoverFocus(){
-  const layout = document.querySelector('.home-layout');
-  if(!layout) return;
-
-  const panelA = layout.querySelector('[data-home-panel="a"]');
-  const panelB = layout.querySelector('[data-home-panel="b"]');
-  const panelC = layout.querySelector('[data-home-panel="c"]');
-  if(!panelA || !panelB || !panelC) return;
-
-  const DESKTOP_MIN = 951;
-  let activePanel = '';
-
-  function clearState(){
-    if(!activePanel && !layout.classList.contains('panel-a-hover') &&
-       !layout.classList.contains('panel-b-hover') &&
-       !layout.classList.contains('panel-c-hover')) return;
-    activePanel = '';
-    layout.classList.remove('panel-a-hover','panel-b-hover','panel-c-hover');
-  }
-
-  function setState(next){
-    if(window.innerWidth < DESKTOP_MIN){
-      clearState();
-      return;
-    }
-    if(next === activePanel) return;
-    activePanel = next;
-    layout.classList.remove('panel-a-hover','panel-b-hover','panel-c-hover');
-    if(next) layout.classList.add('panel-' + next + '-hover');
-  }
-
-  function panelFromTarget(target){
-    if(!(target instanceof Element)) return '';
-    if(target.closest('[data-home-panel="a"]')) return 'a';
-    if(target.closest('[data-home-panel="b"]')) return 'b';
-    if(target.closest('[data-home-panel="c"]')) return 'c';
-    return '';
-  }
-
-  /* pointerover catches the first entry immediately. */
-  layout.addEventListener('pointerover', function(event){
-    setState(panelFromTarget(event.target));
-  });
-
-  /* pointermove guarantees the correct state while the pointer remains inside
-     a panel, including after layout movement caused by the expansion itself. */
-  layout.addEventListener('pointermove', function(event){
-    const elementUnderPointer = document.elementFromPoint(event.clientX, event.clientY);
-    setState(panelFromTarget(elementUnderPointer));
-  });
-
-  layout.addEventListener('pointerleave', clearState);
-
-  /* On resize, desktop-only focus must never remain stuck. */
-  window.addEventListener('resize', function(){
-    if(window.innerWidth < DESKTOP_MIN) clearState();
-  });
-})();
 
 </script>
 </body>
