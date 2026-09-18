@@ -1211,6 +1211,39 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   }
 }
 
+
+
+/* ================= FIX LEFT TRANSITION OVERLAP ================= */
+@media (min-width:951px){
+  .top-k-panel{
+    overflow:hidden !important;
+    position:relative;
+  }
+
+  /* Keep the same transition style, but anchor it inside the left block
+     instead of letting it spill into the intelligence text area. */
+  .top-k-panel::after{
+    right:0 !important;
+    top:0 !important;
+    bottom:0 !important;
+    width:96px !important;
+    background:linear-gradient(
+      90deg,
+      rgba(70,82,150,0) 0%,
+      rgba(76,92,169,.08) 20%,
+      rgba(103,83,188,.17) 60%,
+      rgba(75,101,174,.12) 100%
+    ) !important;
+  }
+
+  /* Keep the right section text safely clear of the boundary. */
+  .hios-top-row > .hios-intelligence .hios-intelligence-main{
+    position:relative;
+    z-index:3;
+    padding-left:28px !important;
+  }
+}
+
 </style>
 </head>
 <body>
