@@ -723,6 +723,112 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   color:#c9e0ff !important;
 }
 
+
+
+/* ================= H·IOS INTELLIGENCE SPLIT ================= */
+.hios-intelligence{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 390px;
+  align-items:stretch;
+  gap:0;
+  padding:0 !important;
+}
+.hios-intelligence-main{
+  position:relative;
+  z-index:2;
+  padding:14px 16px;
+  min-width:0;
+}
+.hios-intelligence-main p{
+  margin:8px 0 0;
+  max-width:100%;
+}
+.hios-intelligence-side{
+  position:relative;
+  z-index:2;
+  min-width:0;
+  padding:10px 13px 10px 54px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  gap:8px;
+  background:linear-gradient(
+    90deg,
+    rgba(70,82,150,0) 0%,
+    rgba(76,92,169,.08) 20%,
+    rgba(103,83,188,.17) 60%,
+    rgba(75,101,174,.12) 100%
+  );
+}
+.hios-intelligence-side::before{
+  content:'';
+  position:absolute;
+  left:-92px;
+  top:0;
+  bottom:0;
+  width:120px;
+  pointer-events:none;
+  background:linear-gradient(
+    90deg,
+    rgba(18,25,40,0) 0%,
+    rgba(72,83,151,.05) 28%,
+    rgba(95,82,178,.14) 72%,
+    rgba(95,82,178,.18) 100%
+  );
+}
+.hios-intelligence-side .actions{
+  position:relative;
+  z-index:2;
+  justify-content:flex-end;
+}
+.hios-intelligence-metrics{
+  position:relative;
+  z-index:2;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+}
+.hios-intel-metric{
+  min-width:0;
+  padding:6px 8px;
+  border:1px solid rgba(134,151,217,.16);
+  border-radius:9px;
+  background:rgba(7,11,18,.28);
+}
+.hios-intel-metric span{
+  display:block;
+  color:#9eabc0;
+  font-size:8px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.hios-intel-metric b{
+  display:block;
+  margin-top:2px;
+  color:#eef4ff;
+  font-size:14px;
+  line-height:1;
+}
+.hios-intel-metric:nth-child(1) b{color:#9ec8ff}
+.hios-intel-metric:nth-child(2) b{color:#fbbf7a}
+.hios-intel-metric:nth-child(3) b{color:#c4b5fd}
+.hios-intel-metric:nth-child(4) b{color:#7dd3fc}
+.hios-intelligence-status{display:none!important}
+
+@media(max-width:1050px){
+  .hios-intelligence{grid-template-columns:minmax(0,1fr) 330px}
+  .hios-intelligence-side{padding-left:38px}
+}
+@media(max-width:760px){
+  .hios-intelligence{grid-template-columns:1fr}
+  .hios-intelligence-side{
+    padding:10px 16px 14px;
+    background:linear-gradient(180deg,rgba(90,80,170,.05),rgba(90,80,170,.14));
+  }
+  .hios-intelligence-side::before{display:none}
+}
+
 </style>
 </head>
 <body>
@@ -812,19 +918,37 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     <main class="main">
       <!-- OVERALL H·IOS INTELLIGENCE -->
       <section class="hios-intelligence">
-        <div class="hios-intelligence-top">
-          <div>
-            <div class="hios-intelligence-kicker">H·IOS Intelligence</div>
-            <h2>What currently needs your attention?</h2>
-          </div>
+        <div class="hios-intelligence-main">
+          <div class="hios-intelligence-kicker">H·IOS Intelligence</div>
+          <h2>What currently needs your attention?</h2>
+          <p id="hiosIntelligenceSummary">H·IOS is connecting goals, deadlines and specialized intelligence to determine what deserves attention now.</p>
+        </div>
+
+        <aside class="hios-intelligence-side">
           <div class="actions">
-            
             <button class="chip" onclick="showMessage('Priority Logic','G·IOS weighs urgency, importance, progress, dependencies and signals from connected intelligence systems.')">Why these priorities?</button>
             <button class="chip" onclick="logout()">Sign out</button>
           </div>
-        </div>
-        <div class="hios-intelligence-status" id="hiosIntelligenceStatus">Building ecosystem context</div>
-        <p id="hiosIntelligenceSummary">H·IOS is connecting goals, deadlines and specialized intelligence to determine what deserves attention now.</p>
+
+          <div class="hios-intelligence-metrics">
+            <div class="hios-intel-metric">
+              <span>Active goals</span>
+              <b id="hiosMetricActiveGoals">0</b>
+            </div>
+            <div class="hios-intel-metric">
+              <span>High priority</span>
+              <b id="hiosMetricHighPriority">0</b>
+            </div>
+            <div class="hios-intel-metric">
+              <span>Calendar items</span>
+              <b id="hiosMetricCalendarItems">0</b>
+            </div>
+            <div class="hios-intel-metric">
+              <span>Connected ·IOS</span>
+              <b id="hiosMetricConnected">0</b>
+            </div>
+          </div>
+        </aside>
       </section>
 
       <!-- CALENDAR + PRIORITY SIDEBAR -->
@@ -1259,11 +1383,17 @@ function renderHiosIntelligence(){
   const overdue=dated.filter(item=>item.date<today);
   const next=upcoming[0]||null;
 
-  const status=document.getElementById('hiosIntelligenceStatus');
   const summary=document.getElementById('hiosIntelligenceSummary');
-  if(!status||!summary)return;
+  const activeMetric=document.getElementById('hiosMetricActiveGoals');
+  const highMetric=document.getElementById('hiosMetricHighPriority');
+  const calendarMetric=document.getElementById('hiosMetricCalendarItems');
+  const connectedMetric=document.getElementById('hiosMetricConnected');
 
-  status.textContent=`${connected} connected ·IOS · ${active.length} active goals · ${manualEvents.length} calendar item${manualEvents.length===1?'':'s'}`;
+  if(activeMetric) activeMetric.textContent=active.length;
+  if(highMetric) highMetric.textContent=high.length;
+  if(calendarMetric) calendarMetric.textContent=dated.length;
+  if(connectedMetric) connectedMetric.textContent=connected;
+  if(!summary)return;
 
   if(!goals.length&&!manualEvents.length){
     summary.textContent='H·IOS is waiting for dated commitments. Click any calendar day to add a due date, test, assessment, milestone or other important date.';
@@ -1271,19 +1401,19 @@ function renderHiosIntelligence(){
   }
 
   const pieces=[];
-  if(goals.length){
-    pieces.push(`G·IOS currently contributes ${active.length} active goal${active.length===1?'':'s'}, including ${high.length} high-priority item${high.length===1?'':'s'}.`);
-  }
-  if(manualEvents.length){
-    pieces.push(`Your H·IOS calendar contains ${manualEvents.length} manually recorded date${manualEvents.length===1?'':'s'}.`);
-  }
+
   if(overdue.length){
     pieces.push(`${overdue.length} dated commitment${overdue.length===1?' is':'s are'} overdue and should be reviewed.`);
   }
+
   if(next){
     pieces.push(`Your next dated commitment is “${next.item.title}” on ${next.date.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}.`);
   }else{
     pieces.push('No upcoming dated commitment is currently recorded.');
+  }
+
+  if(!overdue.length&&next){
+    pieces.unshift('Your current ecosystem evidence is organized around the next scheduled commitment.');
   }
 
   summary.textContent=pieces.join(' ');
