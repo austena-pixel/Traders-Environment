@@ -1478,9 +1478,11 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 
 
 
-/* ================= H·IOS HOME — VERIFIED POINTER FOCUS A / B / C =================
-   A = Intelligence Calendar | B = Goal Progress | C = Today's Focus
-   The hovered panel grows while the other two contract. No click is required.
+/* ================= H·IOS HOME — AUTO ZOOM (B + C ONLY) =================
+   A = Intelligence Calendar (fixed; never zooms)
+   B = Goal Progress | C = Today's Focus
+   When Auto Zoom is enabled, only B or C enlarges slightly on hover.
+   The other right-side panel contracts a little. The calendar remains unchanged.
 =============================================================================== */
 @media (min-width: 900px){
   .home-layout{
@@ -1488,7 +1490,6 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     gap:12px !important;
     align-items:stretch !important;
     overflow:visible !important;
-    transition:grid-template-columns .28s cubic-bezier(.2,.8,.2,1), gap .28s ease !important;
   }
 
   .home-sidebar{
@@ -1499,10 +1500,19 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     min-height:0 !important;
     min-width:0 !important;
     overflow:visible !important;
-    transition:grid-template-rows .28s cubic-bezier(.2,.8,.2,1) !important;
+    transition:grid-template-rows .24s cubic-bezier(.2,.8,.2,1) !important;
   }
 
-  .calendar-card,
+  .calendar-card{
+    position:relative !important;
+    min-width:0 !important;
+    min-height:0 !important;
+    transform:none !important;
+    opacity:1 !important;
+    filter:none !important;
+    transition:none !important;
+  }
+
   .goal-status-card,
   .focus-card{
     position:relative !important;
@@ -1514,96 +1524,65 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     filter:none !important;
     will-change:transform, opacity;
     transition:
-      transform .28s cubic-bezier(.2,.8,.2,1),
-      opacity .24s ease,
-      filter .24s ease,
-      border-color .24s ease,
-      box-shadow .24s ease,
-      background .24s ease !important;
+      transform .24s cubic-bezier(.2,.8,.2,1),
+      opacity .20s ease,
+      filter .20s ease,
+      border-color .20s ease,
+      box-shadow .20s ease,
+      background .20s ease !important;
   }
 
-  /* A focused — calendar receives more width. */
-  .home-layout.hios-focus-a{
-    grid-template-columns:minmax(0,1fr) 260px !important;
-  }
-  .home-layout.hios-focus-a .home-sidebar{
-    grid-template-rows:105px minmax(0,1fr) !important;
-  }
-  .home-layout.hios-focus-a .calendar-card{
-    transform:scale(1.025) !important;
-    opacity:1 !important;
-    z-index:20 !important;
-    border-color:rgba(110,168,255,.62) !important;
-    box-shadow:0 16px 38px rgba(2,8,18,.36), inset 0 0 0 1px rgba(110,168,255,.12) !important;
-  }
-  .home-layout.hios-focus-a .goal-status-card,
-  .home-layout.hios-focus-a .focus-card{
-    transform:scale(.92) !important;
-    opacity:.56 !important;
-    filter:saturate(.70) brightness(.82) !important;
-  }
-
-  /* B focused — Goal Progress becomes much larger and takes more height. */
-  .home-layout.hios-focus-b{
-    grid-template-columns:minmax(0,1fr) 560px !important;
-  }
+  /* B focused — modest Goal Progress enlargement. */
   .home-layout.hios-focus-b .home-sidebar{
-    /* Give Goal Progress more vertical space while it is focused. */
-    grid-template-rows:320px minmax(0,1fr) !important;
-  }
-  .home-layout.hios-focus-b .calendar-card,
-  .home-layout.hios-focus-b .focus-card{
-    transform:scale(.92) !important;
-    opacity:.52 !important;
-    filter:saturate(.68) brightness(.80) !important;
+    grid-template-rows:185px minmax(0,1fr) !important;
   }
   .home-layout.hios-focus-b .goal-status-card{
-    transform:scale(1.055) !important;
+    transform:scale(1.018) !important;
     opacity:1 !important;
     filter:none !important;
     z-index:25 !important;
-    border-color:rgba(139,92,246,.82) !important;
-    background:linear-gradient(180deg,rgba(27,34,53,.995),rgba(14,18,28,.995)) !important;
-    box-shadow:0 18px 42px rgba(2,8,18,.42), inset 0 0 0 1px rgba(139,92,246,.18) !important;
+    border-color:rgba(139,92,246,.66) !important;
+    background:linear-gradient(180deg,rgba(24,30,47,.995),rgba(14,18,28,.995)) !important;
+    box-shadow:0 12px 28px rgba(2,8,18,.30), inset 0 0 0 1px rgba(139,92,246,.10) !important;
   }
-  .home-layout.hios-focus-b .goal-status-card .goal-row{margin-top:20px !important}
-  .home-layout.hios-focus-b .goal-status-card .goal-head{font-size:13px !important}
-  .home-layout.hios-focus-b .goal-status-card .bar{height:11px !important}
+  .home-layout.hios-focus-b .focus-card{
+    transform:scale(.985) !important;
+    opacity:.84 !important;
+    filter:saturate(.88) brightness(.92) !important;
+  }
+  .home-layout.hios-focus-b .goal-status-card .goal-row{margin-top:15px !important}
+  .home-layout.hios-focus-b .goal-status-card .goal-head{font-size:12px !important}
+  .home-layout.hios-focus-b .goal-status-card .bar{height:9px !important}
 
-  /* C focused — Today's Focus dominates the right column. */
-  .home-layout.hios-focus-c{
-    grid-template-columns:minmax(0,1fr) 560px !important;
-  }
+  /* C focused — modest Today's Focus enlargement. */
   .home-layout.hios-focus-c .home-sidebar{
-    grid-template-rows:88px minmax(0,1fr) !important;
+    grid-template-rows:118px minmax(0,1fr) !important;
   }
-  .home-layout.hios-focus-c .calendar-card,
   .home-layout.hios-focus-c .goal-status-card{
-    transform:scale(.92) !important;
-    opacity:.52 !important;
-    filter:saturate(.68) brightness(.80) !important;
+    transform:scale(.985) !important;
+    opacity:.84 !important;
+    filter:saturate(.88) brightness(.92) !important;
   }
   .home-layout.hios-focus-c .focus-card{
-    transform:scale(1.035) !important;
+    transform:scale(1.018) !important;
     opacity:1 !important;
     filter:none !important;
     z-index:25 !important;
-    border-color:rgba(139,92,246,.82) !important;
-    background:linear-gradient(180deg,rgba(27,34,53,.995),rgba(14,18,28,.995)) !important;
-    box-shadow:0 18px 42px rgba(2,8,18,.42), inset 0 0 0 1px rgba(139,92,246,.18) !important;
+    border-color:rgba(139,92,246,.66) !important;
+    background:linear-gradient(180deg,rgba(24,30,47,.995),rgba(14,18,28,.995)) !important;
+    box-shadow:0 12px 28px rgba(2,8,18,.30), inset 0 0 0 1px rgba(139,92,246,.10) !important;
   }
   .home-layout.hios-focus-c .focus-scroll{
     max-height:none !important;
     overflow-y:auto !important;
   }
   .home-layout.hios-focus-c .focus-item{
-    padding:12px 13px !important;
+    padding:10px 12px !important;
   }
 
-  /* Direct hover fallback: even if JS is unavailable, the panel under the pointer visibly grows. */
-  .home-layout.auto-zoom-enabled [data-home-panel="a"]:hover{transform:scale(1.025) !important;z-index:30 !important}
-  .home-layout.auto-zoom-enabled [data-home-panel="b"]:hover{transform:scale(1.055) !important;z-index:30 !important}
-  .home-layout.auto-zoom-enabled [data-home-panel="c"]:hover{transform:scale(1.035) !important;z-index:30 !important}
+  /* CSS fallback: only B and C react when Auto Zoom is enabled. */
+  .home-layout.auto-zoom-enabled [data-home-panel="b"]:hover{transform:scale(1.018) !important;z-index:30 !important}
+  .home-layout.auto-zoom-enabled [data-home-panel="c"]:hover{transform:scale(1.018) !important;z-index:30 !important}
 }
 
 /* Auto Zoom control */
@@ -1667,7 +1646,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   var STORAGE_KEY = 'hios_auto_zoom_enabled_v1';
   var enabled = false;
   var activePanel = '';
-  var focusClasses = ['hios-focus-a','hios-focus-b','hios-focus-c'];
+  var focusClasses = ['hios-focus-b','hios-focus-c'];
 
   function getLayout(){
     return document.querySelector('.home-layout');
@@ -1688,7 +1667,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
       clearFocus();
       return;
     }
-    if(panel !== 'a' && panel !== 'b' && panel !== 'c'){
+    if(panel !== 'b' && panel !== 'c'){
       clearFocus();
       return;
     }
@@ -1736,11 +1715,11 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
       event.stopPropagation();
       var next = !enabled;
       setEnabled(next, true);
-      /* The switch lives inside B, so enabling it while the pointer is there should react immediately. */
+      /* The switch lives inside B, so enabling it there can preview the modest B zoom immediately. */
       if(next) applyFocus('b');
     });
 
-    ['a','b','c'].forEach(function(key){
+    ['b','c'].forEach(function(key){
       var panel = document.querySelector('[data-home-panel="' + key + '"]');
       if(!panel) return;
       panel.addEventListener('mouseenter', function(){ if(enabled) applyFocus(key); });
@@ -1985,7 +1964,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 
       <!-- CALENDAR + PRIORITY SIDEBAR -->
       <section class="home-layout" data-focus-panel="">
-        <div class="calendar-card" data-home-panel="a">
+        <div class="calendar-card">
           <div class="calendar-head">
             <div>
               <h3>Intelligence Calendar</h3>
