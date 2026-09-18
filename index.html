@@ -363,6 +363,137 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 @media(max-width:1180px){.home-layout{grid-template-columns:1fr}.home-sidebar{grid-template-columns:1fr 1fr}}
 @media(max-width:760px){.hios-intelligence-top{flex-direction:column}.home-sidebar{grid-template-columns:1fr}.calendar-card{overflow:auto}.calendar-weekdays,.hios-calendar{min-width:700px}}
 
+
+
+/* ================= COMPACT SINGLE-SCREEN H·IOS HOME ================= */
+@media (min-width:951px){
+  #appScreen{height:100vh;overflow:hidden}
+  #appScreen .app{height:100vh;min-height:0}
+  #appScreen .sidebar{height:100vh}
+  #appScreen .main{
+    height:100vh;
+    min-height:0;
+    overflow:hidden;
+    padding:12px 18px;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .hios-intelligence{
+    flex:0 0 auto;
+    margin-bottom:10px;
+    padding:11px 16px;
+    border-radius:15px;
+  }
+  .hios-intelligence-kicker{margin-bottom:3px;font-size:9px}
+  .hios-intelligence h2{font-size:19px}
+  .hios-intelligence-status{margin-top:7px;padding:4px 7px;font-size:9px}
+  .hios-intelligence p{margin-top:7px;font-size:11px;line-height:1.45;max-width:1050px}
+  .hios-intelligence .actions{gap:7px}
+  .hios-intelligence .chip{padding:8px 11px;font-size:11px}
+
+  .home-layout{
+    flex:1 1 auto;
+    min-height:0;
+    grid-template-columns:minmax(0,1fr) 350px;
+    gap:10px;
+    align-items:stretch;
+  }
+
+  .calendar-card{
+    height:100%;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+    border-radius:15px;
+  }
+  .calendar-head{padding:9px 12px;flex:0 0 auto}
+  .calendar-head h3{font-size:13px}.calendar-head p{font-size:9px}
+  .calendar-nav strong{font-size:12px;min-width:112px}
+  .calendar-nav-btn{width:29px;height:29px}
+  .calendar-weekdays{flex:0 0 auto}
+  .calendar-weekdays>div{padding:6px 4px;font-size:8px}
+  .hios-calendar{
+    flex:1 1 auto;
+    min-height:0;
+    grid-template-rows:repeat(6,minmax(0,1fr));
+  }
+  .calendar-day{min-height:0;padding:5px}
+  .calendar-date{font-size:9px;margin-bottom:3px}
+  .calendar-events{gap:2px}
+  .calendar-event{padding:3px 4px;font-size:7px}
+
+  .home-sidebar{
+    height:100%;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    overflow:hidden;
+  }
+  .home-sidebar .card{padding:11px 12px;border-radius:13px;min-height:0}
+  .home-sidebar .card h3{font-size:13px}
+  .home-sidebar .sub{font-size:10px}
+
+  .goal-status-card{flex:0 0 auto}
+  .home-sidebar .goal-row{margin-top:8px}
+  .home-sidebar .goal-head{font-size:10px;margin-bottom:5px}
+  .home-sidebar .bar{height:7px}
+
+  .focus-card{flex:0 0 auto;min-height:0}
+  .focus-scroll{
+    max-height:174px;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    padding-right:4px;
+    scrollbar-width:thin;
+  }
+  .focus-scroll::-webkit-scrollbar{width:5px}
+  .focus-scroll::-webkit-scrollbar-thumb{background:#2a3547;border-radius:999px}
+  .home-sidebar .focus-list{gap:6px;margin-top:9px}
+  .home-sidebar .focus-item{grid-template-columns:24px 1fr;padding:7px 8px;gap:7px}
+  .home-sidebar .rank{width:23px;height:23px;font-size:10px;border-radius:7px}
+  .home-sidebar .focus-item b{font-size:10px}
+  .home-sidebar .focus-item small{font-size:8px;line-height:1.25}
+  .home-sidebar .tag{padding:3px 5px;font-size:8px}
+  .home-sidebar .alert{margin-top:7px;padding:8px}
+  .home-sidebar .alert strong{font-size:10px;margin-bottom:2px}
+  .home-sidebar .alert span{font-size:8px;line-height:1.35}
+
+  .products-card{flex:1 1 auto;overflow:hidden;display:flex;flex-direction:column}
+  .products-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex:0 0 auto}
+  .mini-add-product{border:1px solid var(--line);background:#111722;color:#dbe6f5;border-radius:8px;padding:5px 7px;font-size:9px;cursor:pointer}
+  .sidebar-products{
+    margin-top:8px;
+    display:grid;
+    grid-template-columns:1fr;
+    gap:6px;
+    overflow-y:auto;
+    min-height:0;
+    padding-right:3px;
+    scrollbar-width:thin;
+  }
+  .sidebar-products::-webkit-scrollbar{width:5px}
+  .sidebar-products::-webkit-scrollbar-thumb{background:#2a3547;border-radius:999px}
+  .sidebar-products .product{
+    padding:7px 8px;
+    border-radius:10px;
+    display:grid;
+    grid-template-columns:28px minmax(0,1fr) auto;
+    align-items:center;
+    gap:7px;
+  }
+  .sidebar-products .picon{width:27px;height:27px;border-radius:8px;margin:0;font-size:10px;grid-row:1/3}
+  .sidebar-products .product h4{margin:0;font-size:10px}
+  .sidebar-products .product p{display:none}
+  .sidebar-products .product .status{margin:2px 0 0;font-size:8px;grid-column:2}
+  .sidebar-products .product-actions{margin:0;grid-column:3;grid-row:1/3;display:flex;gap:4px;flex-direction:column}
+  .sidebar-products .product-action{padding:4px 6px;font-size:8px;border-radius:7px}
+
+  /* The former bottom Your ·IOS block has moved into the sidebar. */
+  .main > .section-title{display:none}
+}
+
 </style>
 </head>
 <body>
@@ -482,10 +613,18 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
         </div>
 
         <aside class="home-sidebar">
+          <div class="card goal-status-card">
+            <h3>Goal Progress</h3>
+            <div class="sub">Progress across connected domains.</div>
+            <div class="goal-row"><div class="goal-head"><span>Engineering</span><b>72%</b></div><div class="bar"><span style="width:72%"></span></div></div>
+            <div class="goal-row"><div class="goal-head"><span>Trading</span><b>61%</b></div><div class="bar"><span style="width:61%"></span></div></div>
+            <div class="goal-row"><div class="goal-head"><span>Fitness</span><b>88%</b></div><div class="bar"><span style="width:88%"></span></div></div>
+          </div>
+
           <div class="card focus-card">
             <h3>Today's Focus</h3>
             <div class="sub">G·IOS dynamically ranked from connected intelligence.</div>
-            <div class="focus-list">
+            <div class="focus-list focus-scroll">
               <div class="focus-item"><div class="rank">1</div><div><b>Complete engineering assignment</b><small>S·IOS · due tomorrow · 62% complete</small></div><span class="tag">Very high</span></div>
               <div class="focus-item"><div class="rank">2</div><div><b>Study Test 2 scope</b><small>S·IOS · assessment in 3 days · behind plan</small></div><span class="tag">High</span></div>
               <div class="focus-item"><div class="rank">3</div><div><b>Review trading execution</b><small>T·IOS · execution quality below target</small></div><span class="tag">Moderate</span></div>
@@ -494,18 +633,18 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
             <div class="alert"><strong>Priority alert</strong><span>Your academic workload increased today. G·IOS recommends protecting your first two focus blocks for study before returning to trading work.</span></div>
           </div>
 
-          <div class="card goal-status-card">
-            <h3>Goal Status</h3>
-            <div class="sub">Progress across connected domains.</div>
-            <div class="goal-row"><div class="goal-head"><span>Engineering</span><b>72%</b></div><div class="bar"><span style="width:72%"></span></div></div>
-            <div class="goal-row"><div class="goal-head"><span>Trading</span><b>61%</b></div><div class="bar"><span style="width:61%"></span></div></div>
-            <div class="goal-row"><div class="goal-head"><span>Fitness</span><b>88%</b></div><div class="bar"><span style="width:88%"></span></div></div>
+          <div class="card products-card">
+            <div class="products-card-head">
+              <div>
+                <h3>Your ·IOS</h3>
+                <div class="sub">Your specialized intelligence products.</div>
+              </div>
+              <button class="mini-add-product" type="button" onclick="openProductModal()">+ Add</button>
+            </div>
+            <section class="products sidebar-products" id="productsGrid"></section>
           </div>
         </aside>
       </section>
-
-      <div class="section-title"><h3>Your ·IOS</h3><span>Specialized intelligence connected through H·IOS</span></div>
-      <section class="products" id="productsGrid"></section>
     </main>
   </div>
 </section>
