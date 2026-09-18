@@ -1534,7 +1534,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 
   /* B focused — modest Goal Progress enlargement. */
   .home-layout.hios-focus-b .home-sidebar{
-    grid-template-rows:185px minmax(0,1fr) !important;
+    grid-template-rows:195px minmax(0,1fr) !important;
   }
   .home-layout.hios-focus-b .goal-status-card{
     transform:scale(1.035) !important;
@@ -1550,9 +1550,11 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     opacity:.84 !important;
     filter:saturate(.88) brightness(.92) !important;
   }
-  .home-layout.hios-focus-b .goal-status-card .goal-row{margin-top:15px !important}
+  .home-layout.hios-focus-b .goal-status-card .goal-row{margin-top:10px !important}
   .home-layout.hios-focus-b .goal-status-card .goal-head{font-size:12px !important}
   .home-layout.hios-focus-b .goal-status-card .bar{height:9px !important}
+  .home-layout.hios-focus-b .goal-status-card{padding-bottom:18px !important}
+  .home-layout.hios-focus-b .goal-status-card .goal-row:last-child{margin-bottom:4px !important}
 
   /* C focused — modest Today's Focus enlargement. */
   .home-layout.hios-focus-c .home-sidebar{
@@ -1591,14 +1593,14 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     transform-origin:center center;
     z-index:1;
     transition:
-      transform .18s cubic-bezier(.2,.8,.2,1),
+      transform .16s cubic-bezier(.2,.8,.2,1),
       background .14s ease,
       box-shadow .18s ease,
       border-color .18s ease !important;
     will-change:transform;
   }
   .home-layout.auto-zoom-enabled .calendar-day:hover{
-    transform:scale(1.07) !important;
+    transform:scale(1.12) !important;
     z-index:45 !important;
     background:#101925 !important;
     border-color:rgba(110,168,255,.48) !important;
