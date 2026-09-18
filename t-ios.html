@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<!-- T·IOS v34: Performance L1 risk ranges + static Intelligence page -->
+<!-- T·IOS: percentage returns on initial balance + Personal Trader Intelligence -->
 <title>T·IOS — Trader Intelligence Operating System</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -692,6 +692,7 @@ input:focus,select:focus,textarea:focus{
 }
 .week-total .label{font-size:11px;color:var(--muted);margin-bottom:8px}
 .week-total .value{font-size:17px;font-weight:800}
+.week-return{font-size:10px;font-weight:800;margin-top:4px}
 
 .right-side{
   display:flex;
@@ -2543,35 +2544,6 @@ textarea{resize:vertical;min-height:90px}
   .cross-arrow{transform:rotate(90deg);min-height:24px}
 }
 
-.risk-range-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-}
-.risk-range-status{
-  display:block;
-  margin-top:7px;
-  padding:7px 9px;
-  border:1px solid #26364a;
-  background:#0b141e;
-  border-radius:9px;
-  color:#91a2b8;
-  font-size:9px;
-  line-height:1.45;
-}
-.risk-range-status.ok{
-  border-color:#24573f;
-  background:#0b1d16;
-  color:#9ce7bd;
-}
-.risk-range-status.out{
-  border-color:#6a3f2f;
-  background:#21140f;
-  color:#f2b49a;
-}
-@media(max-width:620px){
-  .risk-range-grid{grid-template-columns:1fr}
-}
 
 
 /* Desktop default density — visually matches one Chrome zoom-out step (90%). */
@@ -2778,8 +2750,8 @@ textarea{resize:vertical;min-height:90px}
             </div>
 
             <div class="side-row dashboard-stat-row">
-              <div class="dashboard-stat-label"><span>Average R</span></div>
-              <strong class="dashboard-stat-value neutral" id="avgR">0.00R</strong>
+              <div class="dashboard-stat-label"><span>Monthly Return</span></div>
+              <strong class="dashboard-stat-value neutral" id="monthlyReturn">0.00%</strong>
             </div>
 
             <div class="side-row dashboard-stat-row">
@@ -2807,10 +2779,10 @@ textarea{resize:vertical;min-height:90px}
           <section class="panel side-section">
             <h3>Account Overview</h3>
             <div class="side-row">
-              <span>Starting balance</span>
+              <span>Initial balance</span>
               <div class="settings-row">
                 <span>$</span>
-                <input id="startingBalance" type="number" step="0.01" value="0">
+                <input id="startingBalance" type="number" min="0" step="0.01" value="0">
               </div>
             </div>
             <div class="side-row"><span>Current equity</span><strong id="currentEquity">R0.00</strong></div>
@@ -2848,8 +2820,9 @@ textarea{resize:vertical;min-height:90px}
           <div class="value" id="jWinRate">0%</div>
         </div>
         <div class="metric">
-          <div class="label">Average R</div>
-          <div class="value" id="jAvgR">0.00R</div>
+          <div class="label">Return</div>
+          <div class="value" id="jReturn">0.00%</div>
+          <div class="sub">Filtered P&amp;L ÷ initial balance</div>
         </div>
       </section>
 
@@ -2908,7 +2881,6 @@ textarea{resize:vertical;min-height:90px}
                 <th>Direction</th>
                 <th>Setup / Edge</th>
                 <th>P&amp;L</th>
-                <th>R</th>
                 <th>Execution</th>
                 <th>Psychology</th>
                 <th>Edge</th>
@@ -2973,9 +2945,9 @@ textarea{resize:vertical;min-height:90px}
           <div class="sub">Selected period</div>
         </div>
         <div class="metric">
-          <div class="label">Return</div>
+          <div class="label">Period Return</div>
           <div class="value neutral" id="statReturn">0.00%</div>
-          <div class="sub">On opening equity</div>
+          <div class="sub">Net P&amp;L ÷ initial balance</div>
         </div>
         <div class="metric">
           <div class="label">Max Drawdown</div>
@@ -2993,9 +2965,9 @@ textarea{resize:vertical;min-height:90px}
           <div class="sub">Gross profit / gross loss</div>
         </div>
         <div class="metric">
-          <div class="label">Average R</div>
-          <div class="value neutral" id="statAvgR">0.00R</div>
-          <div class="sub">Per trade</div>
+          <div class="label">Average Trade Return</div>
+          <div class="value neutral" id="statAvgTradeReturn">0.00%</div>
+          <div class="sub">Average trade P&amp;L ÷ initial balance</div>
         </div>
         <div class="metric">
           <div class="label">Expectancy</div>
@@ -3096,7 +3068,7 @@ textarea{resize:vertical;min-height:90px}
                   <th>Trades</th>
                   <th>Win rate</th>
                   <th>P&amp;L</th>
-                  <th>Avg R</th>
+                  <th>Avg Return</th>
                 </tr>
               </thead>
               <tbody id="instrumentStatsBody">
@@ -3489,7 +3461,7 @@ textarea{resize:vertical;min-height:90px}
 
               <div class="edge-trade-kpis">
                 <span class="edge-mini-kpi" id="edgeSelectedPnl">P&amp;L: —</span>
-                <span class="edge-mini-kpi" id="edgeSelectedR">R: —</span>
+                <span class="edge-mini-kpi" id="edgeSelectedReturn">Return: —</span>
                 <span class="edge-mini-kpi" id="edgeSelectedSetup">Setup: —</span>
                 <span class="edge-mini-kpi" id="edgeSelectedEntryTiming">Entry moment: —</span>
                 <span class="edge-mini-kpi" id="edgeSelectedExitRule">Exit: —</span>
@@ -3798,7 +3770,7 @@ textarea{resize:vertical;min-height:90px}
 
               <div class="execution-trade-kpis">
                 <span class="execution-mini-kpi" id="executionSelectedPnl">P&amp;L: —</span>
-                <span class="execution-mini-kpi" id="executionSelectedR">R: —</span>
+                <span class="execution-mini-kpi" id="executionSelectedReturn">Return: —</span>
                 <span class="execution-mini-kpi" id="executionSelectedEdge">Edge: —</span>
               </div>
             </div>
@@ -4004,7 +3976,7 @@ textarea{resize:vertical;min-height:90px}
               <div class="intel-detail"><span>Win rate</span><strong id="intelPerformanceWinRate">—</strong></div>
               <div class="intel-detail"><span>Profit factor</span><strong id="intelPerformanceProfitFactor">—</strong></div>
               <div class="intel-detail"><span>Core data quality</span><strong id="intelPerformanceDataQuality">—</strong></div>
-              <div class="intel-detail"><span>R coverage</span><strong id="intelPerformanceRCoverage">—</strong></div>
+              <div class="intel-detail"><span>Return basis</span><strong id="intelPerformanceReturnBasis">—</strong></div>
             </div>
             <div class="intel-note" id="intelPerformanceNote">Outcome data gives context, but T·IOS does not treat profit alone as proof of good process.</div>
             <div class="intel-card-action"><button class="btn small" type="button" data-intel-nav="statistics">Open Statistics →</button></div>
@@ -4091,13 +4063,13 @@ textarea{resize:vertical;min-height:90px}
             <div class="cross-flow">
               <div class="cross-box">
                 <span>High Execution</span>
-                <strong id="intelHighExecR">—</strong>
+                <strong id="intelHighExecReturn">—</strong>
                 <small id="intelHighExecCount">0 trades</small>
               </div>
               <div class="cross-arrow">→</div>
               <div class="cross-box">
                 <span>Lower Execution</span>
-                <strong id="intelLowExecR">—</strong>
+                <strong id="intelLowExecReturn">—</strong>
                 <small id="intelLowExecCount">0 trades</small>
               </div>
             </div>
@@ -4261,60 +4233,6 @@ textarea{resize:vertical;min-height:90px}
         </div>
       </section>
 
-      <section class="panel connection-panel" id="rMultipleSettingsPanel">
-        <div class="connection-panel-head">
-          <div>
-            <h3>R-Multiple Configuration</h3>
-            <p>Choose how 1R is defined for the active trading account. R is optional — Performance Intelligence continues to work when a trader does not use R.</p>
-          </div>
-          <span class="connection-security">Flexible</span>
-        </div>
-
-        <div class="form-grid">
-          <div class="field">
-            <label>Default R Basis</label>
-            <select id="defaultRBasis">
-              <option value="planned_cash">Planned Cash Risk</option>
-              <option value="account_percent">Account % Risk</option>
-              <option value="stop_based">Stop-Based Risk</option>
-              <option value="fixed_unit">Fixed Risk Unit</option>
-              <option value="none">No R-Multiple</option>
-            </select>
-          </div>
-
-          <div class="field hidden" id="defaultCashRiskRangeField">
-            <label>Allowed Cash Risk Range</label>
-            <div class="risk-range-grid">
-              <input type="number" id="defaultCashRiskMin" min="0.01" step="0.01" placeholder="Min e.g. 4">
-              <input type="number" id="defaultCashRiskMax" min="0.01" step="0.01" placeholder="Max e.g. 6">
-            </div>
-            <span class="field-help">Example: $4 to $6 means a trade may use any planned 1R amount inside that range.</span>
-          </div>
-
-          <div class="field hidden" id="defaultRiskPercentField">
-            <label>Allowed Account Risk % Range</label>
-            <div class="risk-range-grid">
-              <input type="number" id="defaultRiskPercentMin" min="0.01" step="0.01" placeholder="Min e.g. 0.5">
-              <input type="number" id="defaultRiskPercentMax" min="0.01" step="0.01" placeholder="Max e.g. 1">
-            </div>
-            <span class="field-help">The actual percentage for each trade can vary inside this range.</span>
-          </div>
-
-          <div class="field hidden" id="fixedRiskUnitField">
-            <label>Fixed 1R Amount</label>
-            <input type="number" id="fixedRiskUnit" min="0.01" step="0.01" placeholder="e.g. 500">
-          </div>
-        </div>
-
-        <div class="connection-note" id="rConfigNote">
-          Planned Cash Risk means the trader defines the intended cash loss represented by 1R.
-        </div>
-
-        <div class="form-actions">
-          <button class="btn primary" type="button" id="saveRConfigBtn">Save R Settings</button>
-        </div>
-      </section>
-
       <section class="panel connection-panel">
         <div class="connection-panel-head">
           <div>
@@ -4408,46 +4326,9 @@ textarea{resize:vertical;min-height:90px}
         </div>
 
         <div class="field">
-          <label>R Basis</label>
-          <select id="rBasis">
-            <option value="planned_cash">Planned Cash Risk</option>
-            <option value="account_percent">Account % Risk</option>
-            <option value="stop_based">Stop-Based Risk</option>
-            <option value="fixed_unit">Fixed Risk Unit</option>
-            <option value="none">No R-Multiple</option>
-          </select>
-          <span class="field-help" id="rBasisHelp">Choose what 1R means for this trade.</span>
-        </div>
-
-        <div class="field hidden" id="rAccountEquityField">
-          <label>Account Equity at Entry</label>
-          <input type="number" id="rAccountEquity" min="0" step="0.01" placeholder="e.g. 100000">
-          <span class="field-help">Used only when R is defined as a percentage of account equity.</span>
-        </div>
-
-        <div class="field hidden" id="rRiskPercentField">
-          <label>Actual Risk %</label>
-          <input type="number" id="rRiskPercent" min="0.01" step="0.01" placeholder="e.g. 0.75">
-          <span class="field-help" id="rRiskPercentHelp">Enter the actual percentage used for this trade; T·IOS checks it against your allowed range.</span>
-        </div>
-
-        <div class="field" id="riskAmountField">
-          <label id="riskAmountLabel">Actual 1R Amount</label>
-          <input type="number" id="riskAmount" min="0" step="0.01" placeholder="e.g. 5">
-          <span class="field-help" id="riskAmountHelp">Enter the actual planned cash risk for this trade.</span>
-          <span class="risk-range-status" id="tradeRiskRangeStatus">No allowable risk range configured yet.</span>
-        </div>
-
-        <div class="field">
           <label>Net P&amp;L ($)</label>
           <input type="number" id="pnl" step="0.01" placeholder="e.g. 450 or -200" required>
           <span class="field-help">Final trade result after trading costs. This is the universal performance outcome.</span>
-        </div>
-
-        <div class="field">
-          <label>Realized R Multiple</label>
-          <input type="text" id="rMultiple" placeholder="Auto" readonly tabindex="-1">
-          <span class="field-help">Calculated only when the trader uses an R basis. Otherwise T·IOS records R as N/A.</span>
         </div>
 
         <div class="field">
@@ -4591,11 +4472,6 @@ let editingTradeId = null;
 let journalPage = 1;
 const JOURNAL_PAGE_SIZE = 25;
 
-// Preserve unsaved R-configuration inputs while MT5 realtime heartbeats
-// refresh account data in the background.
-let rConfigDraftDirty = false;
-let rConfigDraftAccountId = null;
-
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 
@@ -4644,139 +4520,40 @@ function escapeHtml(s){
   }[c]));
 }
 
-const R_BASIS_LABELS={
-  planned_cash:'Planned Cash Risk',
-  account_percent:'Account % Risk',
-  stop_based:'Stop-Based Risk',
-  fixed_unit:'Fixed Risk Unit',
-  none:'No R-Multiple'
-};
+function initialAccountBalance(){
+  const value=Number(tradingAccount?.starting_balance);
+  return Number.isFinite(value) && value>0 ? value : 0;
+}
 
-function formatRValue(value){
+function returnPctFromPnl(pnl){
+  const base=initialAccountBalance();
+  const value=Number(pnl);
+  if(!(base>0) || !Number.isFinite(value)) return null;
+  return value/base*100;
+}
+
+function tradeReturnPct(trade){
+  if(!trade) return null;
+  return returnPctFromPnl(Number(trade.pnl));
+}
+
+function periodReturnPct(source=trades){
+  const base=initialAccountBalance();
+  if(!(base>0)) return null;
+  const pnl=source.reduce((sum,trade)=>sum+(Number(trade.pnl)||0),0);
+  return pnl/base*100;
+}
+
+function averageTradeReturnPct(source=trades){
+  if(!source.length) return null;
+  const periodReturn=periodReturnPct(source);
+  return periodReturn===null ? null : periodReturn/source.length;
+}
+
+function formatReturnPct(value,digits=2){
   return Number.isFinite(value)
-    ? `${value>=0?'+':''}${value.toFixed(2)}R`
-    : 'N/A';
-}
-
-function rConfigStorageKey(account=tradingAccount){
-  return currentUser && account
-    ? `tios_r_config_${currentUser.id}_${account.id}`
-    : '';
-}
-
-function tradeRMetaStorageKey(tradeId){
-  return currentUser && tradeId
-    ? `tios_trade_r_meta_${currentUser.id}_${tradeId}`
-    : '';
-}
-
-function readLocalJson(key,fallback={}){
-  if(!key) return fallback;
-  try{
-    const value=JSON.parse(localStorage.getItem(key)||'null');
-    return value && typeof value==='object' ? value : fallback;
-  }catch{
-    return fallback;
-  }
-}
-
-function accountHasPersistentRConfig(account=tradingAccount){
-  return Boolean(
-    account &&
-    Object.prototype.hasOwnProperty.call(account,'default_r_basis')
-  );
-}
-
-function accountSupportsRiskRangeColumns(account=tradingAccount){
-  return Boolean(
-    account &&
-    Object.prototype.hasOwnProperty.call(account,'default_cash_risk_min') &&
-    Object.prototype.hasOwnProperty.call(account,'default_cash_risk_max') &&
-    Object.prototype.hasOwnProperty.call(account,'default_risk_percent_min') &&
-    Object.prototype.hasOwnProperty.call(account,'default_risk_percent_max')
-  );
-}
-
-function validPositiveNumber(value){
-  const n=Number(value);
-  return Number.isFinite(n) && n>0 ? n : 0;
-}
-
-function getAccountRConfig(account=tradingAccount){
-  const local=readLocalJson(rConfigStorageKey(account),{});
-  const basis=(accountHasPersistentRConfig(account) && account.default_r_basis)
-    ? account.default_r_basis
-    : (local.basis || 'planned_cash');
-
-  const dbFixed=validPositiveNumber(account?.fixed_risk_unit);
-  const localFixed=validPositiveNumber(local.fixedRiskUnit);
-
-  const legacyPct=validPositiveNumber(account?.default_risk_percent) || validPositiveNumber(local.riskPercent);
-
-  const dbCashMin=validPositiveNumber(account?.default_cash_risk_min);
-  const dbCashMax=validPositiveNumber(account?.default_cash_risk_max);
-  const localCashMin=validPositiveNumber(local.cashRiskMin);
-  const localCashMax=validPositiveNumber(local.cashRiskMax);
-
-  const dbPctMin=validPositiveNumber(account?.default_risk_percent_min);
-  const dbPctMax=validPositiveNumber(account?.default_risk_percent_max);
-  const localPctMin=validPositiveNumber(local.riskPercentMin);
-  const localPctMax=validPositiveNumber(local.riskPercentMax);
-
-  const riskPercentMin=dbPctMin || localPctMin || legacyPct || 0;
-  const riskPercentMax=dbPctMax || localPctMax || legacyPct || 0;
-
-  return {
-    basis:R_BASIS_LABELS[basis] ? basis : 'planned_cash',
-    cashRiskMin:dbCashMin || localCashMin || 0,
-    cashRiskMax:dbCashMax || localCashMax || 0,
-    riskPercentMin,
-    riskPercentMax,
-    fixedRiskUnit:dbFixed || localFixed || 0
-  };
-}
-
-function saveAccountRConfigLocal(config,account=tradingAccount){
-  const key=rConfigStorageKey(account);
-  if(key) localStorage.setItem(key,JSON.stringify(config));
-}
-
-function getTradeRMeta(tradeId){
-  return readLocalJson(tradeRMetaStorageKey(tradeId),{});
-}
-
-function saveTradeRMeta(tradeId,meta){
-  const key=tradeRMetaStorageKey(tradeId);
-  if(key) localStorage.setItem(key,JSON.stringify(meta));
-}
-
-function removeTradeRMeta(tradeId){
-  const key=tradeRMetaStorageKey(tradeId);
-  if(key) localStorage.removeItem(key);
-}
-
-function tradeRBasis(trade){
-  if(!trade) return 'none';
-
-  const persisted=String(trade.r_basis||'').trim();
-  if(R_BASIS_LABELS[persisted]) return persisted;
-
-  const local=String(getTradeRMeta(trade.id).basis||'').trim();
-  if(R_BASIS_LABELS[local]) return local;
-
-  const risk=Number(trade.risk_amount);
-  const initial=Number(trade.initial_risk);
-  const storedR=trade.r_multiple;
-
-  if((Number.isFinite(risk) && risk>0) || (Number.isFinite(initial) && initial>0)){
-    return 'planned_cash';
-  }
-
-  if(storedR!==null && storedR!==undefined && storedR!=='' && Number.isFinite(Number(storedR))){
-    return 'planned_cash';
-  }
-
-  return 'none';
+    ? `${value>=0?'+':''}${value.toFixed(digits)}%`
+    : '—';
 }
 
 function setLoggedInUI(loggedIn){
@@ -4990,9 +4767,6 @@ function tradeRefreshFingerprint(source=trades){
       Number(t.commission)||0,
       Number(t.swap)||0,
       Number(t.fee)||0,
-      tradeRMultiple(t),
-      Number(t.initial_risk)||0,
-      t.r_basis || getTradeRMeta(t.id).basis || '',
       t.position_status || '',
       t.closed_at || '',
       t.is_deleted ? '1' : '0'
@@ -5217,9 +4991,6 @@ async function switchTradingAccount(accountId){
   if(!next || next.id===tradingAccount?.id) return;
 
   tradingAccount=next;
-  rConfigDraftDirty=false;
-  rConfigDraftAccountId=next.id;
-
   localStorage.setItem(
     `te_active_account_${currentUser.id}`,
     next.id
@@ -5474,159 +5245,8 @@ async function toggleBridge(accountId,enabled){
   await refreshTradingAccounts();
 }
 
-function updateRConfigFields(){
-  const basis=$('#defaultRBasis').value;
-  const cashRangeField=$('#defaultCashRiskRangeField');
-  const pctRangeField=$('#defaultRiskPercentField');
-  const fixedField=$('#fixedRiskUnitField');
-
-  cashRangeField.classList.toggle('hidden', !['planned_cash','stop_based'].includes(basis));
-  pctRangeField.classList.toggle('hidden', basis!=='account_percent');
-  fixedField.classList.toggle('hidden', basis!=='fixed_unit');
-
-  const notes={
-    planned_cash:'Planned Cash Risk: define an allowable cash-risk range for the plan, for example $4–$6. Each trade records the actual planned cash risk used inside or outside that range.',
-    account_percent:'Account % Risk: define an allowable percentage range. Each trade records the actual percentage used, and 1R is calculated from equity at entry × that percentage.',
-    stop_based:'Stop-Based Risk: define the allowable cash-risk range for the initial stop reference. The stop can be broker-placed or a predefined mental/plan stop.',
-    fixed_unit:'Fixed Risk Unit: every trade uses the same configured cash amount as 1R.',
-    none:'No R-Multiple: T·IOS will not manufacture R. Performance Intelligence will use P&L, return, win rate, equity, drawdown and other non-R metrics.'
-  };
-  $('#rConfigNote').textContent=notes[basis] || notes.planned_cash;
-}
-
-function markRConfigDraftDirty(){
-  if(!tradingAccount) return;
-  rConfigDraftDirty=true;
-  rConfigDraftAccountId=tradingAccount.id;
-}
-
-function renderRConfigSettings({force=false}={}){
-  if(!tradingAccount || !$('#defaultRBasis')) return;
-
-  // MT5 updates the active trading_accounts row every few seconds. Those
-  // realtime updates call renderSettings(). Never overwrite values the trader
-  // is currently typing with the last saved database/local configuration.
-  if(
-    !force &&
-    rConfigDraftDirty &&
-    rConfigDraftAccountId===tradingAccount.id
-  ){
-    updateRConfigFields();
-    return;
-  }
-
-  const config=getAccountRConfig();
-  $('#defaultRBasis').value=config.basis;
-  $('#defaultCashRiskMin').value=config.cashRiskMin>0 ? config.cashRiskMin : '';
-  $('#defaultCashRiskMax').value=config.cashRiskMax>0 ? config.cashRiskMax : '';
-  $('#defaultRiskPercentMin').value=config.riskPercentMin>0 ? config.riskPercentMin : '';
-  $('#defaultRiskPercentMax').value=config.riskPercentMax>0 ? config.riskPercentMax : '';
-  $('#fixedRiskUnit').value=config.fixedRiskUnit>0 ? config.fixedRiskUnit : '';
-
-  rConfigDraftDirty=false;
-  rConfigDraftAccountId=tradingAccount.id;
-  updateRConfigFields();
-}
-
-async function saveRConfiguration(){
-  if(!tradingAccount) return;
-
-  const basis=$('#defaultRBasis').value;
-  const cashRiskMin=Number($('#defaultCashRiskMin').value);
-  const cashRiskMax=Number($('#defaultCashRiskMax').value);
-  const riskPercentMin=Number($('#defaultRiskPercentMin').value);
-  const riskPercentMax=Number($('#defaultRiskPercentMax').value);
-  const fixedRiskUnit=Number($('#fixedRiskUnit').value);
-
-  if(['planned_cash','stop_based'].includes(basis)){
-    if(!Number.isFinite(cashRiskMin) || cashRiskMin<=0 || !Number.isFinite(cashRiskMax) || cashRiskMax<=0){
-      alert('Enter a valid minimum and maximum allowable cash risk.');
-      return;
-    }
-    if(cashRiskMax<cashRiskMin){
-      alert('Maximum allowable cash risk must be greater than or equal to the minimum.');
-      return;
-    }
-  }
-
-  if(basis==='account_percent'){
-    if(!Number.isFinite(riskPercentMin) || riskPercentMin<=0 || !Number.isFinite(riskPercentMax) || riskPercentMax<=0){
-      alert('Enter a valid minimum and maximum allowable account risk percentage.');
-      return;
-    }
-    if(riskPercentMax<riskPercentMin){
-      alert('Maximum risk % must be greater than or equal to the minimum risk %.');
-      return;
-    }
-  }
-
-  if(basis==='fixed_unit' && (!Number.isFinite(fixedRiskUnit) || fixedRiskUnit<=0)){
-    alert('Enter a valid Fixed 1R Amount.');
-    return;
-  }
-
-  const config={
-    basis,
-    cashRiskMin:validPositiveNumber(cashRiskMin),
-    cashRiskMax:validPositiveNumber(cashRiskMax),
-    riskPercentMin:validPositiveNumber(riskPercentMin),
-    riskPercentMax:validPositiveNumber(riskPercentMax),
-    fixedRiskUnit:validPositiveNumber(fixedRiskUnit)
-  };
-
-  // Keep a local fallback so risk ranges work before/without the optional migration.
-  saveAccountRConfigLocal(config);
-  rConfigDraftDirty=false;
-  rConfigDraftAccountId=tradingAccount.id;
-
-  if(accountHasPersistentRConfig()){
-    const updatePayload={
-      default_r_basis:config.basis,
-      // Legacy field retained for compatibility with the first R-basis migration.
-      default_risk_percent:config.riskPercentMin || null,
-      fixed_risk_unit:config.fixedRiskUnit || null,
-      updated_at:new Date().toISOString()
-    };
-
-    if(accountSupportsRiskRangeColumns()){
-      updatePayload.default_cash_risk_min=config.cashRiskMin || null;
-      updatePayload.default_cash_risk_max=config.cashRiskMax || null;
-      updatePayload.default_risk_percent_min=config.riskPercentMin || null;
-      updatePayload.default_risk_percent_max=config.riskPercentMax || null;
-    }
-
-    const {data,error}=await db
-      .from('trading_accounts')
-      .update(updatePayload)
-      .eq('id',tradingAccount.id)
-      .eq('user_id',currentUser.id)
-      .select()
-      .single();
-
-    if(error){
-      console.error(error);
-      showStatus('R range saved locally; Supabase persistence failed',4000);
-      renderRConfigSettings({force:true});
-      return;
-    }
-
-    tradingAccount=data;
-    const idx=tradingAccounts.findIndex(a=>a.id===data.id);
-    if(idx>=0) tradingAccounts[idx]=data;
-  }
-
-  renderRConfigSettings({force:true});
-  showStatus(
-    accountSupportsRiskRangeColumns()
-      ? 'R risk range saved to T·IOS'
-      : 'R risk range saved for this browser/account'
-  );
-}
-
 function renderSettings(){
   if(!tradingAccount) return;
-
-  renderRConfigSettings();
 
   const linked=
     tradingAccounts.filter(
@@ -5753,23 +5373,6 @@ function renderSettings(){
       ? timeAgoOrDate(tradingAccount.last_sync_at)
       : '—';
 }
-
-$('#defaultRBasis').addEventListener('change',()=>{
-  markRConfigDraftDirty();
-  updateRConfigFields();
-});
-
-[
-  'defaultCashRiskMin',
-  'defaultCashRiskMax',
-  'defaultRiskPercentMin',
-  'defaultRiskPercentMax',
-  'fixedRiskUnit'
-].forEach(id=>{
-  $(`#${id}`).addEventListener('input',markRConfigDraftDirty);
-});
-
-$('#saveRConfigBtn').addEventListener('click',saveRConfiguration);
 
 $('#refreshConnectionsBtn').addEventListener(
   'click',
@@ -5936,108 +5539,11 @@ $('#sidebarOverlay').addEventListener('click',closeSidebarMobile);
    DASHBOARD CALCULATIONS
 ========================= */
 
-// R is optional in T·IOS. When a trader uses R, the denominator is the
-// trader-defined 1R amount — not necessarily a placed stop-loss order.
-// The preferred raw source is risk_amount (cash value of 1R). Stop-based
-// reconstruction is used only when the trade is explicitly classified as
-// stop_based. A trade configured as "No R-Multiple" must remain R = N/A.
-function tradeInitialRisk(trade){
-  if(!trade || tradeRBasis(trade)==='none'){
-    return 0;
-  }
-
-  const storedRisk=Number(trade.risk_amount);
-  if(Number.isFinite(storedRisk) && storedRisk>0){
-    return storedRisk;
-  }
-
-  const explicitInitialRisk=Number(trade.initial_risk);
-  if(Number.isFinite(explicitInitialRisk) && explicitInitialRisk>0){
-    return explicitInitialRisk;
-  }
-
-  // Do not manufacture R from a stop unless stop-based R was explicitly chosen.
-  if(tradeRBasis(trade)!=='stop_based'){
-    return 0;
-  }
-
-  const entry=Number(trade.entry_price);
-  const stop=Number(trade.stop_loss);
-  const exit=Number(trade.exit_price);
-  const netPnl=Number(trade.pnl);
-  const commission=Number(trade.commission)||0;
-  const swap=Number(trade.swap)||0;
-  const fee=Number(trade.fee)||0;
-
-  if(
-    !Number.isFinite(entry) ||
-    !Number.isFinite(stop) ||
-    !Number.isFinite(exit) ||
-    !Number.isFinite(netPnl)
-  ){
-    return 0;
-  }
-
-  const realisedMove=Math.abs(exit-entry);
-  const riskMove=Math.abs(entry-stop);
-
-  if(realisedMove<=1e-12 || riskMove<=1e-12){
-    return 0;
-  }
-
-  const pricePnl=netPnl-commission-swap-fee;
-  if(Math.abs(pricePnl)<=1e-12){
-    return 0;
-  }
-
-  const derivedRisk=Math.abs(pricePnl)*(riskMove/realisedMove);
-  return Number.isFinite(derivedRisk) && derivedRisk>0 ? derivedRisk : 0;
-}
-
-function tradeRMultiple(trade){
-  if(!trade || tradeRBasis(trade)==='none'){
-    return NaN;
-  }
-
-  const pnl=Number(trade.pnl);
-  const risk=tradeInitialRisk(trade);
-
-  if(risk>0 && Number.isFinite(pnl)){
-    return pnl/risk;
-  }
-
-  const stored=trade.r_multiple;
-  if(stored!==null && stored!==undefined && stored!=='' && Number.isFinite(Number(stored))){
-    return Number(stored);
-  }
-
-  return NaN;
-}
-
-function performanceHasValidR(trade){
-  return Boolean(
-    trade &&
-    tradeRBasis(trade)!=='none' &&
-    Number.isFinite(Number(trade.pnl)) &&
-    tradeInitialRisk(trade)>0
-  );
-}
-
-function performanceRValues(source=trades){
-  return source
-    .map(trade=>tradeRMultiple(trade))
-    .filter(Number.isFinite);
-}
-
 function performanceCoreDataQuality(source=trades){
   const total=source.length;
   const dated=source.filter(t=>Boolean(t.trade_date)).length;
   const pnlReady=source.filter(t=>Number.isFinite(Number(t.pnl))).length;
-  const rReady=source.filter(performanceHasValidR).length;
-  const rDisabled=source.filter(t=>tradeRBasis(t)==='none').length;
 
-  // Universal Performance Level 1 requires only chronology + outcome.
-  // R is an optional normalization layer and does not reduce core data quality.
   const complete=source.filter(t=>
     Boolean(t.trade_date) &&
     Number.isFinite(Number(t.pnl))
@@ -6047,8 +5553,6 @@ function performanceCoreDataQuality(source=trades){
     total,
     dated,
     pnlReady,
-    rReady,
-    rDisabled,
     complete,
     pct:total ? complete/total*100 : 0
   };
@@ -6069,17 +5573,11 @@ function dayPnlMap(sourceTrades){
 
   sourceTrades.forEach(t=>{
     if(!map[t.trade_date]){
-      map[t.trade_date]={pnl:0,count:0,r:0,rCount:0};
+      map[t.trade_date]={pnl:0,count:0};
     }
 
     map[t.trade_date].pnl += Number(t.pnl)||0;
     map[t.trade_date].count += 1;
-
-    const r=tradeRMultiple(t);
-    if(Number.isFinite(r)){
-      map[t.trade_date].r += r;
-      map[t.trade_date].rCount += 1;
-    }
   });
 
   return map;
@@ -6098,7 +5596,7 @@ function renderCalendar(){
 
   const wh=document.createElement('div');
   wh.className='week-label';
-  wh.textContent='Weekly P&L';
+  wh.textContent='Weekly P&L / Return';
   grid.appendChild(wh);
 
   const year=viewDate.getFullYear();
@@ -6150,7 +5648,7 @@ function renderCalendar(){
 
       if(data){
         html+=`<div class="day-pnl ${pnlClass(data.pnl)}">${signedMoney(data.pnl)}</div>`;
-        html+=`<div class="day-meta">${data.count} trade${data.count===1?'':'s'}${data.rCount ? ` • ${formatRValue(data.r)}` : ''}</div>`;
+        html+=`<div class="day-meta">${data.count} trade${data.count===1?'':'s'} • ${formatReturnPct(returnPctFromPnl(data.pnl))}</div>`;
         html+=`<div class="tag">${data.pnl>0?'Profit day':data.pnl<0?'Loss day':'Breakeven'}</div>`;
       }else{
         html+=`<div class="day-meta" style="margin-top:18px">No trades</div>`;
@@ -6163,9 +5661,11 @@ function renderCalendar(){
 
     const w=document.createElement('div');
     w.className='week-total';
+    const weekReturn=returnPctFromPnl(weekPnl);
     w.innerHTML=`
       <div class="label">Week ${row+1}</div>
       <div class="value ${pnlClass(weekPnl)}">${signedMoney(weekPnl)}</div>
+      <div class="week-return ${weekReturn===null?'neutral':pnlClass(weekReturn)}">${formatReturnPct(weekReturn)}</div>
     `;
     grid.appendChild(w);
   }
@@ -6176,11 +5676,6 @@ function renderMetrics(){
 
   const pnl=mt.reduce((s,t)=>s+(Number(t.pnl)||0),0);
   const wins=mt.filter(t=>Number(t.pnl)>0).length;
-  const monthRValues=performanceRValues(mt);
-  const avgR=monthRValues.length
-    ? monthRValues.reduce((s,r)=>s+r,0)/monthRValues.length
-    : null;
-
   const grossProfit=mt
     .filter(t=>Number(t.pnl)>0)
     .reduce((s,t)=>s+Number(t.pnl),0);
@@ -6198,8 +5693,9 @@ function renderMetrics(){
   $('#totalTrades').textContent=mt.length;
   $('#winRate').textContent=(mt.length?(wins/mt.length*100):0).toFixed(1)+'%';
 
-  $('#avgR').textContent=avgR===null ? 'N/A' : formatRValue(avgR);
-  $('#avgR').className='value '+(avgR===null?'neutral':pnlClass(avgR));
+  const monthReturn=returnPctFromPnl(pnl);
+  $('#monthlyReturn').textContent=formatReturnPct(monthReturn);
+  $('#monthlyReturn').className='dashboard-stat-value '+(monthReturn===null?'neutral':pnlClass(monthReturn));
 
   $('#profitFactor').textContent=pf===Infinity?'∞':pf.toFixed(2);
 
@@ -6281,7 +5777,7 @@ function renderRecent(){
       </div>
       <div class="t2">
         <span>${formatDate(t.trade_date)}</span>
-        <span>${formatRValue(tradeRMultiple(t))}</span>
+        <span>${formatReturnPct(tradeReturnPct(t))}</span>
       </div>
       <div style="display:flex;justify-content:flex-end;margin-top:8px">
         <button class="btn small danger recent-delete-trade" type="button">Delete</button>
@@ -6375,19 +5871,15 @@ function renderJournal(){
 
   const totalPnl=filtered.reduce((s,t)=>s+(Number(t.pnl)||0),0);
   const wins=filtered.filter(t=>Number(t.pnl)>0).length;
-  const filteredRValues=performanceRValues(filtered);
-  const avgR=filteredRValues.length
-    ? filteredRValues.reduce((s,r)=>s+r,0)/filteredRValues.length
-    : null;
-
   $('#jTrades').textContent=filtered.length;
   $('#jPnl').textContent=signedMoney(totalPnl);
   $('#jPnl').className='value '+pnlClass(totalPnl);
 
   $('#jWinRate').textContent=(filtered.length ? wins/filtered.length*100 : 0).toFixed(1)+'%';
 
-  $('#jAvgR').textContent=avgR===null ? 'N/A' : formatRValue(avgR);
-  $('#jAvgR').className='value '+(avgR===null?'neutral':pnlClass(avgR));
+  const filteredReturn=returnPctFromPnl(totalPnl);
+  $('#jReturn').textContent=formatReturnPct(filteredReturn);
+  $('#jReturn').className='value '+(filteredReturn===null?'neutral':pnlClass(filteredReturn));
 
   const totalPages=Math.max(1,Math.ceil(filtered.length/JOURNAL_PAGE_SIZE));
 
@@ -6402,7 +5894,7 @@ function renderJournal(){
   if(!pageItems.length){
     body.innerHTML=`
       <tr>
-        <td colspan="11">
+        <td colspan="10">
           <div class="empty-state" style="padding:18px">
             No trades match the current filters.
           </div>
@@ -6412,8 +5904,6 @@ function renderJournal(){
   }else{
     pageItems.forEach(t=>{
       const pnl=Number(t.pnl)||0;
-      const r=tradeRMultiple(t);
-
       const tr=document.createElement('tr');
 
       tr.innerHTML=`
@@ -6426,7 +5916,6 @@ function renderJournal(){
         </td>
         <td>${escapeHtml(t.setup||'—')}</td>
         <td class="${pnlClass(pnl)}"><strong>${signedMoney(pnl)}</strong></td>
-        <td class="${Number.isFinite(r)?pnlClass(r):'neutral'}">${formatRValue(r)}</td>
         <td>${journalExecutionBadge(t.id,t.execution_score)}</td>
         <td>${escapeHtml(t.psychology||'—')}</td>
         <td>${journalEdgeBadge(t.id)}</td>
@@ -6512,160 +6001,6 @@ $('#journalNext').addEventListener('click',()=>{
    TRADE MODAL / CRUD
 ========================= */
 
-function estimatedAccountEquityForR(){
-  const live=Number(tradingAccount?.current_equity);
-  if(
-    (tradingAccount?.account_type==='demo' || tradingAccount?.account_type==='real') &&
-    Number.isFinite(live) && live>0
-  ){
-    return live;
-  }
-
-  const start=Number(tradingAccount?.starting_balance)||0;
-  const closedPnl=trades.reduce((sum,t)=>sum+(Number(t.pnl)||0),0);
-  return Math.max(0,start+closedPnl);
-}
-
-function riskRangeText(min,max,unit='$'){
-  if(!(min>0) || !(max>0)) return '';
-  if(unit==='%') return `${min.toFixed(2)}% – ${max.toFixed(2)}%`;
-  return `${unit}${min.toFixed(2)} – ${unit}${max.toFixed(2)}`;
-}
-
-function updateTradeRiskRangeStatus(){
-  const status=$('#tradeRiskRangeStatus');
-  if(!status) return;
-
-  const basis=$('#rBasis').value;
-  const config=getAccountRConfig();
-  status.className='risk-range-status';
-
-  if(basis==='none'){
-    status.textContent='R-multiple is disabled for this trade.';
-    return;
-  }
-
-  if(basis==='fixed_unit'){
-    status.textContent=config.fixedRiskUnit>0
-      ? `Fixed plan unit: $${config.fixedRiskUnit.toFixed(2)} = 1R.`
-      : 'Set the fixed 1R amount in Settings.';
-    return;
-  }
-
-  if(basis==='account_percent'){
-    const min=config.riskPercentMin;
-    const max=config.riskPercentMax;
-    const actual=Number($('#rRiskPercent').value);
-    if(!(min>0) || !(max>0)){
-      status.textContent='No allowable account-risk % range configured yet.';
-      return;
-    }
-    const range=riskRangeText(min,max,'%');
-    if(!Number.isFinite(actual) || actual<=0){
-      status.textContent=`Allowed risk range: ${range}. Enter the actual % used for this trade.`;
-      return;
-    }
-    const within=actual>=min && actual<=max;
-    status.classList.add(within?'ok':'out');
-    status.textContent=within
-      ? `Within plan • ${actual.toFixed(2)}% is inside ${range}.`
-      : `Outside plan • ${actual.toFixed(2)}% is outside ${range}. The trade can still be recorded as evidence.`;
-    return;
-  }
-
-  const min=config.cashRiskMin;
-  const max=config.cashRiskMax;
-  const actual=Number($('#riskAmount').value);
-  if(!(min>0) || !(max>0)){
-    status.textContent='No allowable cash-risk range configured yet.';
-    return;
-  }
-  const range=riskRangeText(min,max,'$');
-  if(!Number.isFinite(actual) || actual<=0){
-    status.textContent=`Allowed risk range: ${range}. Enter the actual planned risk used for this trade.`;
-    return;
-  }
-  const within=actual>=min && actual<=max;
-  status.classList.add(within?'ok':'out');
-  status.textContent=within
-    ? `Within plan • $${actual.toFixed(2)} is inside ${range}.`
-    : `Outside plan • $${actual.toFixed(2)} is outside ${range}. The trade can still be recorded as evidence.`;
-}
-
-function updateTradeRBasisUI({preserveRisk=false}={}){
-  const basis=$('#rBasis').value;
-  const config=getAccountRConfig();
-  const equityField=$('#rAccountEquityField');
-  const percentField=$('#rRiskPercentField');
-  const riskField=$('#riskAmountField');
-  const riskInput=$('#riskAmount');
-  const riskLabel=$('#riskAmountLabel');
-  const riskHelp=$('#riskAmountHelp');
-  const basisHelp=$('#rBasisHelp');
-
-  equityField.classList.toggle('hidden',basis!=='account_percent');
-  percentField.classList.toggle('hidden',basis!=='account_percent');
-  riskField.classList.toggle('hidden',basis==='none');
-
-  riskInput.readOnly=false;
-
-  if(basis==='planned_cash'){
-    riskLabel.textContent='Actual Planned Cash Risk (1R)';
-    riskHelp.textContent='Enter the actual cash risk chosen for this trade. T·IOS compares it with the allowable range from Settings.';
-    basisHelp.textContent='The trading plan defines a cash-risk range; each trade records the actual risk used.';
-  }else if(basis==='account_percent'){
-    riskLabel.textContent='Calculated 1R Amount';
-    riskHelp.textContent='Calculated automatically from account equity at entry × the actual risk % used.';
-    basisHelp.textContent='The trading plan defines an allowable % range; each trade records the actual % used.';
-    riskInput.readOnly=true;
-    if(!$('#rAccountEquity').value){
-      const equity=estimatedAccountEquityForR();
-      if(equity>0) $('#rAccountEquity').value=equity.toFixed(2);
-    }
-  }else if(basis==='stop_based'){
-    riskLabel.textContent='Actual Stop-Based Cash Risk (1R)';
-    riskHelp.textContent='Enter the actual cash risk represented by the initial stop reference; T·IOS compares it with your allowable cash-risk range.';
-    basisHelp.textContent='The stop reference defines actual risk; the plan still allows a configurable cash-risk range.';
-  }else if(basis==='fixed_unit'){
-    riskLabel.textContent='Fixed 1R Amount';
-    riskHelp.textContent='Uses the fixed risk unit configured for this trading account.';
-    basisHelp.textContent='Every trade uses the same configured cash amount as 1R.';
-    riskInput.readOnly=true;
-    if(!preserveRisk || !Number(riskInput.value)){
-      riskInput.value=config.fixedRiskUnit>0 ? config.fixedRiskUnit.toFixed(2) : '';
-    }
-  }else{
-    basisHelp.textContent='This trader does not use R-multiple. T·IOS will evaluate performance using P&L, return, win rate, equity and other non-R metrics.';
-    riskInput.value='';
-    $('#rMultiple').value='N/A';
-  }
-
-  if(basis==='account_percent'){
-    const equity=Number($('#rAccountEquity').value);
-    const pct=Number($('#rRiskPercent').value);
-    const calculated=Number.isFinite(equity) && equity>0 && Number.isFinite(pct) && pct>0
-      ? equity*pct/100
-      : 0;
-    riskInput.value=calculated>0 ? calculated.toFixed(2) : '';
-  }
-
-  updateTradeRiskRangeStatus();
-  autoR();
-}
-
-function applyNewTradeRDefaults(){
-  const config=getAccountRConfig();
-  $('#rBasis').value=config.basis;
-  // A range is a plan boundary, not the actual risk. Leave the per-trade value blank.
-  $('#rRiskPercent').value='';
-  const equity=estimatedAccountEquityForR();
-  $('#rAccountEquity').value=equity>0 ? equity.toFixed(2) : '';
-  $('#riskAmount').value=config.basis==='fixed_unit' && config.fixedRiskUnit>0
-    ? config.fixedRiskUnit.toFixed(2)
-    : '';
-  updateTradeRBasisUI();
-}
-
 function resetTradeForm(){
   editingTradeId=null;
   $('#tradeForm').reset();
@@ -6674,8 +6009,6 @@ function resetTradeForm(){
 
 function openTradeModal(date){
   resetTradeForm();
-  applyNewTradeRDefaults();
-
   const selectedDate=date || localDateString(new Date());
 
   $('#tradeDate').value=selectedDate;
@@ -6687,11 +6020,6 @@ function openTradeModal(date){
 
 function openEditTrade(trade){
   editingTradeId=trade.id;
-  const localMeta=getTradeRMeta(trade.id);
-  const storedBasis=String(trade.r_basis||localMeta.basis||'');
-  const basis=R_BASIS_LABELS[storedBasis]
-    ? storedBasis
-    : (performanceHasValidR(trade) ? 'planned_cash' : 'none');
 
   $('#tradeDate').value=trade.trade_date || '';
   $('#instrument').value=trade.instrument || '';
@@ -6700,17 +6028,10 @@ function openEditTrade(trade){
   $('#entry').value=trade.entry_price ?? '';
   $('#stop').value=trade.stop_loss ?? '';
   $('#exit').value=trade.exit_price ?? '';
-  $('#rBasis').value=basis;
-  $('#rAccountEquity').value=trade.r_basis_equity ?? localMeta.accountEquity ?? '';
-  $('#rRiskPercent').value=trade.r_basis_percent ?? localMeta.riskPercent ?? '';
-  $('#riskAmount').value=tradeInitialRisk(trade) || '';
   $('#pnl').value=trade.pnl ?? '';
   $('#executionScore').value=trade.execution_score ?? '';
   $('#psychology').value=trade.psychology || '';
   $('#notes').value=trade.notes || '';
-
-  updateTradeRBasisUI({preserveRisk:true});
-  $('#rMultiple').value=formatRValue(tradeRMultiple(trade));
 
   $('#modalTitle').textContent='Edit Trade — '+formatDate(trade.trade_date);
   $('#saveTradeBtn').textContent='Update Trade';
@@ -6748,7 +6069,7 @@ function renderDayTrades(date){
       <strong>${escapeHtml(t.instrument||'—')} ${escapeHtml(t.direction||'')}</strong>
       <span>${escapeHtml(t.setup||'No setup')}</span>
       <span class="${pnlClass(Number(t.pnl))}">${signedMoney(Number(t.pnl))}</span>
-      <span>${formatRValue(tradeRMultiple(t))}</span>
+      <span>${formatReturnPct(tradeReturnPct(t))}</span>
       <button class="btn danger small" type="button">Delete</button>
     `;
 
@@ -6791,8 +6112,6 @@ async function deleteTrade(trade, dayToRefresh=null){
     return;
   }
 
-  removeTradeRMeta(trade.id);
-
   await loadTrades();
   await loadEdgeData();
   await loadExecutionData();
@@ -6809,27 +6128,11 @@ $('#tradeForm').addEventListener('submit',async e=>{
   e.preventDefault();
 
   const pnl=Number($('#pnl').value);
-  const basis=$('#rBasis').value;
-  const risk=Number($('#riskAmount').value);
-  const accountEquity=Number($('#rAccountEquity').value);
-  const riskPercent=Number($('#rRiskPercent').value);
 
   if(!Number.isFinite(pnl)){
     alert('Enter a valid Net P&L amount.');
     return;
   }
-
-  if(basis!=='none' && (!Number.isFinite(risk) || risk<=0)){
-    const message=basis==='fixed_unit'
-      ? 'Set a valid Fixed 1R Amount in Settings → R-Multiple Configuration.'
-      : basis==='account_percent'
-        ? 'Enter valid account equity and risk percentage so T·IOS can calculate 1R.'
-        : 'Enter a valid cash amount representing 1R for this trade.';
-    alert(message);
-    return;
-  }
-
-  const r=basis==='none' ? null : pnl/risk;
 
   const payload={
     user_id:currentUser.id,
@@ -6843,27 +6146,12 @@ $('#tradeForm').addEventListener('submit',async e=>{
     entry_price:$('#entry').value==='' ? null : Number($('#entry').value),
     stop_loss:$('#stop').value==='' ? null : Number($('#stop').value),
     exit_price:$('#exit').value==='' ? null : Number($('#exit').value),
-    risk_amount:basis==='none' ? null : risk,
     pnl:pnl,
-    r_multiple:r===null ? null : Number(r.toFixed(6)),
     execution_score:$('#executionScore').value==='' ? null : Number($('#executionScore').value),
     psychology:$('#psychology').value || null,
     notes:$('#notes').value.trim() || null,
     updated_at:new Date().toISOString()
   };
-
-  // If the optional Supabase R-basis migration is installed, preserve the
-  // exact basis and percentage inputs with the trade. Otherwise T·IOS still
-  // works and keeps this metadata locally for the current browser.
-  if(accountHasPersistentRConfig()){
-    payload.r_basis=basis;
-    payload.r_basis_percent=basis==='account_percent' && Number.isFinite(riskPercent)
-      ? riskPercent
-      : null;
-    payload.r_basis_equity=basis==='account_percent' && Number.isFinite(accountEquity)
-      ? accountEquity
-      : null;
-  }
 
   const saveBtn=$('#saveTradeBtn');
   saveBtn.disabled=true;
@@ -6893,19 +6181,6 @@ $('#tradeForm').addEventListener('submit',async e=>{
   if(result.error){
     alert(result.error.message);
     return;
-  }
-
-  const savedTradeId=result.data?.id || editingTradeId;
-  if(savedTradeId){
-    const rConfigAtTrade=getAccountRConfig();
-    saveTradeRMeta(savedTradeId,{
-      basis,
-      riskPercent:basis==='account_percent' && Number.isFinite(riskPercent) ? riskPercent : null,
-      accountEquity:basis==='account_percent' && Number.isFinite(accountEquity) ? accountEquity : null,
-      allowedRiskMin:basis==='account_percent' ? rConfigAtTrade.riskPercentMin : rConfigAtTrade.cashRiskMin,
-      allowedRiskMax:basis==='account_percent' ? rConfigAtTrade.riskPercentMax : rConfigAtTrade.cashRiskMax,
-      allowedRiskUnit:basis==='account_percent' ? '%' : '$'
-    });
   }
 
   const date=payload.trade_date;
@@ -6941,26 +6216,6 @@ $$('.addTradeTrigger').forEach(btn=>{
   btn.addEventListener('click',()=>openTradeModal(localDateString(new Date())));
 });
 
-$('#rBasis').addEventListener('change',()=>updateTradeRBasisUI());
-$('#riskAmount').addEventListener('input',()=>{ updateTradeRiskRangeStatus(); autoR(); });
-$('#pnl').addEventListener('input',autoR);
-$('#rAccountEquity').addEventListener('input',()=>updateTradeRBasisUI({preserveRisk:true}));
-$('#rRiskPercent').addEventListener('input',()=>updateTradeRBasisUI({preserveRisk:true}));
-
-function autoR(){
-  const basis=$('#rBasis').value;
-  const pnl=Number($('#pnl').value);
-  const risk=Number($('#riskAmount').value);
-
-  if(basis==='none'){
-    $('#rMultiple').value='N/A';
-  }else if(Number.isFinite(pnl) && risk>0){
-    $('#rMultiple').value=formatRValue(pnl/risk);
-  }else{
-    $('#rMultiple').value='';
-  }
-}
-
 /* =========================
    ACCOUNT
 ========================= */
@@ -6994,9 +6249,9 @@ $('#startingBalance').addEventListener('change',async e=>{
   }
 
   renderAccountSelector();
-  renderMetrics();
+  renderAll();
   renderSettings();
-  showStatus('Starting balance updated');
+  showStatus('Initial balance updated');
 });
 
 /* =========================
@@ -7188,10 +6443,10 @@ function loadExecutionReviewIntoEditor(trade){
   $('#executionSelectedPnl').textContent=
     `P&L: ${signedMoney(Number(trade.pnl)||0)}`;
 
-  const r=tradeRMultiple(trade);
+  const tradeReturn=tradeReturnPct(trade);
 
-  $('#executionSelectedR').textContent=
-    `R: ${formatRValue(r)}`;
+  $('#executionSelectedReturn').textContent=
+    `Return: ${formatReturnPct(tradeReturn)}`;
 
   const edgeRating=edgeRatingForTrade(trade.id);
   const edgeScore=edgeScoreForTrade(trade.id);
@@ -7766,7 +7021,7 @@ function buildDailyEquitySeries(start,end){
     direction:'',
     equity,
     tradePnl:0,
-    rMultiple:0,
+    tradeReturn:null,
     isOpening:true
   }];
 
@@ -7782,7 +7037,7 @@ function buildDailyEquitySeries(start,end){
       direction:trade.direction || '—',
       equity,
       tradePnl,
-      rMultiple:tradeRMultiple(trade),
+      tradeReturn:tradeReturnPct(trade),
       isOpening:false
     });
   });
@@ -7960,7 +7215,7 @@ function renderEquityChart(series){
               return [
                 `${point.instrument} • ${point.direction}`,
                 `Trade P&L: ${signedMoney(point.tradePnl)}`,
-                `R: ${formatRValue(point.rMultiple)}`,
+                `Trade return: ${formatReturnPct(point.tradeReturn)}`,
                 `Equity: ${money(point.equity)}`
               ];
             }
@@ -8013,17 +7268,11 @@ function renderInstrumentStats(sourceTrades){
     const key=(t.instrument||'Unknown').trim() || 'Unknown';
 
     if(!grouped[key]){
-      grouped[key]={trades:0,wins:0,pnl:0,rTotal:0,rCount:0};
+      grouped[key]={trades:0,wins:0,pnl:0};
     }
 
     grouped[key].trades++;
     grouped[key].pnl+=Number(t.pnl)||0;
-
-    const r=tradeRMultiple(t);
-    if(Number.isFinite(r)){
-      grouped[key].rTotal+=r;
-      grouped[key].rCount++;
-    }
 
     if(Number(t.pnl)>0){
       grouped[key].wins++;
@@ -8035,7 +7284,9 @@ function renderInstrumentStats(sourceTrades){
       instrument,
       ...data,
       winRate:data.trades ? data.wins/data.trades*100 : 0,
-      avgR:data.rCount ? data.rTotal/data.rCount : null
+      avgReturn:data.trades && initialAccountBalance()>0
+        ? (data.pnl/data.trades)/initialAccountBalance()*100
+        : null
     }))
     .sort((a,b)=>b.pnl-a.pnl);
 
@@ -8049,7 +7300,7 @@ function renderInstrumentStats(sourceTrades){
       <td>${row.trades}</td>
       <td>${row.winRate.toFixed(1)}%</td>
       <td class="${pnlClass(row.pnl)}">${signedMoney(row.pnl)}</td>
-      <td class="${row.avgR===null?'neutral':pnlClass(row.avgR)}">${row.avgR===null?'N/A':formatRValue(row.avgR)}</td>
+      <td class="${row.avgReturn===null?'neutral':pnlClass(row.avgReturn)}">${formatReturnPct(row.avgReturn)}</td>
     `;
 
     body.appendChild(tr);
@@ -8091,9 +7342,7 @@ function renderStatistics(){
   const endingEquity=
     series.points[series.points.length-1]?.equity ?? series.openingEquity;
 
-  const returnPct=series.openingEquity!==0
-    ? netPnl/Math.abs(series.openingEquity)*100
-    : 0;
+  const returnPct=returnPctFromPnl(netPnl);
 
   const wins=source.filter(t=>Number(t.pnl)>0);
   const losses=source.filter(t=>Number(t.pnl)<0);
@@ -8108,10 +7357,7 @@ function renderStatistics(){
     ? grossProfit/grossLoss
     : grossProfit>0 ? Infinity : 0;
 
-  const sourceRValues=performanceRValues(source);
-  const avgR=sourceRValues.length
-    ? sourceRValues.reduce((s,r)=>s+r,0)/sourceRValues.length
-    : null;
+  const avgTradeReturn=averageTradeReturnPct(source);
 
   const expectancy=source.length
     ? netPnl/source.length
@@ -8173,9 +7419,8 @@ function renderStatistics(){
   $('#statNetPnl').textContent=signedMoney(netPnl);
   $('#statNetPnl').className='value '+pnlClass(netPnl);
 
-  $('#statReturn').textContent=
-    (returnPct>=0?'+':'')+returnPct.toFixed(2)+'%';
-  $('#statReturn').className='value '+pnlClass(returnPct);
+  $('#statReturn').textContent=formatReturnPct(returnPct);
+  $('#statReturn').className='value '+(returnPct===null?'neutral':pnlClass(returnPct));
 
   $('#statMaxDd').textContent=
     drawdown.amount>0 ? '-'+money(drawdown.amount) : money(0);
@@ -8196,8 +7441,8 @@ function renderStatistics(){
   $('#statProfitFactor').textContent=
     profitFactor===Infinity ? '∞' : profitFactor.toFixed(2);
 
-  $('#statAvgR').textContent=avgR===null ? 'N/A' : formatRValue(avgR);
-  $('#statAvgR').className='value '+(avgR===null?'neutral':pnlClass(avgR));
+  $('#statAvgTradeReturn').textContent=formatReturnPct(avgTradeReturn);
+  $('#statAvgTradeReturn').className='value '+(avgTradeReturn===null?'neutral':pnlClass(avgTradeReturn));
 
   $('#statExpectancy').textContent=signedMoney(expectancy);
   $('#statExpectancy').className='value '+pnlClass(expectancy);
@@ -8513,8 +7758,8 @@ function loadEdgeReviewIntoEditor(trade){
 
   $('#edgeSelectedPnl').textContent=`P&L: ${signedMoney(Number(trade.pnl)||0)}`;
 
-  const r=tradeRMultiple(trade);
-  $('#edgeSelectedR').textContent=`R: ${formatRValue(r)}`;
+  const tradeReturn=tradeReturnPct(trade);
+  $('#edgeSelectedReturn').textContent=`Return: ${formatReturnPct(tradeReturn)}`;
 
   $('#edgeSelectedSetup').textContent=`Setup: ${trade.setup || '—'}`;
 
@@ -9305,9 +8550,8 @@ function exportTrades(sourceTrades, filename){
     'entry_price',
     'stop_loss',
     'exit_price',
-    'risk_amount',
     'pnl',
-    'r_multiple',
+    'return_pct_initial_balance',
     'execution_score',
     'psychology',
     'notes'
@@ -9322,11 +8566,9 @@ function exportTrades(sourceTrades, filename){
     headers.join(','),
     ...sourceTrades.map(t=>headers.map(h=>
       esc(
-        h==='r_multiple'
-          ? (Number.isFinite(tradeRMultiple(t)) ? tradeRMultiple(t) : '')
-          : h==='risk_amount'
-            ? tradeInitialRisk(t)
-            : t[h]
+        h==='return_pct_initial_balance'
+          ? (tradeReturnPct(t) ?? '')
+          : t[h]
       )
     ).join(','))
   ].join('\n');
@@ -9464,25 +8706,28 @@ function planCriterionStats(keys){
 
 function intelligenceSetupStats(){
   const groups=new Map();
+  const base=initialAccountBalance();
 
   trades.forEach(trade=>{
     const setup=String(trade.setup||'').trim();
-    const r=tradeRMultiple(trade);
-    if(!setup || !Number.isFinite(r)) return;
+    const pnl=Number(trade.pnl);
+    if(!setup || !Number.isFinite(pnl)) return;
 
     if(!groups.has(setup)){
-      groups.set(setup,{name:setup,count:0,sumR:0,wins:0});
+      groups.set(setup,{name:setup,count:0,sumPnl:0,wins:0});
     }
 
     const g=groups.get(setup);
     g.count++;
-    g.sumR+=r;
-    if(Number(trade.pnl)>0) g.wins++;
+    g.sumPnl+=pnl;
+    if(pnl>0) g.wins++;
   });
 
   return [...groups.values()].map(g=>({
     ...g,
-    avgR:g.count ? g.sumR/g.count : null,
+    avgReturn:base>0 && g.count
+      ? (g.sumPnl/g.count)/base*100
+      : null,
     winRate:g.count ? g.wins/g.count*100 : null
   }));
 }
@@ -9533,22 +8778,33 @@ function intelligenceBehaviourPattern(){
 function marketStateStats(){
   const reviews=activePlanReviews().filter(r=>String(r.market_state||'').trim());
   const groups=new Map();
+  const base=initialAccountBalance();
 
   reviews.forEach(review=>{
     const state=String(review.market_state).trim();
     const trade=trades.find(t=>t.id===review.trade_id);
-    const r=trade ? tradeRMultiple(trade) : NaN;
-    if(!groups.has(state)) groups.set(state,{state,count:0,rValues:[]});
+    const pnl=trade ? Number(trade.pnl) : NaN;
+
+    if(!groups.has(state)){
+      groups.set(state,{state,count:0,sumPnl:0,performanceCount:0});
+    }
+
     const g=groups.get(state);
     g.count++;
-    if(Number.isFinite(r)) g.rValues.push(r);
+
+    if(Number.isFinite(pnl)){
+      g.sumPnl+=pnl;
+      g.performanceCount++;
+    }
   });
 
   const stats=[...groups.values()].map(g=>({
     state:g.state,
     count:g.count,
-    avgR:g.rValues.length ? g.rValues.reduce((a,b)=>a+b,0)/g.rValues.length : null,
-    performanceCount:g.rValues.length
+    avgReturn:base>0 && g.performanceCount
+      ? (g.sumPnl/g.performanceCount)/base*100
+      : null,
+    performanceCount:g.performanceCount
   }));
 
   return {reviews,stats};
@@ -9579,12 +8835,10 @@ function renderIntelligence(){
   const processEvidenceCount=executionReviewed+edgeReviewed+psychCount;
   const maturity=intelligenceMaturity(processEvidenceCount);
 
-  const rValues=performanceRValues(trades);
   const corePerformanceData=performanceCoreDataQuality(trades);
-
-  const avgR=rValues.length
-    ? rValues.reduce((sum,v)=>sum+v,0)/rValues.length
-    : null;
+  const base=initialAccountBalance();
+  const allTimePnl=trades.reduce((sum,t)=>sum+(Number(t.pnl)||0),0);
+  const allTimeReturn=returnPctFromPnl(allTimePnl);
 
   const wins=trades.filter(t=>Number(t.pnl)>0).length;
   const winRate=trades.length ? wins/trades.length*100 : null;
@@ -9658,8 +8912,7 @@ function renderIntelligence(){
   }
 
   /* Specialized Intelligence — Performance is available directly from trades */
-  $('#intelPerformanceScore').textContent=
-    avgR===null ? '—' : `${avgR>=0?'+':''}${avgR.toFixed(2)}R`;
+  $('#intelPerformanceScore').textContent=formatReturnPct(allTimeReturn);
   $('#intelPerformanceEvidence').textContent=
     `${trades.length} trade${trades.length===1?'':'s'} in active account`;
   $('#intelPerformanceWinRate').textContent=
@@ -9668,36 +8921,36 @@ function renderIntelligence(){
     profitFactor===null ? '—' : (profitFactor===Infinity ? '∞' : profitFactor.toFixed(2));
   $('#intelPerformanceDataQuality').textContent=
     trades.length ? corePerformanceData.pct.toFixed(0)+'%' : '—';
-  $('#intelPerformanceRCoverage').textContent=
-    `${corePerformanceData.rReady} / ${trades.length}`;
+  $('#intelPerformanceReturnBasis').textContent=
+    base>0 ? money(base) : 'Set initial balance';
 
   if(trades.length===0){
     setIntelligenceState('#intelPerformanceState','Waiting');
     $('#intelPerformanceNote').textContent='Performance Intelligence activates automatically when trades exist in the selected account.';
   }else if(corePerformanceData.complete<trades.length){
     setIntelligenceState('#intelPerformanceState','Data incomplete','building');
-    $('#intelPerformanceNote').textContent=`Outcome data exists for ${trades.length} trades, but only ${corePerformanceData.complete} currently contain the universal Level 1 facts: trade date and Net P&L. R is optional and does not affect core performance-data quality.`;
+    $('#intelPerformanceNote').textContent=`Outcome data exists for ${trades.length} trades, but only ${corePerformanceData.complete} currently contain the universal Level 1 facts: trade date and Net P&L.`;
+  }else if(!(base>0)){
+    setIntelligenceState('#intelPerformanceState','Needs balance','building');
+    $('#intelPerformanceNote').textContent='Outcome data is available, but set the initial account balance so T·IOS can express performance as percentage return on the original account size.';
   }else{
     setIntelligenceState('#intelPerformanceState','Active','active');
-    const rText=corePerformanceData.rReady
-      ? ` R-based metrics currently use ${corePerformanceData.rReady} trade${corePerformanceData.rReady===1?'':'s'}.`
-      : ' This trader currently has no usable R data, so R-based metrics are shown as N/A.';
-    $('#intelPerformanceNote').textContent=`Performance Intelligence has complete universal Level 1 outcome data for all ${trades.length} trades.${rText}`;
+    $('#intelPerformanceNote').textContent=`Performance Intelligence has complete outcome data for all ${trades.length} trades. Return is measured as Net P&L ÷ initial account balance (${money(base)}).`;
   }
 
   /* Specialized Intelligence — Strategy */
   const setupStats=intelligenceSetupStats();
   const classifiedSetupTrades=setupStats.reduce((sum,item)=>sum+item.count,0);
-  const qualifiedSetups=setupStats.filter(item=>item.count>=3 && Number.isFinite(item.avgR));
+  const qualifiedSetups=setupStats.filter(item=>item.count>=3 && Number.isFinite(item.avgReturn));
   const bestSetup=qualifiedSetups.length
-    ? [...qualifiedSetups].sort((a,b)=>b.avgR-a.avgR)[0]
+    ? [...qualifiedSetups].sort((a,b)=>b.avgReturn-a.avgReturn)[0]
     : null;
   const largestSetupSample=setupStats.length
     ? [...setupStats].sort((a,b)=>b.count-a.count)[0]
     : null;
 
   $('#intelStrategyScore').textContent=
-    bestSetup ? `${bestSetup.avgR>=0?'+':''}${bestSetup.avgR.toFixed(2)}R` : '—';
+    bestSetup ? formatReturnPct(bestSetup.avgReturn) : '—';
   $('#intelStrategyEvidence').textContent=
     `${classifiedSetupTrades} trade${classifiedSetupTrades===1?'':'s'} with setup labels`;
   $('#intelStrategyBest').textContent=bestSetup ? bestSetup.name : 'Need 3 trades / setup';
@@ -9710,10 +8963,12 @@ function renderIntelligence(){
     $('#intelStrategyNote').textContent='Strategy Intelligence needs consistent Setup / Edge labels on trades before it can compare strategy outcomes.';
   }else if(!bestSetup){
     setIntelligenceState('#intelStrategyState','Building','building');
-    $('#intelStrategyNote').textContent='Setup data exists, but T·IOS waits for at least 3 comparable trades in a setup before displaying a sampled strategy result.';
+    $('#intelStrategyNote').textContent=base>0
+      ? 'Setup data exists, but T·IOS waits for at least 3 comparable trades in a setup before displaying a sampled strategy result.'
+      : 'Setup data exists, but set the initial account balance before T·IOS compares sampled setup returns.';
   }else{
     setIntelligenceState('#intelStrategyState','Active','active');
-    $('#intelStrategyNote').textContent=`Among setups with at least 3 classified trades, ${bestSetup.name} currently has the strongest average outcome (${bestSetup.avgR>=0?'+':''}${bestSetup.avgR.toFixed(2)}R across ${bestSetup.count} trades). This is sample evidence, not proof the setup is universally superior.`;
+    $('#intelStrategyNote').textContent=`Among setups with at least 3 classified trades, ${bestSetup.name} currently has the strongest average trade return (${formatReturnPct(bestSetup.avgReturn)} across ${bestSetup.count} trades). This is sample evidence, not proof the setup is universally superior.`;
   }
 
   /* Specialized Intelligence — Behaviour */
@@ -9749,9 +9004,9 @@ function renderIntelligence(){
   const marketStates=marketStateStats();
   const balanceState=marketStates.stats.find(x=>x.state==='Balance');
   const imbalanceState=marketStates.stats.find(x=>x.state==='Imbalance');
-  const stateCandidates=marketStates.stats.filter(x=>x.performanceCount>=3 && Number.isFinite(x.avgR));
+  const stateCandidates=marketStates.stats.filter(x=>x.performanceCount>=3 && Number.isFinite(x.avgReturn));
   const bestState=stateCandidates.length
-    ? [...stateCandidates].sort((a,b)=>b.avgR-a.avgR)[0]
+    ? [...stateCandidates].sort((a,b)=>b.avgReturn-a.avgReturn)[0]
     : null;
 
   $('#intelContextScore').textContent=
@@ -9763,7 +9018,7 @@ function renderIntelligence(){
       ? `Balance ${balanceState?.count||0} · Imbalance ${imbalanceState?.count||0}`
       : '—';
   $('#intelContextBestState').textContent=
-    bestState ? `${bestState.state} ${bestState.avgR>=0?'+':''}${bestState.avgR.toFixed(2)}R` : 'Need 3 trades / state';
+    bestState ? `${bestState.state} ${formatReturnPct(bestState.avgReturn)}` : 'Need 3 trades / state';
 
   if(marketStates.reviews.length===0 && contextCriteria.total===0){
     setIntelligenceState('#intelContextState','Needs reviews');
@@ -9780,18 +9035,25 @@ function renderIntelligence(){
 
   /* Specialized Intelligence — Risk */
   const riskCriteria=executionCriterionStats(['stop_placement','risk_sizing']);
-  const losingR=rValues.filter(v=>v<0);
-  const avgLossR=losingR.length ? losingR.reduce((a,b)=>a+b,0)/losingR.length : null;
-  const worstLossR=losingR.length ? Math.min(...losingR) : null;
+  const losingTrades=trades.filter(t=>Number(t.pnl)<0);
+  const losingReturns=losingTrades
+    .map(tradeReturnPct)
+    .filter(Number.isFinite);
+  const avgLossReturn=losingReturns.length
+    ? losingReturns.reduce((a,b)=>a+b,0)/losingReturns.length
+    : null;
+  const worstLossReturn=losingReturns.length
+    ? Math.min(...losingReturns)
+    : null;
 
   $('#intelRiskScore').textContent=
     riskCriteria.pct===null ? '—' : riskCriteria.pct.toFixed(1)+'%';
   $('#intelRiskEvidence').textContent=
-    `${riskCriteria.reviewedTrades} reviewed trade${riskCriteria.reviewedTrades===1?'':'s'} · ${losingR.length} loss${losingR.length===1?'':'es'}`;
+    `${riskCriteria.reviewedTrades} reviewed trade${riskCriteria.reviewedTrades===1?'':'s'} · ${losingTrades.length} loss${losingTrades.length===1?'':'es'}`;
   $('#intelRiskAvgLoss').textContent=
-    avgLossR===null ? '—' : `${avgLossR.toFixed(2)}R`;
+    formatReturnPct(avgLossReturn);
   $('#intelRiskWorstLoss').textContent=
-    worstLossR===null ? '—' : `${worstLossR.toFixed(2)}R`;
+    formatReturnPct(worstLossReturn);
 
   if(riskCriteria.reviewedTrades===0){
     if(trades.length){
@@ -9823,34 +9085,38 @@ function renderIntelligence(){
     .map(trade=>({
       trade,
       score:executionScoreForTrade(trade.id),
-      r:tradeRMultiple(trade)
+      returnPct:tradeReturnPct(trade)
     }))
-    .filter(x=>x.score!==null && Number.isFinite(x.score) && Number.isFinite(x.r));
+    .filter(x=>x.score!==null && Number.isFinite(x.score) && Number.isFinite(x.returnPct));
 
   const highExec=reviewedExecutionTrades.filter(x=>x.score>=90);
   const lowExec=reviewedExecutionTrades.filter(x=>x.score<90);
-  const highR=highExec.length ? highExec.reduce((sum,x)=>sum+x.r,0)/highExec.length : null;
-  const lowR=lowExec.length ? lowExec.reduce((sum,x)=>sum+x.r,0)/lowExec.length : null;
+  const highReturn=highExec.length
+    ? highExec.reduce((sum,x)=>sum+x.returnPct,0)/highExec.length
+    : null;
+  const lowReturn=lowExec.length
+    ? lowExec.reduce((sum,x)=>sum+x.returnPct,0)/lowExec.length
+    : null;
 
-  $('#intelHighExecR').textContent=
-    highR===null ? '—' : `${highR>=0?'+':''}${highR.toFixed(2)}R`;
-  $('#intelLowExecR').textContent=
-    lowR===null ? '—' : `${lowR>=0?'+':''}${lowR.toFixed(2)}R`;
+  $('#intelHighExecReturn').textContent=formatReturnPct(highReturn);
+  $('#intelLowExecReturn').textContent=formatReturnPct(lowReturn);
   $('#intelHighExecCount').textContent=`${highExec.length} trade${highExec.length===1?'':'s'}`;
   $('#intelLowExecCount').textContent=`${lowExec.length} trade${lowExec.length===1?'':'s'}`;
 
-  let crossInsight='Performance Intelligence is active, but Cross-Intelligence is waiting for Execution reviews before it can test whether execution quality and outcomes move together.';
-  if(reviewedExecutionTrades.length>0 && (highExec.length<3 || lowExec.length<3)){
+  let crossInsight=base>0
+    ? 'Performance Intelligence is active, but Cross-Intelligence is waiting for Execution reviews before it can test whether execution quality and outcomes move together.'
+    : 'Set the initial account balance before T·IOS compares execution quality with percentage returns.';
+  if(base>0 && reviewedExecutionTrades.length>0 && (highExec.length<3 || lowExec.length<3)){
     crossInsight=`Execution evidence has started (${reviewedExecutionTrades.length} reviewed trade${reviewedExecutionTrades.length===1?'':'s'}), but T·IOS needs at least 3 high-execution and 3 lower-execution trades before making this comparison useful.`;
   }
-  if(highExec.length>=3 && lowExec.length>=3){
-    const difference=highR-lowR;
+  if(base>0 && highExec.length>=3 && lowExec.length>=3){
+    const difference=highReturn-lowReturn;
     if(Math.abs(difference)<0.15){
-      crossInsight=`Across the current reviewed sample, 90%+ execution trades average ${highR>=0?'+':''}${highR.toFixed(2)}R versus ${lowR>=0?'+':''}${lowR.toFixed(2)}R for lower-execution trades. The difference is currently small, so T·IOS should not form a strong execution-performance conclusion yet.`;
+      crossInsight=`Across the current reviewed sample, 90%+ execution trades average ${formatReturnPct(highReturn)} return on initial balance versus ${formatReturnPct(lowReturn)} for lower-execution trades. The difference is currently small, so T·IOS should not form a strong execution-performance conclusion yet.`;
     }else if(difference>0){
-      crossInsight=`Across the current reviewed sample, 90%+ execution trades average ${highR>=0?'+':''}${highR.toFixed(2)}R versus ${lowR>=0?'+':''}${lowR.toFixed(2)}R for lower-execution trades. Stronger execution is currently associated with better performance in this sample; this is an association, not proof of causation.`;
+      crossInsight=`Across the current reviewed sample, 90%+ execution trades average ${formatReturnPct(highReturn)} return on initial balance versus ${formatReturnPct(lowReturn)} for lower-execution trades. Stronger execution is currently associated with better performance in this sample; this is an association, not proof of causation.`;
     }else{
-      crossInsight=`Across the current reviewed sample, 90%+ execution trades average ${highR>=0?'+':''}${highR.toFixed(2)}R versus ${lowR>=0?'+':''}${lowR.toFixed(2)}R for lower-execution trades. Better execution is not currently associated with better outcomes in this sample, so T·IOS should inspect context and edge quality before drawing conclusions.`;
+      crossInsight=`Across the current reviewed sample, 90%+ execution trades average ${formatReturnPct(highReturn)} return on initial balance versus ${formatReturnPct(lowReturn)} for lower-execution trades. Better execution is not currently associated with better outcomes in this sample, so T·IOS should inspect context and edge quality before drawing conclusions.`;
     }
   }
   $('#intelCrossInsight').textContent=crossInsight;
@@ -9918,7 +9184,7 @@ function renderIntelligence(){
   /* Personal Trader Intelligence */
   let personalSummary;
   if(trades.length>0 && processAreas.length===0){
-    personalSummary=`Performance Intelligence is active from ${trades.length} trades${winRate===null?'':` with a ${winRate.toFixed(1)}% win rate`}${avgR===null?'':` and ${avgR>=0?'+':''}${avgR.toFixed(2)}R average`}. However, T·IOS does not yet have enough Execution, Edge or Psychology evidence to explain why these results occurred. Continue structured reviews before treating any explanation as personal intelligence.`;
+    personalSummary=`Performance Intelligence is active from ${trades.length} trades${winRate===null?'':` with a ${winRate.toFixed(1)}% win rate`}${allTimeReturn===null?'':` and ${formatReturnPct(allTimeReturn)} return on the initial account balance`}. However, T·IOS does not yet have enough Execution, Edge or Psychology evidence to explain why these results occurred. Continue structured reviews before treating any explanation as personal intelligence.`;
   }else{
     personalSummary='T·IOS is still building evidence. Continue reviewing trades and psychology sessions before treating any pattern as a stable personal conclusion.';
   }
