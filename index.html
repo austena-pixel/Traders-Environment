@@ -1548,7 +1548,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     grid-template-rows:195px minmax(0,1fr) !important;
   }
   .home-layout.hios-focus-b .goal-status-card{
-    transform:scale(1.035) !important;
+    transform:scale(1.055) !important;
     opacity:1 !important;
     filter:none !important;
     z-index:25 !important;
@@ -1557,7 +1557,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     box-shadow:0 12px 28px rgba(2,8,18,.30), inset 0 0 0 1px rgba(139,92,246,.10) !important;
   }
   .home-layout.hios-focus-b .focus-card{
-    transform:scale(.975) !important;
+    transform:scale(.965) !important;
     opacity:.84 !important;
     filter:saturate(.88) brightness(.92) !important;
   }
@@ -1572,12 +1572,12 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     grid-template-rows:118px minmax(0,1fr) !important;
   }
   .home-layout.hios-focus-c .goal-status-card{
-    transform:scale(.975) !important;
+    transform:scale(.965) !important;
     opacity:.84 !important;
     filter:saturate(.88) brightness(.92) !important;
   }
   .home-layout.hios-focus-c .focus-card{
-    transform:scale(1.035) !important;
+    transform:scale(1.055) !important;
     opacity:1 !important;
     filter:none !important;
     z-index:25 !important;
@@ -1600,6 +1600,8 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   }
   .calendar-day{
     position:relative !important;
+    display:flex !important;
+    flex-direction:column !important;
     transform:scale(1);
     transform-origin:center center;
     z-index:1;
@@ -1610,8 +1612,26 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
       border-color .18s ease !important;
     will-change:transform;
   }
+  .calendar-day .calendar-date{
+    flex:0 0 auto !important;
+  }
+  .calendar-day .calendar-events{
+    flex:1 1 auto !important;
+    min-height:0 !important;
+    max-height:100% !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    align-content:start !important;
+    padding-right:2px !important;
+    scrollbar-width:thin;
+    scrollbar-color:#3b4960 transparent;
+  }
+  .calendar-day .calendar-events::-webkit-scrollbar{width:4px}
+  .calendar-day .calendar-events::-webkit-scrollbar-track{background:transparent}
+  .calendar-day .calendar-events::-webkit-scrollbar-thumb{background:#3b4960;border-radius:999px}
+  .calendar-day .calendar-events::-webkit-scrollbar-thumb:hover{background:#5a6b86}
   .home-layout.auto-zoom-enabled .calendar-day:hover{
-    transform:scale(1.14) !important;
+    transform:scale(1.20) !important;
     z-index:45 !important;
     background:#101925 !important;
     border-color:rgba(110,168,255,.48) !important;
@@ -1624,6 +1644,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   /* Second-stage zoom: after the day enlarges, hovering a specific assessment/event enlarges it further. */
   .calendar-event{
     position:relative !important;
+    flex:0 0 auto !important;
     transform:scale(1);
     transform-origin:center center;
     transition:transform .14s cubic-bezier(.2,.8,.2,1), box-shadow .14s ease, border-color .14s ease, background .14s ease !important;
@@ -1633,7 +1654,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     overflow:visible !important;
   }
   .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event:hover{
-    transform:scale(1.18) !important;
+    transform:scale(1.28) !important;
     z-index:80 !important;
     border-color:rgba(110,168,255,.72) !important;
     box-shadow:0 8px 20px rgba(0,0,0,.40), 0 0 0 1px rgba(110,168,255,.24), 0 0 16px rgba(110,168,255,.16) !important;
@@ -1646,8 +1667,8 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   }
 
   /* CSS fallback for B and C when Auto Zoom is enabled. */
-  .home-layout.auto-zoom-enabled [data-home-panel="b"]:hover{transform:scale(1.035) !important;z-index:30 !important}
-  .home-layout.auto-zoom-enabled [data-home-panel="c"]:hover{transform:scale(1.035) !important;z-index:30 !important}
+  .home-layout.auto-zoom-enabled [data-home-panel="b"]:hover{transform:scale(1.055) !important;z-index:30 !important}
+  .home-layout.auto-zoom-enabled [data-home-panel="c"]:hover{transform:scale(1.055) !important;z-index:30 !important}
 }
 
 /* Auto Zoom control */
@@ -2544,7 +2565,7 @@ function renderHiosCalendar(){
     markup+=`<div class="calendar-day${outside?' outside':''}${isPast?' past-day':''}${isToday?' today':''}${hasUpcomingSchedule?' upcoming-day':''}" onclick="openCalendarEntryModal('${key}')">`;
     markup+=`<div class="calendar-date">${date.getDate()}</div><div class="calendar-events">`;
 
-    dayEvents.slice(0,3).forEach(event=>{
+    dayEvents.forEach(event=>{
       if(event._source==='hios'){
         const type=String(event.type||'other').toLowerCase();
         const label=`${hiosEventTypeLabel(type)}: ${event.title}`;
@@ -2560,9 +2581,6 @@ function renderHiosCalendar(){
       }
     });
 
-    if(dayEvents.length>3){
-      markup+=`<div class="calendar-more">+${dayEvents.length-3} more</div>`;
-    }
 
     markup+='</div></div>';
   }
