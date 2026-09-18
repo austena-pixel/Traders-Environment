@@ -1476,99 +1476,91 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 }
 
 
-/* ================= CLICK-TO-FOCUS: HOME SECTIONS B + C =================
+/* ================= HOVER-TO-FOCUS: HOME SECTIONS B + C =================
    B = Goal Progress, C = Today's Focus.
-   Clicking either card expands the right column and gives the selected card
-   more vertical room while the calendar and sibling card contract slightly.
-   Clicking the selected card again restores the original layout.
+   Desktop only: when the pointer is inside B or C, that section gets more
+   room while the calendar and sibling section contract slightly. Moving the
+   pointer out restores the exact default layout automatically.
 ======================================================================= */
 @media (min-width:951px){
   .home-layout{
-    transition:grid-template-columns .34s cubic-bezier(.2,.78,.25,1), gap .34s ease;
+    transition:grid-template-columns .32s cubic-bezier(.2,.78,.25,1), gap .32s ease;
   }
 
+  /* A contracts a little because the right column grows from 350px to 420px. */
   .home-layout.panel-b-active,
   .home-layout.panel-c-active{
-    grid-template-columns:minmax(0,1fr) 430px;
+    grid-template-columns:minmax(0,1fr) 420px;
   }
 
   .calendar-card{
-    transform-origin:left center;
-    transition:transform .34s cubic-bezier(.2,.78,.25,1), opacity .34s ease, border-color .34s ease;
+    min-width:0;
+    transition:opacity .28s ease, border-color .28s ease;
   }
 
   .home-layout.panel-b-active .calendar-card,
   .home-layout.panel-c-active .calendar-card{
-    transform:scaleX(.992);
-    opacity:.94;
+    opacity:.965;
+  }
+
+  .home-sidebar{
+    transition:gap .32s ease;
   }
 
   .goal-status-card,
   .focus-card{
-    cursor:pointer;
-    outline:none;
+    min-width:0;
+    overflow:hidden;
     transition:
-      flex-basis .34s cubic-bezier(.2,.78,.25,1),
-      transform .34s cubic-bezier(.2,.78,.25,1),
-      opacity .34s ease,
-      border-color .34s ease,
-      background .34s ease,
-      box-shadow .34s ease;
+      flex-basis .32s cubic-bezier(.2,.78,.25,1),
+      flex-grow .32s cubic-bezier(.2,.78,.25,1),
+      transform .32s cubic-bezier(.2,.78,.25,1),
+      opacity .28s ease,
+      border-color .28s ease,
+      background .28s ease,
+      box-shadow .28s ease;
   }
 
-  .goal-status-card:focus-visible,
-  .focus-card:focus-visible{
-    box-shadow:0 0 0 2px rgba(110,168,255,.34);
-  }
-
-  .home-layout.panel-b-active .goal-status-card,
-  .home-layout.panel-c-active .focus-card{
-    border-color:rgba(116,140,255,.34);
-    background:linear-gradient(180deg,rgba(21,27,40,.99),rgba(14,18,27,.99));
-    box-shadow:0 14px 34px rgba(0,0,0,.22), inset 0 0 0 1px rgba(124,92,246,.05);
-  }
-
+  /* B hovered: widen the right column and give Goal Progress more height. */
   .home-layout.panel-b-active .goal-status-card{
-    transform:scale(1.012);
-    transform-origin:right top;
-  }
-
-  .home-layout.panel-b-active .focus-card{
-    transform:scale(.982);
-    transform-origin:right bottom;
-    opacity:.84;
-  }
-
-  .home-layout.panel-c-active .focus-card{
+    flex:0 0 180px !important;
     transform:scale(1.008);
-    transform-origin:right bottom;
-  }
-
-  .home-layout.panel-c-active .goal-status-card{
-    transform:scale(.972);
     transform-origin:right top;
-    opacity:.84;
+    border-color:rgba(116,140,255,.38);
+    background:linear-gradient(180deg,rgba(21,27,40,.99),rgba(14,18,27,.99));
+    box-shadow:0 12px 30px rgba(0,0,0,.20), inset 0 0 0 1px rgba(124,92,246,.05);
+  }
+  .home-layout.panel-b-active .focus-card{
+    flex:1 1 0 !important;
+    transform:scale(.992);
+    transform-origin:right bottom;
+    opacity:.88;
   }
 
-  .home-layout.panel-b-active .goal-status-card .goal-row{
-    margin-top:13px;
+  /* C hovered: keep Goal Progress readable, but give Today's Focus more room. */
+  .home-layout.panel-c-active .goal-status-card{
+    flex:0 0 110px !important;
+    transform:scale(.985);
+    transform-origin:right top;
+    opacity:.86;
   }
-  .home-layout.panel-b-active .goal-status-card .goal-head{
-    font-size:11px;
-  }
-  .home-layout.panel-b-active .goal-status-card .bar{
-    height:8px;
+  .home-layout.panel-c-active .focus-card{
+    flex:1 1 0 !important;
+    transform:scale(1.006);
+    transform-origin:right bottom;
+    border-color:rgba(116,140,255,.38);
+    background:linear-gradient(180deg,rgba(21,27,40,.99),rgba(14,18,27,.99));
+    box-shadow:0 12px 30px rgba(0,0,0,.20), inset 0 0 0 1px rgba(124,92,246,.05);
   }
 
-  .home-layout.panel-c-active .focus-card .focus-item{
-    padding:9px 10px;
-  }
-  .home-layout.panel-c-active .focus-card .focus-item b{
-    font-size:11px;
-  }
-  .home-layout.panel-c-active .focus-card .focus-item small{
-    font-size:8.5px;
-  }
+  /* Small content lift so the selected section actually feels more visible. */
+  .home-layout.panel-b-active .goal-status-card .goal-row{margin-top:10px}
+  .home-layout.panel-b-active .goal-status-card .goal-head{font-size:10.5px}
+  .home-layout.panel-b-active .goal-status-card .bar{height:8px}
+
+  .home-layout.panel-c-active .focus-card .focus-item{padding:8px 9px}
+  .home-layout.panel-c-active .focus-card .focus-item b{font-size:10.5px}
+  .home-layout.panel-c-active .focus-card .focus-item small{font-size:8.25px}
 }
 
 </style>
@@ -1809,7 +1801,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
         </div>
 
         <aside class="home-sidebar">
-          <div class="card goal-status-card" data-home-panel="b" role="button" tabindex="0" aria-pressed="false">
+          <div class="card goal-status-card" data-home-panel="b" tabindex="0">
             <h3>Goal Progress</h3>
             <div class="sub">Progress across connected domains.</div>
             <div class="goal-row"><div class="goal-head"><span>Engineering</span><b>72%</b></div><div class="bar"><span style="width:72%"></span></div></div>
@@ -1817,7 +1809,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
             <div class="goal-row"><div class="goal-head"><span>Fitness</span><b>88%</b></div><div class="bar"><span style="width:88%"></span></div></div>
           </div>
 
-          <div class="card focus-card" data-home-panel="c" role="button" tabindex="0" aria-pressed="false">
+          <div class="card focus-card" data-home-panel="c" tabindex="0">
             <h3>Today's Focus</h3>
             <div class="sub">G·IOS dynamically ranked from connected intelligence.</div>
             <div class="focus-list focus-scroll">
@@ -2693,13 +2685,12 @@ restoreExistingSession();
 
 
 /* =========================================================
-   H·IOS HOME — CLICK-TO-FOCUS PANELS
+   H·IOS HOME — HOVER-TO-FOCUS PANELS
    B = Goal Progress, C = Today's Focus.
-   First click expands the selected panel; second click restores
-   the exact default sizing. Switching B <-> C keeps the same
-   baseline so the layout always returns cleanly.
+   No click is required. Entering a panel gives it more room;
+   leaving it restores the default layout automatically.
 ========================================================= */
-(function initHiosHomePanelFocus(){
+(function initHiosHomePanelHoverFocus(){
   const layout = document.querySelector('.home-layout');
   const sidebar = layout?.querySelector('.home-sidebar');
   const panelB = sidebar?.querySelector('[data-home-panel="b"]');
@@ -2707,167 +2698,48 @@ restoreExistingSession();
   if(!layout || !sidebar || !panelB || !panelC) return;
 
   const DESKTOP_MIN = 951;
-  const TRANSITION_MS = 380;
   let active = null;
-  let baseline = null;
-  let cleanupTimer = null;
 
   function isDesktop(){
     return window.innerWidth >= DESKTOP_MIN;
   }
 
-  function setFlexPx(el, px){
-    el.style.setProperty('flex', `0 0 ${Math.max(0, Math.round(px))}px`, 'important');
-  }
-
-  function clearPanelSizing(){
-    panelB.style.removeProperty('flex');
-    panelC.style.removeProperty('flex');
-  }
-
-  function captureBaseline(){
-    baseline = {
-      b: panelB.getBoundingClientRect().height,
-      c: panelC.getBoundingClientRect().height
-    };
-  }
-
-  function freezeCurrentHeights(){
-    const bNow = panelB.getBoundingClientRect().height;
-    const cNow = panelC.getBoundingClientRect().height;
-    setFlexPx(panelB, bNow);
-    setFlexPx(panelC, cNow);
-  }
-
-  function sidebarGap(){
-    const cs = getComputedStyle(sidebar);
-    return parseFloat(cs.rowGap || cs.gap) || 8;
-  }
-
-  function targetHeights(which){
-    const total = sidebar.getBoundingClientRect().height;
-    const usable = Math.max(0, total - sidebarGap());
-
-    if(which === 'b'){
-      // Give Goal Progress visibly more room without crushing Today's Focus.
-      const b = Math.min(usable * .38, Math.max((baseline?.b || 0) * 1.55, 170));
-      return { b, c: Math.max(usable - b, 190) };
-    }
-
-    // Today's Focus already owns most of the height, so expand it modestly
-    // and contract Goal Progress only a little.
-    const b = Math.max(Math.min((baseline?.b || usable * .22) * .82, usable * .20), 92);
-    return { b, c: Math.max(usable - b, 220) };
-  }
-
-  function syncClasses(which){
+  function setActive(which){
+    if(!isDesktop()) return;
+    active = which;
     layout.classList.toggle('panel-b-active', which === 'b');
     layout.classList.toggle('panel-c-active', which === 'c');
-    panelB.setAttribute('aria-pressed', String(which === 'b'));
-    panelC.setAttribute('aria-pressed', String(which === 'c'));
   }
 
-  function expand(which){
-    if(!isDesktop()) return;
-
-    clearTimeout(cleanupTimer);
-
-    if(active === which){
-      reset();
-      return;
-    }
-
-    if(!active){
-      // Store the real default card sizes before changing anything.
-      captureBaseline();
-      freezeCurrentHeights();
-    }else{
-      // Freeze the current animated state before changing direction.
-      freezeCurrentHeights();
-    }
-
-    active = which;
-    syncClasses(which);
-
-    const target = targetHeights(which);
-    requestAnimationFrame(()=>{
-      setFlexPx(panelB, target.b);
-      setFlexPx(panelC, target.c);
-    });
-  }
-
-  function reset(immediate=false){
-    if(!active && !baseline){
-      syncClasses(null);
-      clearPanelSizing();
-      return;
-    }
-
-    clearTimeout(cleanupTimer);
+  function clearActive(){
     active = null;
-    syncClasses(null);
-
-    if(!isDesktop() || immediate || !baseline){
-      clearPanelSizing();
-      baseline = null;
-      return;
-    }
-
-    // Animate back to the dimensions captured before the first expansion.
-    freezeCurrentHeights();
-    requestAnimationFrame(()=>{
-      setFlexPx(panelB, baseline.b);
-      setFlexPx(panelC, baseline.c);
-    });
-
-    cleanupTimer = setTimeout(()=>{
-      clearPanelSizing();
-      baseline = null;
-    }, TRANSITION_MS);
+    layout.classList.remove('panel-b-active','panel-c-active');
   }
 
-  function onPanelClick(which, event){
-    // Keep scrolling/selecting text inside the focus list comfortable.
-    if(event && event.type === 'click' && event.detail === 0) return;
-    expand(which);
-  }
+  panelB.addEventListener('mouseenter', ()=>setActive('b'));
+  panelC.addEventListener('mouseenter', ()=>setActive('c'));
 
-  panelB.addEventListener('click', (e)=>onPanelClick('b', e));
-  panelC.addEventListener('click', (e)=>onPanelClick('c', e));
-
-  [panelB, panelC].forEach((panel)=>{
-    panel.addEventListener('keydown', (e)=>{
-      if(e.key !== 'Enter' && e.key !== ' ') return;
-      e.preventDefault();
-      expand(panel.dataset.homePanel);
-    });
+  panelB.addEventListener('mouseleave', (event)=>{
+    if(panelC.contains(event.relatedTarget)) return;
+    clearActive();
+  });
+  panelC.addEventListener('mouseleave', (event)=>{
+    if(panelB.contains(event.relatedTarget)) return;
+    clearActive();
   });
 
-  window.addEventListener('keydown', (e)=>{
-    if(e.key === 'Escape' && active) reset();
+  /* Keyboard users get the same focus behavior without changing click actions. */
+  panelB.addEventListener('focusin', ()=>setActive('b'));
+  panelC.addEventListener('focusin', ()=>setActive('c'));
+  sidebar.addEventListener('focusout', ()=>{
+    requestAnimationFrame(()=>{
+      if(!sidebar.contains(document.activeElement)) clearActive();
+    });
   });
 
   window.addEventListener('resize', ()=>{
-    if(!isDesktop()){
-      reset(true);
-      return;
-    }
-    if(active){
-      // Recalculate safely for the new desktop width/height.
-      const current = active;
-      clearPanelSizing();
-      requestAnimationFrame(()=>{
-        captureBaseline();
-        freezeCurrentHeights();
-        active = current;
-        syncClasses(current);
-        const target = targetHeights(current);
-        requestAnimationFrame(()=>{
-          setFlexPx(panelB, target.b);
-          setFlexPx(panelC, target.c);
-        });
-      });
-    }
+    if(!isDesktop()) clearActive();
+    else if(active) setActive(active);
   });
 })();
 
