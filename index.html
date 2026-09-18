@@ -1601,10 +1601,60 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   }
 
   /* Direct hover fallback: even if JS is unavailable, the panel under the pointer visibly grows. */
-  [data-home-panel="a"]:hover{transform:scale(1.025) !important;z-index:30 !important}
-  [data-home-panel="b"]:hover{transform:scale(1.055) !important;z-index:30 !important}
-  [data-home-panel="c"]:hover{transform:scale(1.035) !important;z-index:30 !important}
+  .home-layout.auto-zoom-enabled [data-home-panel="a"]:hover{transform:scale(1.025) !important;z-index:30 !important}
+  .home-layout.auto-zoom-enabled [data-home-panel="b"]:hover{transform:scale(1.055) !important;z-index:30 !important}
+  .home-layout.auto-zoom-enabled [data-home-panel="c"]:hover{transform:scale(1.035) !important;z-index:30 !important}
 }
+
+/* Auto Zoom control */
+.goal-status-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+.goal-status-copy{min-width:0}
+.auto-zoom-toggle{
+  appearance:none;
+  border:1px solid #3a4559;
+  background:#202735;
+  color:#aeb8c8;
+  min-width:102px;
+  height:30px;
+  padding:0 10px;
+  border-radius:999px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.02em;
+  cursor:pointer;
+  flex:0 0 auto;
+  transition:background .2s ease,border-color .2s ease,color .2s ease,box-shadow .2s ease;
+}
+.auto-zoom-toggle::before{
+  content:"";
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#737d8e;
+  box-shadow:0 0 0 3px rgba(115,125,142,.12);
+}
+.auto-zoom-toggle.is-on{
+  background:rgba(54,211,153,.14);
+  border-color:rgba(54,211,153,.72);
+  color:#75e9bc;
+  box-shadow:inset 0 0 0 1px rgba(54,211,153,.06),0 0 18px rgba(54,211,153,.08);
+}
+.auto-zoom-toggle.is-on::before{
+  background:#36d399;
+  box-shadow:0 0 0 3px rgba(54,211,153,.14),0 0 9px rgba(54,211,153,.55);
+}
+.auto-zoom-toggle:hover{border-color:#59677d}
+.auto-zoom-toggle.is-on:hover{border-color:#54e0ad}
+.auto-zoom-toggle:focus-visible{outline:2px solid #6ea8ff;outline-offset:2px}
 
 </style>
 </head>
@@ -1614,78 +1664,106 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 (function(){
   'use strict';
 
+  var STORAGE_KEY = 'hios_auto_zoom_enabled_v1';
+  var enabled = false;
   var activePanel = '';
-  var classes = ['hios-focus-a','hios-focus-b','hios-focus-c'];
+  var focusClasses = ['hios-focus-a','hios-focus-b','hios-focus-c'];
 
   function getLayout(){
     return document.querySelector('.home-layout');
   }
 
+  function clearFocus(){
+    var layout = getLayout();
+    if(!layout) return;
+    focusClasses.forEach(function(name){ layout.classList.remove(name); });
+    layout.setAttribute('data-focus-panel','');
+    activePanel = '';
+  }
+
   function applyFocus(panel){
     var layout = getLayout();
     if(!layout) return;
-
-    if(window.innerWidth < 900) panel = '';
-    if(panel !== 'a' && panel !== 'b' && panel !== 'c') panel = '';
-    if(panel === activePanel && layout.classList.contains(panel ? 'hios-focus-' + panel : '')) return;
-
-    classes.forEach(function(name){ layout.classList.remove(name); });
-    if(panel) layout.classList.add('hios-focus-' + panel);
+    if(!enabled || window.innerWidth < 900){
+      clearFocus();
+      return;
+    }
+    if(panel !== 'a' && panel !== 'b' && panel !== 'c'){
+      clearFocus();
+      return;
+    }
+    if(activePanel === panel && layout.classList.contains('hios-focus-' + panel)) return;
+    focusClasses.forEach(function(name){ layout.classList.remove(name); });
+    layout.classList.add('hios-focus-' + panel);
     layout.setAttribute('data-focus-panel', panel);
     activePanel = panel;
   }
 
-  function panelFrom(node){
-    if(!node || node.nodeType !== 1) return null;
-    return node.closest ? node.closest('[data-home-panel]') : null;
+  function paintToggle(){
+    var toggle = document.getElementById('autoZoomToggle');
+    var state = document.getElementById('autoZoomState');
+    var layout = getLayout();
+    if(layout) layout.classList.toggle('auto-zoom-enabled', enabled);
+    if(toggle){
+      toggle.classList.toggle('is-on', enabled);
+      toggle.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+      toggle.setAttribute('title', enabled ? 'Auto Zoom is on. Click to turn it off.' : 'Auto Zoom is off. Click to turn it on.');
+    }
+    if(state) state.textContent = enabled ? 'On' : 'Off';
   }
 
-  function syncFromPointerTarget(target){
-    var panel = panelFrom(target);
-    if(panel){
-      applyFocus(panel.getAttribute('data-home-panel'));
-      return;
-    }
-    var layout = getLayout();
-    if(layout && target && layout.contains(target)){
-      /* Pointer is in the gaps between panels; retain the last state briefly. */
-      return;
-    }
-    applyFocus('');
+  function savePreference(){
+    try{ localStorage.setItem(STORAGE_KEY, enabled ? '1' : '0'); }catch(error){}
   }
 
-  /* Capture-phase listeners survive child controls and nested elements. */
-  document.addEventListener('pointerover', function(event){
-    syncFromPointerTarget(event.target);
-  }, true);
+  function setEnabled(value, persist){
+    enabled = !!value;
+    paintToggle();
+    if(!enabled) clearFocus();
+    if(persist !== false) savePreference();
+  }
 
-  document.addEventListener('pointermove', function(event){
-    syncFromPointerTarget(event.target);
-  }, true);
-
-  document.addEventListener('mouseover', function(event){
-    if(!window.PointerEvent) syncFromPointerTarget(event.target);
-  }, true);
-
-  document.addEventListener('pointerout', function(event){
-    var oldPanel = panelFrom(event.target);
-    if(!oldPanel) return;
-    var nextPanel = panelFrom(event.relatedTarget);
-    if(nextPanel){
-      applyFocus(nextPanel.getAttribute('data-home-panel'));
-      return;
-    }
+  function bind(){
     var layout = getLayout();
-    if(layout && event.relatedTarget && layout.contains(event.relatedTarget)) return;
-    applyFocus('');
-  }, true);
+    var toggle = document.getElementById('autoZoomToggle');
+    if(!layout || !toggle) return;
 
-  document.addEventListener('mouseleave', function(){ applyFocus(''); }, true);
-  window.addEventListener('blur', function(){ applyFocus(''); });
-  window.addEventListener('resize', function(){ if(window.innerWidth < 900) applyFocus(''); });
+    try{ enabled = localStorage.getItem(STORAGE_KEY) === '1'; }catch(error){ enabled = false; }
+    setEnabled(enabled, false);
 
-  /* Expose for diagnosis without relying on inline event handlers. */
-  window.hiosHomeFocus = applyFocus;
+    toggle.addEventListener('click', function(event){
+      event.preventDefault();
+      event.stopPropagation();
+      var next = !enabled;
+      setEnabled(next, true);
+      /* The switch lives inside B, so enabling it while the pointer is there should react immediately. */
+      if(next) applyFocus('b');
+    });
+
+    ['a','b','c'].forEach(function(key){
+      var panel = document.querySelector('[data-home-panel="' + key + '"]');
+      if(!panel) return;
+      panel.addEventListener('mouseenter', function(){ if(enabled) applyFocus(key); });
+      panel.addEventListener('mousemove', function(){ if(enabled && activePanel !== key) applyFocus(key); });
+    });
+
+    layout.addEventListener('mouseleave', function(){ if(enabled) clearFocus(); });
+    window.addEventListener('blur', function(){ clearFocus(); });
+    window.addEventListener('resize', function(){ if(window.innerWidth < 900) clearFocus(); });
+
+    window.hiosAutoZoom = {
+      isEnabled:function(){ return enabled; },
+      setEnabled:function(value){ setEnabled(value, true); },
+      focus:function(panel){ applyFocus(panel); },
+      reset:clearFocus
+    };
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', bind, {once:true});
+  }else{
+    bind();
+  }
 })();
 </script>
 
@@ -1925,8 +2003,15 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 
         <aside class="home-sidebar">
           <div class="card goal-status-card" data-home-panel="b">
-            <h3>Goal Progress</h3>
-            <div class="sub">Progress across connected domains.</div>
+            <div class="goal-status-head">
+              <div class="goal-status-copy">
+                <h3>Goal Progress</h3>
+                <div class="sub">Progress across connected domains.</div>
+              </div>
+              <button class="auto-zoom-toggle" id="autoZoomToggle" type="button" aria-pressed="false">
+                Auto Zoom <span id="autoZoomState">Off</span>
+              </button>
+            </div>
             <div class="goal-row"><div class="goal-head"><span>Engineering</span><b>72%</b></div><div class="bar"><span style="width:72%"></span></div></div>
             <div class="goal-row"><div class="goal-head"><span>Trading</span><b>61%</b></div><div class="bar"><span style="width:61%"></span></div></div>
             <div class="goal-row"><div class="goal-head"><span>Fitness</span><b>88%</b></div><div class="bar"><span style="width:88%"></span></div></div>
