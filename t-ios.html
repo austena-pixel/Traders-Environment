@@ -6225,26 +6225,6 @@ textarea{resize:vertical;min-height:90px}
 const SUPABASE_URL = "https://tmxosoyqflmwqzjgnkez.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_meHq49fLyw8PVNPZxWacnw_SQMj5B-h";
 
-/* H·IOS owns authentication. T·IOS consumes the active ecosystem session. */
-const HIOS_AUTH_BRIDGE_KEY = 'hios_auth_session_bridge_v1';
-
-function readHiosAuthBridge(){
-  try{
-    const raw = sessionStorage.getItem(HIOS_AUTH_BRIDGE_KEY);
-    if(!raw) return null;
-    const parsed = JSON.parse(raw);
-    if(parsed?.access_token && parsed?.refresh_token) return parsed;
-  }catch(error){
-    console.warn('Could not read H·IOS session handoff:', error);
-  }
-  return null;
-}
-
-function clearHiosAuthBridge(){
-  try{ sessionStorage.removeItem(HIOS_AUTH_BRIDGE_KEY); }catch(error){}
-}
-
-
 /* ========================================================= */
 
 const isConfigured =
@@ -6491,10 +6471,8 @@ function setLoggedInUI(loggedIn){
 
 async function initializeSupabase(){
   if(!isConfigured){
-    $('#authMessage').textContent =
-      'Supabase is not configured yet. Paste the Project URL and Publishable Key into this HTML file.';
     $('#configWarning').classList.remove('hidden');
-    setLoggedInUI(false);
+    window.location.replace('index.html');
     return;
   }
 
@@ -6505,36 +6483,22 @@ async function initializeSupabase(){
     SUPABASE_PUBLISHABLE_KEY
   );
 
-  let { data:{ session }, error } = await db.auth.getSession();
+  /*
+    H·IOS is the authentication owner.
+    Because H·IOS and T·IOS are on the same origin and use the same
+    Supabase project, the authenticated Supabase session is shared
+    through the browser's normal Supabase storage.
+  */
+  const { data:{ session }, error } = await db.auth.getSession();
 
   if(error){
-    console.warn('Could not restore the T·IOS session:', error);
-  }
-
-  /* Normal Supabase storage should already be shared because H·IOS and T·IOS
-     use the same project + origin. The bridge makes product navigation robust
-     even when that automatic restore is delayed or unavailable. */
-  if(!session?.user){
-    const bridge = readHiosAuthBridge();
-    if(bridge){
-      const restored = await db.auth.setSession({
-        access_token: bridge.access_token,
-        refresh_token: bridge.refresh_token
-      });
-
-      if(!restored.error && restored.data?.session?.user){
-        session = restored.data.session;
-      }else if(restored.error){
-        console.warn('H·IOS session handoff could not be restored:', restored.error);
-      }
-    }
+    console.warn('Could not restore H·IOS session in T·IOS:', error);
   }
 
   if(session?.user){
-    clearHiosAuthBridge();
     await enterApp(session.user);
   }else{
-    /* T·IOS is not a separate account surface. Authentication belongs to H·IOS. */
+    // No ecosystem session: return to H·IOS instead of showing a second login.
     window.location.replace('index.html');
     return;
   }
@@ -6574,11 +6538,16 @@ async function initializeSupabase(){
       editingGoalId = null;
       selectedPhaseWorkspaceNumber = 1;
 
-      clearHiosAuthBridge();
+      // Authentication belongs to H·IOS.
       window.location.replace('index.html');
+      return;
     }
 
-    if((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && authSession?.user && !currentUser){
+    if(
+      (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') &&
+      authSession?.user &&
+      !currentUser
+    ){
       await enterApp(authSession.user);
     }
   });
