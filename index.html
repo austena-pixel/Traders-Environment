@@ -1494,7 +1494,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 
   .home-sidebar{
     display:grid !important;
-    grid-template-rows:145px minmax(0,1fr) !important;
+    grid-template-rows:160px minmax(0,1fr) !important;
     gap:8px !important;
     height:100% !important;
     min-height:0 !important;
@@ -1530,6 +1530,17 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
       border-color .20s ease,
       box-shadow .20s ease,
       background .20s ease !important;
+  }
+
+  /* Keep the last Goal Progress meter comfortably inside the card. */
+  .goal-status-card{
+    padding-bottom:17px !important;
+  }
+  .goal-status-card .goal-row{
+    margin-top:7px !important;
+  }
+  .goal-status-card .goal-row:last-child{
+    margin-bottom:3px !important;
   }
 
   /* B focused — modest Goal Progress enlargement. */
@@ -1600,7 +1611,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     will-change:transform;
   }
   .home-layout.auto-zoom-enabled .calendar-day:hover{
-    transform:scale(1.12) !important;
+    transform:scale(1.14) !important;
     z-index:45 !important;
     background:#101925 !important;
     border-color:rgba(110,168,255,.48) !important;
@@ -1608,6 +1619,30 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   }
   .home-layout.auto-zoom-enabled .calendar-day.today:hover{
     box-shadow:0 10px 26px rgba(0,0,0,.38), inset 0 0 0 1px #36d399, 0 0 20px rgba(54,211,153,.13) !important;
+  }
+
+  /* Second-stage zoom: after the day enlarges, hovering a specific assessment/event enlarges it further. */
+  .calendar-event{
+    position:relative !important;
+    transform:scale(1);
+    transform-origin:center center;
+    transition:transform .14s cubic-bezier(.2,.8,.2,1), box-shadow .14s ease, border-color .14s ease, background .14s ease !important;
+    will-change:transform;
+  }
+  .home-layout.auto-zoom-enabled .calendar-day:hover{
+    overflow:visible !important;
+  }
+  .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event:hover{
+    transform:scale(1.18) !important;
+    z-index:80 !important;
+    border-color:rgba(110,168,255,.72) !important;
+    box-shadow:0 8px 20px rgba(0,0,0,.40), 0 0 0 1px rgba(110,168,255,.24), 0 0 16px rgba(110,168,255,.16) !important;
+  }
+  .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event.high:hover,
+  .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event.manual.test:hover,
+  .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event.manual.assessment:hover{
+    border-color:rgba(251,113,133,.72) !important;
+    box-shadow:0 8px 20px rgba(0,0,0,.40), 0 0 0 1px rgba(251,113,133,.24), 0 0 16px rgba(251,113,133,.14) !important;
   }
 
   /* CSS fallback for B and C when Auto Zoom is enabled. */
@@ -1716,7 +1751,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     if(toggle){
       toggle.classList.toggle('is-on', enabled);
       toggle.setAttribute('aria-pressed', enabled ? 'true' : 'false');
-      toggle.setAttribute('title', enabled ? 'Auto Zoom is on for calendar days, Goal Progress and Today\'s Focus. Click to turn it off.' : 'Auto Zoom is off. Click to turn it on.');
+      toggle.setAttribute('title', enabled ? 'Auto Zoom is on for calendar days, calendar assessments, Goal Progress and Today\'s Focus. Click to turn it off.' : 'Auto Zoom is off. Click to turn it on.');
     }
     if(state) state.textContent = enabled ? 'On' : 'Off';
   }
