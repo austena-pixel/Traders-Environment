@@ -691,6 +691,31 @@ input:focus,select:focus,textarea:focus{
   gap:16px;
 }
 .side-section{padding:16px}
+.dashboard-key-performance .side-row{
+  padding:9px 0;
+}
+.dashboard-stat-row{
+  align-items:center;
+}
+.dashboard-stat-label{
+  min-width:0;
+}
+.dashboard-stat-label span{
+  display:block;
+  color:var(--muted);
+  font-size:12px;
+}
+.dashboard-stat-label small{
+  display:block;
+  margin-top:3px;
+  color:#69788d;
+  font-size:9px;
+}
+.dashboard-stat-value{
+  flex:0 0 auto;
+  font-size:14px;
+  text-align:right;
+}
 .side-section h3{margin:0 0 14px;font-size:14px}
 .side-row{
   display:flex;
@@ -3820,7 +3845,7 @@ textarea{resize:vertical;min-height:90px}
       <header class="page-head">
         <div>
           <h1>Dashboard</h1>
-          <p>Calendar performance, account overview and recent trading activity.</p>
+          <p>Personal intelligence, key performance and your trading calendar.</p>
         </div>
         <div class="top-actions">
           <button class="btn" id="exportBtn">Export CSV</button>
@@ -3843,44 +3868,6 @@ textarea{resize:vertical;min-height:90px}
         </section>
       </div>
 
-      <section class="metrics">
-        <div class="metric">
-          <div class="label">Monthly P&amp;L</div>
-          <div class="value" id="monthlyPnl">R0.00</div>
-          <div class="sub" id="monthNameMetric">Selected month</div>
-        </div>
-        <div class="metric">
-          <div class="label">Total Trades</div>
-          <div class="value neutral" id="totalTrades">0</div>
-          <div class="sub">This month</div>
-        </div>
-        <div class="metric">
-          <div class="label">Win Rate</div>
-          <div class="value neutral" id="winRate">0%</div>
-          <div class="sub">Winning trades</div>
-        </div>
-        <div class="metric">
-          <div class="label">Average R</div>
-          <div class="value neutral" id="avgR">0.00R</div>
-          <div class="sub">Per trade</div>
-        </div>
-        <div class="metric">
-          <div class="label">Profit Factor</div>
-          <div class="value neutral" id="profitFactor">0.00</div>
-          <div class="sub">MT5 profit / loss</div>
-        </div>
-        <div class="metric">
-          <div class="label">Best Day</div>
-          <div class="value neutral" id="bestDay">R0.00</div>
-          <div class="sub" id="bestDayDate">—</div>
-        </div>
-        <div class="metric">
-          <div class="label">Worst Day</div>
-          <div class="value neutral" id="worstDay">R0.00</div>
-          <div class="sub" id="worstDayDate">—</div>
-        </div>
-      </section>
-
       <div class="dashboard-layout">
         <section class="panel">
           <div class="calendar-head">
@@ -3901,6 +3888,55 @@ textarea{resize:vertical;min-height:90px}
         </section>
 
         <aside class="right-side">
+
+          <section class="panel side-section dashboard-key-performance">
+            <h3>Key Performance</h3>
+
+            <div class="side-row dashboard-stat-row">
+              <div class="dashboard-stat-label">
+                <span>Monthly P&amp;L</span>
+                <small id="monthNameMetric">Selected month</small>
+              </div>
+              <strong class="dashboard-stat-value" id="monthlyPnl">R0.00</strong>
+            </div>
+
+            <div class="side-row dashboard-stat-row">
+              <div class="dashboard-stat-label"><span>Trades this month</span></div>
+              <strong class="dashboard-stat-value neutral" id="totalTrades">0</strong>
+            </div>
+
+            <div class="side-row dashboard-stat-row">
+              <div class="dashboard-stat-label"><span>Win rate</span></div>
+              <strong class="dashboard-stat-value neutral" id="winRate">0%</strong>
+            </div>
+
+            <div class="side-row dashboard-stat-row">
+              <div class="dashboard-stat-label"><span>Average R</span></div>
+              <strong class="dashboard-stat-value neutral" id="avgR">0.00R</strong>
+            </div>
+
+            <div class="side-row dashboard-stat-row">
+              <div class="dashboard-stat-label"><span>Profit factor</span></div>
+              <strong class="dashboard-stat-value neutral" id="profitFactor">0.00</strong>
+            </div>
+
+            <div class="side-row dashboard-stat-row">
+              <div class="dashboard-stat-label">
+                <span>Best day</span>
+                <small id="bestDayDate">—</small>
+              </div>
+              <strong class="dashboard-stat-value neutral" id="bestDay">R0.00</strong>
+            </div>
+
+            <div class="side-row dashboard-stat-row">
+              <div class="dashboard-stat-label">
+                <span>Worst day</span>
+                <small id="worstDayDate">—</small>
+              </div>
+              <strong class="dashboard-stat-value neutral" id="worstDay">R0.00</strong>
+            </div>
+          </section>
+
           <section class="panel side-section">
             <h3>Account Overview</h3>
             <div class="side-row">
@@ -3914,23 +3950,7 @@ textarea{resize:vertical;min-height:90px}
             <div class="side-row"><span>All-time P&amp;L</span><strong id="allTimePnl">R0.00</strong></div>
             <div class="side-row"><span>All-time trades</span><strong id="allTimeTrades">0</strong></div>
           </section>
-
-          <section class="panel side-section">
-            <h3>Monthly Performance</h3>
-            <div class="side-row"><span>Winning days</span><strong id="winningDays">0</strong></div>
-            <div class="side-row"><span>Losing days</span><strong id="losingDays">0</strong></div>
-            <div class="side-row"><span>Breakeven days</span><strong id="beDays">0</strong></div>
-            <div class="side-row"><span>Best instrument</span><strong id="bestInstrument">—</strong></div>
-            <div class="side-row"><span>Avg execution score</span><strong id="avgExec">—</strong></div>
-          </section>
-
-          <section class="panel side-section">
-            <h3>Recent Trades</h3>
-            <div class="recent-trades" id="recentTrades">
-              <div class="empty-state">No trades recorded yet.</div>
-            </div>
-          </section>
-        </aside>
+</aside>
       </div>
     </section>
 
