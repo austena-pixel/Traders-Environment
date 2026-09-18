@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<!-- T·IOS v35: Personal Trader Intelligence on Dashboard + Goals moved to G·IOS -->
+<!-- T·IOS v34: Performance L1 risk ranges + static Intelligence page -->
 <title>T·IOS — Trader Intelligence Operating System</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -590,14 +590,6 @@ input:focus,select:focus,textarea:focus{
   color:var(--muted);
   font-size:12px;
   line-height:1.6;
-}
-
-/* Dashboard core intelligence placement */
-.dashboard-personal-intelligence{
-  margin-bottom:16px;
-}
-.dashboard-personal-intelligence .intelligence-hero{
-  margin-bottom:0;
 }
 
 /* DASHBOARD */
@@ -3798,7 +3790,12 @@ textarea{resize:vertical;min-height:90px}
       <button class="nav-btn" data-page="execution">
         <span class="nav-icon">✓</span> Execution
       </button>
-<button class="nav-btn" data-page="settings">
+
+      <button class="nav-btn" data-page="goals">
+        <span class="nav-icon">⚑</span> Goals
+      </button>
+
+      <button class="nav-btn" data-page="settings">
         <span class="nav-icon">⚙</span> Settings
       </button>
     </nav>
@@ -3831,9 +3828,8 @@ textarea{resize:vertical;min-height:90px}
         </div>
       </header>
 
-      <!-- CORE T·IOS OUTPUT: PERSONAL TRADER INTELLIGENCE -->
-      <div class="intelligence-overview dashboard-personal-intelligence">
-<section class="panel intelligence-hero">
+      <div class="intelligence-overview" style="margin-bottom:16px">
+        <section class="panel intelligence-hero">
           <div class="intelligence-hero-top">
             <div>
               <div class="intelligence-kicker">Personal Trader Intelligence</div>
@@ -5041,13 +5037,434 @@ textarea{resize:vertical;min-height:90px}
 
 
 
+    <section class="page" id="page-goals">
+      <header class="page-head">
+        <div>
+          <h1>Goals</h1>
+          <p>Plan each development phase with SMART criteria, connect daily actions to long-term goals, and let recorded trading data automate progress where it can be measured objectively.</p>
+        </div>
+        <div class="top-actions">
+          <button class="btn" id="goalsRefreshBtn">Refresh</button>
+          <button class="btn primary" id="newGoalBtn">+ New Goal</button>
+        </div>
+      </header>
+
+      <section class="phase-roadmap" id="phaseRoadmap"></section>
+
+      <section class="goal-horizon-summary">
+        <div class="horizon-card">
+          <span>Daily</span>
+          <strong id="dailyGoalProgress">—</strong>
+        </div>
+        <div class="horizon-card">
+          <span>Weekly</span>
+          <strong id="weeklyGoalProgress">—</strong>
+        </div>
+        <div class="horizon-card">
+          <span>Monthly</span>
+          <strong id="monthlyGoalProgress">—</strong>
+        </div>
+        <div class="horizon-card">
+          <span>6-Month</span>
+          <strong id="halfYearGoalProgress">—</strong>
+        </div>
+        <div class="horizon-card">
+          <span>Yearly</span>
+          <strong id="yearlyGoalProgress">—</strong>
+        </div>
+      </section>
+
+
+      <section class="goal-tools-bar">
+        <div class="goal-tools-copy">
+          <strong>Goal Tools</strong>
+          <span>Keep the main page focused. Open one detailed section only when you need it.</span>
+        </div>
+
+        <div class="goal-tools-actions">
+          <button class="goal-tool-btn" type="button" data-goal-target="goalDrawerWorkspace" aria-expanded="false">
+            <span class="goal-tool-icon">◇</span>
+            <span>
+              <strong>Phase Workspace</strong>
+              <small>SMART plan, evidence & reviews</small>
+            </span>
+          </button>
+
+          <button class="goal-tool-btn" type="button" data-goal-target="goalDrawerQualification" aria-expanded="false">
+            <span class="goal-tool-icon">✓</span>
+            <span>
+              <strong>Phase 1 Qualification</strong>
+              <small>Samples & 90% quality gate</small>
+            </span>
+          </button>
+
+          <button class="goal-tool-btn" type="button" data-goal-target="goalDrawerDevelopment" aria-expanded="false">
+            <span class="goal-tool-icon">◎</span>
+            <span>
+              <strong>Development Goals</strong>
+              <small>Four-phase roadmap details</small>
+            </span>
+          </button>
+
+          <button class="goal-tool-btn" type="button" data-goal-target="goalDrawerFlow" aria-expanded="false">
+            <span class="goal-tool-icon">→</span>
+            <span>
+              <strong>Goal Hierarchy</strong>
+              <small>Daily → weekly → long-term</small>
+            </span>
+          </button>
+        </div>
+      </section>
+
+      <section class="panel goal-chain-builder">
+        <div class="goal-chain-builder-head">
+          <div>
+            <h3>Systematic Goal Planner</h3>
+            <p>
+              Start with the long-term objective, then define the monthly result, weekly result and daily action that will produce it.
+              You type every goal yourself; saving creates and links the four levels automatically.
+            </p>
+          </div>
+
+          <div class="field goal-chain-settings">
+            <label>Trading Phase</label>
+            <select id="goalChainPhase"><option value="">Loading phases…</option></select>
+          </div>
+        </div>
+
+        <div class="goal-chain-grid">
+          <div class="goal-chain-step">
+            <span class="step-number">1 • Direction</span>
+            <h4>Yearly Goal</h4>
+            <textarea id="chainYearlyGoal" placeholder="What must I achieve this year?"></textarea>
+            <input id="chainYearlySuccess" type="text" placeholder="Success measure / evidence">
+          </div>
+
+          <div class="goal-chain-step">
+            <span class="step-number">2 • Milestone</span>
+            <h4>Monthly Goal</h4>
+            <textarea id="chainMonthlyGoal" placeholder="What must this month achieve toward the yearly goal?"></textarea>
+            <input id="chainMonthlySuccess" type="text" placeholder="Success measure / evidence">
+          </div>
+
+          <div class="goal-chain-step">
+            <span class="step-number">3 • Weekly Output</span>
+            <h4>Weekly Goal</h4>
+            <textarea id="chainWeeklyGoal" placeholder="What must I achieve this week toward the monthly goal?"></textarea>
+            <input id="chainWeeklySuccess" type="text" placeholder="Success measure / evidence">
+          </div>
+
+          <div class="goal-chain-step">
+            <span class="step-number">4 • Execution</span>
+            <h4>Daily Goal / Action</h4>
+            <textarea id="chainDailyGoal" placeholder="What must I do today to move the weekly goal forward?"></textarea>
+            <input id="chainDailySuccess" type="text" placeholder="Success measure / evidence">
+          </div>
+        </div>
+
+        <div class="goal-chain-actions">
+          <button class="btn" type="button" id="clearGoalChainBtn">Clear</button>
+          <button class="btn primary" type="button" id="saveGoalChainBtn">Save Goal Chain</button>
+        </div>
+
+        <div class="goal-chain-note">
+          Saved relationship: Daily → Weekly → Monthly → Yearly. You can still use “+ New Goal” for an individual goal or an optional 6-month goal.
+        </div>
+      </section>
+
+      <section class="goal-drawer  panel phase-workspace" id="goalDrawerWorkspace" data-goal-drawer hidden>
+        <div class="goal-drawer-heading">
+          <div>
+            <h3>Phase Workspace</h3>
+            <p>SMART planning, automated evidence, weekly milestones, daily actions and phase review.</p>
+          </div>
+          <button class="btn small goal-drawer-close" type="button" data-close-goal-drawers>Close</button>
+        </div>
+        <div class="phase-workspace-tabs" id="phaseWorkspaceTabs"></div>
+
+        <div class="phase-detail-head">
+          <div>
+            <h2 id="phaseWorkspaceTitle">Phase</h2>
+            <p id="phaseWorkspaceSubtitle">SMART development workspace</p>
+          </div>
+
+          <button class="btn primary" id="savePhaseSmartBtn">Save SMART Plan</button>
+        </div>
+
+        <div class="smart-grid">
+          <div class="smart-card objective">
+            <label>Objective</label>
+            <textarea id="phaseSmartObjective"></textarea>
+          </div>
+
+          <div class="smart-card">
+            <label>Specific</label>
+            <textarea id="phaseSmartSpecific"></textarea>
+          </div>
+
+          <div class="smart-card">
+            <label>Measurable</label>
+            <textarea id="phaseSmartMeasurable"></textarea>
+          </div>
+
+          <div class="smart-card">
+            <label>Achievable</label>
+            <textarea id="phaseSmartAchievable"></textarea>
+          </div>
+
+          <div class="smart-card">
+            <label>Relevant</label>
+            <textarea id="phaseSmartRelevant"></textarea>
+          </div>
+
+          <div class="smart-card timebound">
+            <label>Time-Bound</label>
+            <textarea id="phaseSmartTimeBound"></textarea>
+
+            <div class="smart-dates">
+              <div class="field">
+                <label>Starting Date</label>
+                <input type="date" id="phaseSmartStartDate">
+              </div>
+
+              <div class="field">
+                <label>Target Completion</label>
+                <input type="date" id="phaseSmartTargetDate">
+              </div>
+            </div>
+          </div>
+
+          <div class="smart-card success">
+            <label>Success Criteria</label>
+            <textarea id="phaseSmartSuccess"></textarea>
+          </div>
+        </div>
+
+        <div class="phase-auto-panel">
+          <div class="phase-auto-head">
+            <div>
+              <h3>Automated Evidence</h3>
+              <span class="muted">Calculated from the data already recorded elsewhere in T·IOS.</span>
+            </div>
+            <div class="auto-readiness" id="phaseAutoReadiness">0%</div>
+          </div>
+
+          <div class="auto-metrics-grid" id="phaseAutoMetrics"></div>
+        </div>
+
+        <div class="template-tracker">
+          <div class="template-box">
+            <div class="template-box-head">
+              <h3>Weekly Milestones</h3>
+              <span class="pager-text" id="phaseWeeklyCount">0</span>
+            </div>
+
+            <table class="template-table compact-template-table">
+              <thead>
+                <tr>
+                  <th>Week</th>
+                  <th>Milestone</th>
+                  <th>Metric</th>
+                  <th>Progress</th>
+                </tr>
+              </thead>
+              <tbody id="phaseWeeklyTable"></tbody>
+            </table>
+
+            <div class="quick-entry compact-weekly-entry">
+              <input id="quickWeeklyGoal" type="text" placeholder="Weekly milestone">
+              <input id="quickWeeklyTasks" type="hidden" value="">
+              <input id="quickWeeklyMetric" type="text" placeholder="Success metric">
+              <button class="btn small" id="addWeeklyMilestoneBtn">Add</button>
+            </div>
+          </div>
+
+          <div class="template-box">
+            <div class="template-box-head">
+              <h3>Daily Action Plan</h3>
+              <span class="pager-text" id="phaseDailyCount">0</span>
+            </div>
+
+            <div class="daily-action-list" id="phaseDailyTable"></div>
+
+            <div class="quick-entry compact-daily-entry daily-list-entry">
+              <input id="quickDailyDate" type="date">
+              <input id="quickDailyPriority" type="text" placeholder="Add daily action">
+              <input id="quickDailyPractice" type="hidden" value="">
+              <input id="quickDailyHours" type="number" min="0" step="0.25" placeholder="Hrs">
+              <button class="btn small" id="addDailyActionBtn">Add</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="phase-review-panel">
+          <div class="template-box-head">
+            <h3>Phase Review</h3>
+            <span class="phase-score-pill" id="phaseReviewScore">Overall score: 0%</span>
+          </div>
+
+          <div class="phase-review-grid">
+            <div class="field">
+              <label>What Went Well?</label>
+              <textarea id="phaseReviewWentWell"></textarea>
+            </div>
+            <div class="field">
+              <label>Challenges</label>
+              <textarea id="phaseReviewChallenges"></textarea>
+            </div>
+            <div class="field">
+              <label>Lessons Learned</label>
+              <textarea id="phaseReviewLessons"></textarea>
+            </div>
+            <div class="field">
+              <label>Improvements</label>
+              <textarea id="phaseReviewImprovements"></textarea>
+            </div>
+          </div>
+
+          <div class="phase-review-footer">
+            <label class="phase-ready-check">
+              <input type="checkbox" id="phaseReviewReady">
+              Ready for next phase
+            </label>
+
+            <button class="btn primary" id="savePhaseReviewBtn">Save Phase Review</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="goal-drawer  panel phase1-gate" id="goalDrawerQualification" data-goal-drawer hidden>
+        <div class="goal-drawer-heading">
+          <div>
+            <h3>Qualification Details</h3>
+            <p>Detailed evidence used by the automatic Phase 1 completion gate.</p>
+          </div>
+          <button class="btn small goal-drawer-close" type="button" data-close-goal-drawers>Close</button>
+        </div>
+        <div class="phase1-gate-head">
+          <div>
+            <h3>Phase 1 Automatic Qualification</h3>
+            <p>
+              Phase 1 is completed only after two consecutive completed trade samples meet the quality standard.
+              Profitability is deliberately ignored here. The gate measures process quality: plan adherence, execution,
+              identity, rules, reflection and affirmation consistency.
+            </p>
+          </div>
+
+          <div class="phase1-config">
+            <label>Trades per sample</label>
+            <input id="phase1SampleSize" type="number" min="20" max="30" step="1" value="20">
+            <button class="btn small" id="savePhase1SampleSize">Save</button>
+          </div>
+        </div>
+
+        <div class="phase1-gate-summary">
+          <div class="phase1-gate-card">
+            <span>Required Samples</span>
+            <strong id="phase1RequiredSamples">2</strong>
+          </div>
+          <div class="phase1-gate-card">
+            <span>Quality Threshold</span>
+            <strong id="phase1Threshold">90%+</strong>
+          </div>
+          <div class="phase1-gate-card">
+            <span>Passing Streak</span>
+            <strong id="phase1PassingStreak">0 / 2</strong>
+          </div>
+          <div class="phase1-gate-card">
+            <span>Current Sample</span>
+            <strong id="phase1CurrentSample">0 / 20</strong>
+          </div>
+        </div>
+
+        <div class="sample-table-wrap">
+          <table class="sample-table">
+            <thead>
+              <tr>
+                <th>Sample</th>
+                <th>Trades</th>
+                <th>Edge / Plan</th>
+                <th>Execution</th>
+                <th>Identity</th>
+                <th>Rules</th>
+                <th>Reflection</th>
+                <th>Affirmations</th>
+                <th>Result</th>
+              </tr>
+            </thead>
+            <tbody id="phase1SamplesBody">
+              <tr><td colspan="9" class="muted">No completed samples yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="phase1-rule-note">
+          Every listed metric must average at least the threshold in each sample. Missing reviews/sessions count as 0%,
+          so the system rewards complete journaling rather than only scoring the trades you choose to review.
+        </div>
+      </section>
+
+      <section class="goal-drawer  panel document-goals" id="goalDrawerDevelopment" data-goal-drawer hidden>
+        <div class="goal-drawer-heading">
+          <div>
+            <h3>Development Path</h3>
+            <p>Your four trading-development goals loaded from the SMART development plan.</p>
+          </div>
+          <button class="btn small goal-drawer-close" type="button" data-close-goal-drawers>Close</button>
+        </div>
+        <div class="document-goals-head">
+          <div>
+            <h3>Trading Development Goals</h3>
+            <p>
+              These four phase goals are loaded from your Trading Development Phases SMART template.
+              They define the development path; the Systematic Goal Planner below is where you create your own yearly,
+              monthly, weekly and daily goals that support the active phase.
+            </p>
+          </div>
+        </div>
+
+        <div class="document-goal-grid" id="documentGoalGrid"></div>
+      </section>
+
+
+      <section class="panel goal-drawer goal-flow-drawer" id="goalDrawerFlow" data-goal-drawer hidden>
+        <div class="goal-drawer-heading">
+          <div>
+            <h3>Goal Hierarchy</h3>
+            <p>See how daily execution feeds weekly, monthly, 6-month and yearly achievement.</p>
+          </div>
+          <button class="btn small goal-drawer-close" type="button" data-close-goal-drawers>Close</button>
+        </div>
+      <div class="goal-cascade">
+        <div class="goal-cascade-flow">
+          <span class="goal-cascade-node">Daily actions</span>
+          <span class="goal-cascade-arrow">→</span>
+          <span class="goal-cascade-node">Weekly goals</span>
+          <span class="goal-cascade-arrow">→</span>
+          <span class="goal-cascade-node">Monthly goals</span>
+          <span class="goal-cascade-arrow">→</span>
+          <span class="goal-cascade-node">6-month goals</span>
+          <span class="goal-cascade-arrow">→</span>
+          <span class="goal-cascade-node">Yearly goals</span>
+        </div>
+      </div>
+      <div class="manual-goal-note" style="margin-top:14px">
+        Goal records are managed through the <strong>Systematic Goal Planner</strong>,
+        <strong>Weekly Milestones</strong>, and <strong>Daily Action Plan</strong> above.
+        Progress continues to be stored and calculated in the background.
+      </div>
+      </section>
+    </section>
+
+
+
 
     <!-- INTELLIGENCE -->
     <section class="page" id="page-intelligence">
       <header class="page-head">
         <div>
           <h1>Intelligence</h1>
-          <p>Inspect the Specialized Intelligence and Cross-Intelligence evidence that feeds your Personal Trader Intelligence.</p>
+          <p>Connect your trading evidence into Specialized Intelligence, Cross-Intelligence and Personal Trader Intelligence.</p>
         </div>
         <div class="top-actions">
           <button class="btn" id="intelligenceRefreshBtn">Refresh Intelligence</button>
@@ -5055,7 +5472,9 @@ textarea{resize:vertical;min-height:90px}
       </header>
 
       <div class="intelligence-overview">
-<div class="intelligence-section-head">
+
+
+        <div class="intelligence-section-head">
           <div>
             <h3>Specialized Intelligence</h3>
             <p>Each system studies one part of your trading. A system can be active even while other systems are still waiting for evidence.</p>
@@ -7457,7 +7876,14 @@ function navigate(page){
   if(page==='execution'){
     renderExecution();
   }
-if(page==='settings'){
+
+  if(page==='goals'){
+    syncPhase1AutomaticStatus().then(()=>{
+      renderGoals();
+    });
+  }
+
+  if(page==='settings'){
     renderSettings();
   }
 
@@ -11356,7 +11782,6 @@ $('#saveGoalChainBtn').addEventListener(
 
 
 function renderGoals(){
-  if(!document.getElementById('page-goals')) return;
   populateGoalPhaseControls();
   renderDocumentGoals();
   renderPhaseRoadmap();
@@ -14391,6 +14816,7 @@ function renderAll(){
   renderEdgePlaybook();
   renderExecution();
   renderStatistics();
+  renderGoals();
   renderIntelligence();
 }
 
