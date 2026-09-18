@@ -2548,3 +2548,44 @@ restoreExistingSession();
 </script>
 </body>
 </html>
+
+<!-- H·IOS: keep the left-to-right color transition on the A/B divider only -->
+<style>
+@media (min-width:951px){
+  .top-k-panel::after{
+    content:'' !important;
+    position:absolute !important;
+    right:-1px !important;
+    top:0 !important;
+    bottom:0 !important;
+    width:24px !important;
+    height:auto !important;
+    transform:translateX(50%) !important;
+    pointer-events:none !important;
+    border:0 !important;
+    border-radius:0 !important;
+    background:linear-gradient(
+      90deg,
+      rgba(70,82,150,0) 0%,
+      rgba(76,92,169,.05) 28%,
+      rgba(103,83,188,.18) 48%,
+      rgba(110,168,255,.16) 52%,
+      rgba(75,101,174,.05) 72%,
+      rgba(70,82,150,0) 100%
+    ) !important;
+    box-shadow:0 0 14px rgba(110,168,255,.07) !important;
+    z-index:2 !important;
+  }
+
+  /* A very subtle divider anchors the transition exactly at the requested line. */
+  .top-k-panel{
+    border-right:1px solid rgba(110,168,255,.10) !important;
+  }
+
+  /* Ensure the intelligence copy stays clean and is never tinted by the divider glow. */
+  .hios-top-row > .hios-intelligence .hios-intelligence-main{
+    position:relative !important;
+    z-index:3 !important;
+  }
+}
+</style>
