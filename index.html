@@ -1477,74 +1477,108 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 
 
 
-/* ================= HOVER-TO-FOCUS: HOME SECTIONS B + C =================
-   A = Intelligence Calendar, B = Goal Progress, C = Today's Focus.
-   This version uses BOTH :has(:hover) (direct CSS) and JS classes as fallback,
-   so the effect works as soon as the pointer is inside B or C.
+/* ================= H·IOS HOME — HOVER FOCUS A / B / C =================
+   A = Intelligence Calendar
+   B = Goal Progress
+   C = Today's Focus
+
+   Desktop behaviour:
+   - Hover A: A expands; B and C contract.
+   - Hover B: B expands in width + height; A and C contract.
+   - Hover C: C expands in width + height; A and B contract.
+   - Leave the section: everything returns to default.
 ======================================================================= */
 @media (min-width:951px){
   .home-layout{
-    transition:grid-template-columns .34s cubic-bezier(.2,.78,.25,1), gap .34s ease;
+    --side-default:350px;
+    --side-expanded:500px;
+    --side-contracted:285px;
+    grid-template-columns:minmax(0,1fr) var(--side-default) !important;
+    gap:10px;
+    align-items:stretch;
+    transition:grid-template-columns .28s cubic-bezier(.2,.8,.2,1), gap .28s ease;
   }
 
-  .calendar-card{
-    min-width:0;
-    transform-origin:left center;
-    transition:transform .34s cubic-bezier(.2,.78,.25,1), opacity .34s ease, border-color .34s ease;
+  .calendar-card,
+  .goal-status-card,
+  .focus-card{
+    transform:scale(1);
+    opacity:1;
+    transform-origin:center;
+    transition:
+      transform .28s cubic-bezier(.2,.8,.2,1),
+      opacity .24s ease,
+      border-color .24s ease,
+      box-shadow .24s ease,
+      background .24s ease,
+      flex-basis .28s cubic-bezier(.2,.8,.2,1),
+      min-height .28s cubic-bezier(.2,.8,.2,1),
+      max-height .28s cubic-bezier(.2,.8,.2,1);
+    will-change:transform;
   }
 
   .home-sidebar{
     min-width:0;
     overflow:visible !important;
-    transition:width .34s cubic-bezier(.2,.78,.25,1);
+    transition:width .28s ease;
   }
 
-  .goal-status-card,
+  /* Default vertical split on the right. */
+  .goal-status-card{
+    flex:0 0 auto !important;
+  }
   .focus-card{
-    min-height:0;
-    transform-origin:center center;
-    transition:
-      flex-basis .34s cubic-bezier(.2,.78,.25,1),
-      transform .34s cubic-bezier(.2,.78,.25,1),
-      opacity .34s ease,
-      border-color .34s ease,
-      background .34s ease,
-      box-shadow .34s ease;
-    will-change:transform;
+    flex:1 1 auto !important;
   }
 
-  /* ---------------- B: GOAL PROGRESS ---------------- */
+  /* ---------- A: INTELLIGENCE CALENDAR ---------- */
+  .home-layout.panel-a-hover,
+  .home-layout:has(.calendar-card:hover){
+    grid-template-columns:minmax(0,1fr) var(--side-contracted) !important;
+  }
+  .home-layout.panel-a-hover .calendar-card,
+  .home-layout:has(.calendar-card:hover) .calendar-card{
+    transform:scale(1.012);
+    border-color:rgba(110,168,255,.42) !important;
+    box-shadow:0 12px 28px rgba(4,9,20,.24), inset 0 0 0 1px rgba(110,168,255,.07);
+    z-index:3;
+  }
+  .home-layout.panel-a-hover .goal-status-card,
+  .home-layout.panel-a-hover .focus-card,
+  .home-layout:has(.calendar-card:hover) .goal-status-card,
+  .home-layout:has(.calendar-card:hover) .focus-card{
+    transform:scale(.965);
+    opacity:.78;
+  }
+  .home-layout.panel-a-hover .goal-status-card,
+  .home-layout:has(.calendar-card:hover) .goal-status-card{
+    flex-basis:112px !important;
+    overflow:hidden;
+  }
+
+  /* ---------- B: GOAL PROGRESS ---------- */
   .home-layout.panel-b-hover,
   .home-layout:has(.goal-status-card:hover){
-    grid-template-columns:minmax(0,1fr) 520px !important;
+    grid-template-columns:minmax(0,1fr) var(--side-expanded) !important;
   }
-
   .home-layout.panel-b-hover .calendar-card,
   .home-layout:has(.goal-status-card:hover) .calendar-card{
-    transform:scale(.982);
-    opacity:.94;
+    transform:scale(.972);
+    opacity:.80;
   }
-
   .home-layout.panel-b-hover .goal-status-card,
   .home-layout:has(.goal-status-card:hover) .goal-status-card{
-    flex:0 0 220px !important;
-    transform:scale(1.055);
-    border-color:rgba(116,140,255,.58) !important;
-    background:linear-gradient(180deg,rgba(23,30,47,.998),rgba(14,18,28,.998));
-    box-shadow:0 12px 30px rgba(4,9,20,.28), inset 0 0 0 1px rgba(124,92,246,.10);
+    flex:0 0 235px !important;
+    transform:scale(1.018);
+    opacity:1;
+    border-color:rgba(124,92,246,.60) !important;
+    background:linear-gradient(180deg,rgba(25,31,48,.995),rgba(14,18,28,.995));
+    box-shadow:0 14px 34px rgba(4,9,20,.34), inset 0 0 0 1px rgba(124,92,246,.12);
     z-index:4;
   }
-
-  .home-layout.panel-b-hover .focus-card,
-  .home-layout:has(.goal-status-card:hover) .focus-card{
-    flex:1 1 0 !important;
-    transform:scale(.94);
-    opacity:.82;
-  }
-
   .home-layout.panel-b-hover .goal-status-card .goal-row,
   .home-layout:has(.goal-status-card:hover) .goal-status-card .goal-row{
-    margin-top:14px;
+    margin-top:16px;
   }
   .home-layout.panel-b-hover .goal-status-card .goal-head,
   .home-layout:has(.goal-status-card:hover) .goal-status-card .goal-head{
@@ -1552,45 +1586,50 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   }
   .home-layout.panel-b-hover .goal-status-card .bar,
   .home-layout:has(.goal-status-card:hover) .goal-status-card .bar{
-    height:9px;
+    height:10px;
   }
-
-  /* ---------------- C: TODAY'S FOCUS ---------------- */
-  .home-layout.panel-c-hover,
-  .home-layout:has(.focus-card:hover){
-    grid-template-columns:minmax(0,1fr) 520px !important;
-  }
-
-  .home-layout.panel-c-hover .calendar-card,
-  .home-layout:has(.focus-card:hover) .calendar-card{
-    transform:scale(.982);
-    opacity:.94;
-  }
-
-  .home-layout.panel-c-hover .goal-status-card,
-  .home-layout:has(.focus-card:hover) .goal-status-card{
-    flex:0 0 82px !important;
-    transform:scale(.94);
-    opacity:.78;
+  .home-layout.panel-b-hover .focus-card,
+  .home-layout:has(.goal-status-card:hover) .focus-card{
+    flex:1 1 0 !important;
+    min-height:0;
+    transform:scale(.955);
+    opacity:.70;
     overflow:hidden;
   }
 
+  /* ---------- C: TODAY'S FOCUS ---------- */
+  .home-layout.panel-c-hover,
+  .home-layout:has(.focus-card:hover){
+    grid-template-columns:minmax(0,1fr) var(--side-expanded) !important;
+  }
+  .home-layout.panel-c-hover .calendar-card,
+  .home-layout:has(.focus-card:hover) .calendar-card{
+    transform:scale(.972);
+    opacity:.80;
+  }
+  .home-layout.panel-c-hover .goal-status-card,
+  .home-layout:has(.focus-card:hover) .goal-status-card{
+    flex:0 0 105px !important;
+    transform:scale(.955);
+    opacity:.68;
+    overflow:hidden;
+  }
   .home-layout.panel-c-hover .focus-card,
   .home-layout:has(.focus-card:hover) .focus-card{
-    flex:1 1 0 !important;
-    transform:scale(1.05);
-    border-color:rgba(116,140,255,.58) !important;
-    background:linear-gradient(180deg,rgba(23,30,47,.998),rgba(14,18,28,.998));
-    box-shadow:0 12px 30px rgba(4,9,20,.28), inset 0 0 0 1px rgba(124,92,246,.10);
+    flex:1 1 auto !important;
+    min-height:0;
+    transform:scale(1.012);
+    opacity:1;
+    border-color:rgba(124,92,246,.60) !important;
+    background:linear-gradient(180deg,rgba(25,31,48,.995),rgba(14,18,28,.995));
+    box-shadow:0 14px 34px rgba(4,9,20,.34), inset 0 0 0 1px rgba(124,92,246,.12);
     z-index:4;
   }
-
   .home-layout.panel-c-hover .focus-card .focus-scroll,
   .home-layout:has(.focus-card:hover) .focus-card .focus-scroll{
     max-height:none !important;
-    overflow-y:auto;
+    overflow-y:auto !important;
   }
-
   .home-layout.panel-c-hover .focus-card .focus-item,
   .home-layout:has(.focus-card:hover) .focus-card .focus-item{
     padding:10px 11px;
@@ -1603,6 +1642,9 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   .home-layout:has(.focus-card:hover) .focus-card .focus-item small{
     font-size:9px;
   }
+
+  /* Pointer cursor is intentionally unchanged: these are hover focus zones,
+     not buttons and do not require a click. */
 }
 
 </style>
@@ -1826,7 +1868,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 
       <!-- CALENDAR + PRIORITY SIDEBAR -->
       <section class="home-layout">
-        <div class="calendar-card">
+        <div class="calendar-card" data-home-panel="a">
           <div class="calendar-head">
             <div>
               <h3>Intelligence Calendar</h3>
@@ -2728,137 +2770,66 @@ restoreExistingSession();
 
 
 /* =========================================================
-   H·IOS HOME — POINTER-FOCUS PANELS
-   A = calendar, B = Goal Progress, C = Today's Focus.
-   The effect is applied directly with inline styles so it cannot be lost to
-   earlier CSS rules. No click is required.
+   H·IOS HOME — POINTER HOVER FOCUS FOR A / B / C
+   Uses one delegated pointer listener on .home-layout so nested elements,
+   scrollbars, text and calendar cells cannot break the hover detection.
 ========================================================= */
-(function initHiosHomePanelHoverFocus(){
+(function initHiosHomeHoverFocus(){
   const layout = document.querySelector('.home-layout');
-  const sidebar = layout?.querySelector('.home-sidebar');
-  const calendar = layout?.querySelector('.calendar-card');
-  const panelB = sidebar?.querySelector('[data-home-panel="b"]');
-  const panelC = sidebar?.querySelector('[data-home-panel="c"]');
-  if(!layout || !sidebar || !calendar || !panelB || !panelC) return;
+  if(!layout) return;
+
+  const panelA = layout.querySelector('[data-home-panel="a"]');
+  const panelB = layout.querySelector('[data-home-panel="b"]');
+  const panelC = layout.querySelector('[data-home-panel="c"]');
+  if(!panelA || !panelB || !panelC) return;
 
   const DESKTOP_MIN = 951;
-  let active = null;
+  let activePanel = '';
 
-  function important(el, prop, value){
-    el.style.setProperty(prop, value, 'important');
+  function clearState(){
+    if(!activePanel && !layout.classList.contains('panel-a-hover') &&
+       !layout.classList.contains('panel-b-hover') &&
+       !layout.classList.contains('panel-c-hover')) return;
+    activePanel = '';
+    layout.classList.remove('panel-a-hover','panel-b-hover','panel-c-hover');
   }
 
-  function removeInlineFocusStyles(){
-    [layout, calendar, sidebar, panelB, panelC].forEach(el=>{
-      if(!el) return;
-    });
-
-    layout.style.removeProperty('grid-template-columns');
-    calendar.style.removeProperty('transform');
-    calendar.style.removeProperty('opacity');
-
-    panelB.style.removeProperty('flex');
-    panelB.style.removeProperty('transform');
-    panelB.style.removeProperty('opacity');
-    panelB.style.removeProperty('z-index');
-    panelB.style.removeProperty('border-color');
-    panelB.style.removeProperty('box-shadow');
-
-    panelC.style.removeProperty('flex');
-    panelC.style.removeProperty('transform');
-    panelC.style.removeProperty('opacity');
-    panelC.style.removeProperty('z-index');
-    panelC.style.removeProperty('border-color');
-    panelC.style.removeProperty('box-shadow');
-
-    const focusScroll = panelC.querySelector('.focus-scroll');
-    if(focusScroll){
-      focusScroll.style.removeProperty('max-height');
-      focusScroll.style.removeProperty('overflow-y');
+  function setState(next){
+    if(window.innerWidth < DESKTOP_MIN){
+      clearState();
+      return;
     }
+    if(next === activePanel) return;
+    activePanel = next;
+    layout.classList.remove('panel-a-hover','panel-b-hover','panel-c-hover');
+    if(next) layout.classList.add('panel-' + next + '-hover');
   }
 
-  function resetFocus(){
-    active = null;
-    layout.classList.remove('panel-b-hover','panel-c-hover');
-    removeInlineFocusStyles();
+  function panelFromTarget(target){
+    if(!(target instanceof Element)) return '';
+    if(target.closest('[data-home-panel="a"]')) return 'a';
+    if(target.closest('[data-home-panel="b"]')) return 'b';
+    if(target.closest('[data-home-panel="c"]')) return 'c';
+    return '';
   }
 
-  function focusB(){
-    if(window.innerWidth < DESKTOP_MIN){ resetFocus(); return; }
-    active = 'b';
-    layout.classList.add('panel-b-hover');
-    layout.classList.remove('panel-c-hover');
-
-    important(layout, 'grid-template-columns', 'minmax(0, 1fr) 520px');
-    important(calendar, 'transform', 'scale(.965)');
-    important(calendar, 'opacity', '.91');
-
-    important(panelB, 'flex', '0 0 220px');
-    important(panelB, 'transform', 'scale(1.055)');
-    important(panelB, 'opacity', '1');
-    important(panelB, 'z-index', '6');
-    important(panelB, 'border-color', 'rgba(116,140,255,.66)');
-    important(panelB, 'box-shadow', '0 14px 34px rgba(4,9,20,.34), inset 0 0 0 1px rgba(124,92,246,.12)');
-
-    important(panelC, 'flex', '1 1 0');
-    important(panelC, 'transform', 'scale(.94)');
-    important(panelC, 'opacity', '.72');
-    important(panelC, 'z-index', '1');
-  }
-
-  function focusC(){
-    if(window.innerWidth < DESKTOP_MIN){ resetFocus(); return; }
-    active = 'c';
-    layout.classList.add('panel-c-hover');
-    layout.classList.remove('panel-b-hover');
-
-    important(layout, 'grid-template-columns', 'minmax(0, 1fr) 520px');
-    important(calendar, 'transform', 'scale(.965)');
-    important(calendar, 'opacity', '.91');
-
-    important(panelB, 'flex', '0 0 82px');
-    important(panelB, 'transform', 'scale(.94)');
-    important(panelB, 'opacity', '.72');
-    important(panelB, 'z-index', '1');
-
-    important(panelC, 'flex', '1 1 0');
-    important(panelC, 'transform', 'scale(1.05)');
-    important(panelC, 'opacity', '1');
-    important(panelC, 'z-index', '6');
-    important(panelC, 'border-color', 'rgba(116,140,255,.66)');
-    important(panelC, 'box-shadow', '0 14px 34px rgba(4,9,20,.34), inset 0 0 0 1px rgba(124,92,246,.12)');
-
-    const focusScroll = panelC.querySelector('.focus-scroll');
-    if(focusScroll){
-      important(focusScroll, 'max-height', 'none');
-      important(focusScroll, 'overflow-y', 'auto');
-    }
-  }
-
-  panelB.addEventListener('mouseenter', focusB);
-  panelC.addEventListener('mouseenter', focusC);
-
-  panelB.addEventListener('mouseleave', (event)=>{
-    if(panelC.contains(event.relatedTarget)) return;
-    resetFocus();
+  /* pointerover catches the first entry immediately. */
+  layout.addEventListener('pointerover', function(event){
+    setState(panelFromTarget(event.target));
   });
 
-  panelC.addEventListener('mouseleave', (event)=>{
-    if(panelB.contains(event.relatedTarget)) return;
-    resetFocus();
+  /* pointermove guarantees the correct state while the pointer remains inside
+     a panel, including after layout movement caused by the expansion itself. */
+  layout.addEventListener('pointermove', function(event){
+    const elementUnderPointer = document.elementFromPoint(event.clientX, event.clientY);
+    setState(panelFromTarget(elementUnderPointer));
   });
 
-  /* If the pointer moves into the empty sidebar gap, restore default immediately. */
-  sidebar.addEventListener('mousemove', (event)=>{
-    const card = event.target.closest?.('[data-home-panel]');
-    if(!card && active) resetFocus();
-  });
+  layout.addEventListener('pointerleave', clearState);
 
-  sidebar.addEventListener('mouseleave', resetFocus);
-
-  window.addEventListener('resize', ()=>{
-    if(window.innerWidth < DESKTOP_MIN) resetFocus();
+  /* On resize, desktop-only focus must never remain stuck. */
+  window.addEventListener('resize', function(){
+    if(window.innerWidth < DESKTOP_MIN) clearState();
   });
 })();
 
