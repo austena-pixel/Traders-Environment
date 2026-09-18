@@ -121,6 +121,25 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   gap:7px;
   margin-top:7px;
 }
+.sidebar-add-product{
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  border:1px solid #2a3343 !important;
+  color:#dce7f6 !important;
+  background:#0d121a !important;
+  text-align:left;
+  padding:10px 12px !important;
+  border-radius:10px;
+  cursor:pointer;
+  margin-bottom:1px;
+}
+.sidebar-add-product:hover{
+  border-color:#41506a !important;
+  background:#121925 !important;
+  color:#fff !important;
+}
 .product-nav button{
   width:100%;
   display:flex;
@@ -462,7 +481,6 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 
   .products-card{flex:1 1 auto;overflow:hidden;display:flex;flex-direction:column}
   .products-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex:0 0 auto}
-  .mini-add-product{border:1px solid var(--line);background:#111722;color:#dbe6f5;border-radius:8px;padding:5px 7px;font-size:9px;cursor:pointer}
   .sidebar-products{
     margin-top:8px;
     display:grid;
@@ -571,6 +589,10 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
       </div>
       <nav class="nav">
         <button class="active" onclick="window.scrollTo({top:0,behavior:'smooth'})">Home</button>
+        <button class="sidebar-add-product" type="button" onclick="openProductModal()">
+          <span class="product-nav-icon">+</span>
+          <span>Add Product</span>
+        </button>
         <div class="product-nav" id="productSidebarNav"></div>
       </nav>
       <div class="side-foot">H·IOS family interface</div>
@@ -585,7 +607,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
             <h2>What currently needs your attention?</h2>
           </div>
           <div class="actions">
-            <button class="chip add-product-btn" onclick="openProductModal()">Add Product</button>
+            
             <button class="chip" onclick="showMessage('Priority Logic','G·IOS weighs urgency, importance, progress, dependencies and signals from connected intelligence systems.')">Why these priorities?</button>
             <button class="chip" onclick="logout()">Sign out</button>
           </div>
@@ -639,7 +661,6 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
                 <h3>Your ·IOS</h3>
                 <div class="sub">Your specialized intelligence products.</div>
               </div>
-              <button class="mini-add-product" type="button" onclick="openProductModal()">+ Add</button>
             </div>
             <section class="products sidebar-products" id="productsGrid"></section>
           </div>
