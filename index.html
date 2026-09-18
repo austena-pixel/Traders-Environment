@@ -1735,6 +1735,86 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 .auto-zoom-toggle:focus-visible{outline:2px solid #6ea8ff;outline-offset:2px}
 
 </style>
+
+<style id="calendar-zoom-display-fix">
+@media (min-width: 900px){
+  /* Keep normal calendar task lists contained and scrollable. */
+  .calendar-day .calendar-events{
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    max-height:100% !important;
+    scrollbar-width:thin !important;
+  }
+
+  /* The zoomed day must sit above every neighbouring calendar border. */
+  .home-layout.auto-zoom-enabled .calendar-day:hover{
+    overflow:visible !important;
+    z-index:500 !important;
+    isolation:isolate !important;
+  }
+
+  /* Once the day itself is enlarged, let its contents use the full visible area.
+     This prevents the original small scroll viewport from clipping the enlarged text. */
+  .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-events{
+    overflow:visible !important;
+    max-height:none !important;
+    min-height:0 !important;
+    padding:3px 5px 5px 3px !important;
+    gap:3px !important;
+    position:relative !important;
+    z-index:520 !important;
+  }
+
+  /* Keep labels readable after the large 1.82x day enlargement. */
+  .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event{
+    width:100% !important;
+    min-height:16px !important;
+    padding:3px 5px !important;
+    font-size:7.4px !important;
+    line-height:1.18 !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    position:relative !important;
+    z-index:530 !important;
+    transform-origin:center center !important;
+  }
+
+  /* A hovered assessment is the highest layer in the calendar.
+     It expands as a floating card and is not hidden behind cell borders. */
+  .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event:hover{
+    width:112% !important;
+    margin-left:-6% !important;
+    transform:scale(1.24) !important;
+    z-index:2000 !important;
+    white-space:normal !important;
+    overflow:visible !important;
+    text-overflow:clip !important;
+    line-height:1.22 !important;
+    padding:5px 7px !important;
+    background:#17263a !important;
+    border-color:rgba(110,168,255,.92) !important;
+    box-shadow:0 14px 34px rgba(0,0,0,.58), 0 0 0 1px rgba(110,168,255,.38), 0 0 24px rgba(110,168,255,.25) !important;
+  }
+
+  .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event.high:hover,
+  .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event.manual.test:hover,
+  .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event.manual.assessment:hover{
+    background:#311b27 !important;
+    border-color:rgba(251,113,133,.92) !important;
+    box-shadow:0 14px 34px rgba(0,0,0,.58), 0 0 0 1px rgba(251,113,133,.38), 0 0 24px rgba(251,113,133,.22) !important;
+  }
+
+  .calendar-card,
+  .hios-calendar{
+    overflow:visible !important;
+    position:relative !important;
+  }
+  .calendar-card{z-index:4 !important}
+  .hios-calendar{z-index:5 !important}
+}
+</style>
+
 </head>
 <body>
 
