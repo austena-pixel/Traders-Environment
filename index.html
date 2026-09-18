@@ -678,6 +678,51 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   }
 }
 
+
+
+/* ================= CALENDAR DATE STATUS COLORS ================= */
+/* Past date: red tint */
+.calendar-day.past-day{
+  background:linear-gradient(180deg,rgba(90,20,28,.12),rgba(10,14,20,.98));
+}
+.calendar-day.past-day .calendar-date{
+  color:#ff8f9d;
+}
+
+/* Today: green/teal highlight */
+.calendar-day.today{
+  background:linear-gradient(180deg,rgba(36,208,125,.10),rgba(10,14,20,.98)) !important;
+  box-shadow:inset 0 0 0 2px rgba(54,211,153,.85) !important;
+}
+.calendar-day.today .calendar-date{
+  color:#6ee7b7 !important;
+}
+
+/* Future date that has at least one scheduled item */
+.calendar-day.upcoming-day{
+  background:linear-gradient(180deg,rgba(110,168,255,.08),rgba(10,14,20,.98));
+}
+.calendar-day.upcoming-day .calendar-date{
+  color:#9ec8ff;
+}
+
+/* Event color follows whether it is past, today, or upcoming. */
+.calendar-event.event-past{
+  border-color:rgba(251,113,133,.42) !important;
+  background:rgba(251,113,133,.12) !important;
+  color:#ffc1ca !important;
+}
+.calendar-event.event-today{
+  border-color:rgba(54,211,153,.45) !important;
+  background:rgba(54,211,153,.12) !important;
+  color:#a7f3d0 !important;
+}
+.calendar-event.event-upcoming{
+  border-color:rgba(110,168,255,.42) !important;
+  background:rgba(110,168,255,.12) !important;
+  color:#c9e0ff !important;
+}
+
 </style>
 </head>
 <body>
@@ -1280,21 +1325,25 @@ function renderHiosCalendar(){
     const dayEvents=events.filter(event=>event.targetDate===key);
     const outside=date.getMonth()!==month;
     const isToday=date.getTime()===today.getTime();
+    const isPast=date.getTime()<today.getTime();
+    const hasUpcomingSchedule=!isPast && !isToday && dayEvents.length>0;
 
-    markup+=`<div class="calendar-day${outside?' outside':''}${isToday?' today':''}" onclick="openCalendarEntryModal('${key}')">`;
+    markup+=`<div class="calendar-day${outside?' outside':''}${isPast?' past-day':''}${isToday?' today':''}${hasUpcomingSchedule?' upcoming-day':''}" onclick="openCalendarEntryModal('${key}')">`;
     markup+=`<div class="calendar-date">${date.getDate()}</div><div class="calendar-events">`;
 
     dayEvents.slice(0,3).forEach(event=>{
       if(event._source==='hios'){
         const type=String(event.type||'other').toLowerCase();
         const label=`${hiosEventTypeLabel(type)}: ${event.title}`;
-        markup+=`<button type="button" class="calendar-event manual ${hiosEscape(type)}" title="${hiosEscape(label)}" onclick="event.stopPropagation();editCalendarEntry('${hiosEscape(event.id)}')">${hiosEscape(label)}</button>`;
+        const eventStatus=isPast?'event-past':(isToday?'event-today':'event-upcoming');
+        markup+=`<button type="button" class="calendar-event manual ${hiosEscape(type)} ${eventStatus}" title="${hiosEscape(label)}" onclick="event.stopPropagation();editCalendarEntry('${hiosEscape(event.id)}')">${hiosEscape(label)}</button>`;
       }else{
         const priority=['high','medium','low'].includes(String(event.priority).toLowerCase())
           ? String(event.priority).toLowerCase()
           : 'medium';
         const label=event.domain?`${event.domain}: ${event.title}`:event.title;
-        markup+=`<button type="button" class="calendar-event ${priority}" title="${hiosEscape(label)}" onclick="event.stopPropagation();openProduct('gios')">${hiosEscape(label)}</button>`;
+        const eventStatus=isPast?'event-past':(isToday?'event-today':'event-upcoming');
+        markup+=`<button type="button" class="calendar-event ${priority} ${eventStatus}" title="${hiosEscape(label)}" onclick="event.stopPropagation();openProduct('gios')">${hiosEscape(label)}</button>`;
       }
     });
 
