@@ -1118,6 +1118,99 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   }
 }
 
+
+
+/* ================= MOVE TOP METRICS/CONTROLS TO LEFT SECTION ================= */
+@media (min-width:951px){
+  .top-k-panel{
+    display:flex !important;
+    flex-direction:column;
+    justify-content:space-between;
+    gap:10px;
+    padding:12px !important;
+    overflow:visible !important;
+  }
+
+  .top-k-actions{
+    position:relative;
+    z-index:3;
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:6px;
+    align-items:center;
+  }
+
+  .top-k-actions .chip{
+    padding:7px 8px;
+    font-size:9px;
+    min-width:0;
+    white-space:nowrap;
+  }
+
+  .capabilities-btn{
+    text-align:center;
+    font-weight:800;
+    color:#dce9ff !important;
+    border-color:rgba(110,168,255,.24) !important;
+    background:rgba(10,16,27,.55) !important;
+  }
+
+  .top-k-signout{
+    padding-inline:8px !important;
+  }
+
+  .top-k-metrics{
+    position:relative;
+    z-index:3;
+    grid-template-columns:1fr 1fr !important;
+    gap:6px !important;
+  }
+
+  .top-k-metrics .hios-intel-metric{
+    padding:7px 8px;
+    background:rgba(7,11,18,.34);
+  }
+
+  .top-k-metrics .hios-intel-metric span{
+    font-size:7.5px;
+  }
+
+  .top-k-metrics .hios-intel-metric b{
+    font-size:13px;
+  }
+
+  /* The intelligence area on the right is now message-only. */
+  .hios-top-row > .hios-intelligence{
+    grid-template-columns:1fr !important;
+  }
+
+  .hios-top-row > .hios-intelligence .hios-intelligence-main{
+    padding:14px 18px !important;
+  }
+}
+
+/* On smaller screens keep the controls/metrics visible above intelligence. */
+@media(max-width:950px){
+  .top-k-panel{
+    display:flex !important;
+    flex-direction:column;
+    gap:10px;
+    padding:12px 14px;
+  }
+
+  .top-k-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+
+  .top-k-metrics{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:7px;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1189,8 +1282,32 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 <section id="appScreen" class="hidden">
   <div class="app">
     <div class="hios-top-row">
-      <!-- Section K: standalone top panel, intentionally empty for now. -->
-      <section class="top-k-panel" aria-hidden="true"></section>
+      <!-- Section B: ecosystem controls and key counts. -->
+      <section class="top-k-panel">
+        <div class="top-k-actions">
+          <button class="chip capabilities-btn" onclick="showMessage('How H·IOS Works','This will later open a dedicated page explaining H·IOS capabilities, intelligence flow, cross-intelligence and how connected ·IOS products work together.')">How H·IOS Works</button>
+          <button class="chip top-k-signout" onclick="logout()">Sign out</button>
+        </div>
+
+        <div class="hios-intelligence-metrics top-k-metrics">
+          <div class="hios-intel-metric">
+            <span>Active goals</span>
+            <b id="hiosMetricActiveGoals">0</b>
+          </div>
+          <div class="hios-intel-metric">
+            <span>High priority</span>
+            <b id="hiosMetricHighPriority">0</b>
+          </div>
+          <div class="hios-intel-metric">
+            <span>Calendar items</span>
+            <b id="hiosMetricCalendarItems">0</b>
+          </div>
+          <div class="hios-intel-metric">
+            <span>Connected ·IOS</span>
+            <b id="hiosMetricConnected">0</b>
+          </div>
+        </div>
+      </section>
 
       <section class="hios-intelligence">
         <div class="hios-intelligence-main">
@@ -1198,32 +1315,6 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
           <h2>What currently needs your attention?</h2>
           <p id="hiosIntelligenceSummary">H·IOS is connecting goals, deadlines and specialized intelligence to determine what deserves attention now.</p>
         </div>
-
-        <aside class="hios-intelligence-side">
-          <div class="actions">
-            <button class="chip" onclick="showMessage('Priority Logic','G·IOS weighs urgency, importance, progress, dependencies and signals from connected intelligence systems.')">Why these priorities?</button>
-            <button class="chip" onclick="logout()">Sign out</button>
-          </div>
-
-          <div class="hios-intelligence-metrics">
-            <div class="hios-intel-metric">
-              <span>Active goals</span>
-              <b id="hiosMetricActiveGoals">0</b>
-            </div>
-            <div class="hios-intel-metric">
-              <span>High priority</span>
-              <b id="hiosMetricHighPriority">0</b>
-            </div>
-            <div class="hios-intel-metric">
-              <span>Calendar items</span>
-              <b id="hiosMetricCalendarItems">0</b>
-            </div>
-            <div class="hios-intel-metric">
-              <span>Connected ·IOS</span>
-              <b id="hiosMetricConnected">0</b>
-            </div>
-          </div>
-        </aside>
       </section>
     </div>
     <aside class="sidebar">
