@@ -491,6 +491,113 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   .main > .section-title{display:none}
 }
 
+
+
+/* ================= CLICKABLE H·IOS CALENDAR ================= */
+.calendar-day{
+  cursor:pointer;
+  transition:background .14s ease, box-shadow .14s ease;
+}
+.calendar-day:hover{
+  background:#0d131c;
+}
+.calendar-day.outside:hover{
+  background:#0b0f15;
+}
+.calendar-day:hover .calendar-date{
+  color:#d7e7ff;
+}
+.calendar-event.manual{
+  border-color:rgba(139,92,246,.34);
+  background:rgba(139,92,246,.10);
+  color:#dfd3ff;
+}
+.calendar-event.manual.test,
+.calendar-event.manual.assessment,
+.calendar-event.manual.due{
+  border-color:rgba(251,113,133,.30);
+  background:rgba(251,113,133,.08);
+  color:#ffc6cf;
+}
+.calendar-event.manual.milestone{
+  border-color:rgba(110,168,255,.30);
+  background:rgba(110,168,255,.08);
+  color:#c8e0ff;
+}
+
+.calendar-entry-modal{
+  position:fixed;
+  inset:0;
+  z-index:150;
+  display:none;
+  place-items:center;
+  padding:20px;
+  background:rgba(0,0,0,.72);
+  backdrop-filter:blur(6px);
+}
+.calendar-entry-modal.show{display:grid}
+.calendar-entry-box{
+  width:min(520px,100%);
+  border:1px solid #2a3547;
+  border-radius:18px;
+  padding:20px;
+  background:#10151e;
+  box-shadow:0 30px 90px rgba(0,0,0,.55);
+}
+.calendar-entry-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:14px;
+  margin-bottom:16px;
+}
+.calendar-entry-kicker{
+  color:#83c6ff;
+  font-size:9px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+.calendar-entry-head h3{margin:4px 0 3px;font-size:19px}
+.calendar-entry-head p{margin:0;color:var(--muted);font-size:11px}
+.calendar-entry-close{
+  width:34px;height:34px;border-radius:9px;border:1px solid var(--line);
+  background:#0b1017;color:#dbe5f3;cursor:pointer;font-size:18px;
+}
+.calendar-entry-field{display:grid;gap:6px;margin-bottom:12px}
+.calendar-entry-field label{font-size:11px;color:#c8d0dc}
+.calendar-entry-field label span{color:#697587}
+.calendar-entry-field input,
+.calendar-entry-field select,
+.calendar-entry-field textarea{
+  width:100%;
+  border:1px solid #293548;
+  border-radius:10px;
+  background:#0a0e14;
+  color:var(--text);
+  padding:10px 11px;
+  outline:none;
+}
+.calendar-entry-field textarea{min-height:78px;resize:vertical}
+.calendar-entry-field input:focus,
+.calendar-entry-field select:focus,
+.calendar-entry-field textarea:focus{
+  border-color:#5d86c8;
+  box-shadow:0 0 0 3px rgba(110,168,255,.08);
+}
+.calendar-entry-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.calendar-entry-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px}
+.calendar-entry-actions-right{display:flex;gap:8px;margin-left:auto}
+.calendar-entry-actions button{
+  border-radius:9px;padding:9px 12px;cursor:pointer;font-weight:750;
+}
+.calendar-cancel{border:1px solid var(--line);background:#0b1017;color:#cbd5e1}
+.calendar-save{border:0;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.calendar-delete{border:1px solid rgba(251,113,133,.30);background:rgba(251,113,133,.07);color:#fda4af}
+@media(max-width:620px){
+  .calendar-entry-grid{grid-template-columns:1fr}
+}
+
 </style>
 </head>
 <body>
@@ -631,7 +738,6 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
               <div class="focus-item"><div class="rank">3</div><div><b>Review trading execution</b><small>T·IOS · execution quality below target</small></div><span class="tag">Moderate</span></div>
               <div class="focus-item"><div class="rank">4</div><div><b>Continue trading sample</b><small>T·IOS · active milestone · no immediate deadline</small></div><span class="tag">Maintain</span></div>
             </div>
-            <div class="alert"><strong>Priority alert</strong><span>Your academic workload increased today. G·IOS recommends protecting your first two focus blocks for study before returning to trading work.</span></div>
           </div>
         </aside>
       </section>
@@ -653,6 +759,71 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
       <button class="modal-close" type="button" onclick="closeProductModal()" aria-label="Close">×</button>
     </div>
     <div class="product-catalog-list" id="productCatalogList"></div>
+  </div>
+</div>
+
+<!-- =========================================================
+     H·IOS CALENDAR EVENT MODAL
+========================================================= -->
+<div class="calendar-entry-modal" id="calendarEntryModal">
+  <div class="calendar-entry-box">
+    <div class="calendar-entry-head">
+      <div>
+        <div class="calendar-entry-kicker">Intelligence Calendar</div>
+        <h3 id="calendarEntryHeading">Add calendar item</h3>
+        <p id="calendarEntryDateLabel">Selected date</p>
+      </div>
+      <button class="calendar-entry-close" type="button" id="calendarEntryClose" aria-label="Close">×</button>
+    </div>
+
+    <form id="calendarEntryForm">
+      <input type="hidden" id="calendarEntryId">
+      <input type="hidden" id="calendarEntryDate">
+
+      <div class="calendar-entry-field">
+        <label for="calendarEntryTitle">Title</label>
+        <input id="calendarEntryTitle" type="text" required placeholder="e.g. Machine Design Test 2">
+      </div>
+
+      <div class="calendar-entry-grid">
+        <div class="calendar-entry-field">
+          <label for="calendarEntryType">Type</label>
+          <select id="calendarEntryType">
+            <option value="due">Due date</option>
+            <option value="test">Test date</option>
+            <option value="assessment">Assessment</option>
+            <option value="assignment">Assignment</option>
+            <option value="milestone">Milestone</option>
+            <option value="appointment">Appointment</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="calendar-entry-field">
+          <label for="calendarEntryDomain">Domain</label>
+          <select id="calendarEntryDomain">
+            <option value="General">General</option>
+            <option value="Engineering">Engineering</option>
+            <option value="Study">Study</option>
+            <option value="Trading">Trading</option>
+            <option value="Personal">Personal</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="calendar-entry-field">
+        <label for="calendarEntryNotes">Notes <span>(optional)</span></label>
+        <textarea id="calendarEntryNotes" placeholder="Add any useful context..."></textarea>
+      </div>
+
+      <div class="calendar-entry-actions">
+        <button class="calendar-delete hidden" type="button" id="calendarEntryDelete">Delete</button>
+        <div class="calendar-entry-actions-right">
+          <button class="calendar-cancel" type="button" id="calendarEntryCancel">Cancel</button>
+          <button class="calendar-save" type="submit">Save</button>
+        </div>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -854,34 +1025,142 @@ renderProductManager();
    Read-only: H·IOS consumes the existing G·IOS goal data.
 ========================================================= */
 const HIOS_GIOS_GOALS_KEY = 'gios_standalone_goals_v1';
-let hiosCalendarCursor = new Date();
-hiosCalendarCursor = new Date(hiosCalendarCursor.getFullYear(), hiosCalendarCursor.getMonth(), 1);
+const HIOS_CALENDAR_EVENTS_KEY = 'hios_calendar_events_v1';
 
-function hiosEscape(value){return String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
-function loadHiosGoals(){try{const raw=localStorage.getItem(HIOS_GIOS_GOALS_KEY);const parsed=raw?JSON.parse(raw):[];return Array.isArray(parsed)?parsed:[]}catch(error){console.warn('Could not read G·IOS goals for H·IOS:',error);return []}}
-function parseHiosDate(value){if(!value)return null;const parts=String(value).split('-').map(Number);if(parts.length!==3||parts.some(v=>!Number.isFinite(v)))return null;return new Date(parts[0],parts[1]-1,parts[2])}
-function hiosDateKey(date){const y=date.getFullYear();const m=String(date.getMonth()+1).padStart(2,'0');const d=String(date.getDate()).padStart(2,'0');return `${y}-${m}-${d}`}
+let hiosCalendarCursor = new Date();
+hiosCalendarCursor = new Date(
+  hiosCalendarCursor.getFullYear(),
+  hiosCalendarCursor.getMonth(),
+  1
+);
+
+function hiosEscape(value){
+  return String(value ?? '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
+}
+
+function loadHiosGoals(){
+  try{
+    const raw=localStorage.getItem(HIOS_GIOS_GOALS_KEY);
+    const parsed=raw?JSON.parse(raw):[];
+    return Array.isArray(parsed)?parsed:[];
+  }catch(error){
+    console.warn('Could not read G·IOS goals for H·IOS:',error);
+    return [];
+  }
+}
+
+function loadHiosCalendarEvents(){
+  try{
+    const raw=localStorage.getItem(HIOS_CALENDAR_EVENTS_KEY);
+    const parsed=raw?JSON.parse(raw):[];
+    return Array.isArray(parsed)?parsed:[];
+  }catch(error){
+    console.warn('Could not read H·IOS calendar items:',error);
+    return [];
+  }
+}
+
+function saveHiosCalendarEvents(events){
+  localStorage.setItem(HIOS_CALENDAR_EVENTS_KEY,JSON.stringify(events));
+}
+
+function parseHiosDate(value){
+  if(!value)return null;
+  const parts=String(value).split('-').map(Number);
+  if(parts.length!==3||parts.some(v=>!Number.isFinite(v)))return null;
+  return new Date(parts[0],parts[1]-1,parts[2]);
+}
+
+function hiosDateKey(date){
+  const y=date.getFullYear();
+  const m=String(date.getMonth()+1).padStart(2,'0');
+  const d=String(date.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
+
+function hiosEventTypeLabel(type){
+  const labels={
+    due:'Due',
+    test:'Test',
+    assessment:'Assessment',
+    assignment:'Assignment',
+    milestone:'Milestone',
+    appointment:'Appointment',
+    other:'Event'
+  };
+  return labels[type]||'Event';
+}
+
+function allHiosDatedCommitments(){
+  const goalItems=loadHiosGoals()
+    .filter(goal=>goal.targetDate)
+    .map(goal=>({
+      id:`goal_${goal.id}`,
+      title:goal.title,
+      date:goal.targetDate,
+      type:'goal',
+      domain:goal.domain||'G·IOS',
+      source:'gios'
+    }));
+
+  const manualItems=loadHiosCalendarEvents().map(event=>({
+    ...event,
+    source:'hios'
+  }));
+
+  return [...goalItems,...manualItems];
+}
 
 function renderHiosIntelligence(){
   const goals=loadHiosGoals();
+  const manualEvents=loadHiosCalendarEvents();
   const active=goals.filter(goal=>Number(goal.progress||0)<100);
   const high=active.filter(goal=>String(goal.priority||'').toLowerCase()==='high');
   const connected=Array.isArray(addedProductIds)?addedProductIds.length:0;
-  const today=new Date();today.setHours(0,0,0,0);
-  const dated=active.map(goal=>({goal,date:parseHiosDate(goal.targetDate)})).filter(item=>item.date).sort((a,b)=>a.date-b.date);
+  const today=new Date();
+  today.setHours(0,0,0,0);
+
+  const dated=allHiosDatedCommitments()
+    .map(item=>({item,date:parseHiosDate(item.date)}))
+    .filter(item=>item.date)
+    .sort((a,b)=>a.date-b.date);
+
   const upcoming=dated.filter(item=>item.date>=today);
   const overdue=dated.filter(item=>item.date<today);
   const next=upcoming[0]||null;
+
   const status=document.getElementById('hiosIntelligenceStatus');
   const summary=document.getElementById('hiosIntelligenceSummary');
   if(!status||!summary)return;
-  status.textContent=`${connected} connected ·IOS · ${active.length} active goals`;
-  if(!goals.length){summary.textContent='H·IOS is waiting for G·IOS goal evidence. Add dated goals, tests, assessments or milestones in G·IOS and they will appear here automatically.';return}
+
+  status.textContent=`${connected} connected ·IOS · ${active.length} active goals · ${manualEvents.length} calendar item${manualEvents.length===1?'':'s'}`;
+
+  if(!goals.length&&!manualEvents.length){
+    summary.textContent='H·IOS is waiting for dated commitments. Click any calendar day to add a due date, test, assessment, milestone or other important date.';
+    return;
+  }
+
   const pieces=[];
-  pieces.push(`G·IOS currently contributes ${active.length} active goal${active.length===1?'':'s'}, including ${high.length} high-priority item${high.length===1?'':'s'}.`);
-  if(overdue.length)pieces.push(`${overdue.length} dated commitment${overdue.length===1?' is':'s are'} overdue and should be reviewed.`);
-  if(next)pieces.push(`Your next dated commitment is “${next.goal.title}” on ${next.date.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}.`);else pieces.push('No upcoming dated goal is currently recorded.');
-  pieces.push('As more specialized ·IOS products contribute evidence, H·IOS can expand this into broader cross-intelligence.');
+  if(goals.length){
+    pieces.push(`G·IOS currently contributes ${active.length} active goal${active.length===1?'':'s'}, including ${high.length} high-priority item${high.length===1?'':'s'}.`);
+  }
+  if(manualEvents.length){
+    pieces.push(`Your H·IOS calendar contains ${manualEvents.length} manually recorded date${manualEvents.length===1?'':'s'}.`);
+  }
+  if(overdue.length){
+    pieces.push(`${overdue.length} dated commitment${overdue.length===1?' is':'s are'} overdue and should be reviewed.`);
+  }
+  if(next){
+    pieces.push(`Your next dated commitment is “${next.item.title}” on ${next.date.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}.`);
+  }else{
+    pieces.push('No upcoming dated commitment is currently recorded.');
+  }
+
   summary.textContent=pieces.join(' ');
 }
 
@@ -889,28 +1168,212 @@ function renderHiosCalendar(){
   const root=document.getElementById('hiosCalendar');
   const monthLabel=document.getElementById('hiosCalendarMonth');
   if(!root||!monthLabel)return;
-  const goals=loadHiosGoals();
-  const events=goals.filter(goal=>goal.targetDate).map(goal=>({...goal,_date:parseHiosDate(goal.targetDate)})).filter(goal=>goal._date);
+
+  const goals=loadHiosGoals()
+    .filter(goal=>goal.targetDate)
+    .map(goal=>({...goal,_date:parseHiosDate(goal.targetDate),_source:'gios'}))
+    .filter(goal=>goal._date);
+
+  const manual=loadHiosCalendarEvents()
+    .filter(event=>event.date)
+    .map(event=>({...event,targetDate:event.date,_date:parseHiosDate(event.date),_source:'hios'}))
+    .filter(event=>event._date);
+
+  const events=[...goals,...manual];
+
   monthLabel.textContent=hiosCalendarCursor.toLocaleDateString(undefined,{month:'long',year:'numeric'});
-  const year=hiosCalendarCursor.getFullYear(),month=hiosCalendarCursor.getMonth();
-  const first=new Date(year,month,1);const gridStart=new Date(year,month,1-first.getDay());const today=new Date();today.setHours(0,0,0,0);
+
+  const year=hiosCalendarCursor.getFullYear();
+  const month=hiosCalendarCursor.getMonth();
+  const first=new Date(year,month,1);
+  const gridStart=new Date(year,month,1-first.getDay());
+  const today=new Date();
+  today.setHours(0,0,0,0);
+
   let markup='';
+
   for(let i=0;i<42;i++){
-    const date=new Date(gridStart);date.setDate(gridStart.getDate()+i);const key=hiosDateKey(date);const dayEvents=events.filter(event=>event.targetDate===key);const outside=date.getMonth()!==month;const isToday=date.getTime()===today.getTime();
-    markup+=`<div class="calendar-day${outside?' outside':''}${isToday?' today':''}"><div class="calendar-date">${date.getDate()}</div><div class="calendar-events">`;
-    dayEvents.slice(0,3).forEach(event=>{const priority=['high','medium','low'].includes(String(event.priority).toLowerCase())?String(event.priority).toLowerCase():'medium';const label=event.domain?`${event.domain}: ${event.title}`:event.title;markup+=`<button type="button" class="calendar-event ${priority}" title="${hiosEscape(label)}" onclick="openProduct('gios')">${hiosEscape(label)}</button>`});
-    if(dayEvents.length>3)markup+=`<div class="calendar-more">+${dayEvents.length-3} more</div>`;
+    const date=new Date(gridStart);
+    date.setDate(gridStart.getDate()+i);
+
+    const key=hiosDateKey(date);
+    const dayEvents=events.filter(event=>event.targetDate===key);
+    const outside=date.getMonth()!==month;
+    const isToday=date.getTime()===today.getTime();
+
+    markup+=`<div class="calendar-day${outside?' outside':''}${isToday?' today':''}" onclick="openCalendarEntryModal('${key}')">`;
+    markup+=`<div class="calendar-date">${date.getDate()}</div><div class="calendar-events">`;
+
+    dayEvents.slice(0,3).forEach(event=>{
+      if(event._source==='hios'){
+        const type=String(event.type||'other').toLowerCase();
+        const label=`${hiosEventTypeLabel(type)}: ${event.title}`;
+        markup+=`<button type="button" class="calendar-event manual ${hiosEscape(type)}" title="${hiosEscape(label)}" onclick="event.stopPropagation();editCalendarEntry('${hiosEscape(event.id)}')">${hiosEscape(label)}</button>`;
+      }else{
+        const priority=['high','medium','low'].includes(String(event.priority).toLowerCase())
+          ? String(event.priority).toLowerCase()
+          : 'medium';
+        const label=event.domain?`${event.domain}: ${event.title}`:event.title;
+        markup+=`<button type="button" class="calendar-event ${priority}" title="${hiosEscape(label)}" onclick="event.stopPropagation();openProduct('gios')">${hiosEscape(label)}</button>`;
+      }
+    });
+
+    if(dayEvents.length>3){
+      markup+=`<div class="calendar-more">+${dayEvents.length-3} more</div>`;
+    }
+
     markup+='</div></div>';
   }
+
   root.innerHTML=markup;
 }
-function renderHiosHome(){renderHiosIntelligence();renderHiosCalendar()}
-const hiosPrevMonth=document.getElementById('hiosPrevMonth');const hiosNextMonth=document.getElementById('hiosNextMonth');
-if(hiosPrevMonth)hiosPrevMonth.addEventListener('click',()=>{hiosCalendarCursor=new Date(hiosCalendarCursor.getFullYear(),hiosCalendarCursor.getMonth()-1,1);renderHiosCalendar()});
-if(hiosNextMonth)hiosNextMonth.addEventListener('click',()=>{hiosCalendarCursor=new Date(hiosCalendarCursor.getFullYear(),hiosCalendarCursor.getMonth()+1,1);renderHiosCalendar()});
-window.addEventListener('storage',event=>{if(event.key===HIOS_GIOS_GOALS_KEY)renderHiosHome()});
-window.addEventListener('pageshow',renderHiosHome);
 
+function renderHiosHome(){
+  renderHiosIntelligence();
+  renderHiosCalendar();
+}
+
+/* Calendar entry modal */
+const calendarEntryModal=document.getElementById('calendarEntryModal');
+const calendarEntryForm=document.getElementById('calendarEntryForm');
+const calendarEntryId=document.getElementById('calendarEntryId');
+const calendarEntryDate=document.getElementById('calendarEntryDate');
+const calendarEntryTitle=document.getElementById('calendarEntryTitle');
+const calendarEntryType=document.getElementById('calendarEntryType');
+const calendarEntryDomain=document.getElementById('calendarEntryDomain');
+const calendarEntryNotes=document.getElementById('calendarEntryNotes');
+const calendarEntryDelete=document.getElementById('calendarEntryDelete');
+const calendarEntryHeading=document.getElementById('calendarEntryHeading');
+const calendarEntryDateLabel=document.getElementById('calendarEntryDateLabel');
+
+function openCalendarEntryModal(dateKey){
+  calendarEntryForm.reset();
+  calendarEntryId.value='';
+  calendarEntryDate.value=dateKey;
+  calendarEntryType.value='due';
+  calendarEntryDomain.value='General';
+  calendarEntryHeading.textContent='Add calendar item';
+
+  const parsed=parseHiosDate(dateKey);
+  calendarEntryDateLabel.textContent=parsed
+    ? parsed.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'})
+    : dateKey;
+
+  calendarEntryDelete.classList.add('hidden');
+  calendarEntryModal.classList.add('show');
+  setTimeout(()=>calendarEntryTitle.focus(),0);
+}
+
+function closeCalendarEntryModal(){
+  calendarEntryModal.classList.remove('show');
+}
+
+function editCalendarEntry(id){
+  const event=loadHiosCalendarEvents().find(item=>item.id===id);
+  if(!event)return;
+
+  calendarEntryId.value=event.id;
+  calendarEntryDate.value=event.date;
+  calendarEntryTitle.value=event.title||'';
+  calendarEntryType.value=event.type||'other';
+  calendarEntryDomain.value=event.domain||'General';
+  calendarEntryNotes.value=event.notes||'';
+  calendarEntryHeading.textContent='Edit calendar item';
+
+  const parsed=parseHiosDate(event.date);
+  calendarEntryDateLabel.textContent=parsed
+    ? parsed.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'})
+    : event.date;
+
+  calendarEntryDelete.classList.remove('hidden');
+  calendarEntryModal.classList.add('show');
+}
+
+calendarEntryForm.addEventListener('submit',event=>{
+  event.preventDefault();
+
+  const title=calendarEntryTitle.value.trim();
+  const date=calendarEntryDate.value;
+  if(!title||!date)return;
+
+  const events=loadHiosCalendarEvents();
+  const id=calendarEntryId.value||`hcal_${Date.now()}`;
+  const next={
+    id,
+    title,
+    date,
+    type:calendarEntryType.value,
+    domain:calendarEntryDomain.value,
+    notes:calendarEntryNotes.value.trim(),
+    updatedAt:new Date().toISOString()
+  };
+
+  const index=events.findIndex(item=>item.id===id);
+  if(index>=0)events[index]=next;
+  else events.push(next);
+
+  saveHiosCalendarEvents(events);
+  closeCalendarEntryModal();
+  renderHiosHome();
+});
+
+calendarEntryDelete.addEventListener('click',()=>{
+  const id=calendarEntryId.value;
+  if(!id)return;
+  const events=loadHiosCalendarEvents().filter(item=>item.id!==id);
+  saveHiosCalendarEvents(events);
+  closeCalendarEntryModal();
+  renderHiosHome();
+});
+
+document.getElementById('calendarEntryClose').addEventListener('click',closeCalendarEntryModal);
+document.getElementById('calendarEntryCancel').addEventListener('click',closeCalendarEntryModal);
+
+calendarEntryModal.addEventListener('click',event=>{
+  if(event.target===calendarEntryModal)closeCalendarEntryModal();
+});
+
+document.addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&calendarEntryModal.classList.contains('show')){
+    closeCalendarEntryModal();
+  }
+});
+
+const hiosPrevMonth=document.getElementById('hiosPrevMonth');
+const hiosNextMonth=document.getElementById('hiosNextMonth');
+
+if(hiosPrevMonth){
+  hiosPrevMonth.addEventListener('click',()=>{
+    hiosCalendarCursor=new Date(
+      hiosCalendarCursor.getFullYear(),
+      hiosCalendarCursor.getMonth()-1,
+      1
+    );
+    renderHiosCalendar();
+  });
+}
+
+if(hiosNextMonth){
+  hiosNextMonth.addEventListener('click',()=>{
+    hiosCalendarCursor=new Date(
+      hiosCalendarCursor.getFullYear(),
+      hiosCalendarCursor.getMonth()+1,
+      1
+    );
+    renderHiosCalendar();
+  });
+}
+
+window.addEventListener('storage',event=>{
+  if(
+    event.key===HIOS_GIOS_GOALS_KEY ||
+    event.key===HIOS_CALENDAR_EVENTS_KEY
+  ){
+    renderHiosHome();
+  }
+});
+
+window.addEventListener('pageshow',renderHiosHome);
 
 const authScreen = document.getElementById('authScreen');
 const appScreen = document.getElementById('appScreen');
