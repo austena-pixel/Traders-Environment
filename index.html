@@ -1426,6 +1426,55 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   .hios-op-scene,.op-hub,.op-network-lines i::after,.op-stage,.op-rank i,.op-priority-engine,.op-calendar-grid i.hot::after,.op-feedback-ring{animation:none!important;transition:none!important}
 }
 
+
+
+/* ================= FINAL A/B DIVIDER TRANSITION FIX =================
+   Keep the blue/violet transition INSIDE the left controls panel.
+   It terminates exactly on the same vertical boundary as the sidebar
+   divider below, so no glow can overlap the H·IOS copy on the right.
+===================================================================== */
+@media (min-width:951px){
+  .top-k-panel{
+    overflow:hidden !important;
+    border-right:1px solid rgba(110,168,255,.18) !important;
+  }
+
+  .top-k-panel::before{
+    display:none !important;
+  }
+
+  .top-k-panel::after{
+    content:'' !important;
+    position:absolute !important;
+    right:0 !important;
+    top:0 !important;
+    bottom:0 !important;
+    width:18px !important;
+    height:auto !important;
+    transform:none !important;
+    pointer-events:none !important;
+    border:0 !important;
+    border-radius:0 !important;
+    background:linear-gradient(
+      90deg,
+      rgba(70,82,150,0) 0%,
+      rgba(76,92,169,.035) 42%,
+      rgba(103,83,188,.09) 72%,
+      rgba(110,168,255,.12) 100%
+    ) !important;
+    box-shadow:none !important;
+    z-index:2 !important;
+  }
+
+  /* Keep the copy layer completely clean on the right side of the divider. */
+  .hios-top-row > .hios-intelligence,
+  .hios-top-row > .hios-intelligence .hios-intelligence-main,
+  .hios-intelligence-copy{
+    position:relative !important;
+    z-index:3 !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2548,44 +2597,3 @@ restoreExistingSession();
 </script>
 </body>
 </html>
-
-<!-- H·IOS: keep the left-to-right color transition on the A/B divider only -->
-<style>
-@media (min-width:951px){
-  .top-k-panel::after{
-    content:'' !important;
-    position:absolute !important;
-    right:-1px !important;
-    top:0 !important;
-    bottom:0 !important;
-    width:24px !important;
-    height:auto !important;
-    transform:translateX(50%) !important;
-    pointer-events:none !important;
-    border:0 !important;
-    border-radius:0 !important;
-    background:linear-gradient(
-      90deg,
-      rgba(70,82,150,0) 0%,
-      rgba(76,92,169,.05) 28%,
-      rgba(103,83,188,.18) 48%,
-      rgba(110,168,255,.16) 52%,
-      rgba(75,101,174,.05) 72%,
-      rgba(70,82,150,0) 100%
-    ) !important;
-    box-shadow:0 0 14px rgba(110,168,255,.07) !important;
-    z-index:2 !important;
-  }
-
-  /* A very subtle divider anchors the transition exactly at the requested line. */
-  .top-k-panel{
-    border-right:1px solid rgba(110,168,255,.10) !important;
-  }
-
-  /* Ensure the intelligence copy stays clean and is never tinted by the divider glow. */
-  .hios-top-row > .hios-intelligence .hios-intelligence-main{
-    position:relative !important;
-    z-index:3 !important;
-  }
-}
-</style>
