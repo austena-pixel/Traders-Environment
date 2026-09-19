@@ -1832,12 +1832,13 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   }
   .calendar-event.calendar-event-hover-overlay{
     position:absolute !important;
-    left:-6% !important;
-    width:112% !important;
+    left:-8% !important;
+    width:116% !important;
     margin:0 !important;
     z-index:5000 !important;
-    pointer-events:none !important;
-    transform:scale(1.10) !important;
+    pointer-events:auto !important;
+    cursor:pointer !important;
+    transform:scale(1.26) !important;
     transform-origin:center center !important;
     white-space:normal !important;
     overflow:hidden !important;
@@ -1846,14 +1847,14 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     padding:5px 7px !important;
     background:#17263a !important;
     border-color:rgba(110,168,255,.92) !important;
-    box-shadow:0 14px 34px rgba(0,0,0,.58),0 0 0 1px rgba(110,168,255,.38),0 0 24px rgba(110,168,255,.25) !important;
+    box-shadow:0 18px 42px rgba(0,0,0,.68),0 0 0 1px rgba(110,168,255,.48),0 0 30px rgba(110,168,255,.32) !important;
   }
   .calendar-event.calendar-event-hover-overlay.high,
   .calendar-event.calendar-event-hover-overlay.manual.test,
   .calendar-event.calendar-event-hover-overlay.manual.assessment{
     background:#311b27 !important;
     border-color:rgba(251,113,133,.92) !important;
-    box-shadow:0 14px 34px rgba(0,0,0,.58),0 0 0 1px rgba(251,113,133,.38),0 0 24px rgba(251,113,133,.22) !important;
+    box-shadow:0 18px 42px rgba(0,0,0,.68),0 0 0 1px rgba(251,113,133,.48),0 0 30px rgba(251,113,133,.30) !important;
   }
 
   .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event.high:hover,
@@ -3136,7 +3137,6 @@ restoreExistingSession();
     overlay=eventItem.cloneNode(true);
     overlay.classList.remove('is-hover-overlay-source');
     overlay.classList.add('calendar-event-hover-overlay');
-    overlay.removeAttribute('onclick');
     overlay.setAttribute('aria-hidden','true');
     overlay.tabIndex=-1;
     day.appendChild(overlay);
@@ -3151,8 +3151,11 @@ restoreExistingSession();
     overlay.style.top=Math.max(listTop,rawTop)+'px';
 
     const overlayHeight=overlay.offsetHeight;
-    const maximumTop=Math.max(listTop,day.clientHeight-overlayHeight-3);
-    overlay.style.top=Math.min(Math.max(listTop,rawTop),maximumTop)+'px';
+    const hoverScale=1.26;
+    const scaleOverflow=(overlayHeight*(hoverScale-1))/2;
+    const minimumTop=listTop+scaleOverflow;
+    const maximumTop=Math.max(minimumTop,day.clientHeight-overlayHeight-scaleOverflow-3);
+    overlay.style.top=Math.min(Math.max(minimumTop,rawTop),maximumTop)+'px';
     source.classList.add('is-hover-overlay-source');
   }
 
@@ -3165,9 +3168,12 @@ restoreExistingSession();
 
   calendar.addEventListener('pointerout',event=>{
     if(!source)return;
-    const leavingItem=event.target.closest('.calendar-event');
-    if(leavingItem!==source)return;
-    if(event.relatedTarget&&source.contains(event.relatedTarget))return;
+    const leavingSource=event.target===source||source.contains(event.target);
+    const leavingOverlay=event.target===overlay||overlay?.contains(event.target);
+    if(!leavingSource&&!leavingOverlay)return;
+
+    const next=event.relatedTarget;
+    if(next&&(source.contains(next)||overlay?.contains(next)))return;
     clearOverlay();
   });
 
