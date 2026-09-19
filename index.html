@@ -1737,6 +1737,33 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 </style>
 
 <style id="calendar-zoom-display-fix">
+/* Every day keeps its date fixed while its task list scrolls inside the cell. */
+.calendar-day{
+  display:flex !important;
+  flex-direction:column !important;
+  min-width:0 !important;
+  overflow:hidden !important;
+}
+.calendar-day .calendar-date{
+  flex:0 0 auto !important;
+}
+.calendar-day .calendar-events{
+  flex:1 1 0 !important;
+  min-height:0 !important;
+  max-height:100% !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+  padding:1px 4px 5px 1px !important;
+  scrollbar-width:thin !important;
+  scrollbar-color:#3b4960 transparent !important;
+}
+.calendar-day .calendar-events::-webkit-scrollbar{width:4px}
+.calendar-day .calendar-events::-webkit-scrollbar-track{background:transparent}
+.calendar-day .calendar-events::-webkit-scrollbar-thumb{background:#3b4960;border-radius:999px}
+.calendar-day .calendar-events::-webkit-scrollbar-thumb:hover{background:#5a6b86}
+
 @media (min-width: 900px){
   /* Keep normal calendar task lists contained and scrollable. */
   .calendar-day .calendar-events{
@@ -1746,18 +1773,18 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     scrollbar-width:thin !important;
   }
 
-  /* The zoomed day must sit above every neighbouring calendar border. */
+  /* The zoomed cell may sit above neighbours, but its contents remain inside its border. */
   .home-layout.auto-zoom-enabled .calendar-day:hover{
-    overflow:visible !important;
+    overflow:hidden !important;
     z-index:500 !important;
     isolation:isolate !important;
   }
 
-  /* Once the day itself is enlarged, let its contents use the full visible area.
-     This prevents the original small scroll viewport from clipping the enlarged text. */
+  /* Keep the enlarged day's task list as an internal scroll area. */
   .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-events{
-    overflow:visible !important;
-    max-height:none !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    max-height:100% !important;
     min-height:0 !important;
     padding:3px 5px 5px 3px !important;
     gap:3px !important;
@@ -1780,15 +1807,14 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     transform-origin:center center !important;
   }
 
-  /* A hovered assessment is the highest layer in the calendar.
-     It expands as a floating card and is not hidden behind cell borders. */
+  /* Assessment zoom remains available without crossing the day-cell border. */
   .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event:hover{
-    width:108% !important;
-    margin-left:-4% !important;
-    transform:scale(1.18) !important;
+    width:100% !important;
+    margin-left:0 !important;
+    transform:scale(1.08) !important;
     z-index:2000 !important;
     white-space:normal !important;
-    overflow:visible !important;
+    overflow:hidden !important;
     text-overflow:clip !important;
     line-height:1.22 !important;
     padding:5px 7px !important;
