@@ -677,7 +677,11 @@ function effectiveProgress(goalOrId,seen=new Set()){
 }
 function descendants(rootId){const out=[];const stack=[rootId];const seen=new Set();while(stack.length){const id=stack.pop();if(seen.has(id))continue;seen.add(id);childrenOf(id).forEach(c=>{out.push(c);stack.push(c.id)})}return out}
 function topGoals(){return goals.filter(g=>!g.parentId||!goals.some(p=>p.id===g.parentId))}
-function yearlyRoots(){const roots=goals.filter(g=>g.level==='yearly');return roots.length?roots:topGoals()}
+function yearlyRoots(){
+ const activeAreas=new Set(focusAreas.map(area=>canonicalDomain(area)));
+ const roots=goals.filter(g=>g.level==='yearly'&&activeAreas.has(canonicalDomain(g.domain)));
+ return roots;
+}
 function primaryRoot(){const roots=yearlyRoots();if(!roots.length)return null;return roots.slice().sort((a,b)=>priorityScore(b)-priorityScore(a)||effectiveProgress(a)-effectiveProgress(b))[0]}
 function levelItemsForRoot(root,level){if(!root)return[];if(root.level===level)return[root];return descendants(root.id).filter(g=>g.level===level)}
 function levelProgressForRoot(root,level){const items=levelItemsForRoot(root,level);return items.length?Math.round(weightedAverage(items,g=>effectiveProgress(g))):0}
@@ -694,7 +698,7 @@ function rankedFocus(){return goals.filter(g=>effectiveProgress(g)<100).slice().
 function renderRootSelect(){
  const select=$('#chainRoot');
  const roots=yearlyRoots();
- if(!roots.length){select.innerHTML='<option value="">No long-term goals</option>';selectedRootId='';return}
+ if(!roots.length){select.innerHTML='<option value="">No active focus-area views</option>';selectedRootId='';return}
  if(setGoalsCategory){
    const focused=rootForDomain(setGoalsCategory);
    if(focused)selectedRootId=focused.id;
@@ -843,14 +847,25 @@ function removeFocusArea(name){
  if(!name)return;
  const ok=window.confirm('Remove '+name+' from your focus areas? Existing goals in this area will not be deleted.');
  if(!ok)return;
+
+ const removedCanonical=canonicalDomain(name);
  focusAreas=focusAreas.filter(area=>area!==name);
  saveFocusAreas();
+
  if(setGoalsCategory===name){
   setGoalsCategory='';
   localStorage.removeItem(SET_GOALS_CATEGORY_KEY);
  }
+
+ // If the Overview "View" dropdown is currently showing this area,
+ // clear it so renderRootSelect() immediately switches to another active area.
+ const selectedRoot=goals.find(g=>g.id===selectedRootId);
+ if(selectedRoot&&canonicalDomain(selectedRoot.domain)===removedCanonical){
+  selectedRootId='';
+ }
+
  renderAll();
- toast(name+' removed from the focus row.');
+ toast(name+' removed from Focus Areas and Views.');
 }
 function renderAdvancedFocusOptions(){
  const select=$('#goalDomain');
