@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- G-IOS BUILD: DAILY-WEEKLY-MONTHLY-V1 | 2026-09-19 -->
+<!-- G-IOS BUILD: DAILY-WEEKLY-MONTHLY-V2-NO-TOPBAR | 2026-09-19 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -61,11 +61,6 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 
   <main class="main">
     <section class="page active" id="page-overview">
-    <div class="topbar">
-      <div><div class="eyebrow">G·IOS Intelligence</div><h2>Progress Intelligence</h2><p>Daily execution compounds upward into long-term progress.</p></div>
-      <div class="actions"><button class="btn" id="syncNow">Sync H·IOS</button><button class="btn primary" id="addGoal">+ Add Goal</button></div>
-    </div>
-
     <section class="hero">
       <div class="hero-main">
         <div class="kicker">Core principle</div>
@@ -296,14 +291,13 @@ function handleTrackerClick(e){const adj=e.target.closest('[data-track-adjust]')
 
 function renderAll(){renderRootSelect();renderMetrics();renderChain();renderExecution();renderDomains();renderPriorities();renderDeadlines();renderForecast();renderParentOptions();renderDailySystem();renderWeeklySystem();renderMonthlySystem();publishDashboardSnapshot(false)}
 function toast(message){const t=$('#toast');t.textContent=message;t.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),2200)}
-$('#addGoal').addEventListener('click',()=>{pendingCreateLevel='';pendingCreatePeriodKey='';$('#goalModal').classList.add('show');renderParentOptions()});
 $('#cancelGoal').addEventListener('click',()=>$('#goalModal').classList.remove('show'));
 $('#goalModal').addEventListener('click',e=>{if(e.target.id==='goalModal')$('#goalModal').classList.remove('show')});
 $('#goalLevel').addEventListener('change',renderParentOptions);$('#goalDomain').addEventListener('change',renderParentOptions);
 $('#goalForm').addEventListener('submit',e=>{e.preventDefault();const level=$('#goalLevel').value;const g=normalizeGoal({id:'g_'+Date.now(),title:$('#goalTitle').value.trim(),level,domain:$('#goalDomain').value,priority:$('#goalPriority').value,manualProgress:clamp($('#goalProgress').value),parentId:$('#goalParent').value,weight:Number($('#goalWeight').value||1),targetDate:$('#goalDate').value,periodKey:(pendingCreateLevel===level&&pendingCreatePeriodKey)?pendingCreatePeriodKey:defaultPeriodKey(level),why:$('#goalWhy').value.trim(),history:[]});goals.unshift(g);saveGoals();e.target.reset();$('#goalWeight').value=1;$('#goalPriority').value='medium';pendingCreateLevel='';pendingCreatePeriodKey='';$('#goalModal').classList.remove('show');toast('Goal added to the compounding structure.')});
 $('#chainRoot').addEventListener('change',e=>{selectedRootId=e.target.value;renderAll()});
 $('#executionList').addEventListener('click',e=>{const adj=e.target.closest('[data-adjust]');if(adj){adjustProgress(adj.dataset.id,Number(adj.dataset.adjust));return}const done=e.target.closest('[data-complete]');if(done)completeGoal(done.dataset.complete)});
-$('#syncNow').addEventListener('click',()=>publishDashboardSnapshot(true));$('#syncNow2').addEventListener('click',()=>publishDashboardSnapshot(true));$('#reRank').addEventListener('click',()=>{renderPriorities();toast('Priorities re-ranked from progress, importance and real deadlines.')});
+$('#syncNow2').addEventListener('click',()=>publishDashboardSnapshot(true));$('#reRank').addEventListener('click',()=>{renderPriorities();toast('Priorities re-ranked from progress, importance and real deadlines.')});
 $('#backToHios').addEventListener('click',()=>window.location.href='./index.html?view=home');
 $$('[data-page]').forEach(btn=>btn.addEventListener('click',()=>navigatePage(btn.dataset.page)));
 $$('[data-next]').forEach(btn=>btn.addEventListener('click',()=>toast(btn.dataset.next+' will be expanded in the next G·IOS build.')));
