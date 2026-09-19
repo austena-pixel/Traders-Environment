@@ -1865,6 +1865,32 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     box-shadow:0 14px 34px rgba(0,0,0,.58), 0 0 0 1px rgba(251,113,133,.38), 0 0 24px rgba(251,113,133,.22) !important;
   }
 
+  /* Specificity lock: the legacy :hover rule above must never flatten the
+     front-layer copy back to width:100% and transform:none. */
+  .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event.calendar-event-hover-overlay,
+  .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event.calendar-event-hover-overlay:hover{
+    left:-8% !important;
+    width:116% !important;
+    margin:0 !important;
+    transform:scale(1.26) !important;
+    z-index:5000 !important;
+    pointer-events:auto !important;
+    overflow:hidden !important;
+    background:#17263a !important;
+    border-color:rgba(110,168,255,.92) !important;
+    box-shadow:0 18px 42px rgba(0,0,0,.68),0 0 0 1px rgba(110,168,255,.48),0 0 30px rgba(110,168,255,.32) !important;
+  }
+  .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event.calendar-event-hover-overlay.high,
+  .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event.calendar-event-hover-overlay.manual.test,
+  .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event.calendar-event-hover-overlay.manual.assessment,
+  .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event.calendar-event-hover-overlay.high:hover,
+  .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event.calendar-event-hover-overlay.manual.test:hover,
+  .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event.calendar-event-hover-overlay.manual.assessment:hover{
+    background:#311b27 !important;
+    border-color:rgba(251,113,133,.92) !important;
+    box-shadow:0 18px 42px rgba(0,0,0,.68),0 0 0 1px rgba(251,113,133,.48),0 0 30px rgba(251,113,133,.30) !important;
+  }
+
   .calendar-card,
   .hios-calendar{
     overflow:visible !important;
