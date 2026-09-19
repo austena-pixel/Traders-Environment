@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- G-IOS BUILD: MONTHLY-PROGRESS-TIMELINE-V1 | 2026-09-19 -->
+<!-- G-IOS BUILD: MONTHLY-PROGRESS-TIMELINE-V2 | 2026-09-19 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -20,7 +20,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .brand h1{margin:0;font-size:17px}.brand small{color:#728095;font-size:9px}.nav{display:grid;gap:7px}.nav button,.family{width:100%;border:1px solid transparent;background:transparent;color:#8c9aad;text-align:left;border-radius:10px;padding:11px 12px;font-size:11px}.nav button.active{background:#101a27;color:#fff;border-color:#1f3146}.nav button:hover,.family:hover{background:#0d1621;color:#fff}.nav-note{position:absolute;left:16px;right:16px;bottom:18px}.family{border-color:#1b2b3d;background:#08111a;color:#9cadc1;text-align:center}
 .main{padding:22px;min-width:0}.topbar{display:flex;justify-content:space-between;gap:18px;align-items:center;margin-bottom:14px}.eyebrow{color:#69bcff;text-transform:uppercase;letter-spacing:.12em;font-size:9px;font-weight:900}.topbar h2{margin:4px 0 2px;font-size:20px}.topbar p{margin:0;color:#8a99ac;font-size:10px}.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid #26384d;background:#0c1520;color:#dce8f7;border-radius:9px;padding:9px 11px;font-size:9px;font-weight:800}.btn.primary{background:linear-gradient(135deg,#5aa7ff,#8b5cf6);border-color:transparent;color:white}.btn.success{background:rgba(52,211,153,.11);border-color:rgba(52,211,153,.35);color:#75e8be}
 .hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(480px,.85fr);border:1px solid #1b2938;background:linear-gradient(135deg,#0b141f,#0f1b2b 60%,#18213d);border-radius:16px;overflow:hidden;margin-bottom:12px}.hero-main{padding:20px}.kicker{color:#68c7ff;text-transform:uppercase;font-size:9px;letter-spacing:.1em;font-weight:900}.hero h1{font-size:24px;margin:7px 0 8px;line-height:1.06}.hero p{margin:0;color:#9aa9bb;font-size:10px;line-height:1.55;max-width:760px}.hero-summary{display:flex;gap:7px;flex-wrap:wrap;margin-top:15px}.pill{padding:7px 9px;border:1px solid #24374e;background:#0a121c;border-radius:999px;color:#9eb0c5;font-size:9px}.pill strong{color:#fff}.hero-side{padding:18px;border-left:1px solid #1c2b3d;background:rgba(4,9,16,.18)}.hero-side-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.hero-side h3{margin:0;font-size:12px}.live{font-size:8px;padding:4px 7px;border-radius:999px;border:1px solid rgba(52,211,153,.32);color:#64deb1;background:rgba(52,211,153,.06)}
-.progress-spotlight{margin-top:13px;padding:13px;border:1px solid rgba(90,167,255,.18);border-radius:12px;background:linear-gradient(135deg,rgba(90,167,255,.07),rgba(139,92,246,.05))}.progress-spotlight .head{display:flex;justify-content:space-between;gap:12px;align-items:end}.progress-spotlight b{font-size:12px}.progress-spotlight strong{font-size:20px}.mini-bar{height:8px;margin-top:9px;border-radius:999px;background:#070d14;border:1px solid #152233;overflow:hidden}.mini-bar span{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--violet));border-radius:inherit}
+.progress-spotlight{margin-top:0;padding:13px;border:1px solid rgba(90,167,255,.18);border-radius:12px;background:linear-gradient(135deg,rgba(90,167,255,.07),rgba(139,92,246,.05))}.progress-spotlight .head{display:flex;justify-content:space-between;gap:12px;align-items:end}.progress-spotlight b{font-size:12px}.progress-spotlight strong{font-size:20px}.mini-bar{height:8px;margin-top:9px;border-radius:999px;background:#070d14;border:1px solid #152233;overflow:hidden}.mini-bar span{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--violet));border-radius:inherit}
 .progress-spotlight small{display:block;color:#7f90a5;font-size:8px;margin-top:6px}
 .month-timeline{margin-top:14px}
 .month-timeline-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
@@ -50,6 +50,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
   color:#e9f3ff;
   border-radius:10px;
   padding:8px 7px 7px;
+  min-height:86px;
   text-align:left;
   transition:border-color .16s ease,background .16s ease,transform .16s ease;
 }
@@ -60,8 +61,8 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .month-state{display:block;margin-top:3px;font-size:7.2px;color:#74869c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .month-node.done .month-state{color:#69dcb2}
 .month-node.active .month-state{color:#7fc8ff}
-.month-rail{height:6px;margin-top:7px;border-radius:999px;background:#070d14;border:1px solid #172637;overflow:hidden}
-.month-rail span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--blue),var(--violet))}
+.month-rail{display:block;width:100%;height:6px;margin-top:7px;border-radius:999px;background:#070d14;border:1px solid #172637;overflow:hidden}
+.month-rail span{display:block;width:0;height:100%;min-height:0;border-radius:inherit;background:linear-gradient(90deg,var(--blue),var(--violet))}
 .month-node.done .month-rail span{background:linear-gradient(90deg,#34d399,#5eead4)}
 .month-pct{display:flex;justify-content:space-between;gap:4px;margin-top:5px;font-size:7.5px;color:#8090a4}
 .month-pct strong{font-size:8px;color:#e8f1fb}
@@ -117,7 +118,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
         <div class="hero-summary"><span class="pill"><strong id="heroDaily">0%</strong> daily execution</span><span class="pill"><strong id="heroWeekly">0%</strong> weekly progress</span><span class="pill"><strong id="heroRemaining">0%</strong> remaining to primary goal</span></div>
       </div>
       <aside class="hero-side">
-        <div class="hero-side-head"><h3>Primary Long-Term Goal</h3><span class="live">Progress-linked</span></div>
+        
         <div class="progress-spotlight">
           <div class="head"><div><b id="primaryGoalTitle">No yearly goal selected</b><small id="primaryGoalDomain">Create a yearly goal to start the chain.</small></div><strong id="primaryGoalProgress">0%</strong></div>
           <div class="mini-bar"><span id="primaryGoalBar" style="width:0%"></span></div>
