@@ -95,6 +95,176 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 @media(max-width:650px){.main{padding:16px}.topbar{align-items:flex-start;flex-direction:column}.metrics,.chain-grid,.form-grid{grid-template-columns:1fr}.nav{grid-template-columns:1fr 1fr}.exec-item{grid-template-columns:1fr}.hero{grid-template-columns:1fr}}
 </style>
 <!-- G-IOS BUILD: FOCUS-CONTEXT-AUTOMATION-V1 | 2026-09-19 -->
+
+<style id="focus-area-modal-styles">
+.focus-modal{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background:rgba(2,7,13,.72);
+  backdrop-filter:blur(10px);
+  z-index:9999;
+}
+.focus-modal.show{display:flex}
+.focus-modal-box{
+  width:min(520px,100%);
+  border:1px solid #263a55;
+  border-radius:20px;
+  background:
+    radial-gradient(circle at 100% 0%,rgba(122,92,255,.14),transparent 34%),
+    linear-gradient(160deg,#0e1724,#0a111a 72%);
+  box-shadow:0 28px 80px rgba(0,0,0,.45);
+  overflow:hidden;
+}
+.focus-modal-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+  padding:22px 24px 17px;
+  border-bottom:1px solid #1c2a3a;
+}
+.focus-modal-kicker{
+  color:#67c8ff;
+  font-size:9px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  margin-bottom:6px;
+}
+.focus-modal-head h3{
+  margin:0;
+  font-size:20px;
+  line-height:1.2;
+  color:#f5f8ff;
+}
+.focus-modal-head p{
+  margin:7px 0 0;
+  color:#8797aa;
+  font-size:10px;
+  line-height:1.55;
+  max-width:390px;
+}
+.focus-modal-close{
+  width:34px;
+  height:34px;
+  border-radius:10px;
+  border:1px solid #26384b;
+  background:#0a131e;
+  color:#9eb0c6;
+  font-size:19px;
+  line-height:1;
+  cursor:pointer;
+}
+.focus-modal-close:hover{color:#fff;border-color:#476487}
+.focus-modal-body{padding:21px 24px 24px}
+.focus-preview{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px;
+  margin-bottom:17px;
+  border:1px solid #203148;
+  border-radius:13px;
+  background:#0a121d;
+}
+.focus-preview-mark{
+  width:44px;
+  height:44px;
+  flex:0 0 44px;
+  display:grid;
+  place-items:center;
+  border-radius:12px;
+  background:linear-gradient(135deg,#263f75,#5238a9);
+  color:#d9e7ff;
+  font-weight:900;
+  font-size:12px;
+  letter-spacing:.04em;
+}
+.focus-preview-copy b{
+  display:block;
+  color:#eef4ff;
+  font-size:11px;
+}
+.focus-preview-copy span{
+  display:block;
+  margin-top:3px;
+  color:#73839a;
+  font-size:9px;
+}
+.focus-input-label{
+  display:block;
+  margin:0 0 7px;
+  color:#8da0b8;
+  font-size:9px;
+  font-weight:800;
+}
+.focus-input{
+  width:100%;
+  height:46px;
+  border:1px solid #29415c;
+  border-radius:12px;
+  background:#07101a;
+  color:#eef5ff;
+  padding:0 14px;
+  outline:none;
+  font:inherit;
+  font-size:12px;
+}
+.focus-input::placeholder{color:#4f6075}
+.focus-input:focus{
+  border-color:#6a9cff;
+  box-shadow:0 0 0 3px rgba(94,154,255,.12);
+}
+.focus-modal-error{
+  min-height:18px;
+  margin-top:7px;
+  color:#ff8998;
+  font-size:9px;
+}
+.focus-modal-tip{
+  margin-top:7px;
+  color:#66778e;
+  font-size:8.5px;
+  line-height:1.5;
+}
+.focus-modal-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:19px;
+}
+.focus-modal-actions button{
+  min-width:92px;
+  height:38px;
+  border-radius:10px;
+  font-weight:900;
+  font-size:9px;
+  cursor:pointer;
+}
+.focus-modal-cancel{
+  border:1px solid #26384a;
+  background:#0b141f;
+  color:#a9b7c9;
+}
+.focus-modal-add{
+  border:1px solid rgba(109,154,255,.42);
+  background:linear-gradient(135deg,#64a4ff,#8359ef);
+  color:#fff;
+}
+.focus-modal-add:disabled{
+  opacity:.42;
+  cursor:not-allowed;
+}
+@media(max-width:600px){
+  .focus-modal{padding:14px}
+  .focus-modal-head,.focus-modal-body{padding-left:18px;padding-right:18px}
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -242,6 +412,46 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
     </form>
   </div>
 </div>
+
+<div class="focus-modal" id="focusAreaModal" aria-hidden="true">
+  <div class="focus-modal-box" role="dialog" aria-modal="true" aria-labelledby="focusAreaModalTitle">
+    <div class="focus-modal-head">
+      <div>
+        <div class="focus-modal-kicker">Goals-IOS · Focus area</div>
+        <h3 id="focusAreaModalTitle">Add a focus area</h3>
+        <p>Create an area you want Goals-IOS to organize goals, progress and priorities around.</p>
+      </div>
+      <button class="focus-modal-close" id="closeFocusAreaModal" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="focus-modal-body">
+      <div class="focus-preview">
+        <div class="focus-preview-mark" id="focusAreaPreviewMark">FA</div>
+        <div class="focus-preview-copy">
+          <b id="focusAreaPreviewName">New focus area</b>
+          <span>Will appear in your Focus Areas row.</span>
+        </div>
+      </div>
+
+      <label class="focus-input-label" for="focusAreaNameInput">Focus area name</label>
+      <input
+        class="focus-input"
+        id="focusAreaNameInput"
+        type="text"
+        maxlength="36"
+        autocomplete="off"
+        placeholder="e.g. Engineering, Trading, Fitness"
+      />
+      <div class="focus-modal-error" id="focusAreaModalError"></div>
+      <div class="focus-modal-tip">Use a broad area of life or work. You can create Daily, Weekly, Monthly, 6-Month and 1-Year goals inside it.</div>
+
+      <div class="focus-modal-actions">
+        <button class="focus-modal-cancel" id="cancelFocusAreaModal" type="button">Cancel</button>
+        <button class="focus-modal-add" id="confirmFocusAreaModal" type="button" disabled>Add Focus Area</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -496,18 +706,58 @@ function renderQuickGoalParents(){
 function saveFocusAreas(){
  localStorage.setItem(FOCUS_AREAS_KEY,JSON.stringify(focusAreas));
 }
-function addFocusArea(){
- const raw=window.prompt('Name the focus area you want to add:','');
- const name=String(raw||'').trim();
- if(!name)return;
- if(focusAreas.some(area=>area.toLowerCase()===name.toLowerCase())){toast('That focus area already exists.');return}
+function focusAreaMark(name){
+ const clean=String(name||'').replace(/[^a-z0-9 ]/gi,' ').trim();
+ if(!clean)return 'FA';
+ const words=clean.split(/\s+/).filter(Boolean);
+ if(words.length>1)return (words[0][0]+words[1][0]).toUpperCase();
+ return clean.slice(0,2).toUpperCase();
+}
+function updateFocusAreaModalPreview(){
+ const input=$('#focusAreaNameInput');
+ const add=$('#confirmFocusAreaModal');
+ const error=$('#focusAreaModalError');
+ const name=String(input?.value||'').trim();
+ if($('#focusAreaPreviewName'))$('#focusAreaPreviewName').textContent=name||'New focus area';
+ if($('#focusAreaPreviewMark'))$('#focusAreaPreviewMark').textContent=focusAreaMark(name);
+ const duplicate=!!name&&focusAreas.some(area=>area.toLowerCase()===name.toLowerCase());
+ if(error)error.textContent=duplicate?'That focus area already exists.':'';
+ if(add)add.disabled=!name||duplicate;
+}
+function openFocusAreaModal(){
+ const modal=$('#focusAreaModal');
+ const input=$('#focusAreaNameInput');
+ const error=$('#focusAreaModalError');
+ if(!modal||!input)return;
+ input.value='';
+ if(error)error.textContent='';
+ modal.classList.add('show');
+ modal.setAttribute('aria-hidden','false');
+ updateFocusAreaModalPreview();
+ requestAnimationFrame(()=>input.focus());
+}
+function closeFocusAreaModal(){
+ const modal=$('#focusAreaModal');
+ if(!modal)return;
+ modal.classList.remove('show');
+ modal.setAttribute('aria-hidden','true');
+}
+function commitFocusArea(){
+ const input=$('#focusAreaNameInput');
+ const name=String(input?.value||'').trim();
+ if(!name){updateFocusAreaModalPreview();return}
+ if(focusAreas.some(area=>area.toLowerCase()===name.toLowerCase())){updateFocusAreaModalPreview();return}
  focusAreas.push(name);
  saveFocusAreas();
  setGoalsCategory=name;
  localStorage.setItem(SET_GOALS_CATEGORY_KEY,name);
  selectRootForDomain(name);
+ closeFocusAreaModal();
  renderAll();
  toast(name+' added as a focus area.');
+}
+function addFocusArea(){
+ openFocusAreaModal();
 }
 function removeFocusArea(name){
  if(!name)return;
@@ -634,6 +884,17 @@ $('#startGoalSetup').addEventListener('click',()=>openGoalBuilder(setGoalsLevel)
 $('#goalCategoryRow').addEventListener('click',e=>{const remove=e.target.closest('[data-remove-focus]');if(remove){e.stopPropagation();removeFocusArea(remove.dataset.removeFocus);return}const card=e.target.closest('[data-goal-category]');if(!card)return;setGoalsCategory=card.dataset.goalCategory;localStorage.setItem(SET_GOALS_CATEGORY_KEY,setGoalsCategory);selectRootForDomain(setGoalsCategory);renderAll()});
 $('#goalCategoryRow').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-goal-category]')){e.preventDefault();e.target.click()}});
 $('#addFocusArea').addEventListener('click',addFocusArea);
+
+$('#focusAreaNameInput').addEventListener('input',updateFocusAreaModalPreview);
+$('#confirmFocusAreaModal').addEventListener('click',commitFocusArea);
+$('#cancelFocusAreaModal').addEventListener('click',closeFocusAreaModal);
+$('#closeFocusAreaModal').addEventListener('click',closeFocusAreaModal);
+$('#focusAreaModal').addEventListener('click',e=>{if(e.target.id==='focusAreaModal')closeFocusAreaModal()});
+$('#focusAreaNameInput').addEventListener('keydown',e=>{
+ if(e.key==='Enter'){e.preventDefault();commitFocusArea()}
+ if(e.key==='Escape'){e.preventDefault();closeFocusAreaModal()}
+});
+
 $('#goalHorizonTabs').addEventListener('click',e=>{const button=e.target.closest('[data-setup-level]');if(!button)return;const nextLevel=button.dataset.setupLevel;if(nextLevel!==setGoalsLevel)$('#quickGoalDate').value='';setGoalsLevel=nextLevel;renderSetGoals();$('#quickGoalTitle').focus()});
 $('#advancedGoalSetup').addEventListener('click',()=>openGoalBuilder(setGoalsLevel));
 $('#quickGoalForm').addEventListener('submit',e=>{
