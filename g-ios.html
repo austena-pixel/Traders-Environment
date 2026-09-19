@@ -135,13 +135,6 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
       </aside>
     </section>
 
-    <section class="metrics">
-      <div class="metric"><small>Long-term progress</small><b id="mLong">0%</b><em>Rolled up from connected lower-level goals</em></div>
-      <div class="metric"><small>Daily execution</small><b id="mDaily">0%</b><em>Average active daily-action progress</em></div>
-      <div class="metric"><small>Weekly progress</small><b id="mWeekly">0%</b><em>Compounded from daily actions</em></div>
-      <div class="metric"><small>Distance remaining</small><b id="mRemaining">100%</b><em>To the selected long-term outcome</em></div>
-    </section>
-
     <section class="grid">
       <section class="card chain-card">
         <div class="card-head">
@@ -157,28 +150,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
         </div>
       </section>
 
-      <section class="card">
-        <div class="card-head"><div><h3>Today's Execution</h3><div class="sub">Update leaf-level actions here. Parent progress recalculates automatically.</div></div></div>
-        <div class="execution-list" id="executionList"></div>
-      </section>
-
-      <section class="card">
-        <div class="card-head"><div><h3>Progress by Domain</h3><div class="sub">Uses top-level goal progress to avoid double-counting child goals.</div></div></div>
-        <div class="domain-list" id="domainList"></div>
-        <div class="signal-box"><strong>Distance, not false certainty</strong><p id="paceSignal">G·IOS currently reports how much of the goal remains. A time estimate will only appear after enough real progress history exists.</p></div>
-      </section>
-
-      <section class="card">
-        <div class="card-head"><div><h3>Progress Priorities</h3><div class="sub">Progress gaps and importance carry more weight than arbitrary dates.</div></div><button class="btn" id="reRank">Re-rank</button></div>
-        <div class="priority-list" id="priorityList"></div>
-      </section>
-
-      <section class="card">
-        <div class="card-head"><div><h3>Hard Deadlines</h3><div class="sub">Dates remain important when the real-world outcome genuinely has a deadline.</div></div></div>
-        <div class="deadline-list" id="deadlineList"></div>
-      </section>
-
-      <section class="card">
+      <section class="card chain-card">
         <div class="card-head"><div><h3>H·IOS Dashboard Connection</h3><div class="sub">G·IOS publishes progress, focus and dated commitments to the H·IOS home dashboard.</div></div><button class="btn success" id="syncNow2">Publish</button></div>
         <div class="sync-schema"><div class="sync-node">G·IOS progress engine</div><div class="sync-arrow">→</div><div class="sync-node">H·IOS dashboard snapshot</div></div>
         <div class="signal-box"><strong>Shared snapshot</strong><p id="syncText">Waiting for the first dashboard snapshot.</p></div>
@@ -365,7 +337,7 @@ function renderMonthTimeline(){
  });
 }
 
-function renderMetrics(){const root=goals.find(g=>g.id===selectedRootId)||primaryRoot();const long=root?effectiveProgress(root):0;const daily=dailyExecution(root);const weekly=weeklyProgress(root);const remaining=100-long;$('#mLong').textContent=long+'%';$('#mDaily').textContent=daily+'%';$('#mWeekly').textContent=weekly+'%';$('#mRemaining').textContent=remaining+'%';$('#heroDaily').textContent=daily+'%';$('#heroWeekly').textContent=weekly+'%';$('#heroRemaining').textContent=remaining+'%';$('#primaryGoalTitle').textContent=root?root.title:'No yearly goal selected';$('#primaryGoalDomain').textContent=root?root.domain+' · '+LEVEL_LABEL[root.level]:'Create a yearly goal to start the chain.';$('#primaryGoalProgress').textContent=long+'%';$('#primaryGoalBar').style.width=long+'%';$('#primaryGoalDistance').textContent=root?(remaining+'% of this outcome remains based on connected progress.'):'100% of the outcome is still ahead.';renderMonthTimeline()}
+function renderMetrics(){const root=goals.find(g=>g.id===selectedRootId)||primaryRoot();const long=root?effectiveProgress(root):0;const daily=dailyExecution(root);const weekly=weeklyProgress(root);const remaining=100-long;$('#heroDaily').textContent=daily+'%';$('#heroWeekly').textContent=weekly+'%';$('#heroRemaining').textContent=remaining+'%';$('#primaryGoalTitle').textContent=root?root.title:'No yearly goal selected';$('#primaryGoalDomain').textContent=root?root.domain+' · '+LEVEL_LABEL[root.level]:'Create a yearly goal to start the chain.';$('#primaryGoalProgress').textContent=long+'%';$('#primaryGoalBar').style.width=long+'%';$('#primaryGoalDistance').textContent=root?(remaining+'% of this outcome remains based on connected progress.'):'100% of the outcome is still ahead.';renderMonthTimeline()}
 function renderChain(){const root=goals.find(g=>g.id===selectedRootId)||primaryRoot();LEVELS.forEach(level=>{const pct=levelProgressForRoot(root,level);const items=levelItemsForRoot(root,level);const key=cap(level);$('#stage'+key+'Title').textContent=levelHeadline(root,level);$('#stage'+key+'Pct').textContent=pct+'%';$('#stage'+key+'Bar').style.width=pct+'%';$('#stage'+key+'Remaining').textContent=(100-pct)+'% remaining';$('#stage'+key+'Count').textContent=items.length+' linked goal'+(items.length===1?'':'s')})}
 function renderExecution(){const root=goals.find(g=>g.id===selectedRootId)||primaryRoot();let items=root?levelItemsForRoot(root,'daily').filter(g=>effectiveProgress(g)<100):dailyGoals();if(!items.length)items=dailyGoals();const box=$('#executionList');if(!items.length){box.innerHTML='<div class="empty">No active daily actions. Add a daily goal to create execution-level tracking.</div>';return}box.innerHTML=items.slice(0,6).map(g=>`<div class="exec-item"><div><b>${escapeHtml(g.title)}</b><small>${escapeHtml(g.domain)} · ${effectiveProgress(g)}% complete${g.targetDate?' · '+formatDue(g.targetDate):''}</small><div class="bar" style="margin-top:7px"><span style="width:${effectiveProgress(g)}%"></span></div></div><div class="exec-controls"><button type="button" data-adjust="-10" data-id="${g.id}" title="Reduce progress">−</button><button type="button" data-adjust="10" data-id="${g.id}" title="Add progress">+</button><button type="button" class="done" data-complete="${g.id}">Done</button></div></div>`).join('')}
 function renderDomains(){const items=topLevelDomainProgress();const box=$('#domainList');if(!items.length){box.innerHTML='<div class="empty">No domain progress yet.</div>';return}box.innerHTML=items.map(d=>`<div class="domain-row"><div class="domain-head"><span>${escapeHtml(d.domain)}</span><b>${d.progress}%</b></div><div class="bar"><span style="width:${d.progress}%"></span></div></div>`).join('')}
@@ -392,15 +364,14 @@ function navigatePage(page){$$('.page').forEach(p=>p.classList.toggle('active',p
 function openGoalForPeriod(level,key){pendingCreateLevel=level;pendingCreatePeriodKey=key;$('#goalLevel').value=level;renderParentOptions();$('#goalModal').classList.add('show')}
 function handleTrackerClick(e){const adj=e.target.closest('[data-track-adjust]');if(adj){adjustProgress(adj.dataset.id,Number(adj.dataset.trackAdjust));return}const done=e.target.closest('[data-track-complete]');if(done)completeGoal(done.dataset.trackComplete)}
 
-function renderAll(){renderRootSelect();renderMetrics();renderChain();renderExecution();renderDomains();renderPriorities();renderDeadlines();renderForecast();renderParentOptions();renderDailySystem();renderWeeklySystem();renderMonthlySystem();publishDashboardSnapshot(false)}
+function renderAll(){renderRootSelect();renderMetrics();renderChain();renderParentOptions();renderDailySystem();renderWeeklySystem();renderMonthlySystem();publishDashboardSnapshot(false)}
 function toast(message){const t=$('#toast');t.textContent=message;t.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),2200)}
 $('#cancelGoal').addEventListener('click',()=>$('#goalModal').classList.remove('show'));
 $('#goalModal').addEventListener('click',e=>{if(e.target.id==='goalModal')$('#goalModal').classList.remove('show')});
 $('#goalLevel').addEventListener('change',renderParentOptions);$('#goalDomain').addEventListener('change',renderParentOptions);
 $('#goalForm').addEventListener('submit',e=>{e.preventDefault();const level=$('#goalLevel').value;const g=normalizeGoal({id:'g_'+Date.now(),title:$('#goalTitle').value.trim(),level,domain:$('#goalDomain').value,priority:$('#goalPriority').value,manualProgress:clamp($('#goalProgress').value),parentId:$('#goalParent').value,weight:Number($('#goalWeight').value||1),targetDate:$('#goalDate').value,periodKey:(pendingCreateLevel===level&&pendingCreatePeriodKey)?pendingCreatePeriodKey:defaultPeriodKey(level),why:$('#goalWhy').value.trim(),history:[]});goals.unshift(g);saveGoals();e.target.reset();$('#goalWeight').value=1;$('#goalPriority').value='medium';pendingCreateLevel='';pendingCreatePeriodKey='';$('#goalModal').classList.remove('show');toast('Goal added to the compounding structure.')});
 $('#chainRoot').addEventListener('change',e=>{selectedRootId=e.target.value;renderAll()});
-$('#executionList').addEventListener('click',e=>{const adj=e.target.closest('[data-adjust]');if(adj){adjustProgress(adj.dataset.id,Number(adj.dataset.adjust));return}const done=e.target.closest('[data-complete]');if(done)completeGoal(done.dataset.complete)});
-$('#syncNow2').addEventListener('click',()=>publishDashboardSnapshot(true));$('#reRank').addEventListener('click',()=>{renderPriorities();toast('Priorities re-ranked from progress, importance and real deadlines.')});
+$('#syncNow2').addEventListener('click',()=>publishDashboardSnapshot(true));
 $('#backToHios').addEventListener('click',()=>window.location.href='./index.html?view=home');
 $$('[data-page]').forEach(btn=>btn.addEventListener('click',()=>navigatePage(btn.dataset.page)));
 $$('[data-next]').forEach(btn=>btn.addEventListener('click',()=>toast(btn.dataset.next+' will be expanded in the next G·IOS build.')));
