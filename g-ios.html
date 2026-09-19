@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- G-IOS BUILD: DAILY-WEEKLY-MONTHLY-V2-NO-TOPBAR | 2026-09-19 -->
+<!-- G-IOS BUILD: MONTHLY-PROGRESS-TIMELINE-V1 | 2026-09-19 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -19,8 +19,56 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .brand{display:flex;align-items:center;gap:11px;padding:4px 8px 22px}.logo{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-weight:900;font-size:18px;background:linear-gradient(135deg,var(--blue),var(--violet));box-shadow:0 0 28px rgba(90,167,255,.16)}
 .brand h1{margin:0;font-size:17px}.brand small{color:#728095;font-size:9px}.nav{display:grid;gap:7px}.nav button,.family{width:100%;border:1px solid transparent;background:transparent;color:#8c9aad;text-align:left;border-radius:10px;padding:11px 12px;font-size:11px}.nav button.active{background:#101a27;color:#fff;border-color:#1f3146}.nav button:hover,.family:hover{background:#0d1621;color:#fff}.nav-note{position:absolute;left:16px;right:16px;bottom:18px}.family{border-color:#1b2b3d;background:#08111a;color:#9cadc1;text-align:center}
 .main{padding:22px;min-width:0}.topbar{display:flex;justify-content:space-between;gap:18px;align-items:center;margin-bottom:14px}.eyebrow{color:#69bcff;text-transform:uppercase;letter-spacing:.12em;font-size:9px;font-weight:900}.topbar h2{margin:4px 0 2px;font-size:20px}.topbar p{margin:0;color:#8a99ac;font-size:10px}.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid #26384d;background:#0c1520;color:#dce8f7;border-radius:9px;padding:9px 11px;font-size:9px;font-weight:800}.btn.primary{background:linear-gradient(135deg,#5aa7ff,#8b5cf6);border-color:transparent;color:white}.btn.success{background:rgba(52,211,153,.11);border-color:rgba(52,211,153,.35);color:#75e8be}
-.hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(310px,.65fr);border:1px solid #1b2938;background:linear-gradient(135deg,#0b141f,#0f1b2b 60%,#18213d);border-radius:16px;overflow:hidden;margin-bottom:12px}.hero-main{padding:20px}.kicker{color:#68c7ff;text-transform:uppercase;font-size:9px;letter-spacing:.1em;font-weight:900}.hero h1{font-size:24px;margin:7px 0 8px;line-height:1.06}.hero p{margin:0;color:#9aa9bb;font-size:10px;line-height:1.55;max-width:760px}.hero-summary{display:flex;gap:7px;flex-wrap:wrap;margin-top:15px}.pill{padding:7px 9px;border:1px solid #24374e;background:#0a121c;border-radius:999px;color:#9eb0c5;font-size:9px}.pill strong{color:#fff}.hero-side{padding:18px;border-left:1px solid #1c2b3d;background:rgba(4,9,16,.18)}.hero-side-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.hero-side h3{margin:0;font-size:12px}.live{font-size:8px;padding:4px 7px;border-radius:999px;border:1px solid rgba(52,211,153,.32);color:#64deb1;background:rgba(52,211,153,.06)}
-.progress-spotlight{margin-top:13px;padding:13px;border:1px solid rgba(90,167,255,.18);border-radius:12px;background:linear-gradient(135deg,rgba(90,167,255,.07),rgba(139,92,246,.05))}.progress-spotlight .head{display:flex;justify-content:space-between;gap:12px;align-items:end}.progress-spotlight b{font-size:12px}.progress-spotlight strong{font-size:20px}.mini-bar{height:8px;margin-top:9px;border-radius:999px;background:#070d14;border:1px solid #152233;overflow:hidden}.mini-bar span{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--violet));border-radius:inherit}.progress-spotlight small{display:block;color:#7f90a5;font-size:8px;margin-top:6px}
+.hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(480px,.85fr);border:1px solid #1b2938;background:linear-gradient(135deg,#0b141f,#0f1b2b 60%,#18213d);border-radius:16px;overflow:hidden;margin-bottom:12px}.hero-main{padding:20px}.kicker{color:#68c7ff;text-transform:uppercase;font-size:9px;letter-spacing:.1em;font-weight:900}.hero h1{font-size:24px;margin:7px 0 8px;line-height:1.06}.hero p{margin:0;color:#9aa9bb;font-size:10px;line-height:1.55;max-width:760px}.hero-summary{display:flex;gap:7px;flex-wrap:wrap;margin-top:15px}.pill{padding:7px 9px;border:1px solid #24374e;background:#0a121c;border-radius:999px;color:#9eb0c5;font-size:9px}.pill strong{color:#fff}.hero-side{padding:18px;border-left:1px solid #1c2b3d;background:rgba(4,9,16,.18)}.hero-side-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.hero-side h3{margin:0;font-size:12px}.live{font-size:8px;padding:4px 7px;border-radius:999px;border:1px solid rgba(52,211,153,.32);color:#64deb1;background:rgba(52,211,153,.06)}
+.progress-spotlight{margin-top:13px;padding:13px;border:1px solid rgba(90,167,255,.18);border-radius:12px;background:linear-gradient(135deg,rgba(90,167,255,.07),rgba(139,92,246,.05))}.progress-spotlight .head{display:flex;justify-content:space-between;gap:12px;align-items:end}.progress-spotlight b{font-size:12px}.progress-spotlight strong{font-size:20px}.mini-bar{height:8px;margin-top:9px;border-radius:999px;background:#070d14;border:1px solid #152233;overflow:hidden}.mini-bar span{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--violet));border-radius:inherit}
+.progress-spotlight small{display:block;color:#7f90a5;font-size:8px;margin-top:6px}
+.month-timeline{margin-top:14px}
+.month-timeline-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.month-timeline-head b{font-size:9px;letter-spacing:.02em}
+.month-timeline-head span{font-size:8px;color:#7d8ea4}
+.month-strip{
+  display:grid;
+  grid-auto-flow:column;
+  grid-auto-columns:calc((100% - 40px)/6);
+  gap:8px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding:1px 1px 9px;
+  scroll-snap-type:x proximity;
+  overscroll-behavior-inline:contain;
+  scrollbar-width:thin;
+  scrollbar-color:#405675 #0a111a;
+}
+.month-strip::-webkit-scrollbar{height:6px}
+.month-strip::-webkit-scrollbar-track{background:#0a111a;border-radius:999px}
+.month-strip::-webkit-scrollbar-thumb{background:#405675;border-radius:999px}
+.month-node{
+  scroll-snap-align:start;
+  min-width:0;
+  border:1px solid #22364d;
+  background:#09121d;
+  color:#e9f3ff;
+  border-radius:10px;
+  padding:8px 7px 7px;
+  text-align:left;
+  transition:border-color .16s ease,background .16s ease,transform .16s ease;
+}
+.month-node:hover{border-color:#4b79ad;background:#0d1926;transform:translateY(-1px)}
+.month-node.current{border-color:rgba(79,220,255,.52);box-shadow:inset 0 0 0 1px rgba(79,220,255,.08)}
+.month-node.done{border-color:rgba(52,211,153,.38)}
+.month-name{display:block;font-size:9px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.month-state{display:block;margin-top:3px;font-size:7.2px;color:#74869c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.month-node.done .month-state{color:#69dcb2}
+.month-node.active .month-state{color:#7fc8ff}
+.month-rail{height:6px;margin-top:7px;border-radius:999px;background:#070d14;border:1px solid #172637;overflow:hidden}
+.month-rail span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--blue),var(--violet))}
+.month-node.done .month-rail span{background:linear-gradient(90deg,#34d399,#5eead4)}
+.month-pct{display:flex;justify-content:space-between;gap:4px;margin-top:5px;font-size:7.5px;color:#8090a4}
+.month-pct strong{font-size:8px;color:#e8f1fb}
+@media(max-width:1250px){
+  .hero{grid-template-columns:minmax(0,1fr) minmax(420px,.8fr)}
+}
+
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}.metric{padding:14px 15px;border:1px solid #1b2938;background:#0c131d;border-radius:13px}.metric small{display:block;color:#7f8da0;font-size:9px;text-transform:uppercase;letter-spacing:.08em}.metric b{display:block;font-size:23px;margin-top:6px}.metric em{display:block;font-style:normal;color:#738096;font-size:9px;margin-top:3px}
 .grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr);gap:12px}.card{padding:16px;border:1px solid #1b2938;background:#0d131d;border-radius:14px;min-width:0}.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}.card h3{margin:0;font-size:14px}.sub{color:var(--muted);font-size:10px;margin-top:4px;line-height:1.45}
 .chain-card{grid-column:1/-1}.chain-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chain-toolbar select{border:1px solid #26384d;background:#091019;color:#e9f1fb;border-radius:9px;padding:8px 10px;font-size:9px}.chain-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.stage{position:relative;padding:14px;border:1px solid #1c2a3c;background:#0a111a;border-radius:12px;min-height:156px}.stage:not(:last-child):after{content:"→";position:absolute;right:-9px;top:45%;z-index:2;color:#5da7ff;font-weight:900}.stage .label{font-size:9px;color:#78b9ff;text-transform:uppercase;letter-spacing:.09em}.stage h4{margin:7px 0 4px;font-size:11px;min-height:30px}.stage p{margin:0;color:#748297;font-size:8.5px;line-height:1.45;min-height:36px}.stage .count{margin-top:8px;font-size:8px;color:#748297}.stage .pct{display:flex;justify-content:space-between;align-items:center;margin-top:9px;font-size:9px}.stage .pct b{font-size:13px}.stage .remaining{font-size:8px;color:#77879b;margin-top:5px}
@@ -74,6 +122,14 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
           <div class="head"><div><b id="primaryGoalTitle">No yearly goal selected</b><small id="primaryGoalDomain">Create a yearly goal to start the chain.</small></div><strong id="primaryGoalProgress">0%</strong></div>
           <div class="mini-bar"><span id="primaryGoalBar" style="width:0%"></span></div>
           <small id="primaryGoalDistance">100% of the outcome is still ahead.</small>
+        </div>
+
+        <div class="month-timeline">
+          <div class="month-timeline-head">
+            <b>Monthly Progress</b>
+            <span id="monthTimelineLabel">Current year · 6 months visible</span>
+          </div>
+          <div class="month-strip" id="monthProgressStrip" aria-label="Monthly progress timeline"></div>
         </div>
       </aside>
     </section>
@@ -262,7 +318,53 @@ function priorityScore(g){let s=g.priority==='high'?50:g.priority==='medium'?30:
 function urgency(g){const s=priorityScore(g);if(s>=90)return'Very high';if(s>=68)return'High';if(s>=45)return'Moderate';return'Maintain'}
 function rankedFocus(){return goals.filter(g=>effectiveProgress(g)<100).slice().sort((a,b)=>priorityScore(b)-priorityScore(a))}
 function renderRootSelect(){const select=$('#chainRoot');const roots=yearlyRoots();if(!roots.length){select.innerHTML='<option value="">No long-term goals</option>';selectedRootId='';return}if(!selectedRootId||!roots.some(g=>g.id===selectedRootId))selectedRootId=(primaryRoot()||roots[0]).id;select.innerHTML=roots.map(g=>`<option value="${escapeHtml(g.id)}" ${g.id===selectedRootId?'selected':''}>${escapeHtml(g.domain+' — '+g.title)}</option>`).join('')}
-function renderMetrics(){const root=goals.find(g=>g.id===selectedRootId)||primaryRoot();const long=root?effectiveProgress(root):0;const daily=dailyExecution(root);const weekly=weeklyProgress(root);const remaining=100-long;$('#mLong').textContent=long+'%';$('#mDaily').textContent=daily+'%';$('#mWeekly').textContent=weekly+'%';$('#mRemaining').textContent=remaining+'%';$('#heroDaily').textContent=daily+'%';$('#heroWeekly').textContent=weekly+'%';$('#heroRemaining').textContent=remaining+'%';$('#primaryGoalTitle').textContent=root?root.title:'No yearly goal selected';$('#primaryGoalDomain').textContent=root?root.domain+' · '+LEVEL_LABEL[root.level]:'Create a yearly goal to start the chain.';$('#primaryGoalProgress').textContent=long+'%';$('#primaryGoalBar').style.width=long+'%';$('#primaryGoalDistance').textContent=root?(remaining+'% of this outcome remains based on connected progress.'):'100% of the outcome is still ahead.'}
+
+function renderMonthTimeline(){
+ const root=goals.find(g=>g.id===selectedRootId)||primaryRoot();
+ const strip=$('#monthProgressStrip');
+ const label=$('#monthTimelineLabel');
+ if(!strip||!label)return;
+
+ const now=new Date();
+ const year=now.getFullYear();
+ label.textContent=year+' · 6 months visible · scroll for more';
+
+ const monthlyItems=root?levelItemsForRoot(root,'monthly'):[];
+ const months=Array.from({length:12},(_,i)=>{
+   const key=`${year}-${String(i+1).padStart(2,'0')}`;
+   const items=monthlyItems.filter(g=>periodKeyForGoal(g)===key);
+   const progress=items.length?Math.round(weightedAverage(items,g=>effectiveProgress(g))):0;
+   let state='No milestone';
+   if(items.length&&progress>=100)state='Progressed';
+   else if(items.length&&progress>0)state='In progress';
+   else if(items.length)state='Not started';
+   return {index:i,key,items,progress,state};
+ });
+
+ strip.innerHTML=months.map(m=>{
+   const d=new Date(year,m.index,1);
+   const name=d.toLocaleDateString(undefined,{month:'short'});
+   const current=m.index===now.getMonth();
+   const cls=m.progress>=100?'done':m.progress>0?'active':'';
+   const count=m.items.length;
+   return `<button type="button" class="month-node ${cls} ${current?'current':''}" data-month-key="${m.key}" aria-label="${escapeHtml(name)} ${m.progress}% ${escapeHtml(m.state)}">
+     <span class="month-name">${escapeHtml(name)}</span>
+     <span class="month-state">${escapeHtml(m.state)}</span>
+     <span class="month-rail"><span style="width:${m.progress}%"></span></span>
+     <span class="month-pct"><span>${count?count+' goal'+(count===1?'':'s'):'—'}</span><strong>${m.progress}%</strong></span>
+   </button>`;
+ }).join('');
+
+ requestAnimationFrame(()=>{
+   const current=strip.querySelector('.month-node.current');
+   if(current){
+     const target=Math.max(0,current.offsetLeft-(strip.clientWidth-current.offsetWidth)/2);
+     strip.scrollLeft=target;
+   }
+ });
+}
+
+function renderMetrics(){const root=goals.find(g=>g.id===selectedRootId)||primaryRoot();const long=root?effectiveProgress(root):0;const daily=dailyExecution(root);const weekly=weeklyProgress(root);const remaining=100-long;$('#mLong').textContent=long+'%';$('#mDaily').textContent=daily+'%';$('#mWeekly').textContent=weekly+'%';$('#mRemaining').textContent=remaining+'%';$('#heroDaily').textContent=daily+'%';$('#heroWeekly').textContent=weekly+'%';$('#heroRemaining').textContent=remaining+'%';$('#primaryGoalTitle').textContent=root?root.title:'No yearly goal selected';$('#primaryGoalDomain').textContent=root?root.domain+' · '+LEVEL_LABEL[root.level]:'Create a yearly goal to start the chain.';$('#primaryGoalProgress').textContent=long+'%';$('#primaryGoalBar').style.width=long+'%';$('#primaryGoalDistance').textContent=root?(remaining+'% of this outcome remains based on connected progress.'):'100% of the outcome is still ahead.';renderMonthTimeline()}
 function renderChain(){const root=goals.find(g=>g.id===selectedRootId)||primaryRoot();LEVELS.forEach(level=>{const pct=levelProgressForRoot(root,level);const items=levelItemsForRoot(root,level);const key=cap(level);$('#stage'+key+'Title').textContent=levelHeadline(root,level);$('#stage'+key+'Pct').textContent=pct+'%';$('#stage'+key+'Bar').style.width=pct+'%';$('#stage'+key+'Remaining').textContent=(100-pct)+'% remaining';$('#stage'+key+'Count').textContent=items.length+' linked goal'+(items.length===1?'':'s')})}
 function renderExecution(){const root=goals.find(g=>g.id===selectedRootId)||primaryRoot();let items=root?levelItemsForRoot(root,'daily').filter(g=>effectiveProgress(g)<100):dailyGoals();if(!items.length)items=dailyGoals();const box=$('#executionList');if(!items.length){box.innerHTML='<div class="empty">No active daily actions. Add a daily goal to create execution-level tracking.</div>';return}box.innerHTML=items.slice(0,6).map(g=>`<div class="exec-item"><div><b>${escapeHtml(g.title)}</b><small>${escapeHtml(g.domain)} · ${effectiveProgress(g)}% complete${g.targetDate?' · '+formatDue(g.targetDate):''}</small><div class="bar" style="margin-top:7px"><span style="width:${effectiveProgress(g)}%"></span></div></div><div class="exec-controls"><button type="button" data-adjust="-10" data-id="${g.id}" title="Reduce progress">−</button><button type="button" data-adjust="10" data-id="${g.id}" title="Add progress">+</button><button type="button" class="done" data-complete="${g.id}">Done</button></div></div>`).join('')}
 function renderDomains(){const items=topLevelDomainProgress();const box=$('#domainList');if(!items.length){box.innerHTML='<div class="empty">No domain progress yet.</div>';return}box.innerHTML=items.map(d=>`<div class="domain-row"><div class="domain-head"><span>${escapeHtml(d.domain)}</span><b>${d.progress}%</b></div><div class="bar"><span style="width:${d.progress}%"></span></div></div>`).join('')}
@@ -306,6 +408,20 @@ $('#weeklyPrev').addEventListener('click',()=>{weeklyViewDate.setDate(weeklyView
 $('#monthlyPrev').addEventListener('click',()=>{monthlyViewDate.setMonth(monthlyViewDate.getMonth()-1);renderMonthlySystem()});$('#monthlyNext').addEventListener('click',()=>{monthlyViewDate.setMonth(monthlyViewDate.getMonth()+1);renderMonthlySystem()});$('#monthlyCurrent').addEventListener('click',()=>{monthlyViewDate=new Date();renderMonthlySystem()});
 $('#addDailyAction').addEventListener('click',()=>openGoalForPeriod('daily',localDateKey(dailyViewDate)));$('#addWeeklyTarget').addEventListener('click',()=>openGoalForPeriod('weekly',weekKey(weeklyViewDate)));$('#addMonthlyMilestone').addEventListener('click',()=>openGoalForPeriod('monthly',monthKey(monthlyViewDate)));
 $('#dailySystemList').addEventListener('click',handleTrackerClick);$('#weeklySystemList').addEventListener('click',handleTrackerClick);$('#monthlySystemList').addEventListener('click',handleTrackerClick);
+$('#monthProgressStrip').addEventListener('click',e=>{
+ const node=e.target.closest('[data-month-key]');
+ if(!node)return;
+ const [y,m]=node.dataset.monthKey.split('-').map(Number);
+ monthlyViewDate=new Date(y,m-1,1);
+ navigatePage('monthly');
+});
+$('#monthProgressStrip').addEventListener('wheel',e=>{
+ const strip=e.currentTarget;
+ if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){
+   e.preventDefault();
+   strip.scrollLeft+=e.deltaY;
+ }
+},{passive:false});
 window.addEventListener('storage',e=>{if([GOALS_KEY,...OLD_GOALS_KEYS].includes(e.key)){loadGoals();renderAll()}});
 loadGoals();renderAll();
 </script>
