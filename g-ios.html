@@ -364,7 +364,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
         <div class="kicker">Core principle</div>
         <h1>Progress first. Time supports the plan - it does not define success.</h1>
         <p>G·IOS tracks connected execution from daily actions to weekly targets, monthly milestones, semester outcomes and yearly / long-term goals. When work is completed at the bottom, progress rolls upward automatically.</p>
-        <div class="hero-summary"><span class="pill"><strong id="heroDaily">0%</strong> daily execution</span><span class="pill"><strong id="heroWeekly">0%</strong> weekly progress</span><span class="pill"><strong id="heroRemaining">0%</strong> remaining to primary goal</span></div>
+        
       </div>
       <aside class="hero-side">
         
@@ -795,9 +795,6 @@ function renderMetrics(){
  const weekly=viewProgress('weekly');
  const remaining=100-long;
 
- $('#heroDaily').textContent=daily+'%';
- $('#heroWeekly').textContent=weekly+'%';
- $('#heroRemaining').textContent=remaining+'%';
 
  $('#primaryGoalTitle').textContent=root?root.title:(area?area+' focus area':'No focus area selected');
  $('#primaryGoalDomain').textContent=root
