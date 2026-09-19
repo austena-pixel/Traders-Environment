@@ -2019,6 +2019,103 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 }
 </style>
 
+
+<style id="hios-calendar-task-scroll-overlap-fix">
+@media (min-width:900px){
+  /* ---------------------------------------------------------
+     Normal calendar state — tasks remain readable + scrollable
+     whether Auto Zoom is ON or OFF.
+  --------------------------------------------------------- */
+  .calendar-day{
+    overflow:hidden !important;
+  }
+
+  .calendar-day .calendar-events{
+    display:flex !important;
+    flex-direction:column !important;
+    flex:1 1 0 !important;
+    min-height:0 !important;
+    max-height:none !important;
+    gap:4px !important;
+    padding:1px 7px 4px 1px !important;
+    overflow-y:scroll !important;
+    overflow-x:hidden !important;
+    overscroll-behavior:contain !important;
+    scrollbar-gutter:stable !important;
+    scrollbar-width:thin !important;
+    scrollbar-color:#4d607d transparent !important;
+    touch-action:pan-y !important;
+  }
+
+  .calendar-day .calendar-events::-webkit-scrollbar{
+    width:5px !important;
+  }
+  .calendar-day .calendar-events::-webkit-scrollbar-track{
+    background:rgba(17,25,38,.22) !important;
+    border-radius:999px !important;
+  }
+  .calendar-day .calendar-events::-webkit-scrollbar-thumb{
+    background:#4d607d !important;
+    border-radius:999px !important;
+  }
+  .calendar-day .calendar-events::-webkit-scrollbar-thumb:hover{
+    background:#7185a5 !important;
+  }
+
+  .calendar-day .calendar-event{
+    flex:0 0 auto !important;
+    width:100% !important;
+    min-height:19px !important;
+    margin:0 !important;
+    padding:4px 6px !important;
+    font-size:8.2px !important;
+    line-height:1.22 !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    transform:none !important;
+    box-shadow:none !important;
+  }
+
+  /* ---------------------------------------------------------
+     Zoomed day — the DAY enlarges, tasks do not.
+     Keep every task inside the enlarged box so nothing overlaps
+     neighbouring borders or the Goal Progress / Focus column.
+  --------------------------------------------------------- */
+  .home-layout.auto-zoom-enabled .calendar-day.hios-day-hover{
+    overflow:hidden !important;
+  }
+
+  .home-layout.auto-zoom-enabled .calendar-day.hios-day-hover .calendar-events{
+    display:flex !important;
+    flex-direction:column !important;
+    gap:5px !important;
+    padding:3px 8px 6px 3px !important;
+    overflow-y:scroll !important;
+    overflow-x:hidden !important;
+    scrollbar-gutter:stable !important;
+  }
+
+  .home-layout.auto-zoom-enabled .calendar-day.hios-day-hover .calendar-event,
+  .home-layout.auto-zoom-enabled .calendar-day.hios-day-hover .calendar-event:hover{
+    flex:0 0 auto !important;
+    width:100% !important;
+    min-height:22px !important;
+    margin:0 !important;
+    padding:4px 7px !important;
+    font-size:9px !important;
+    line-height:1.22 !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    transform:none !important;
+    box-shadow:none !important;
+    position:relative !important;
+    z-index:1 !important;
+  }
+}
+</style>
+
 </head>
 <body>
 
