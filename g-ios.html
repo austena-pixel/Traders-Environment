@@ -437,6 +437,9 @@ function renderSetGoals(){
  $('#quickGoalParentHint').textContent=config.parentHint;
  $('#quickGoalDateLabel').textContent=config.dateLabel;
  $('#quickGoalSubmit').textContent=config.submit;
+ const quickDate=$('#quickGoalDate');
+ quickDate.required=setGoalsLevel==='daily';
+ if(setGoalsLevel==='daily'&&!quickDate.value)quickDate.value=localDateKey(new Date());
  renderQuickGoalParents();
 
  const items=scoped.filter(g=>g.level===setGoalsLevel);
@@ -483,21 +486,21 @@ function toast(message){const t=$('#toast');t.textContent=message;t.classList.ad
 $('#cancelGoal').addEventListener('click',()=>$('#goalModal').classList.remove('show'));
 $('#goalModal').addEventListener('click',e=>{if(e.target.id==='goalModal')$('#goalModal').classList.remove('show')});
 $('#goalLevel').addEventListener('change',renderParentOptions);$('#goalDomain').addEventListener('change',renderParentOptions);
-$('#goalForm').addEventListener('submit',e=>{e.preventDefault();const level=$('#goalLevel').value;const g=normalizeGoal({id:'g_'+Date.now(),title:$('#goalTitle').value.trim(),level,domain:$('#goalDomain').value,priority:$('#goalPriority').value,manualProgress:clamp($('#goalProgress').value),parentId:$('#goalParent').value,weight:Number($('#goalWeight').value||1),targetDate:$('#goalDate').value,periodKey:(pendingCreateLevel===level&&pendingCreatePeriodKey)?pendingCreatePeriodKey:defaultPeriodKey(level),why:$('#goalWhy').value.trim(),history:[]});goals.unshift(g);saveGoals();e.target.reset();$('#goalWeight').value=1;$('#goalPriority').value='medium';pendingCreateLevel='';pendingCreatePeriodKey='';$('#goalModal').classList.remove('show');toast('Goal added to the compounding structure.')});
+$('#goalForm').addEventListener('submit',e=>{e.preventDefault();const level=$('#goalLevel').value;const periodDate=(pendingCreateLevel===level&&pendingCreatePeriodKey)?pendingCreatePeriodKey:'';const targetDate=$('#goalDate').value||(level==='daily'?(periodDate||localDateKey(new Date())):'');const g=normalizeGoal({id:'g_'+Date.now(),title:$('#goalTitle').value.trim(),level,domain:$('#goalDomain').value,priority:$('#goalPriority').value,manualProgress:clamp($('#goalProgress').value),parentId:$('#goalParent').value,weight:Number($('#goalWeight').value||1),targetDate,periodKey:periodDate||defaultPeriodKey(level,targetDate?new Date(targetDate+'T00:00:00'):new Date()),why:$('#goalWhy').value.trim(),history:[]});goals.unshift(g);saveGoals();e.target.reset();$('#goalWeight').value=1;$('#goalPriority').value='medium';pendingCreateLevel='';pendingCreatePeriodKey='';$('#goalModal').classList.remove('show');toast('Goal added to the compounding structure.')});
 $('#chainRoot').addEventListener('change',e=>{selectedRootId=e.target.value;renderAll()});
 $('#chainGrid').addEventListener('click',e=>{const done=e.target.closest('[data-stage-complete]');if(done)completeStageGoal(done.dataset.stageComplete)});
 $('#syncNow2').addEventListener('click',()=>publishDashboardSnapshot(true));
 $('#backToHios').addEventListener('click',()=>window.location.href='./index.html?view=home');
 $('#startGoalSetup').addEventListener('click',()=>openGoalBuilder(setGoalsLevel));
 $('#goalCategoryRow').addEventListener('click',e=>{const card=e.target.closest('[data-goal-category]');if(!card)return;setGoalsCategory=card.dataset.goalCategory;renderSetGoals()});
-$('#goalHorizonTabs').addEventListener('click',e=>{const button=e.target.closest('[data-setup-level]');if(!button)return;setGoalsLevel=button.dataset.setupLevel;renderSetGoals();$('#quickGoalTitle').focus()});
+$('#goalHorizonTabs').addEventListener('click',e=>{const button=e.target.closest('[data-setup-level]');if(!button)return;const nextLevel=button.dataset.setupLevel;if(nextLevel!==setGoalsLevel)$('#quickGoalDate').value='';setGoalsLevel=nextLevel;renderSetGoals();$('#quickGoalTitle').focus()});
 $('#quickGoalDomain').addEventListener('change',renderQuickGoalParents);
 $('#advancedGoalSetup').addEventListener('click',()=>openGoalBuilder(setGoalsLevel));
 $('#quickGoalForm').addEventListener('submit',e=>{
  e.preventDefault();
  const title=$('#quickGoalTitle').value.trim();
  if(!title)return;
- const targetDate=$('#quickGoalDate').value;
+ const targetDate=$('#quickGoalDate').value||(setGoalsLevel==='daily'?localDateKey(new Date()):'');
  const periodDate=targetDate?new Date(targetDate+'T00:00:00'):new Date();
  const g=normalizeGoal({id:'g_'+Date.now(),title,level:setGoalsLevel,domain:$('#quickGoalDomain').value,priority:$('#quickGoalPriority').value,manualProgress:0,parentId:$('#quickGoalParent').value,weight:1,targetDate,periodKey:defaultPeriodKey(setGoalsLevel,periodDate),why:'Created from the '+SETUP_CONFIG[setGoalsLevel].label+' setup system.',history:[]});
  goals.unshift(g);
@@ -505,6 +508,7 @@ $('#quickGoalForm').addEventListener('submit',e=>{
  saveGoals();
  $('#quickGoalTitle').value='';
  $('#quickGoalDate').value='';
+ if(setGoalsLevel==='daily')$('#quickGoalDate').value=localDateKey(new Date());
  toast(SETUP_CONFIG[setGoalsLevel].label+' goal added.');
 });
 $$('[data-page]').forEach(btn=>btn.addEventListener('click',()=>navigatePage(btn.dataset.page)));
