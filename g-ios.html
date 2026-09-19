@@ -345,6 +345,129 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 }
 </style>
 
+
+<style id="gios-category-picker-style">
+.chain-toolbar.category-picker{
+  position:relative;
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+}
+.category-select-btn{
+  min-width:132px;
+  height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  border:1px solid #2b4058;
+  border-radius:10px;
+  background:#09121c;
+  color:#eaf2fc;
+  padding:0 12px;
+  font-size:9px;
+  font-weight:900;
+  cursor:pointer;
+  transition:border-color .15s ease,background .15s ease,box-shadow .15s ease;
+}
+.category-select-btn span{
+  color:#79b9ff;
+  font-size:12px;
+  transform:translateY(-1px);
+}
+.category-select-btn:hover,
+.category-select-btn[aria-expanded="true"]{
+  border-color:#5b8ec6;
+  background:#0d1926;
+  box-shadow:0 0 0 3px rgba(90,167,255,.08);
+}
+.category-select-btn:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
+.category-select-menu{
+  position:absolute;
+  right:0;
+  top:calc(100% + 7px);
+  width:min(310px,80vw);
+  display:none;
+  padding:6px;
+  border:1px solid #263a50;
+  border-radius:12px;
+  background:#09121c;
+  box-shadow:0 20px 50px rgba(0,0,0,.42);
+  z-index:80;
+  max-height:280px;
+  overflow-y:auto;
+  scrollbar-width:thin;
+  scrollbar-color:#3b5674 #09121c;
+}
+.category-select-menu.show{display:grid;gap:4px}
+.category-select-option{
+  width:100%;
+  display:grid;
+  grid-template-columns:34px minmax(0,1fr) auto;
+  gap:9px;
+  align-items:center;
+  text-align:left;
+  border:1px solid transparent;
+  border-radius:9px;
+  background:transparent;
+  color:#dce7f4;
+  padding:8px;
+  cursor:pointer;
+}
+.category-select-option:hover{
+  background:#0f1b28;
+  border-color:#1e3348;
+}
+.category-select-option.active{
+  background:linear-gradient(135deg,rgba(90,167,255,.10),rgba(139,92,246,.07));
+  border-color:#31527a;
+}
+.category-select-option-mark{
+  width:34px;
+  height:34px;
+  display:grid;
+  place-items:center;
+  border-radius:9px;
+  background:linear-gradient(135deg,#223c70,#4f369d);
+  color:#dbe8ff;
+  font-size:9px;
+  font-weight:900;
+}
+.category-select-option-copy{
+  min-width:0;
+}
+.category-select-option-copy b{
+  display:block;
+  font-size:9.5px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.category-select-option-copy small{
+  display:block;
+  margin-top:2px;
+  color:#718297;
+  font-size:7.5px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.category-select-option-check{
+  color:#6ed9b0;
+  font-size:12px;
+  font-weight:900;
+}
+.category-select-empty{
+  padding:13px 10px;
+  color:#718297;
+  font-size:8.5px;
+  text-align:center;
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -388,7 +511,12 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
       <section class="card chain-card">
         <div class="card-head">
           <div><h3>Compounding Goal Chain</h3><div class="sub">Day 1 → Week 1 → Month 1 → Semester 1 → Year 1. Periods are planning layers, not rigid promises.</div></div>
-          <div class="chain-toolbar"><label class="sub" for="chainRoot">View:</label><select id="chainRoot"></select></div>
+          <div class="chain-toolbar category-picker" id="categoryPicker">
+            <button type="button" class="category-select-btn" id="categorySelectButton" aria-haspopup="true" aria-expanded="false">
+              Select Category <span>⌄</span>
+            </button>
+            <div class="category-select-menu" id="categorySelectMenu" role="menu" aria-label="Select focus category"></div>
+          </div>
         </div>
         <div class="chain-grid" id="chainGrid">
           <div class="stage" data-level="daily"><div class="label">Day 1</div><div class="pct"><span>Progress</span><b id="stageDailyPct">0%</b></div><div class="bar"><span id="stageDailyBar" style="width:0%"></span></div><div class="stage-tasks" id="stageDailyTasks" aria-label="Day 1 tasks"></div></div>
@@ -718,23 +846,34 @@ function priorityScore(g){let s=g.priority==='high'?50:g.priority==='medium'?30:
 function urgency(g){const s=priorityScore(g);if(s>=90)return'Very high';if(s>=68)return'High';if(s>=45)return'Moderate';return'Maintain'}
 function rankedFocus(){return goals.filter(g=>effectiveProgress(g)<100).slice().sort((a,b)=>priorityScore(b)-priorityScore(a))}
 function renderRootSelect(){
- const select=$('#chainRoot');
+ const button=$('#categorySelectButton');
+ const menu=$('#categorySelectMenu');
+ if(!button||!menu)return;
+
  if(!focusAreas.length){
-   select.innerHTML='<option value="">No focus areas added</option>';
    selectedViewArea='';
    selectedRootId='';
    localStorage.removeItem(VIEW_AREA_KEY);
+   button.disabled=true;
+   button.setAttribute('aria-expanded','false');
+   menu.classList.remove('show');
+   menu.innerHTML='<div class="category-select-empty">Add a focus area first.</div>';
    return;
  }
 
+ button.disabled=false;
  const area=currentViewArea();
- const options=focusAreas.map(name=>{
-   const root=rootForDomain(name);
-   const suffix=root?` — ${root.title}`:'';
-   return `<option value="${escapeHtml(name)}" ${name===area?'selected':''}>${escapeHtml(name+suffix)}</option>`;
- }).join('');
 
- select.innerHTML=options;
+ menu.innerHTML=focusAreas.map(name=>{
+   const root=rootForDomain(name);
+   const mark=name.replace(/[^a-z0-9]/gi,'').slice(0,2).toUpperCase()||'•';
+   const detail=root?root.title:'No 1-year goal yet';
+   return `<button type="button" class="category-select-option ${name===area?'active':''}" data-view-category="${escapeHtml(name)}" role="menuitem">
+     <span class="category-select-option-mark">${escapeHtml(mark)}</span>
+     <span class="category-select-option-copy"><b>${escapeHtml(name)}</b><small>${escapeHtml(detail)}</small></span>
+     <span class="category-select-option-check">${name===area?'✓':''}</span>
+   </button>`;
+ }).join('');
 
  const root=rootForDomain(area);
  selectedRootId=root?root.id:'';
@@ -1123,14 +1262,38 @@ $('#cancelGoal').addEventListener('click',()=>$('#goalModal').classList.remove('
 $('#goalModal').addEventListener('click',e=>{if(e.target.id==='goalModal')$('#goalModal').classList.remove('show')});
 $('#goalLevel').addEventListener('change',renderParentOptions);$('#goalDomain').addEventListener('change',renderParentOptions);
 $('#goalForm').addEventListener('submit',e=>{e.preventDefault();const level=$('#goalLevel').value;const domain=$('#goalDomain').value;if(!domain||!focusAreas.includes(domain)){toast('Add and select a focus area first.');return;}const periodDate=(pendingCreateLevel===level&&pendingCreatePeriodKey)?pendingCreatePeriodKey:'';const targetDate=$('#goalDate').value||(level==='daily'?(periodDate||localDateKey(new Date())):'');const g=normalizeGoal({id:'g_'+Date.now(),title:$('#goalTitle').value.trim(),level,domain,priority:$('#goalPriority').value,manualProgress:clamp($('#goalProgress').value),parentId:$('#goalParent').value,weight:Number($('#goalWeight').value||1),targetDate,periodKey:periodDate||defaultPeriodKey(level,targetDate?new Date(targetDate+'T00:00:00'):new Date()),why:$('#goalWhy').value.trim(),history:[]});goals.unshift(g);autoLinkDomainGoalChain(domain);if(level==='yearly')selectedRootId=g.id;else selectRootForDomain(domain);saveGoals();e.target.reset();$('#goalWeight').value=1;$('#goalPriority').value='medium';pendingCreateLevel='';pendingCreatePeriodKey='';$('#goalModal').classList.remove('show');toast('Goal added and connected to the compounding structure.')});
-$('#chainRoot').addEventListener('change',e=>{
- selectedViewArea=e.target.value;
- if(selectedViewArea)localStorage.setItem(VIEW_AREA_KEY,selectedViewArea);
- else localStorage.removeItem(VIEW_AREA_KEY);
+$('#categorySelectButton').addEventListener('click',e=>{
+ e.preventDefault();
+ e.stopPropagation();
+ const menu=$('#categorySelectMenu');
+ const open=!menu.classList.contains('show');
+ menu.classList.toggle('show',open);
+ $('#categorySelectButton').setAttribute('aria-expanded',open?'true':'false');
+});
+$('#categorySelectMenu').addEventListener('click',e=>{
+ const option=e.target.closest('[data-view-category]');
+ if(!option)return;
+ selectedViewArea=option.dataset.viewCategory;
+ localStorage.setItem(VIEW_AREA_KEY,selectedViewArea);
  const root=rootForDomain(selectedViewArea);
  selectedRootId=root?root.id:'';
+ $('#categorySelectMenu').classList.remove('show');
+ $('#categorySelectButton').setAttribute('aria-expanded','false');
  renderAll();
 });
+document.addEventListener('click',e=>{
+ const picker=$('#categoryPicker');
+ if(!picker||picker.contains(e.target))return;
+ $('#categorySelectMenu')?.classList.remove('show');
+ $('#categorySelectButton')?.setAttribute('aria-expanded','false');
+});
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape'){
+   $('#categorySelectMenu')?.classList.remove('show');
+   $('#categorySelectButton')?.setAttribute('aria-expanded','false');
+ }
+});
+
 $('#chainGrid').addEventListener('click',e=>{const done=e.target.closest('[data-stage-complete]');if(done)completeStageGoal(done.dataset.stageComplete)});
 $('#backToHios').addEventListener('click',()=>window.location.href='./index.html?view=home');
 $('#startGoalSetup').addEventListener('click',()=>openGoalBuilder(setGoalsLevel));
