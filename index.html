@@ -1813,6 +1813,59 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 }
 </style>
 
+
+<style id="calendar-zoom-front-layer-fix">
+@media (min-width:900px){
+  /* The main dashboard must not clip a zoomed calendar cell when it expands
+     beyond the calendar's normal grid boundaries. */
+  #appScreen .main,
+  #appScreen .home-layout{
+    overflow:visible !important;
+  }
+
+  /* Lift the entire calendar above the left sidebar and the right-side cards
+     only while a day is actively zoomed. */
+  .calendar-card.calendar-zoom-front{
+    position:relative !important;
+    z-index:3000 !important;
+    overflow:visible !important;
+  }
+
+  .calendar-card.calendar-zoom-front .hios-calendar{
+    position:relative !important;
+    z-index:3010 !important;
+    overflow:visible !important;
+  }
+
+  .calendar-card.calendar-zoom-front .calendar-day.hios-day-hover{
+    z-index:3200 !important;
+    isolation:auto !important;
+    overflow:visible !important;
+  }
+
+  .calendar-card.calendar-zoom-front .calendar-day.hios-day-hover .calendar-events{
+    position:relative !important;
+    z-index:3300 !important;
+    overflow:visible !important;
+  }
+
+  .calendar-card.calendar-zoom-front .calendar-day.hios-day-hover .calendar-event{
+    position:relative !important;
+    z-index:3350 !important;
+  }
+
+  .calendar-card.calendar-zoom-front .calendar-day.hios-day-hover .calendar-event.hios-event-hover{
+    z-index:5000 !important;
+  }
+
+  /* Keep the non-calendar sections underneath the active calendar zoom. */
+  #appScreen .sidebar,
+  .home-sidebar{
+    z-index:10 !important;
+  }
+}
+</style>
+
 </head>
 <body>
 
@@ -1865,6 +1918,8 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   function clearCalendarDay(){
     clearCalendarEvent();
     if(activeDay) activeDay.classList.remove('hios-day-hover');
+    var card = document.querySelector('.calendar-card');
+    if(card) card.classList.remove('calendar-zoom-front');
     activeDay = null;
     activeDayRect = null;
   }
@@ -1882,6 +1937,8 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     activeDayRect = {left:rect.left, right:rect.right, top:rect.top, bottom:rect.bottom};
     activeDay = day;
     day.classList.add('hios-day-hover');
+    var card = day.closest ? day.closest('.calendar-card') : null;
+    if(card) card.classList.add('calendar-zoom-front');
   }
 
   function setCalendarEvent(eventNode){
