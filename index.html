@@ -1884,6 +1884,33 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 }
 </style>
 
+
+<style id="hios-calendar-edge-zoom-fix">
+@media (min-width:900px){
+  /* Edge cells must expand inward so the enlarged day is never clipped by
+     the left/right edge of the H·IOS main content area. */
+  .home-layout.auto-zoom-enabled .calendar-day.hios-day-hover:nth-child(7n+1){
+    transform-origin:left center !important;
+  }
+  .home-layout.auto-zoom-enabled .calendar-day.hios-day-hover:nth-child(7n){
+    transform-origin:right center !important;
+  }
+
+  /* Keep the second-stage assessment layer inside the visible side on edge days. */
+  .home-layout.auto-zoom-enabled .calendar-day.hios-day-hover:nth-child(7n+1).has-event-hover-overlay::after{
+    left:2% !important;
+    width:110% !important;
+    transform-origin:left center !important;
+  }
+  .home-layout.auto-zoom-enabled .calendar-day.hios-day-hover:nth-child(7n).has-event-hover-overlay::after{
+    left:auto !important;
+    right:2% !important;
+    width:110% !important;
+    transform-origin:right center !important;
+  }
+}
+</style>
+
 </head>
 <body>
 
@@ -1896,7 +1923,6 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   var activePanel = '';
   var focusClasses = ['hios-focus-b','hios-focus-c'];
   var activeDay = null;
-  var activeDayRect = null;
 
   function getLayout(){ return document.querySelector('.home-layout'); }
 
@@ -1924,35 +1950,14 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   function clearCalendarDay(){
     if(activeDay)activeDay.classList.remove('hios-day-hover');
     activeDay=null;
-    activeDayRect=null;
   }
 
   function activateCalendarDay(day){
     if(!day||!enabled||window.innerWidth<900){clearCalendarDay();return}
     if(activeDay===day)return;
     clearCalendarDay();
-    var r=day.getBoundingClientRect();
-    activeDayRect={left:r.left,right:r.right,top:r.top,bottom:r.bottom};
     activeDay=day;
     day.classList.add('hios-day-hover');
-  }
-
-  function pointInside(rect,x,y){
-    return !!rect&&x>=rect.left&&x<=rect.right&&y>=rect.top&&y<=rect.bottom;
-  }
-
-  function refreshCalendarFromPointer(x,y){
-    if(!enabled||window.innerWidth<900){clearCalendarDay();return}
-
-    /* The hit area is always the ORIGINAL unscaled cell. This prevents the
-       enlarged visual from keeping itself zoomed after the pointer leaves. */
-    if(activeDay&&!pointInside(activeDayRect,x,y))clearCalendarDay();
-
-    if(!activeDay){
-      var hit=document.elementFromPoint(x,y);
-      var day=hit&&hit.closest?hit.closest('.calendar-day'):null;
-      if(day)activateCalendarDay(day);
-    }
   }
 
   function paintToggle(){
@@ -2008,17 +2013,30 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     });
 
     if(calendar){
-      calendar.addEventListener('pointermove',function(event){refreshCalendarFromPointer(event.clientX,event.clientY)});
+      /* Pointer-bound zoom. The enlarged day remains active only while the
+         pointer is actually over that day (including its task scrollbar).
+         This also preserves native scrolling inside .calendar-events. */
+      calendar.addEventListener('pointerover',function(event){
+        if(!enabled||window.innerWidth<900)return;
+        var day=event.target&&event.target.closest?event.target.closest('.calendar-day'):null;
+        if(!day)return;
+        var from=event.relatedTarget;
+        if(!from||!day.contains(from))activateCalendarDay(day);
+      });
+      calendar.addEventListener('pointerout',function(event){
+        var day=event.target&&event.target.closest?event.target.closest('.calendar-day'):null;
+        if(!day||day!==activeDay)return;
+        var to=event.relatedTarget;
+        if(to&&day.contains(to))return;
+        clearCalendarDay();
+      });
       calendar.addEventListener('pointerleave',clearCalendarDay);
-      calendar.addEventListener('scroll',function(){
-        /* Preserve the internal task-list scrolling; just recapture the day
-           geometry after scroll so hover bounds stay accurate. */
-        if(activeDay){
-          var r=activeDay.getBoundingClientRect();
-          activeDayRect={left:r.left,right:r.right,top:r.top,bottom:r.bottom};
-        }
-      },true);
     }
+
+    /* Safety reset: a zoom can never remain stuck after the pointer has left. */
+    document.addEventListener('pointermove',function(){
+      if(activeDay&&typeof activeDay.matches==='function'&&!activeDay.matches(':hover'))clearCalendarDay();
+    },{passive:true});
 
     window.addEventListener('blur',function(){clearFocus();clearCalendarDay()});
     window.addEventListener('resize',function(){
