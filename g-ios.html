@@ -399,11 +399,6 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
         </div>
       </section>
 
-      <section class="card chain-card">
-        <div class="card-head"><div><h3>H·IOS Dashboard Connection</h3><div class="sub">G·IOS publishes progress, focus and dated commitments to the H·IOS home dashboard.</div></div><button class="btn success" id="syncNow2">Publish</button></div>
-        <div class="sync-schema"><div class="sync-node">G·IOS progress engine</div><div class="sync-arrow">→</div><div class="sync-node">H·IOS dashboard snapshot</div></div>
-        <div class="signal-box"><strong>Shared snapshot</strong><p id="syncText">Waiting for the first dashboard snapshot.</p></div>
-      </section>
 
     </section>
     </section>
@@ -1061,7 +1056,56 @@ function recordProgress(g,newValue){const old=clamp(g.manualProgress);const next
 function adjustProgress(id,delta){const g=goals.find(x=>x.id===id);if(!g)return;if(childrenOf(g.id).length){toast('This goal rolls up from child goals. Update the lower-level goals instead.');return}recordProgress(g,clamp(g.manualProgress+delta));saveGoals()}
 function completeGoal(id){const g=goals.find(x=>x.id===id);if(!g||g.level!=='daily')return;if(childrenOf(g.id).length){toast('Complete the lower-level tasks first.');return}recordProgress(g,100);saveGoals();toast('Daily task completed. Weekly and higher progress recalculated.')}
 function completeStageGoal(id){const g=goals.find(x=>x.id===id);if(!g||g.level!=='daily')return;recordProgress(g,100);saveGoals();toast('Daily task completed. Weekly and higher progress recalculated.')}
-function publishDashboardSnapshot(showMessage=false){const root=goals.find(g=>g.id===selectedRootId)||primaryRoot();const active=goals.filter(g=>effectiveProgress(g)<100);const snapshot={source:'G-IOS',version:2,updatedAt:new Date().toISOString(),primaryGoal:root?{id:root.id,title:root.title,domain:root.domain,progress:effectiveProgress(root),remaining:100-effectiveProgress(root)}:null,activeGoals:active.length,highPriority:active.filter(g=>g.priority==='high').length,calendarItems:active.filter(g=>g.targetDate).map(g=>({id:g.id,title:g.title,date:g.targetDate,domain:g.domain,horizon:g.level,level:g.level,progress:effectiveProgress(g)})),domainProgress:topLevelDomainProgress(),focusItems:rankedFocus().slice(0,4).map((g,i)=>({rank:i+1,id:g.id,title:g.title,domain:g.domain,horizon:g.level,level:g.level,progress:effectiveProgress(g),remaining:100-effectiveProgress(g),targetDate:g.targetDate,urgency:urgency(g),reason:g.why||''})),progressChain:root?Object.fromEntries(LEVELS.map(level=>[level,{progress:levelProgressForRoot(root,level),count:levelItemsForRoot(root,level).length}])):{},goals:goals.map(g=>({...g,progress:effectiveProgress(g) }))};localStorage.setItem(SNAPSHOT_KEY,JSON.stringify(snapshot));$('#syncText').textContent='Snapshot updated '+new Date(snapshot.updatedAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'. H·IOS can read the primary goal, domain progress, ranked focus items and hard deadlines.';if(showMessage)toast('G·IOS progress snapshot published to H·IOS.')}
+function publishDashboardSnapshot(showMessage=false){
+ const root=goals.find(g=>g.id===selectedRootId)||primaryRoot();
+ const active=goals.filter(g=>effectiveProgress(g)<100);
+ const snapshot={
+  source:'G-IOS',
+  version:2,
+  updatedAt:new Date().toISOString(),
+  primaryGoal:root?{
+   id:root.id,
+   title:root.title,
+   domain:root.domain,
+   progress:effectiveProgress(root),
+   remaining:100-effectiveProgress(root)
+  }:null,
+  activeGoals:active.length,
+  highPriority:active.filter(g=>g.priority==='high').length,
+  calendarItems:active.filter(g=>g.targetDate).map(g=>({
+   id:g.id,
+   title:g.title,
+   date:g.targetDate,
+   domain:g.domain,
+   horizon:g.level,
+   level:g.level,
+   progress:effectiveProgress(g)
+  })),
+  domainProgress:topLevelDomainProgress(),
+  focusItems:rankedFocus().slice(0,4).map((g,i)=>({
+   rank:i+1,
+   id:g.id,
+   title:g.title,
+   domain:g.domain,
+   horizon:g.level,
+   level:g.level,
+   progress:effectiveProgress(g),
+   remaining:100-effectiveProgress(g),
+   targetDate:g.targetDate,
+   urgency:urgency(g),
+   reason:g.why||''
+  })),
+  progressChain:root?Object.fromEntries(
+   LEVELS.map(level=>[level,{
+    progress:levelProgressForRoot(root,level),
+    count:levelItemsForRoot(root,level).length
+   }])
+  ):{},
+  goals:goals.map(g=>({...g,progress:effectiveProgress(g)}))
+ };
+ localStorage.setItem(SNAPSHOT_KEY,JSON.stringify(snapshot));
+ if(showMessage)toast('Goals-IOS data updated in H-IOS.');
+}
 
 function goalsForPeriod(level,key){return goals.filter(g=>g.level===level&&periodKeyForGoal(g)===key)}
 function parentLabel(g){const p=goals.find(x=>x.id===g.parentId);return p?`${LEVEL_LABEL[p.level]} · ${p.title}`:'No higher-level goal linked'}
@@ -1076,7 +1120,7 @@ function openGoalBuilder(level='yearly'){if(!focusAreas.length){toast('Add a foc
 function openGoalForPeriod(level,key){pendingCreateLevel=level;pendingCreatePeriodKey=key;$('#goalLevel').value=level;renderParentOptions();$('#goalModal').classList.add('show')}
 function handleTrackerClick(e){const adj=e.target.closest('[data-track-adjust]');if(adj){adjustProgress(adj.dataset.id,Number(adj.dataset.trackAdjust));return}const done=e.target.closest('[data-track-complete]');if(done)completeGoal(done.dataset.trackComplete)}
 
-function renderAll(){renderRootSelect();renderMetrics();renderChain();renderSetGoals();renderParentOptions();renderDailySystem();renderWeeklySystem();renderMonthlySystem();publishDashboardSnapshot(false)}
+function renderAll(){renderRootSelect();renderMetrics();renderChain();renderSetGoals();renderParentOptions();renderDailySystem();renderWeeklySystem();renderMonthlySystem();publishDashboardSnapshot(false)} // H-IOS syncs automatically on every Goals-IOS state update
 function toast(message){const t=$('#toast');t.textContent=message;t.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),2200)}
 $('#cancelGoal').addEventListener('click',()=>$('#goalModal').classList.remove('show'));
 $('#goalModal').addEventListener('click',e=>{if(e.target.id==='goalModal')$('#goalModal').classList.remove('show')});
@@ -1091,7 +1135,6 @@ $('#chainRoot').addEventListener('change',e=>{
  renderAll();
 });
 $('#chainGrid').addEventListener('click',e=>{const done=e.target.closest('[data-stage-complete]');if(done)completeStageGoal(done.dataset.stageComplete)});
-$('#syncNow2').addEventListener('click',()=>publishDashboardSnapshot(true));
 $('#backToHios').addEventListener('click',()=>window.location.href='./index.html?view=home');
 $('#startGoalSetup').addEventListener('click',()=>openGoalBuilder(setGoalsLevel));
 $('#goalCategoryRow').addEventListener('click',e=>{const remove=e.target.closest('[data-remove-focus]');if(remove){e.stopPropagation();removeFocusArea(remove.dataset.removeFocus);return}const card=e.target.closest('[data-goal-category]');if(!card)return;setGoalsCategory=card.dataset.goalCategory;selectedViewArea=setGoalsCategory;localStorage.setItem(SET_GOALS_CATEGORY_KEY,setGoalsCategory);localStorage.setItem(VIEW_AREA_KEY,selectedViewArea);selectRootForDomain(setGoalsCategory);renderAll()});
