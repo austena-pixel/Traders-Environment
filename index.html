@@ -1939,6 +1939,86 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 }
 </style>
 
+
+<style id="hios-crisp-calendar-day-zoom">
+@media (min-width:900px){
+  /*
+    Crisp calendar zoom:
+    enlarge the actual day box instead of raster-scaling the whole cell.
+    This keeps dates and task text sharp in Chrome/Edge.
+  */
+  .calendar-day{
+    transform:none !important;
+    will-change:auto !important;
+    transition:
+      width .15s cubic-bezier(.2,.8,.2,1),
+      height .15s cubic-bezier(.2,.8,.2,1),
+      left .15s cubic-bezier(.2,.8,.2,1),
+      top .15s cubic-bezier(.2,.8,.2,1),
+      background .14s ease,
+      box-shadow .18s ease,
+      border-color .18s ease !important;
+  }
+
+  .home-layout.auto-zoom-enabled .calendar-day.hios-day-hover{
+    width:162% !important;
+    height:162% !important;
+    left:-31% !important;
+    top:-31% !important;
+    transform:none !important;
+    z-index:700 !important;
+    overflow:visible !important;
+  }
+
+  /* First/last columns expand inward instead of off-screen. */
+  .home-layout.auto-zoom-enabled .calendar-day.hios-day-hover:nth-child(7n+1){
+    left:0 !important;
+  }
+  .home-layout.auto-zoom-enabled .calendar-day.hios-day-hover:nth-child(7n){
+    left:-62% !important;
+  }
+
+  /* First/last calendar rows expand inward vertically too. */
+  .home-layout.auto-zoom-enabled .calendar-day.hios-day-hover:nth-child(-n+7){
+    top:0 !important;
+  }
+  .home-layout.auto-zoom-enabled .calendar-day.hios-day-hover:nth-last-child(-n+7){
+    top:-62% !important;
+  }
+
+  /* Native-size typography: no transformed/rasterized text. */
+  .home-layout.auto-zoom-enabled .calendar-day.hios-day-hover .calendar-date{
+    font-size:13px !important;
+    line-height:1.15 !important;
+    margin-bottom:6px !important;
+    text-rendering:optimizeLegibility;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .home-layout.auto-zoom-enabled .calendar-day.hios-day-hover .calendar-events{
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    padding:3px 5px 5px 3px !important;
+  }
+
+  .home-layout.auto-zoom-enabled .calendar-day.hios-day-hover .calendar-event,
+  .home-layout.auto-zoom-enabled .calendar-day.hios-day-hover .calendar-event:hover{
+    transform:none !important;
+    width:100% !important;
+    min-height:21px !important;
+    padding:4px 7px !important;
+    font-size:9.5px !important;
+    line-height:1.25 !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    box-shadow:none !important;
+    text-rendering:optimizeLegibility;
+    -webkit-font-smoothing:antialiased;
+  }
+}
+</style>
+
 </head>
 <body>
 
