@@ -317,6 +317,34 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 }
 </style>
 
+
+<style id="gios-goal-remove-controls">
+.level-goal-head{
+  grid-template-columns:minmax(0,1fr) auto auto !important;
+  align-items:center !important;
+}
+.level-goal-remove{
+  width:28px;
+  height:28px;
+  display:grid;
+  place-items:center;
+  border:1px solid #2a3c50;
+  border-radius:8px;
+  background:#0b141e;
+  color:#8292a7;
+  font-size:15px;
+  line-height:1;
+  cursor:pointer;
+  transition:background .15s ease,border-color .15s ease,color .15s ease,transform .15s ease;
+}
+.level-goal-remove:hover{
+  background:rgba(255,87,105,.10);
+  border-color:rgba(255,105,120,.48);
+  color:#ff8796;
+  transform:translateY(-1px);
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -838,6 +866,33 @@ function renderAdvancedFocusOptions(){
  if(setGoalsCategory&&focusAreas.includes(setGoalsCategory))select.value=setGoalsCategory;
  else if(current&&focusAreas.includes(current))select.value=current;
 }
+
+function removeGoalById(id){
+ const goal=goals.find(g=>g.id===id);
+ if(!goal)return;
+
+ const children=goals.filter(g=>g.parentId===id);
+ const message=children.length
+   ? `Remove "${goal.title}"? ${children.length} connected lower-level goal${children.length===1?'':'s'} will be kept and re-linked where possible.`
+   : `Remove "${goal.title}"?`;
+
+ if(!window.confirm(message))return;
+
+ goals=goals.filter(g=>g.id!==id);
+
+ // Keep lower-level goals instead of deleting them with the parent.
+ children.forEach(child=>{child.parentId='';});
+ if(goal.domain)autoLinkDomainGoalChain(goal.domain);
+
+ if(selectedRootId===id){
+   const replacement=rootForDomain(goal.domain);
+   selectedRootId=replacement?replacement.id:'';
+ }
+
+ saveGoals();
+ toast(goal.title+' removed.');
+}
+
 function renderSetGoals(){
  const categoryRow=$('#goalCategoryRow'),list=$('#setGoalsLevelList');
  if(!categoryRow||!list)return;
@@ -892,7 +947,7 @@ function renderSetGoals(){
   const progress=effectiveProgress(g);
   const parent=g.parentId?' · '+parentLabel(g):'';
   const due=g.targetDate?' · '+formatDue(g.targetDate):'';
-  return `<article class="level-goal-item"><div class="level-goal-head"><b>${escapeHtml(g.title)}</b><strong>${progress}%</strong></div><div class="level-goal-meta">${escapeHtml(g.domain)}${escapeHtml(parent)}${escapeHtml(due)}</div><div class="bar"><span style="width:${progress}%"></span></div></article>`;
+  return `<article class="level-goal-item"><div class="level-goal-head"><b>${escapeHtml(g.title)}</b><strong>${progress}%</strong><button type="button" class="level-goal-remove" data-remove-goal="${escapeHtml(g.id)}" title="Remove ${escapeHtml(g.title)}" aria-label="Remove ${escapeHtml(g.title)}">×</button></div><div class="level-goal-meta">${escapeHtml(g.domain)}${escapeHtml(parent)}${escapeHtml(due)}</div><div class="bar"><span style="width:${progress}%"></span></div></article>`;
  }).join(''):`<div class="goal-level-empty"><strong>No ${escapeHtml(config.listTitle.toLowerCase())} here yet.</strong><span>Use the setup form to add the first one${hasSpecificFocus?' for '+escapeHtml(setGoalsCategory)+'.':'.'}</span></div>`;
 }
 function renderExecution(){const root=goals.find(g=>g.id===selectedRootId)||primaryRoot();let items=root?levelItemsForRoot(root,'daily').filter(g=>effectiveProgress(g)<100):dailyGoals();if(!items.length)items=dailyGoals();const box=$('#executionList');if(!items.length){box.innerHTML='<div class="empty">No active daily actions. Add a daily goal to create execution-level tracking.</div>';return}box.innerHTML=items.slice(0,6).map(g=>`<div class="exec-item"><div><b>${escapeHtml(g.title)}</b><small>${escapeHtml(g.domain)} · ${effectiveProgress(g)}% complete${g.targetDate?' · '+formatDue(g.targetDate):''}</small><div class="bar" style="margin-top:7px"><span style="width:${effectiveProgress(g)}%"></span></div></div><div class="exec-controls"><button type="button" data-adjust="-10" data-id="${g.id}" title="Reduce progress">−</button><button type="button" data-adjust="10" data-id="${g.id}" title="Add progress">+</button><button type="button" class="done" data-complete="${g.id}">Done</button></div></div>`).join('')}
@@ -947,6 +1002,13 @@ $('#focusAreaNameInput').addEventListener('keydown',e=>{
  if(e.key==='Escape'){e.preventDefault();closeFocusAreaModal()}
 });
 
+$('#setGoalsLevelList').addEventListener('click',e=>{
+ const button=e.target.closest('[data-remove-goal]');
+ if(!button)return;
+ e.preventDefault();
+ e.stopPropagation();
+ removeGoalById(button.dataset.removeGoal);
+});
 $('#goalHorizonTabs').addEventListener('click',e=>{const button=e.target.closest('[data-setup-level]');if(!button)return;const nextLevel=button.dataset.setupLevel;if(nextLevel!==setGoalsLevel)$('#quickGoalDate').value='';setGoalsLevel=nextLevel;renderSetGoals();$('#quickGoalTitle').focus()});
 $('#advancedGoalSetup').addEventListener('click',()=>openGoalBuilder(setGoalsLevel));
 $('#quickGoalForm').addEventListener('submit',e=>{
