@@ -557,6 +557,7 @@ let pendingCreatePeriodKey='';
 let pendingCreateLevel='';
 const SET_GOALS_CATEGORY_KEY='hios_gios_focus_area_v1';
 const FOCUS_AREAS_KEY='hios_gios_focus_areas_v1';
+const VIEW_AREA_KEY='hios_gios_overview_view_area_v1';
 function loadFocusAreas(){
  try{
   const parsed=JSON.parse(localStorage.getItem(FOCUS_AREAS_KEY)||'[]');
@@ -567,6 +568,7 @@ function loadFocusAreas(){
 }
 let focusAreas=loadFocusAreas();
 let setGoalsCategory=localStorage.getItem(SET_GOALS_CATEGORY_KEY)||'';
+let selectedViewArea=localStorage.getItem(VIEW_AREA_KEY)||setGoalsCategory||'';
 let setGoalsLevel='daily';
 const $=s=>document.querySelector(s);const $$=s=>[...document.querySelectorAll(s)];
 const clamp=(v,a=0,b=100)=>Math.max(a,Math.min(b,Number(v)||0));
@@ -683,6 +685,31 @@ function yearlyRoots(){
  return roots;
 }
 function primaryRoot(){const roots=yearlyRoots();if(!roots.length)return null;return roots.slice().sort((a,b)=>priorityScore(b)-priorityScore(a)||effectiveProgress(a)-effectiveProgress(b))[0]}
+function normalizeViewArea(){
+ if(selectedViewArea&&focusAreas.includes(selectedViewArea))return selectedViewArea;
+ if(setGoalsCategory&&focusAreas.includes(setGoalsCategory)){
+   selectedViewArea=setGoalsCategory;
+ }else{
+   selectedViewArea=focusAreas[0]||'';
+ }
+ if(selectedViewArea)localStorage.setItem(VIEW_AREA_KEY,selectedViewArea);
+ else localStorage.removeItem(VIEW_AREA_KEY);
+ return selectedViewArea;
+}
+function currentViewArea(){return normalizeViewArea()}
+function currentViewRoot(){
+ const area=currentViewArea();
+ return area?rootForDomain(area):null;
+}
+function viewItems(level){
+ const area=currentViewArea();
+ if(!area)return [];
+ return goals.filter(g=>g.level===level&&sameDomain(g.domain,area));
+}
+function viewProgress(level){
+ const items=viewItems(level);
+ return items.length?Math.round(weightedAverage(items,g=>effectiveProgress(g))):0;
+}
 function levelItemsForRoot(root,level){if(!root)return[];if(root.level===level)return[root];return descendants(root.id).filter(g=>g.level===level)}
 function levelProgressForRoot(root,level){const items=levelItemsForRoot(root,level);return items.length?Math.round(weightedAverage(items,g=>effectiveProgress(g))):0}
 function levelHeadline(root,level){const items=levelItemsForRoot(root,level);if(!items.length)return'No linked '+LEVEL_LABEL[level].toLowerCase()+' goals';if(items.length===1)return items[0].title;return items.length+' linked '+LEVEL_LABEL[level].toLowerCase()+' goals'}
@@ -697,18 +724,30 @@ function urgency(g){const s=priorityScore(g);if(s>=90)return'Very high';if(s>=68
 function rankedFocus(){return goals.filter(g=>effectiveProgress(g)<100).slice().sort((a,b)=>priorityScore(b)-priorityScore(a))}
 function renderRootSelect(){
  const select=$('#chainRoot');
- const roots=yearlyRoots();
- if(!roots.length){select.innerHTML='<option value="">No active focus-area views</option>';selectedRootId='';return}
- if(setGoalsCategory){
-   const focused=rootForDomain(setGoalsCategory);
-   if(focused)selectedRootId=focused.id;
+ if(!focusAreas.length){
+   select.innerHTML='<option value="">No focus areas added</option>';
+   selectedViewArea='';
+   selectedRootId='';
+   localStorage.removeItem(VIEW_AREA_KEY);
+   return;
  }
- if(!selectedRootId||!roots.some(g=>g.id===selectedRootId))selectedRootId=(primaryRoot()||roots[0]).id;
- select.innerHTML=roots.map(g=>`<option value="${escapeHtml(g.id)}" ${g.id===selectedRootId?'selected':''}>${escapeHtml(canonicalDomain(g.domain)+' — '+g.title)}</option>`).join('')
+
+ const area=currentViewArea();
+ const options=focusAreas.map(name=>{
+   const root=rootForDomain(name);
+   const suffix=root?` — ${root.title}`:'';
+   return `<option value="${escapeHtml(name)}" ${name===area?'selected':''}>${escapeHtml(name+suffix)}</option>`;
+ }).join('');
+
+ select.innerHTML=options;
+
+ const root=rootForDomain(area);
+ selectedRootId=root?root.id:'';
 }
 
 function renderMonthTimeline(){
- const root=goals.find(g=>g.id===selectedRootId)||primaryRoot();
+ const root=currentViewRoot();
+ const area=currentViewArea();
  const strip=$('#monthProgressStrip');
  const label=$('#monthTimelineLabel');
  if(!strip||!label)return;
@@ -717,7 +756,7 @@ function renderMonthTimeline(){
  const year=now.getFullYear();
  label.textContent=year+' · 6 months visible · scroll for more';
 
- const monthlyItems=root?levelItemsForRoot(root,'monthly'):[];
+ const monthlyItems=area?viewItems('monthly'):[];
  const months=Array.from({length:12},(_,i)=>{
    const key=`${year}-${String(i+1).padStart(2,'0')}`;
    const items=monthlyItems.filter(g=>periodKeyForGoal(g)===key);
@@ -752,9 +791,48 @@ function renderMonthTimeline(){
  });
 }
 
-function renderMetrics(){const root=goals.find(g=>g.id===selectedRootId)||primaryRoot();const long=root?effectiveProgress(root):0;const daily=dailyExecution(root);const weekly=weeklyProgress(root);const remaining=100-long;$('#heroDaily').textContent=daily+'%';$('#heroWeekly').textContent=weekly+'%';$('#heroRemaining').textContent=remaining+'%';$('#primaryGoalTitle').textContent=root?root.title:'No yearly goal selected';$('#primaryGoalDomain').textContent=root?root.domain+' · '+LEVEL_LABEL[root.level]:'Create a yearly goal to start the chain.';$('#primaryGoalProgress').textContent=long+'%';$('#primaryGoalBar').style.width=long+'%';$('#primaryGoalDistance').textContent=root?(remaining+'% of this outcome remains based on connected progress.'):'100% of the outcome is still ahead.';renderMonthTimeline()}
+function renderMetrics(){
+ const area=currentViewArea();
+ const root=currentViewRoot();
+ const yearly=viewItems('yearly');
+ const long=yearly.length?Math.round(weightedAverage(yearly,g=>effectiveProgress(g))):0;
+ const daily=viewProgress('daily');
+ const weekly=viewProgress('weekly');
+ const remaining=100-long;
+
+ $('#heroDaily').textContent=daily+'%';
+ $('#heroWeekly').textContent=weekly+'%';
+ $('#heroRemaining').textContent=remaining+'%';
+
+ $('#primaryGoalTitle').textContent=root?root.title:(area?area+' focus area':'No focus area selected');
+ $('#primaryGoalDomain').textContent=root
+   ? canonicalDomain(root.domain)+' · '+LEVEL_LABEL[root.level]
+   : (area?'No 1-year goal yet. Lower-level progress is still tracked in this view.':'Add a focus area to start.');
+
+ $('#primaryGoalProgress').textContent=long+'%';
+ $('#primaryGoalBar').style.width=long+'%';
+ $('#primaryGoalDistance').textContent=root
+   ? (remaining+'% of this outcome remains based on connected progress.')
+   : (area?'Create a 1-year outcome when you want a top-level target for this area.':'100% of the outcome is still ahead.');
+
+ renderMonthTimeline();
+}
 function stageTaskHtml(g){const progress=effectiveProgress(g),done=progress>=100;const action=g.level==='daily'?`<button type="button" data-stage-complete="${g.id}" ${done?'disabled':''}>${done?'Done ✓':'Done'}</button>`:`<b class="stage-task-progress">${progress}%</b>`;return`<div class="stage-task ${done?'complete':''}"><span title="${escapeHtml(g.title)}">${escapeHtml(g.title)}</span>${action}</div>`}
-function renderChain(){const root=goals.find(g=>g.id===selectedRootId)||primaryRoot();LEVELS.forEach(level=>{const pct=levelProgressForRoot(root,level);const items=levelItemsForRoot(root,level);const key=cap(level);const taskBox=$('#stage'+key+'Tasks');const oldScroll=taskBox.scrollTop;$('#stage'+key+'Pct').textContent=pct+'%';$('#stage'+key+'Bar').style.width=pct+'%';taskBox.innerHTML=items.length?items.map(stageTaskHtml).join(''):`<div class="stage-task-empty">No ${escapeHtml(LEVEL_LABEL[level].toLowerCase())} tasks linked.</div>`;taskBox.scrollTop=oldScroll})}
+function renderChain(){
+ LEVELS.forEach(level=>{
+   const items=viewItems(level);
+   const pct=items.length?Math.round(weightedAverage(items,g=>effectiveProgress(g))):0;
+   const key=cap(level);
+   const taskBox=$('#stage'+key+'Tasks');
+   const oldScroll=taskBox.scrollTop;
+   $('#stage'+key+'Pct').textContent=pct+'%';
+   $('#stage'+key+'Bar').style.width=pct+'%';
+   taskBox.innerHTML=items.length
+     ? items.map(stageTaskHtml).join('')
+     : `<div class="stage-task-empty">No ${escapeHtml(LEVEL_LABEL[level].toLowerCase())} tasks in this focus area.</div>`;
+   taskBox.scrollTop=oldScroll;
+ });
+}
 function renderQuickGoalParents(){
  const domain=(setGoalsCategory&&focusAreas.includes(setGoalsCategory))?setGoalsCategory:'';
  const parentInput=$('#quickGoalParent');
@@ -834,7 +912,9 @@ function commitFocusArea(){
  focusAreas.push(name);
  saveFocusAreas();
  setGoalsCategory=name;
+ selectedViewArea=name;
  localStorage.setItem(SET_GOALS_CATEGORY_KEY,name);
+ localStorage.setItem(VIEW_AREA_KEY,name);
  selectRootForDomain(name);
  closeFocusAreaModal();
  renderAll();
@@ -857,8 +937,12 @@ function removeFocusArea(name){
   localStorage.removeItem(SET_GOALS_CATEGORY_KEY);
  }
 
- // If the Overview "View" dropdown is currently showing this area,
- // clear it so renderRootSelect() immediately switches to another active area.
+ if(selectedViewArea===name){
+  selectedViewArea=focusAreas[0]||'';
+  if(selectedViewArea)localStorage.setItem(VIEW_AREA_KEY,selectedViewArea);
+  else localStorage.removeItem(VIEW_AREA_KEY);
+ }
+
  const selectedRoot=goals.find(g=>g.id===selectedRootId);
  if(selectedRoot&&canonicalDomain(selectedRoot.domain)===removedCanonical){
   selectedRootId='';
@@ -998,12 +1082,19 @@ $('#cancelGoal').addEventListener('click',()=>$('#goalModal').classList.remove('
 $('#goalModal').addEventListener('click',e=>{if(e.target.id==='goalModal')$('#goalModal').classList.remove('show')});
 $('#goalLevel').addEventListener('change',renderParentOptions);$('#goalDomain').addEventListener('change',renderParentOptions);
 $('#goalForm').addEventListener('submit',e=>{e.preventDefault();const level=$('#goalLevel').value;const domain=$('#goalDomain').value;if(!domain||!focusAreas.includes(domain)){toast('Add and select a focus area first.');return;}const periodDate=(pendingCreateLevel===level&&pendingCreatePeriodKey)?pendingCreatePeriodKey:'';const targetDate=$('#goalDate').value||(level==='daily'?(periodDate||localDateKey(new Date())):'');const g=normalizeGoal({id:'g_'+Date.now(),title:$('#goalTitle').value.trim(),level,domain,priority:$('#goalPriority').value,manualProgress:clamp($('#goalProgress').value),parentId:$('#goalParent').value,weight:Number($('#goalWeight').value||1),targetDate,periodKey:periodDate||defaultPeriodKey(level,targetDate?new Date(targetDate+'T00:00:00'):new Date()),why:$('#goalWhy').value.trim(),history:[]});goals.unshift(g);autoLinkDomainGoalChain(domain);if(level==='yearly')selectedRootId=g.id;else selectRootForDomain(domain);saveGoals();e.target.reset();$('#goalWeight').value=1;$('#goalPriority').value='medium';pendingCreateLevel='';pendingCreatePeriodKey='';$('#goalModal').classList.remove('show');toast('Goal added and connected to the compounding structure.')});
-$('#chainRoot').addEventListener('change',e=>{selectedRootId=e.target.value;renderAll()});
+$('#chainRoot').addEventListener('change',e=>{
+ selectedViewArea=e.target.value;
+ if(selectedViewArea)localStorage.setItem(VIEW_AREA_KEY,selectedViewArea);
+ else localStorage.removeItem(VIEW_AREA_KEY);
+ const root=rootForDomain(selectedViewArea);
+ selectedRootId=root?root.id:'';
+ renderAll();
+});
 $('#chainGrid').addEventListener('click',e=>{const done=e.target.closest('[data-stage-complete]');if(done)completeStageGoal(done.dataset.stageComplete)});
 $('#syncNow2').addEventListener('click',()=>publishDashboardSnapshot(true));
 $('#backToHios').addEventListener('click',()=>window.location.href='./index.html?view=home');
 $('#startGoalSetup').addEventListener('click',()=>openGoalBuilder(setGoalsLevel));
-$('#goalCategoryRow').addEventListener('click',e=>{const remove=e.target.closest('[data-remove-focus]');if(remove){e.stopPropagation();removeFocusArea(remove.dataset.removeFocus);return}const card=e.target.closest('[data-goal-category]');if(!card)return;setGoalsCategory=card.dataset.goalCategory;localStorage.setItem(SET_GOALS_CATEGORY_KEY,setGoalsCategory);selectRootForDomain(setGoalsCategory);renderAll()});
+$('#goalCategoryRow').addEventListener('click',e=>{const remove=e.target.closest('[data-remove-focus]');if(remove){e.stopPropagation();removeFocusArea(remove.dataset.removeFocus);return}const card=e.target.closest('[data-goal-category]');if(!card)return;setGoalsCategory=card.dataset.goalCategory;selectedViewArea=setGoalsCategory;localStorage.setItem(SET_GOALS_CATEGORY_KEY,setGoalsCategory);localStorage.setItem(VIEW_AREA_KEY,selectedViewArea);selectRootForDomain(setGoalsCategory);renderAll()});
 $('#goalCategoryRow').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-goal-category]')){e.preventDefault();e.target.click()}});
 $('#addFocusArea').addEventListener('click',addFocusArea);
 
@@ -1068,7 +1159,7 @@ $('#monthProgressStrip').addEventListener('wheel',e=>{
  }
 },{passive:false});
 window.addEventListener('storage',e=>{if([GOALS_KEY,...OLD_GOALS_KEYS].includes(e.key)){loadGoals();renderAll()}});
-loadGoals();if(setGoalsCategory&&focusAreas.includes(setGoalsCategory))selectRootForDomain(setGoalsCategory);renderAll();
+loadGoals();normalizeViewArea();if(selectedViewArea)selectRootForDomain(selectedViewArea);renderAll();
 </script>
 </body>
 </html>
