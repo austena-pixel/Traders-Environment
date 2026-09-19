@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- G-IOS BUILD: MONTHLY-PROGRESS-TIMELINE-V2 | 2026-09-19 -->
+<!-- G-IOS BUILD: STICKY-FOCUS-AREA-V1 | 2026-09-19 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -265,7 +265,8 @@ let weeklyViewDate=new Date();
 let monthlyViewDate=new Date();
 let pendingCreatePeriodKey='';
 let pendingCreateLevel='';
-let setGoalsCategory='all';
+const SET_GOALS_CATEGORY_KEY='hios_gios_focus_area_v1';
+let setGoalsCategory=localStorage.getItem(SET_GOALS_CATEGORY_KEY)||'all';
 let setGoalsLevel='daily';
 const $=s=>document.querySelector(s);const $$=s=>[...document.querySelectorAll(s)];
 const clamp=(v,a=0,b=100)=>Math.max(a,Math.min(b,Number(v)||0));
@@ -427,7 +428,7 @@ function renderSetGoals(){
  const fixedDomains=['Engineering','Trading','Fitness','Business','Career','Personal','Other'];
  const discovered=[...new Set(goals.map(g=>g.domain).filter(Boolean))];
  const domains=[...fixedDomains,...discovered.filter(d=>!fixedDomains.includes(d))];
- if(setGoalsCategory!=='all'&&!domains.includes(setGoalsCategory))setGoalsCategory='all';
+ if(setGoalsCategory!=='all'&&!domains.includes(setGoalsCategory)){setGoalsCategory='all';localStorage.removeItem(SET_GOALS_CATEGORY_KEY)}
  categoryRow.innerHTML=['all',...domains].map(category=>{
   const items=category==='all'?goals:goals.filter(g=>g.domain===category);
   const progress=items.length?Math.round(items.reduce((sum,g)=>sum+effectiveProgress(g),0)/items.length):0;
@@ -519,7 +520,7 @@ $('#chainGrid').addEventListener('click',e=>{const done=e.target.closest('[data-
 $('#syncNow2').addEventListener('click',()=>publishDashboardSnapshot(true));
 $('#backToHios').addEventListener('click',()=>window.location.href='./index.html?view=home');
 $('#startGoalSetup').addEventListener('click',()=>openGoalBuilder(setGoalsLevel));
-$('#goalCategoryRow').addEventListener('click',e=>{const card=e.target.closest('[data-goal-category]');if(!card)return;setGoalsCategory=card.dataset.goalCategory;renderSetGoals()});
+$('#goalCategoryRow').addEventListener('click',e=>{const card=e.target.closest('[data-goal-category]');if(!card)return;setGoalsCategory=card.dataset.goalCategory;if(setGoalsCategory==='all')localStorage.removeItem(SET_GOALS_CATEGORY_KEY);else localStorage.setItem(SET_GOALS_CATEGORY_KEY,setGoalsCategory);renderSetGoals()});
 $('#goalHorizonTabs').addEventListener('click',e=>{const button=e.target.closest('[data-setup-level]');if(!button)return;const nextLevel=button.dataset.setupLevel;if(nextLevel!==setGoalsLevel)$('#quickGoalDate').value='';setGoalsLevel=nextLevel;renderSetGoals();$('#quickGoalTitle').focus()});
 $('#advancedGoalSetup').addEventListener('click',()=>openGoalBuilder(setGoalsLevel));
 $('#quickGoalForm').addEventListener('submit',e=>{
@@ -533,6 +534,7 @@ $('#quickGoalForm').addEventListener('submit',e=>{
  const g=normalizeGoal({id:'g_'+Date.now(),title,level:setGoalsLevel,domain:setGoalsCategory,priority:$('#quickGoalPriority').value,manualProgress:0,parentId:$('#quickGoalParent').value,weight:1,targetDate,periodKey:defaultPeriodKey(setGoalsLevel,periodDate),why:'Created from the '+SETUP_CONFIG[setGoalsLevel].label+' setup system.',history:[]});
  goals.unshift(g);
  if(setGoalsLevel==='yearly')selectedRootId=g.id;
+ if(setGoalsCategory!=='all')localStorage.setItem(SET_GOALS_CATEGORY_KEY,setGoalsCategory);
  saveGoals();
  $('#quickGoalTitle').value='';
  $('#quickGoalDate').value='';
