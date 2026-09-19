@@ -2539,7 +2539,9 @@ renderProductManager();
    H·IOS HOME INTELLIGENCE + Goals-IOS CALENDAR BRIDGE
    Read-only: H·IOS consumes the existing Goals-IOS goal data.
 ========================================================= */
-const HIOS_GIOS_GOALS_KEY = 'gios_standalone_goals_v1';
+const HIOS_GIOS_GOALS_KEY = 'hios_gios_goals_v2';
+const HIOS_GIOS_LEGACY_KEYS = ['hios_gios_goals_v1','gios_standalone_goals_v1'];
+const HIOS_GIOS_SNAPSHOT_KEY = 'hios_gios_dashboard_v1';
 const HIOS_CALENDAR_EVENTS_KEY = 'hios_calendar_events_v1';
 
 let hiosCalendarCursor = new Date();
@@ -2560,9 +2562,29 @@ function hiosEscape(value){
 
 function loadHiosGoals(){
   try{
-    const raw=localStorage.getItem(HIOS_GIOS_GOALS_KEY);
+    let raw=localStorage.getItem(HIOS_GIOS_GOALS_KEY);
+    if(!raw){
+      for(const key of HIOS_GIOS_LEGACY_KEYS){
+        const legacy=localStorage.getItem(key);
+        if(legacy){raw=legacy;break;}
+      }
+    }
     const parsed=raw?JSON.parse(raw):[];
-    return Array.isArray(parsed)?parsed:[];
+    const goals=Array.isArray(parsed)?parsed:[];
+    let snapshotGoals=[];
+    try{
+      const snapshot=JSON.parse(localStorage.getItem(HIOS_GIOS_SNAPSHOT_KEY)||'null');
+      snapshotGoals=Array.isArray(snapshot?.goals)?snapshot.goals:[];
+    }catch(snapshotError){
+      console.warn('Could not read the Goals-IOS dashboard snapshot:',snapshotError);
+    }
+    const progressById=new Map(snapshotGoals.map(goal=>[goal.id,Number(goal.progress??goal.manualProgress??0)]));
+    return goals.map(goal=>({
+      ...goal,
+      progress:progressById.has(goal.id)
+        ? progressById.get(goal.id)
+        : Number(goal.progress??goal.manualProgress??0)
+    }));
   }catch(error){
     console.warn('Could not read Goals-IOS goals for H·IOS:',error);
     return [];
@@ -2889,6 +2911,8 @@ if(hiosNextMonth){
 window.addEventListener('storage',event=>{
   if(
     event.key===HIOS_GIOS_GOALS_KEY ||
+    HIOS_GIOS_LEGACY_KEYS.includes(event.key) ||
+    event.key===HIOS_GIOS_SNAPSHOT_KEY ||
     event.key===HIOS_CALENDAR_EVENTS_KEY
   ){
     renderHiosHome();
