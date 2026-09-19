@@ -1911,6 +1911,34 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 }
 </style>
 
+
+<style id="hios-disable-task-second-zoom">
+@media (min-width:900px){
+  /* Keep task cards at one stable size inside an enlarged calendar day. */
+  .home-layout.auto-zoom-enabled .calendar-day.hios-day-hover .calendar-event,
+  .home-layout.auto-zoom-enabled .calendar-day.hios-day-hover .calendar-event:hover,
+  .home-layout.auto-zoom-enabled .calendar-day.hios-day-hover .calendar-event.high:hover,
+  .home-layout.auto-zoom-enabled .calendar-day.hios-day-hover .calendar-event.manual.test:hover,
+  .home-layout.auto-zoom-enabled .calendar-day.hios-day-hover .calendar-event.manual.assessment:hover{
+    width:100% !important;
+    min-height:16px !important;
+    margin:0 !important;
+    transform:none !important;
+    padding:3px 5px !important;
+    font-size:7.4px !important;
+    line-height:1.18 !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    box-shadow:none !important;
+  }
+
+  /* The old overlay classes are neutralized in case a browser restores DOM state. */
+  .calendar-day.has-event-hover-overlay::after{display:none !important;content:none !important;}
+  .calendar-event.is-hover-overlay-source{opacity:1 !important;}
+}
+</style>
+
 </head>
 <body>
 
@@ -3208,79 +3236,6 @@ restoreExistingSession();
 
 
 
-</script>
-<script id="hios-calendar-event-hover-layer">
-(function(){
-  'use strict';
-
-  const calendar=document.getElementById('hiosCalendar');
-  if(!calendar)return;
-
-  let source=null;
-  let activeDay=null;
-
-  function clearOverlay(){
-    if(source)source.classList.remove('is-hover-overlay-source');
-    if(activeDay){
-      activeDay.classList.remove('has-event-hover-overlay','hover-event-alert');
-      activeDay.removeAttribute('data-hover-event-label');
-      activeDay.style.removeProperty('--hover-event-top');
-      activeDay.style.removeProperty('--hover-event-max-height');
-      activeDay.style.removeProperty('--hover-event-origin-y');
-    }
-    source=null;
-    activeDay=null;
-  }
-
-  function showOverlay(eventItem){
-    const day=eventItem.closest('.calendar-day');
-    const eventList=eventItem.closest('.calendar-events');
-    const layout=eventItem.closest('.home-layout');
-    if(!day||!eventList||!layout?.classList.contains('auto-zoom-enabled'))return;
-
-    clearOverlay();
-    source=eventItem;
-    activeDay=day;
-
-    const dayRect=day.getBoundingClientRect();
-    const itemRect=eventItem.getBoundingClientRect();
-    const scaleY=day.offsetHeight?dayRect.height/day.offsetHeight:1;
-    const listTop=eventList.offsetTop;
-    const rawTop=(itemRect.top-dayRect.top)/Math.max(scaleY,.01);
-    const itemHeight=Math.max(18,eventItem.offsetHeight);
-    const maximumTop=Math.max(listTop,day.clientHeight-itemHeight-3);
-    const top=Math.min(Math.max(listTop,rawTop),maximumTop);
-    const center=top+(itemHeight/2);
-    const availableHeight=Math.max(itemHeight,day.clientHeight-listTop-3);
-    const alertItem=eventItem.matches('.high,.manual.test,.manual.assessment');
-
-    day.setAttribute('data-hover-event-label',eventItem.textContent.trim());
-    day.style.setProperty('--hover-event-top',top+'px');
-    day.style.setProperty('--hover-event-max-height',Math.min(34,availableHeight)+'px');
-    day.style.setProperty('--hover-event-origin-y',center<(day.clientHeight/2)?'top':'bottom');
-    day.classList.toggle('hover-event-alert',alertItem);
-    day.classList.add('has-event-hover-overlay');
-    source.classList.add('is-hover-overlay-source');
-  }
-
-  calendar.addEventListener('pointerover',event=>{
-    const eventItem=event.target.closest('.calendar-event');
-    if(!eventItem)return;
-    if(eventItem===source)return;
-    showOverlay(eventItem);
-  });
-
-  calendar.addEventListener('pointerout',event=>{
-    if(!source)return;
-    const leavingItem=event.target.closest('.calendar-event');
-    if(leavingItem!==source)return;
-    if(event.relatedTarget&&source.contains(event.relatedTarget))return;
-    clearOverlay();
-  });
-
-  calendar.addEventListener('scroll',clearOverlay,true);
-  calendar.addEventListener('pointerleave',clearOverlay);
-})();
 </script>
 </body>
 </html>
