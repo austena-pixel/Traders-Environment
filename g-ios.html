@@ -265,6 +265,58 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 }
 </style>
 
+
+<style id="focus-area-fixed-width-row">
+/* Focus-area cards keep a fixed width.
+   When the row runs out of space it scrolls horizontally instead of stretching cards. */
+.goal-category-row{
+  display:grid !important;
+  grid-auto-flow:column !important;
+  grid-auto-columns:210px !important;
+  grid-template-columns:none !important;
+  justify-content:start !important;
+  gap:8px !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  overscroll-behavior-inline:contain !important;
+  padding:1px 1px 8px !important;
+  scroll-snap-type:x proximity;
+  scrollbar-width:thin;
+  scrollbar-color:#38536f #091018;
+}
+.goal-category-card{
+  width:210px !important;
+  min-width:210px !important;
+  max-width:210px !important;
+  scroll-snap-align:start;
+}
+.goal-category-row::-webkit-scrollbar{
+  height:6px;
+}
+.goal-category-row::-webkit-scrollbar-track{
+  background:#091018;
+  border-radius:999px;
+}
+.goal-category-row::-webkit-scrollbar-thumb{
+  background:#38536f;
+  border-radius:999px;
+}
+.goal-category-row::-webkit-scrollbar-thumb:hover{
+  background:#4e6f93;
+}
+
+@media(max-width:650px){
+  .goal-category-row{
+    grid-auto-columns:190px !important;
+  }
+  .goal-category-card{
+    width:190px !important;
+    min-width:190px !important;
+    max-width:190px !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div class="app">
