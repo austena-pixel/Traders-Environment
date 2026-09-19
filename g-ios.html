@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- G-IOS BUILD: PROGRESS-COMPOUNDING-V1 | 2026-09-19 -->
+<!-- G-IOS BUILD: DAILY-WEEKLY-MONTHLY-V1 | 2026-09-19 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -29,6 +29,16 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .domain-list{display:grid;gap:12px}.domain-row{display:grid;gap:6px}.domain-head{display:flex;justify-content:space-between;font-size:10px}.domain-head span{color:#cbd5e1}.domain-head b{font-size:10px}.bar{height:7px;border-radius:999px;background:#091018;overflow:hidden;border:1px solid #152233}.bar span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--blue),var(--violet))}
 .signal-box{margin-top:12px;padding:12px;border:1px solid #1b2d42;background:#0a111a;border-radius:11px}.signal-box strong{font-size:10px}.signal-box p{margin:5px 0 0;color:#7f90a5;font-size:8.5px;line-height:1.5}.sync-schema{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-top:10px}.sync-node{padding:9px;border-radius:9px;border:1px solid #26364a;background:#091019;font-size:9px;text-align:center}.sync-arrow{color:#66b0ff;font-weight:900}.empty{padding:16px;border:1px dashed #26364a;border-radius:10px;color:#7d8b9f;font-size:10px;text-align:center}
 .modal{position:fixed;inset:0;display:none;place-items:center;background:rgba(0,0,0,.67);z-index:20;padding:18px}.modal.show{display:grid}.modal-box{width:min(720px,100%);max-height:92vh;overflow:auto;border:1px solid #26364a;background:#0c131d;border-radius:16px;padding:18px}.modal-box h3{margin:0}.modal-box p{color:var(--muted);font-size:10px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:grid;gap:5px}.field.full{grid-column:1/-1}.field label{font-size:9px;color:#96a5b7}.field input,.field select,.field textarea{width:100%;border:1px solid #25364a;background:#091019;color:#edf3f9;border-radius:9px;padding:10px;outline:none}.field textarea{min-height:72px;resize:vertical}.field .hint{font-size:8px;color:#6f7f93}.form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.toast{position:fixed;right:18px;bottom:18px;background:#111c29;border:1px solid #28415d;color:white;padding:10px 13px;border-radius:10px;font-size:10px;opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:none}
+
+/* DAILY / WEEKLY / MONTHLY TRACKING */
+.page{display:none}.page.active{display:block}.period-page{animation:pageIn .18s ease}@keyframes pageIn{from{opacity:.55;transform:translateY(4px)}to{opacity:1;transform:none}}
+.view-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-end;margin-bottom:14px}.view-head h2{margin:4px 0;font-size:20px}.view-head p{margin:0;color:#8796aa;font-size:10px;line-height:1.5;max-width:720px}
+.period-toolbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:12px}.period-nav{width:34px;height:32px;border:1px solid #26384d;background:#0a121c;color:#dce8f7;border-radius:9px;font-weight:900}.period-label{min-width:170px;text-align:center;padding:8px 12px;border:1px solid #23364b;background:#0a121c;border-radius:9px;font-size:10px;font-weight:900}
+.tracker-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}.tracker-metric{padding:13px 14px;border:1px solid #1b2938;background:#0c131d;border-radius:13px}.tracker-metric small{display:block;color:#7f8da0;font-size:8.5px;text-transform:uppercase;letter-spacing:.07em}.tracker-metric b{display:block;font-size:22px;margin-top:5px}.tracker-metric em{display:block;color:#738096;font-size:8px;font-style:normal;margin-top:3px}
+.tracker-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr);gap:12px}.tracker-list{display:grid;gap:9px}.tracker-item{padding:13px;border:1px solid #1b2a3a;background:#091019;border-radius:12px}.tracker-item-top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start}.tracker-item h4{margin:0;font-size:11.5px}.tracker-meta{margin-top:4px;color:#758399;font-size:8.5px;line-height:1.45}.tracker-progress{margin-top:9px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:center}.tracker-progress b{font-size:11px}.tracker-actions{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}.tracker-actions button{border:1px solid #26384d;background:#0d1722;color:#dce9f8;border-radius:8px;padding:6px 8px;font-size:8px;font-weight:800}.tracker-actions button.done{color:#75e8be;border-color:rgba(52,211,153,.30);background:rgba(52,211,153,.05)}
+.child-strip{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.child-chip{padding:5px 7px;border-radius:999px;border:1px solid #203248;background:#0b1420;color:#9fb0c4;font-size:8px}.child-chip strong{color:#fff}.compound-note{padding:13px;border:1px solid rgba(90,167,255,.20);background:linear-gradient(135deg,rgba(90,167,255,.06),rgba(139,92,246,.04));border-radius:11px}.compound-note h4{margin:0 0 5px;font-size:11px}.compound-note p{margin:0;color:#7f90a5;font-size:8.5px;line-height:1.55}.compound-flow{display:grid;gap:7px;margin-top:10px}.flow-row{display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:8px;align-items:center;font-size:8.5px}.flow-row span:first-child{color:#7f90a5}.flow-row b{font-size:9px}.period-empty{padding:28px 16px;text-align:center;border:1px dashed #26384a;border-radius:11px;color:#7d8b9f;font-size:10px}.period-empty strong{display:block;color:#dbe7f5;margin-bottom:5px}
+@media(max-width:1050px){.tracker-layout{grid-template-columns:1fr}.tracker-metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:650px){.view-head{align-items:flex-start;flex-direction:column}.tracker-metrics{grid-template-columns:1fr}.period-label{min-width:130px}}
+
 @media(max-width:1180px){.chain-grid{grid-template-columns:repeat(3,1fr)}.stage:after{display:none}}
 @media(max-width:1050px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid #182536}.nav{grid-template-columns:repeat(3,1fr)}.nav-note{position:static;margin-top:14px}.hero,.grid{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}.chain-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:650px){.main{padding:16px}.topbar{align-items:flex-start;flex-direction:column}.metrics,.chain-grid,.form-grid{grid-template-columns:1fr}.nav{grid-template-columns:1fr 1fr}.exec-item{grid-template-columns:1fr}.hero{grid-template-columns:1fr}}
@@ -39,17 +49,18 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
   <aside class="sidebar">
     <div class="brand"><div class="logo">G</div><div><h1>G·IOS</h1><small>Goals Intelligence Operating System</small></div></div>
     <nav class="nav">
-      <button class="active">Overview</button>
+      <button class="active" type="button" data-page="overview">Overview</button>
+      <button type="button" data-page="daily">Daily System</button>
+      <button type="button" data-page="weekly">Weekly System</button>
+      <button type="button" data-page="monthly">Monthly System</button>
       <button type="button" data-next="Goal Structure">Goal Structure</button>
-      <button type="button" data-next="Goals">Goals</button>
-      <button type="button" data-next="Progress">Progress</button>
-      <button type="button" data-next="Priorities">Priorities</button>
       <button type="button" data-next="Reviews">Reviews</button>
     </nav>
     <div class="nav-note"><button class="family" id="backToHios">← H·IOS Family</button></div>
   </aside>
 
   <main class="main">
+    <section class="page active" id="page-overview">
     <div class="topbar">
       <div><div class="eyebrow">G·IOS Intelligence</div><h2>Progress Intelligence</h2><p>Daily execution compounds upward into long-term progress.</p></div>
       <div class="actions"><button class="btn" id="syncNow">Sync H·IOS</button><button class="btn primary" id="addGoal">+ Add Goal</button></div>
@@ -120,7 +131,30 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
         <div class="sync-schema"><div class="sync-node">G·IOS progress engine</div><div class="sync-arrow">→</div><div class="sync-node">H·IOS dashboard snapshot</div></div>
         <div class="signal-box"><strong>Shared snapshot</strong><p id="syncText">Waiting for the first dashboard snapshot.</p></div>
       </section>
+
     </section>
+
+    <section class="page period-page" id="page-daily">
+      <div class="view-head"><div><div class="eyebrow">Execution layer</div><h2>Daily System</h2><p>Daily actions are the lowest execution layer. Completing them creates evidence that compounds into weekly, monthly and longer-term progress.</p></div><div class="actions"><button class="btn primary" id="addDailyAction">+ Add Daily Action</button></div></div>
+      <div class="period-toolbar"><button class="period-nav" id="dailyPrev">←</button><div class="period-label" id="dailyPeriodLabel">Today</div><button class="period-nav" id="dailyNext">→</button><button class="btn" id="dailyToday">Today</button></div>
+      <section class="tracker-metrics"><div class="tracker-metric"><small>Daily progress</small><b id="dailyMetricProgress">0%</b><em>Average action progress</em></div><div class="tracker-metric"><small>Completed</small><b id="dailyMetricDone">0</b><em>Completed actions</em></div><div class="tracker-metric"><small>Remaining</small><b id="dailyMetricRemaining">0</b><em>Actions still active</em></div><div class="tracker-metric"><small>Weekly links</small><b id="dailyMetricParents">0</b><em>Weekly targets supported</em></div></section>
+      <section class="tracker-layout"><div class="card"><div class="card-head"><div><h3>Daily Actions</h3><div class="sub">Track execution here. Parent progress updates automatically.</div></div></div><div class="tracker-list" id="dailySystemList"></div></div><aside class="card"><div class="card-head"><div><h3>Daily → Weekly Contribution</h3><div class="sub">Where today's execution is flowing.</div></div></div><div class="compound-note"><h4>Progress is created here.</h4><p>Daily actions should normally support weekly targets. Their progress automatically changes the connected weekly result.</p></div><div class="compound-flow" id="dailyFlow"></div></aside></section>
+    </section>
+
+    <section class="page period-page" id="page-weekly">
+      <div class="view-head"><div><div class="eyebrow">Execution target layer</div><h2>Weekly System</h2><p>Weekly targets collect daily execution into a meaningful progress block. Time organizes the week; actual completion determines the progress.</p></div><div class="actions"><button class="btn primary" id="addWeeklyTarget">+ Add Weekly Target</button></div></div>
+      <div class="period-toolbar"><button class="period-nav" id="weeklyPrev">←</button><div class="period-label" id="weeklyPeriodLabel">Current week</div><button class="period-nav" id="weeklyNext">→</button><button class="btn" id="weeklyCurrent">Current Week</button></div>
+      <section class="tracker-metrics"><div class="tracker-metric"><small>Weekly progress</small><b id="weeklyMetricProgress">0%</b><em>Rolled up from daily actions</em></div><div class="tracker-metric"><small>Weekly targets</small><b id="weeklyMetricTargets">0</b><em>Targets in this week</em></div><div class="tracker-metric"><small>Daily actions</small><b id="weeklyMetricDaily">0</b><em>Actions driving the week</em></div><div class="tracker-metric"><small>Monthly links</small><b id="weeklyMetricParents">0</b><em>Monthly milestones supported</em></div></section>
+      <section class="tracker-layout"><div class="card"><div class="card-head"><div><h3>Weekly Targets</h3><div class="sub">Each target shows the daily actions currently driving its progress.</div></div></div><div class="tracker-list" id="weeklySystemList"></div></div><aside class="card"><div class="card-head"><div><h3>Weekly → Monthly Contribution</h3><div class="sub">Progress rolls upward from weekly targets.</div></div></div><div class="compound-note"><h4>Weeks are progress containers.</h4><p>A target does not become complete because the week ended. It becomes complete when the intended outcome is actually achieved.</p></div><div class="compound-flow" id="weeklyFlow"></div></aside></section>
+    </section>
+
+    <section class="page period-page" id="page-monthly">
+      <div class="view-head"><div><div class="eyebrow">Milestone layer</div><h2>Monthly System</h2><p>Monthly milestones summarize whether repeated weekly execution is meaningfully moving larger goals. The month is a review horizon, not a forced deadline.</p></div><div class="actions"><button class="btn primary" id="addMonthlyMilestone">+ Add Monthly Milestone</button></div></div>
+      <div class="period-toolbar"><button class="period-nav" id="monthlyPrev">←</button><div class="period-label" id="monthlyPeriodLabel">Current month</div><button class="period-nav" id="monthlyNext">→</button><button class="btn" id="monthlyCurrent">Current Month</button></div>
+      <section class="tracker-metrics"><div class="tracker-metric"><small>Monthly progress</small><b id="monthlyMetricProgress">0%</b><em>Rolled up from weekly targets</em></div><div class="tracker-metric"><small>Milestones</small><b id="monthlyMetricTargets">0</b><em>Monthly outcomes tracked</em></div><div class="tracker-metric"><small>Weekly targets</small><b id="monthlyMetricWeekly">0</b><em>Targets driving the month</em></div><div class="tracker-metric"><small>Higher-level links</small><b id="monthlyMetricParents">0</b><em>Semester/yearly goals supported</em></div></section>
+      <section class="tracker-layout"><div class="card"><div class="card-head"><div><h3>Monthly Milestones</h3><div class="sub">Inspect how weekly execution compounds into each milestone.</div></div></div><div class="tracker-list" id="monthlySystemList"></div></div><aside class="card"><div class="card-head"><div><h3>Monthly → Long-Term Contribution</h3><div class="sub">Higher-level outcomes supported by this month's progress.</div></div></div><div class="compound-note"><h4>Progress before calendar pressure.</h4><p>G·IOS should show what moved, what stalled and what remains. A month ending does not automatically mean the goal failed.</p></div><div class="compound-flow" id="monthlyFlow"></div></aside></section>
+    </section>
+
   </main>
 </div>
 
@@ -155,11 +189,28 @@ const LEVEL_LABEL={yearly:'Yearly / Long-term',semester:'Semester',monthly:'Mont
 const LEVEL_RANK={yearly:5,semester:4,monthly:3,weekly:2,daily:1};
 let goals=[];
 let selectedRootId='';
+let dailyViewDate=new Date();
+let weeklyViewDate=new Date();
+let monthlyViewDate=new Date();
+let pendingCreatePeriodKey='';
+let pendingCreateLevel='';
 const $=s=>document.querySelector(s);const $$=s=>[...document.querySelectorAll(s)];
 const clamp=(v,a=0,b=100)=>Math.max(a,Math.min(b,Number(v)||0));
 const escapeHtml=v=>String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
 const cap=s=>s?s[0].toUpperCase()+s.slice(1):'';
 function datePlus(days){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()+days);return d.toISOString().slice(0,10)}
+
+function localDateKey(d){const x=new Date(d),y=x.getFullYear(),m=String(x.getMonth()+1).padStart(2,'0'),day=String(x.getDate()).padStart(2,'0');return `${y}-${m}-${day}`}
+function startOfWeek(d){const x=new Date(d);x.setHours(0,0,0,0);x.setDate(x.getDate()-((x.getDay()+6)%7));return x}
+function weekKey(d){return localDateKey(startOfWeek(d))}
+function monthKey(d){const x=new Date(d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}`}
+function defaultPeriodKey(level,d=new Date()){if(level==='daily')return localDateKey(d);if(level==='weekly')return weekKey(d);if(level==='monthly')return monthKey(d);return ''}
+function periodKeyForGoal(g){return g.periodKey||defaultPeriodKey(g.level)}
+function formatDayHeading(d){return new Date(d).toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
+function formatWeekHeading(d){const s=startOfWeek(d),e=new Date(s);e.setDate(e.getDate()+6);return `${s.toLocaleDateString(undefined,{day:'numeric',month:'short'})} – ${e.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}`}
+function formatMonthHeading(d){return new Date(d).toLocaleDateString(undefined,{month:'long',year:'numeric'})}
+function averageProgress(items){return items.length?Math.round(weightedAverage(items,g=>effectiveProgress(g))):0}
+
 function starterGoals(){return[
 {id:'eng_year',title:'Complete the engineering academic year successfully',level:'yearly',domain:'Engineering',priority:'high',manualProgress:0,parentId:'',weight:1,targetDate:'',why:'Advance toward professional engineering competence.',history:[]},
 {id:'eng_sem',title:'Complete the current semester successfully',level:'semester',domain:'Engineering',priority:'high',manualProgress:0,parentId:'eng_year',weight:1,targetDate:'',why:'Build the academic results required by the yearly direction.',history:[]},
@@ -179,7 +230,7 @@ function starterGoals(){return[
 ]}
 function normalizeGoal(g){
  const level=g.level||g.horizon||'monthly';
- return {id:g.id||('g_'+Date.now()+Math.random().toString(16).slice(2)),title:g.title||'Untitled goal',level:LEVELS.includes(level)?level:'monthly',domain:g.domain||'Other',priority:['high','medium','low'].includes(g.priority)?g.priority:'medium',manualProgress:clamp(g.manualProgress??g.progress??0),parentId:g.parentId||'',weight:Math.max(.1,Number(g.weight||1)),targetDate:g.targetDate||'',why:g.why||'',history:Array.isArray(g.history)?g.history:[]};
+ return {id:g.id||('g_'+Date.now()+Math.random().toString(16).slice(2)),title:g.title||'Untitled goal',level:LEVELS.includes(level)?level:'monthly',domain:g.domain||'Other',priority:['high','medium','low'].includes(g.priority)?g.priority:'medium',manualProgress:clamp(g.manualProgress??g.progress??0),parentId:g.parentId||'',weight:Math.max(.1,Number(g.weight||1)),targetDate:g.targetDate||'',periodKey:g.periodKey||defaultPeriodKey(LEVELS.includes(level)?level:'monthly'),why:g.why||'',history:Array.isArray(g.history)?g.history:[]};
 }
 function loadGoals(){
  try{
@@ -230,17 +281,37 @@ function recordProgress(g,newValue){const old=clamp(g.manualProgress);const next
 function adjustProgress(id,delta){const g=goals.find(x=>x.id===id);if(!g)return;if(childrenOf(g.id).length){toast('This goal rolls up from child goals. Update the lower-level goals instead.');return}recordProgress(g,clamp(g.manualProgress+delta));saveGoals()}
 function completeGoal(id){const g=goals.find(x=>x.id===id);if(!g)return;if(childrenOf(g.id).length){toast('This goal rolls up from child goals. Complete the lower-level goals instead.');return}recordProgress(g,100);saveGoals();toast('Daily action completed. Parent progress recalculated.')}
 function publishDashboardSnapshot(showMessage=false){const root=goals.find(g=>g.id===selectedRootId)||primaryRoot();const active=goals.filter(g=>effectiveProgress(g)<100);const snapshot={source:'G-IOS',version:2,updatedAt:new Date().toISOString(),primaryGoal:root?{id:root.id,title:root.title,domain:root.domain,progress:effectiveProgress(root),remaining:100-effectiveProgress(root)}:null,activeGoals:active.length,highPriority:active.filter(g=>g.priority==='high').length,calendarItems:active.filter(g=>g.targetDate).map(g=>({id:g.id,title:g.title,date:g.targetDate,domain:g.domain,horizon:g.level,level:g.level,progress:effectiveProgress(g)})),domainProgress:topLevelDomainProgress(),focusItems:rankedFocus().slice(0,4).map((g,i)=>({rank:i+1,id:g.id,title:g.title,domain:g.domain,horizon:g.level,level:g.level,progress:effectiveProgress(g),remaining:100-effectiveProgress(g),targetDate:g.targetDate,urgency:urgency(g),reason:g.why||''})),progressChain:root?Object.fromEntries(LEVELS.map(level=>[level,{progress:levelProgressForRoot(root,level),count:levelItemsForRoot(root,level).length}])):{},goals:goals.map(g=>({...g,progress:effectiveProgress(g) }))};localStorage.setItem(SNAPSHOT_KEY,JSON.stringify(snapshot));$('#syncText').textContent='Snapshot updated '+new Date(snapshot.updatedAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'. H·IOS can read the primary goal, domain progress, ranked focus items and hard deadlines.';if(showMessage)toast('G·IOS progress snapshot published to H·IOS.')}
-function renderAll(){renderRootSelect();renderMetrics();renderChain();renderExecution();renderDomains();renderPriorities();renderDeadlines();renderForecast();renderParentOptions();publishDashboardSnapshot(false)}
+
+function goalsForPeriod(level,key){return goals.filter(g=>g.level===level&&periodKeyForGoal(g)===key)}
+function parentLabel(g){const p=goals.find(x=>x.id===g.parentId);return p?`${LEVEL_LABEL[p.level]} · ${p.title}`:'No higher-level goal linked'}
+function childSummary(g,level){const kids=childrenOf(g.id).filter(x=>!level||x.level===level);return {kids,done:kids.filter(x=>effectiveProgress(x)>=100).length}}
+function trackerItemHtml(g,childLevel){const progress=effectiveProgress(g),summary=childSummary(g,childLevel),kids=summary.kids;const childHtml=kids.length?`<div class="child-strip">${kids.slice(0,8).map(c=>`<span class="child-chip">${escapeHtml(c.title)} · <strong>${effectiveProgress(c)}%</strong></span>`).join('')}</div>`:'';const leaf=!childrenOf(g.id).length;const controls=leaf?`<div class="tracker-actions"><button data-track-adjust="-10" data-id="${g.id}">−10%</button><button data-track-adjust="10" data-id="${g.id}">+10%</button><button class="done" data-track-complete="${g.id}">Done</button></div>`:`<div class="tracker-actions"><span class="tag">${kids.length} linked ${childLevel}${kids.length===1?'':'s'}</span></div>`;return `<div class="tracker-item"><div class="tracker-item-top"><div><h4>${escapeHtml(g.title)}</h4><div class="tracker-meta">${escapeHtml(g.domain)} · ${escapeHtml(parentLabel(g))}${g.targetDate?' · Hard deadline: '+escapeHtml(formatDue(g.targetDate)):''}</div></div>${controls}</div><div class="tracker-progress"><div class="bar"><span style="width:${progress}%"></span></div><b>${progress}%</b></div>${childHtml}</div>`}
+function flowRows(items){const map=new Map();items.forEach(g=>{const p=goals.find(x=>x.id===g.parentId);if(!p)return;if(!map.has(p.id))map.set(p.id,{parent:p,children:[]});map.get(p.id).children.push(g)});if(!map.size)return '<div class="period-empty"><strong>No linked parent goals yet.</strong>Connect lower-level goals to the next planning layer to create compounding progress.</div>';return [...map.values()].map(({parent})=>`<div class="flow-row"><span>${LEVEL_LABEL[parent.level]}</span><div>${escapeHtml(parent.title)}</div><b>${effectiveProgress(parent)}%</b></div>`).join('')}
+function renderDailySystem(){const key=localDateKey(dailyViewDate),items=goalsForPeriod('daily',key);$('#dailyPeriodLabel').textContent=formatDayHeading(dailyViewDate);$('#dailyMetricProgress').textContent=averageProgress(items)+'%';$('#dailyMetricDone').textContent=items.filter(g=>effectiveProgress(g)>=100).length;$('#dailyMetricRemaining').textContent=items.filter(g=>effectiveProgress(g)<100).length;$('#dailyMetricParents').textContent=new Set(items.map(g=>g.parentId).filter(Boolean)).size;$('#dailySystemList').innerHTML=items.length?items.map(g=>trackerItemHtml(g,'daily action')).join(''):'<div class="period-empty"><strong>No daily actions for this day.</strong>Add an action and connect it to a weekly target.</div>';$('#dailyFlow').innerHTML=flowRows(items)}
+function renderWeeklySystem(){const key=weekKey(weeklyViewDate),items=goalsForPeriod('weekly',key),dailyKids=items.flatMap(g=>childrenOf(g.id).filter(c=>c.level==='daily'));$('#weeklyPeriodLabel').textContent=formatWeekHeading(weeklyViewDate);$('#weeklyMetricProgress').textContent=averageProgress(items)+'%';$('#weeklyMetricTargets').textContent=items.length;$('#weeklyMetricDaily').textContent=dailyKids.length;$('#weeklyMetricParents').textContent=new Set(items.map(g=>g.parentId).filter(Boolean)).size;$('#weeklySystemList').innerHTML=items.length?items.map(g=>trackerItemHtml(g,'daily action')).join(''):'<div class="period-empty"><strong>No weekly targets for this week.</strong>Create a weekly target, then link daily actions beneath it.</div>';$('#weeklyFlow').innerHTML=flowRows(items)}
+function renderMonthlySystem(){const key=monthKey(monthlyViewDate),items=goalsForPeriod('monthly',key),weeklyKids=items.flatMap(g=>childrenOf(g.id).filter(c=>c.level==='weekly'));$('#monthlyPeriodLabel').textContent=formatMonthHeading(monthlyViewDate);$('#monthlyMetricProgress').textContent=averageProgress(items)+'%';$('#monthlyMetricTargets').textContent=items.length;$('#monthlyMetricWeekly').textContent=weeklyKids.length;$('#monthlyMetricParents').textContent=new Set(items.map(g=>g.parentId).filter(Boolean)).size;$('#monthlySystemList').innerHTML=items.length?items.map(g=>trackerItemHtml(g,'weekly target')).join(''):'<div class="period-empty"><strong>No monthly milestones for this month.</strong>Create a milestone and connect weekly targets beneath it.</div>';$('#monthlyFlow').innerHTML=flowRows(items)}
+function navigatePage(page){$$('.page').forEach(p=>p.classList.toggle('active',p.id===`page-${page}`));$$('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));if(page==='daily')renderDailySystem();if(page==='weekly')renderWeeklySystem();if(page==='monthly')renderMonthlySystem();window.scrollTo({top:0,behavior:'instant'})}
+function openGoalForPeriod(level,key){pendingCreateLevel=level;pendingCreatePeriodKey=key;$('#goalLevel').value=level;renderParentOptions();$('#goalModal').classList.add('show')}
+function handleTrackerClick(e){const adj=e.target.closest('[data-track-adjust]');if(adj){adjustProgress(adj.dataset.id,Number(adj.dataset.trackAdjust));return}const done=e.target.closest('[data-track-complete]');if(done)completeGoal(done.dataset.trackComplete)}
+
+function renderAll(){renderRootSelect();renderMetrics();renderChain();renderExecution();renderDomains();renderPriorities();renderDeadlines();renderForecast();renderParentOptions();renderDailySystem();renderWeeklySystem();renderMonthlySystem();publishDashboardSnapshot(false)}
 function toast(message){const t=$('#toast');t.textContent=message;t.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),2200)}
-$('#addGoal').addEventListener('click',()=>{$('#goalModal').classList.add('show');renderParentOptions()});
+$('#addGoal').addEventListener('click',()=>{pendingCreateLevel='';pendingCreatePeriodKey='';$('#goalModal').classList.add('show');renderParentOptions()});
 $('#cancelGoal').addEventListener('click',()=>$('#goalModal').classList.remove('show'));
 $('#goalModal').addEventListener('click',e=>{if(e.target.id==='goalModal')$('#goalModal').classList.remove('show')});
 $('#goalLevel').addEventListener('change',renderParentOptions);$('#goalDomain').addEventListener('change',renderParentOptions);
-$('#goalForm').addEventListener('submit',e=>{e.preventDefault();const g=normalizeGoal({id:'g_'+Date.now(),title:$('#goalTitle').value.trim(),level:$('#goalLevel').value,domain:$('#goalDomain').value,priority:$('#goalPriority').value,manualProgress:clamp($('#goalProgress').value),parentId:$('#goalParent').value,weight:Number($('#goalWeight').value||1),targetDate:$('#goalDate').value,why:$('#goalWhy').value.trim(),history:[]});goals.unshift(g);saveGoals();e.target.reset();$('#goalWeight').value=1;$('#goalPriority').value='medium';$('#goalModal').classList.remove('show');toast('Goal added to the compounding structure.')});
+$('#goalForm').addEventListener('submit',e=>{e.preventDefault();const level=$('#goalLevel').value;const g=normalizeGoal({id:'g_'+Date.now(),title:$('#goalTitle').value.trim(),level,domain:$('#goalDomain').value,priority:$('#goalPriority').value,manualProgress:clamp($('#goalProgress').value),parentId:$('#goalParent').value,weight:Number($('#goalWeight').value||1),targetDate:$('#goalDate').value,periodKey:(pendingCreateLevel===level&&pendingCreatePeriodKey)?pendingCreatePeriodKey:defaultPeriodKey(level),why:$('#goalWhy').value.trim(),history:[]});goals.unshift(g);saveGoals();e.target.reset();$('#goalWeight').value=1;$('#goalPriority').value='medium';pendingCreateLevel='';pendingCreatePeriodKey='';$('#goalModal').classList.remove('show');toast('Goal added to the compounding structure.')});
 $('#chainRoot').addEventListener('change',e=>{selectedRootId=e.target.value;renderAll()});
 $('#executionList').addEventListener('click',e=>{const adj=e.target.closest('[data-adjust]');if(adj){adjustProgress(adj.dataset.id,Number(adj.dataset.adjust));return}const done=e.target.closest('[data-complete]');if(done)completeGoal(done.dataset.complete)});
 $('#syncNow').addEventListener('click',()=>publishDashboardSnapshot(true));$('#syncNow2').addEventListener('click',()=>publishDashboardSnapshot(true));$('#reRank').addEventListener('click',()=>{renderPriorities();toast('Priorities re-ranked from progress, importance and real deadlines.')});
-$('#backToHios').addEventListener('click',()=>window.location.href='./index.html?view=home');$$('[data-next]').forEach(btn=>btn.addEventListener('click',()=>toast(btn.dataset.next+' will be expanded in the next G·IOS build.')));
+$('#backToHios').addEventListener('click',()=>window.location.href='./index.html?view=home');
+$$('[data-page]').forEach(btn=>btn.addEventListener('click',()=>navigatePage(btn.dataset.page)));
+$$('[data-next]').forEach(btn=>btn.addEventListener('click',()=>toast(btn.dataset.next+' will be expanded in the next G·IOS build.')));
+$('#dailyPrev').addEventListener('click',()=>{dailyViewDate.setDate(dailyViewDate.getDate()-1);renderDailySystem()});$('#dailyNext').addEventListener('click',()=>{dailyViewDate.setDate(dailyViewDate.getDate()+1);renderDailySystem()});$('#dailyToday').addEventListener('click',()=>{dailyViewDate=new Date();renderDailySystem()});
+$('#weeklyPrev').addEventListener('click',()=>{weeklyViewDate.setDate(weeklyViewDate.getDate()-7);renderWeeklySystem()});$('#weeklyNext').addEventListener('click',()=>{weeklyViewDate.setDate(weeklyViewDate.getDate()+7);renderWeeklySystem()});$('#weeklyCurrent').addEventListener('click',()=>{weeklyViewDate=new Date();renderWeeklySystem()});
+$('#monthlyPrev').addEventListener('click',()=>{monthlyViewDate.setMonth(monthlyViewDate.getMonth()-1);renderMonthlySystem()});$('#monthlyNext').addEventListener('click',()=>{monthlyViewDate.setMonth(monthlyViewDate.getMonth()+1);renderMonthlySystem()});$('#monthlyCurrent').addEventListener('click',()=>{monthlyViewDate=new Date();renderMonthlySystem()});
+$('#addDailyAction').addEventListener('click',()=>openGoalForPeriod('daily',localDateKey(dailyViewDate)));$('#addWeeklyTarget').addEventListener('click',()=>openGoalForPeriod('weekly',weekKey(weeklyViewDate)));$('#addMonthlyMilestone').addEventListener('click',()=>openGoalForPeriod('monthly',monthKey(monthlyViewDate)));
+$('#dailySystemList').addEventListener('click',handleTrackerClick);$('#weeklySystemList').addEventListener('click',handleTrackerClick);$('#monthlySystemList').addEventListener('click',handleTrackerClick);
 window.addEventListener('storage',e=>{if([GOALS_KEY,...OLD_GOALS_KEYS].includes(e.key)){loadGoals();renderAll()}});
 loadGoals();renderAll();
 </script>
