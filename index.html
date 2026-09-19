@@ -1773,9 +1773,11 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     scrollbar-width:thin !important;
   }
 
-  /* The zoomed cell may sit above neighbours, but its contents remain inside its border. */
+  /* The zoomed cell may sit above neighbours. Its vertical edge remains clipped,
+     while a selected item may project across the left and right borders. */
   .home-layout.auto-zoom-enabled .calendar-day:hover{
-    overflow:hidden !important;
+    overflow:visible !important;
+    clip-path:inset(0 -42% 0 -42%) !important;
     z-index:500 !important;
     isolation:isolate !important;
   }
@@ -1811,7 +1813,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event:hover{
     width:100% !important;
     margin-left:0 !important;
-    transform:scale(1.08) !important;
+    transform:none !important;
     z-index:2000 !important;
     white-space:normal !important;
     overflow:hidden !important;
@@ -1821,6 +1823,37 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     background:#17263a !important;
     border-color:rgba(110,168,255,.92) !important;
     box-shadow:0 14px 34px rgba(0,0,0,.58), 0 0 0 1px rgba(110,168,255,.38), 0 0 24px rgba(110,168,255,.25) !important;
+  }
+
+  /* The visible hover copy is placed directly inside the day cell. This lets it
+     sit in front of the left/right borders without escaping through the top/bottom. */
+  .calendar-event.is-hover-overlay-source{
+    opacity:0 !important;
+  }
+  .calendar-event.calendar-event-hover-overlay{
+    position:absolute !important;
+    left:-6% !important;
+    width:112% !important;
+    margin:0 !important;
+    z-index:5000 !important;
+    pointer-events:none !important;
+    transform:scale(1.10) !important;
+    transform-origin:center center !important;
+    white-space:normal !important;
+    overflow:hidden !important;
+    text-overflow:clip !important;
+    line-height:1.22 !important;
+    padding:5px 7px !important;
+    background:#17263a !important;
+    border-color:rgba(110,168,255,.92) !important;
+    box-shadow:0 14px 34px rgba(0,0,0,.58),0 0 0 1px rgba(110,168,255,.38),0 0 24px rgba(110,168,255,.25) !important;
+  }
+  .calendar-event.calendar-event-hover-overlay.high,
+  .calendar-event.calendar-event-hover-overlay.manual.test,
+  .calendar-event.calendar-event-hover-overlay.manual.assessment{
+    background:#311b27 !important;
+    border-color:rgba(251,113,133,.92) !important;
+    box-shadow:0 14px 34px rgba(0,0,0,.58),0 0 0 1px rgba(251,113,133,.38),0 0 24px rgba(251,113,133,.22) !important;
   }
 
   .home-layout.auto-zoom-enabled .calendar-day:hover .calendar-event.high:hover,
@@ -3074,6 +3107,73 @@ restoreExistingSession();
 
 
 
+</script>
+<script id="hios-calendar-event-hover-layer">
+(function(){
+  'use strict';
+
+  const calendar=document.getElementById('hiosCalendar');
+  if(!calendar)return;
+
+  let source=null;
+  let overlay=null;
+
+  function clearOverlay(){
+    if(source)source.classList.remove('is-hover-overlay-source');
+    if(overlay)overlay.remove();
+    source=null;
+    overlay=null;
+  }
+
+  function showOverlay(eventItem){
+    const day=eventItem.closest('.calendar-day');
+    const eventList=eventItem.closest('.calendar-events');
+    const layout=eventItem.closest('.home-layout');
+    if(!day||!eventList||!layout?.classList.contains('auto-zoom-enabled'))return;
+
+    clearOverlay();
+    source=eventItem;
+    overlay=eventItem.cloneNode(true);
+    overlay.classList.remove('is-hover-overlay-source');
+    overlay.classList.add('calendar-event-hover-overlay');
+    overlay.removeAttribute('onclick');
+    overlay.setAttribute('aria-hidden','true');
+    overlay.tabIndex=-1;
+    day.appendChild(overlay);
+
+    const dayRect=day.getBoundingClientRect();
+    const itemRect=eventItem.getBoundingClientRect();
+    const scaleY=day.offsetHeight?dayRect.height/day.offsetHeight:1;
+    const listTop=eventList.offsetTop;
+    const rawTop=(itemRect.top-dayRect.top)/Math.max(scaleY,.01);
+
+    overlay.style.maxHeight=Math.max(18,day.clientHeight-listTop-3)+'px';
+    overlay.style.top=Math.max(listTop,rawTop)+'px';
+
+    const overlayHeight=overlay.offsetHeight;
+    const maximumTop=Math.max(listTop,day.clientHeight-overlayHeight-3);
+    overlay.style.top=Math.min(Math.max(listTop,rawTop),maximumTop)+'px';
+    source.classList.add('is-hover-overlay-source');
+  }
+
+  calendar.addEventListener('pointerover',event=>{
+    const eventItem=event.target.closest('.calendar-event');
+    if(!eventItem||eventItem.classList.contains('calendar-event-hover-overlay'))return;
+    if(eventItem===source)return;
+    showOverlay(eventItem);
+  });
+
+  calendar.addEventListener('pointerout',event=>{
+    if(!source)return;
+    const leavingItem=event.target.closest('.calendar-event');
+    if(leavingItem!==source)return;
+    if(event.relatedTarget&&source.contains(event.relatedTarget))return;
+    clearOverlay();
+  });
+
+  calendar.addEventListener('scroll',clearOverlay,true);
+  calendar.addEventListener('pointerleave',clearOverlay);
+})();
 </script>
 </body>
 </html>
