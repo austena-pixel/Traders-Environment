@@ -662,6 +662,12 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 const GOALS_KEY='hios_gios_goals_v2';
 const OLD_GOALS_KEYS=['hios_gios_goals_v1','gios_standalone_goals_v1'];
 const SNAPSHOT_KEY='hios_gios_dashboard_v1';
+const DEMO_CLEANUP_KEY='hios_gios_demo_cleanup_v1';
+const LEGACY_DEMO_GOAL_IDS=new Set([
+ 'eng_year','eng_sem','eng_month','eng_week','eng_day1','eng_day2','eng_day3',
+ 'trade_year','trade_sem','trade_month','trade_week','trade_day',
+ 'fit_year','fit_week','fit_day'
+]);
 const goalsBridge=window.HIOSConnectionLayer.connect('goals-ios');
 const LEVELS=['yearly','semester','monthly','weekly','daily'];
 const LEVEL_LABEL={yearly:'Yearly / Long-term',semester:'Semester',monthly:'Monthly',weekly:'Weekly',daily:'Daily'};
@@ -718,23 +724,7 @@ function formatWeekHeading(d){const s=startOfWeek(d),e=new Date(s);e.setDate(e.g
 function formatMonthHeading(d){return new Date(d).toLocaleDateString(undefined,{month:'long',year:'numeric'})}
 function averageProgress(items){return items.length?Math.round(weightedAverage(items,g=>effectiveProgress(g))):0}
 
-function starterGoals(){return[
-{id:'eng_year',title:'Complete the engineering academic year successfully',level:'yearly',domain:'Engineering',priority:'high',manualProgress:0,parentId:'',weight:1,targetDate:'',why:'Advance toward professional engineering competence.',history:[]},
-{id:'eng_sem',title:'Complete the current semester successfully',level:'semester',domain:'Engineering',priority:'high',manualProgress:0,parentId:'eng_year',weight:1,targetDate:'',why:'Build the academic results required by the yearly direction.',history:[]},
-{id:'eng_month',title:'Complete current assessment cycle',level:'monthly',domain:'Engineering',priority:'high',manualProgress:0,parentId:'eng_sem',weight:1,targetDate:'',why:'Convert semester direction into measurable assessment progress.',history:[]},
-{id:'eng_week',title:'Finish Test 2 revision and practice',level:'weekly',domain:'Engineering',priority:'high',manualProgress:0,parentId:'eng_month',weight:1,targetDate:'',why:'Protect the nearest academic progress block.',history:[]},
-{id:'eng_day1',title:'Complete bending-stress revision',level:'daily',domain:'Engineering',priority:'high',manualProgress:100,parentId:'eng_week',weight:1,targetDate:'',why:'Complete one concrete part of the weekly target.',history:[]},
-{id:'eng_day2',title:'Complete Tutorial 3 practice',level:'daily',domain:'Engineering',priority:'high',manualProgress:65,parentId:'eng_week',weight:1,targetDate:datePlus(2),why:'Build exam readiness through active practice.',history:[]},
-{id:'eng_day3',title:'Complete one mixed Test 2 paper',level:'daily',domain:'Engineering',priority:'high',manualProgress:20,parentId:'eng_week',weight:1,targetDate:datePlus(3),why:'Test the full topic chain under exam conditions.',history:[]},
-{id:'trade_year',title:'Become consistently disciplined in trading execution',level:'yearly',domain:'Trading',priority:'high',manualProgress:0,parentId:'',weight:1,targetDate:'',why:'Build professional trading behavior before wealth accumulation.',history:[]},
-{id:'trade_sem',title:'Complete execution and edge-development phases',level:'semester',domain:'Trading',priority:'medium',manualProgress:0,parentId:'trade_year',weight:1,targetDate:'',why:'Advance the long-term trading development process.',history:[]},
-{id:'trade_month',title:'Complete current Phase 1 execution sample',level:'monthly',domain:'Trading',priority:'high',manualProgress:0,parentId:'trade_sem',weight:1,targetDate:'',why:'Prove execution quality over a complete sample.',history:[]},
-{id:'trade_week',title:'Complete remaining clean trades this week',level:'weekly',domain:'Trading',priority:'medium',manualProgress:0,parentId:'trade_month',weight:1,targetDate:'',why:'Move the active sample forward without breaking rules.',history:[]},
-{id:'trade_day',title:'Execute only predefined setups and complete reflection',level:'daily',domain:'Trading',priority:'medium',manualProgress:55,parentId:'trade_week',weight:1,targetDate:'',why:'Protect execution quality today.',history:[]},
-{id:'fit_year',title:'Maintain strong physical conditioning',level:'yearly',domain:'Fitness',priority:'medium',manualProgress:0,parentId:'',weight:1,targetDate:'',why:'Support long-term energy and performance.',history:[]},
-{id:'fit_week',title:'Complete weekly training target',level:'weekly',domain:'Fitness',priority:'medium',manualProgress:0,parentId:'fit_year',weight:1,targetDate:'',why:'Maintain consistent training execution.',history:[]},
-{id:'fit_day',title:'Complete today\'s training session',level:'daily',domain:'Fitness',priority:'low',manualProgress:88,parentId:'fit_week',weight:1,targetDate:'',why:'Protect the current routine.',history:[]}
-]}
+function starterGoals(){return[]}
 function normalizeGoal(g){
  const level=g.level||g.horizon||'monthly';
  return {id:g.id||('g_'+Date.now()+Math.random().toString(16).slice(2)),title:g.title||'Untitled goal',level:LEVELS.includes(level)?level:'monthly',domain:g.domain||'Other',priority:['high','medium','low'].includes(g.priority)?g.priority:'medium',manualProgress:clamp(g.manualProgress??g.progress??0),parentId:g.parentId||'',weight:Math.max(.1,Number(g.weight||1)),targetDate:g.targetDate||'',periodKey:g.periodKey||defaultPeriodKey(LEVELS.includes(level)?level:'monthly'),why:g.why||'',history:Array.isArray(g.history)?g.history:[]};
@@ -744,8 +734,12 @@ function loadGoals(){
   let raw=localStorage.getItem(GOALS_KEY);
   if(!raw){for(const key of OLD_GOALS_KEYS){const r=localStorage.getItem(key);if(r){raw=r;break}}}
   const parsed=raw?JSON.parse(raw):null;
-  goals=Array.isArray(parsed)&&parsed.length?parsed.map(normalizeGoal):starterGoals();
- }catch(e){console.warn('Could not load G·IOS data:',e);goals=starterGoals()}
+  goals=Array.isArray(parsed)?parsed.map(normalizeGoal):starterGoals();
+ }catch(e){console.warn('Could not load G·IOS data:',e);goals=[]}
+ if(!localStorage.getItem(DEMO_CLEANUP_KEY)){
+  goals=goals.filter(goal=>!LEGACY_DEMO_GOAL_IDS.has(String(goal.id)));
+  localStorage.setItem(DEMO_CLEANUP_KEY,new Date().toISOString());
+ }
  // G·IOS automatically repairs missing links inside the same focus area.
  // Existing explicit parent links are preserved; only orphaned/missing links are filled.
  repairAllGoalChains();
@@ -1119,16 +1113,16 @@ function renderAdvancedFocusOptions(){
  else if(current&&focusAreas.includes(current))select.value=current;
 }
 
-function removeGoalById(id){
+function deleteGoalRecord(id,{confirmUser=true,showMessage=true}={}){
  const goal=goals.find(g=>g.id===id);
- if(!goal)return;
+ if(!goal)return false;
 
  const children=goals.filter(g=>g.parentId===id);
  const message=children.length
    ? `Remove "${goal.title}"? ${children.length} connected lower-level goal${children.length===1?'':'s'} will be kept and re-linked where possible.`
    : `Remove "${goal.title}"?`;
 
- if(!window.confirm(message))return;
+ if(confirmUser&&!window.confirm(message))return false;
 
  goals=goals.filter(g=>g.id!==id);
 
@@ -1142,7 +1136,46 @@ function removeGoalById(id){
  }
 
  saveGoals(true,{type:goal.level==='daily'?'task.deleted':'goal.deleted',goal,extra:{deletedAt:new Date().toISOString()}});
- toast(goal.title+' removed.');
+ if(showMessage)toast(goal.title+' removed.');
+ return true;
+}
+
+function removeGoalById(id){
+ deleteGoalRecord(id,{confirmUser:true,showMessage:true});
+}
+
+const HIOS_GOAL_REQUEST_TYPES=[
+ 'task.calendar.remove.requested',
+ 'goal.calendar.remove.requested',
+ 'task.delete.requested',
+ 'goal.delete.requested'
+];
+
+function processHiosGoalRequest(signal){
+ if(!signal||!HIOS_GOAL_REQUEST_TYPES.includes(signal.type))return;
+ const goalId=String(signal.payload?.goalId||'');
+ const goal=goals.find(item=>item.id===goalId);
+ let outcome={ok:false,reason:'goal-not-found',goalId};
+
+ if(goal&&signal.type.includes('.calendar.remove.')){
+  const previousDeadline=goal.targetDate||'';
+  goal.targetDate='';
+  saveGoals(true,{
+   type:goal.level==='daily'?'task.updated':'goal.deadline.changed',
+   goal,
+   extra:{previousDeadline,action:'removed-from-calendar',requestedBy:'h-ios'}
+  });
+  outcome={ok:true,action:'removed-from-calendar',goalId};
+  toast(goal.title+' removed from the H-IOS calendar.');
+ }
+
+ if(goal&&signal.type.includes('.delete.')){
+  const removed=deleteGoalRecord(goalId,{confirmUser:false,showMessage:false});
+  outcome={ok:removed,action:'deleted',goalId};
+  if(removed)toast(goal.title+' deleted through H-IOS.');
+ }
+
+ goalsBridge.acknowledgeRequest(signal.signalId,outcome);
 }
 
 function renderSetGoals(){
@@ -1384,7 +1417,12 @@ $('#monthProgressStrip').addEventListener('wheel',e=>{
  }
 },{passive:false});
 window.addEventListener('storage',e=>{if([GOALS_KEY,...OLD_GOALS_KEYS].includes(e.key)){loadGoals();renderAll()}});
-loadGoals();normalizeViewArea();if(selectedViewArea)selectRootForDomain(selectedViewArea);renderAll();
+loadGoals();
+normalizeViewArea();
+if(selectedViewArea)selectRootForDomain(selectedViewArea);
+goalsBridge.subscribe(processHiosGoalRequest,{source:'h-ios',types:HIOS_GOAL_REQUEST_TYPES});
+goalsBridge.getPendingRequests().forEach(processHiosGoalRequest);
+renderAll();
 </script>
 </body>
 </html>
