@@ -856,6 +856,26 @@ function dailyGoals(){return goals.filter(g=>g.level==='daily'&&effectiveProgres
 function dailyExecution(root=null){const items=root?levelItemsForRoot(root,'daily'):goals.filter(g=>g.level==='daily');return items.length?Math.round(weightedAverage(items,g=>effectiveProgress(g))):0}
 function weeklyProgress(root=null){const items=root?levelItemsForRoot(root,'weekly'):goals.filter(g=>g.level==='weekly');return items.length?Math.round(weightedAverage(items,g=>effectiveProgress(g))):0}
 function topLevelDomainProgress(){const groups={};topGoals().forEach(g=>{(groups[g.domain]||=[]).push(g)});return Object.entries(groups).map(([domain,items])=>({domain,progress:Math.round(weightedAverage(items,g=>effectiveProgress(g)))})).sort((a,b)=>b.progress-a.progress)}
+function dailyExpectedProgressByFocusArea(date=new Date()){
+ const dayKey=localDateKey(date);
+ return focusAreas.map(domain=>{
+  const tasks=goals.filter(goal=>
+   goal.level==='daily'&&
+   sameDomain(goal.domain,domain)&&
+   (goal.targetDate===dayKey||periodKeyForGoal(goal)===dayKey)
+  );
+  const completed=tasks.filter(goal=>effectiveProgress(goal)>=100).length;
+  const expected=tasks.length;
+  return {
+   domain,
+   progress:expected?Math.round((completed/expected)*100):0,
+   completed,
+   expected,
+   date:dayKey,
+   measure:'daily-expected'
+  };
+ });
+}
 function daysUntil(date){if(!date)return Infinity;const today=new Date();today.setHours(0,0,0,0);const due=new Date(date+'T00:00:00');return Math.ceil((due-today)/86400000)}
 function formatDue(date){const d=daysUntil(date);if(d===Infinity)return'No deadline';if(d<0)return Math.abs(d)+'d overdue';if(d===0)return'Due today';if(d===1)return'Due tomorrow';if(d<=30)return'Due in '+d+'d';return new Date(date+'T00:00:00').toLocaleDateString(undefined,{day:'numeric',month:'short'})}
 function priorityScore(g){let s=g.priority==='high'?50:g.priority==='medium'?30:15;const p=effectiveProgress(g);s+=(100-p)*.30;if(g.level==='daily')s+=18;else if(g.level==='weekly')s+=10;else if(g.level==='monthly')s+=5;const d=daysUntil(g.targetDate);if(d<=0)s+=28;else if(d<=3)s+=18;else if(d<=7)s+=10;return s}
@@ -1272,7 +1292,8 @@ function publishDashboardSnapshot(showMessage=false){
    level:g.level,
    progress:effectiveProgress(g)
   })),
-  domainProgress:topLevelDomainProgress(),
+  focusAreas:[...focusAreas],
+  domainProgress:dailyExpectedProgressByFocusArea(),
   focusItems:rankedFocus().slice(0,4).map((g,i)=>({
    rank:i+1,
    id:g.id,
