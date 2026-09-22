@@ -881,6 +881,17 @@ function formatDue(date){const d=daysUntil(date);if(d===Infinity)return'No deadl
 function priorityScore(g){let s=g.priority==='high'?50:g.priority==='medium'?30:15;const p=effectiveProgress(g);s+=(100-p)*.30;if(g.level==='daily')s+=18;else if(g.level==='weekly')s+=10;else if(g.level==='monthly')s+=5;const d=daysUntil(g.targetDate);if(d<=0)s+=28;else if(d<=3)s+=18;else if(d<=7)s+=10;return s}
 function urgency(g){const s=priorityScore(g);if(s>=90)return'Very high';if(s>=68)return'High';if(s>=45)return'Moderate';return'Maintain'}
 function rankedFocus(){return goals.filter(g=>effectiveProgress(g)<100).slice().sort((a,b)=>priorityScore(b)-priorityScore(a))}
+function todaysActiveTasks(date=new Date()){
+ const dayKey=localDateKey(date);
+ return goals
+  .filter(goal=>
+   goal.level==='daily'&&
+   effectiveProgress(goal)<100&&
+   (goal.targetDate===dayKey||periodKeyForGoal(goal)===dayKey)
+  )
+  .slice()
+  .sort((a,b)=>priorityScore(b)-priorityScore(a));
+}
 function renderRootSelect(){
  const button=$('#categorySelectButton');
  const menu=$('#categorySelectMenu');
@@ -1294,7 +1305,7 @@ function publishDashboardSnapshot(showMessage=false){
   })),
   focusAreas:[...focusAreas],
   domainProgress:dailyExpectedProgressByFocusArea(),
-  focusItems:rankedFocus().slice(0,4).map((g,i)=>({
+  focusItems:todaysActiveTasks().slice(0,6).map((g,i)=>({
    rank:i+1,
    id:g.id,
    title:g.title,
