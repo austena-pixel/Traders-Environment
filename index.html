@@ -336,6 +336,9 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 .alert{margin-top:16px;padding:14px;border-radius:13px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.22)}
 .alert strong{display:block;margin-bottom:4px}.alert span{color:#d5c48b;font-size:13px}
 .goal-row{margin-top:15px}.goal-head{display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px}
+.goal-area-copy{display:grid;gap:2px;min-width:0}.goal-area-copy>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.goal-area-copy small{color:#778397;font-size:8px;font-weight:500}
+#hiosGoalProgressList{max-height:190px;overflow-y:auto;overscroll-behavior:contain;padding-right:4px;scrollbar-width:thin;scrollbar-color:#36455c transparent}
+#hiosGoalProgressList::-webkit-scrollbar{width:4px}#hiosGoalProgressList::-webkit-scrollbar-thumb{background:#36455c;border-radius:999px}
 .bar{height:9px;background:#0b0e13;border-radius:999px;overflow:hidden}.bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
 .insight{margin-top:14px;padding:14px;border-radius:13px;background:#0c0f15;border:1px solid #1c2230}
 .insight b{font-size:13px}.insight p{font-size:13px;color:var(--muted);line-height:1.5;margin:7px 0 0}
@@ -2509,7 +2512,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
             <div class="goal-status-head">
               <div class="goal-status-copy">
                 <h3>Goal Progress</h3>
-                <div class="sub">Progress across connected domains.</div>
+                <div class="sub">Today’s completed tasks across active Goals-IOS categories.</div>
               </div>
               <button class="auto-zoom-toggle" id="autoZoomToggle" type="button" aria-pressed="false">
                 Auto Zoom <span id="autoZoomState">Off</span>
@@ -2846,6 +2849,7 @@ renderProductManager();
 const HIOS_GIOS_GOALS_KEY = 'hios_gios_goals_v2';
 const HIOS_GIOS_LEGACY_KEYS = ['hios_gios_goals_v1','gios_standalone_goals_v1'];
 const HIOS_GIOS_SNAPSHOT_KEY = 'hios_gios_dashboard_v1';
+const HIOS_GIOS_FOCUS_AREAS_KEY = 'hios_gios_focus_areas_v1';
 const HIOS_CALENDAR_EVENTS_KEY = 'hios_calendar_events_v1';
 const hiosBridge=window.HIOSConnectionLayer.connect('h-ios');
 
@@ -2914,6 +2918,19 @@ function loadHiosSnapshot(){
     activeGoals:0,
     highPriority:0
   };
+}
+
+function loadHiosFocusAreas(){
+  try{
+    const parsed=JSON.parse(localStorage.getItem(HIOS_GIOS_FOCUS_AREAS_KEY)||'[]');
+    if(!Array.isArray(parsed))return [];
+    const seen=new Set();
+    return parsed
+      .map(area=>String(area||'').trim())
+      .filter(area=>area&&!seen.has(area.toLowerCase())&&seen.add(area.toLowerCase()));
+  }catch(error){
+    return [];
+  }
 }
 
 function loadHiosCalendarEvents(){
@@ -3004,27 +3021,43 @@ function renderGoalsDashboardViews(){
   const progressRoot=document.getElementById('hiosGoalProgressList');
   const focusRoot=document.getElementById('hiosFocusList');
 
-  let domainProgress=Array.isArray(snapshot.domainProgress)?snapshot.domainProgress:[];
-  if(!domainProgress.length&&goals.length){
-    const groups=new Map();
-    goals.forEach(goal=>{
-      const domain=goal.domain||'Other';
-      if(!groups.has(domain))groups.set(domain,[]);
-      groups.get(domain).push(Number(goal.progress||goal.manualProgress||0));
-    });
-    domainProgress=[...groups].map(([domain,values])=>({
+  const snapshotAreas=Array.isArray(snapshot.focusAreas)?snapshot.focusAreas:[];
+  const activeAreas=(snapshotAreas.length?snapshotAreas:loadHiosFocusAreas())
+    .map(area=>String(area||'').trim())
+    .filter(Boolean);
+  const progressByArea=new Map(
+    (Array.isArray(snapshot.domainProgress)?snapshot.domainProgress:[])
+      .map(item=>[String(item.domain||'').toLowerCase(),item])
+  );
+  const todayKey=hiosDateKey(new Date());
+  const domainProgress=activeAreas.map(domain=>{
+    const snapshotItem=progressByArea.get(domain.toLowerCase());
+    if(snapshotItem&&snapshotItem.date===todayKey)return {...snapshotItem,domain};
+    const tasks=goals.filter(goal=>
+      String(goal.level||goal.horizon||'')==='daily'&&
+      String(goal.domain||'').toLowerCase()===domain.toLowerCase()&&
+      (goal.targetDate===todayKey||goal.periodKey===todayKey)
+    );
+    const completed=tasks.filter(goal=>Number(goal.progress??goal.manualProgress??0)>=100).length;
+    return {
       domain,
-      progress:Math.round(values.reduce((sum,value)=>sum+value,0)/values.length)
-    })).sort((a,b)=>b.progress-a.progress);
-  }
+      completed,
+      expected:tasks.length,
+      progress:tasks.length?Math.round((completed/tasks.length)*100):0,
+      measure:'daily-expected'
+    };
+  });
 
   if(progressRoot){
     progressRoot.innerHTML=domainProgress.length
       ? domainProgress.map(item=>{
           const progress=Math.max(0,Math.min(100,Number(item.progress)||0));
-          return `<div class="goal-row"><div class="goal-head"><span>${hiosEscape(item.domain)}</span><b>${progress}%</b></div><div class="bar"><span style="width:${progress}%"></span></div></div>`;
+          const expected=Math.max(0,Number(item.expected)||0);
+          const completed=Math.max(0,Math.min(expected,Number(item.completed)||0));
+          const detail=expected?`${completed} of ${expected} done today`:'No tasks expected today';
+          return `<div class="goal-row"><div class="goal-head"><span class="goal-area-copy"><span>${hiosEscape(item.domain)}</span><small>${hiosEscape(detail)}</small></span><b>${progress}%</b></div><div class="bar"><span style="width:${progress}%"></span></div></div>`;
         }).join('')
-      : '<div class="sub" style="margin-top:12px">No Goals-IOS progress is available yet.</div>';
+      : '<div class="sub" style="margin-top:12px">Add a Goals-IOS category to begin daily progress tracking.</div>';
   }
 
   let focusItems=(Array.isArray(snapshot.focusItems)?snapshot.focusItems:[]).filter(item=>{
@@ -3401,6 +3434,7 @@ window.addEventListener('storage',event=>{
     event.key===HIOS_GIOS_GOALS_KEY ||
     HIOS_GIOS_LEGACY_KEYS.includes(event.key) ||
     event.key===HIOS_GIOS_SNAPSHOT_KEY ||
+    event.key===HIOS_GIOS_FOCUS_AREAS_KEY ||
     event.key===HIOS_CALENDAR_EVENTS_KEY
   ){
     renderHiosHome();
