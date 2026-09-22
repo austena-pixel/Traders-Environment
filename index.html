@@ -594,8 +594,17 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 .calendar-cancel{border:1px solid var(--line);background:#0b1017;color:#cbd5e1}
 .calendar-save{border:0;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
 .calendar-delete{border:1px solid rgba(251,113,133,.30);background:rgba(251,113,133,.07);color:#fda4af}
+.calendar-unschedule{border:1px solid rgba(251,191,36,.30);background:rgba(251,191,36,.07);color:#fcd86d}
+.gios-task-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:2px 0 16px}
+.gios-task-summary>div{padding:11px;border:1px solid #263246;border-radius:10px;background:#0a0f16}
+.gios-task-summary small{display:block;color:#758297;font-size:8px;text-transform:uppercase;letter-spacing:.07em}
+.gios-task-summary b{display:block;margin-top:4px;font-size:11px;color:#e5edf8;overflow-wrap:anywhere}
+.gios-task-note{margin:0 0 15px;padding:10px 11px;border:1px solid rgba(110,168,255,.20);border-radius:10px;background:rgba(110,168,255,.06);color:#9fb0c5;font-size:10px;line-height:1.5}
 @media(max-width:620px){
   .calendar-entry-grid{grid-template-columns:1fr}
+  .gios-task-summary{grid-template-columns:1fr}
+  .calendar-entry-actions{align-items:stretch;flex-direction:column}
+  .calendar-entry-actions-right{margin-left:0;flex-wrap:wrap}
 }
 
 
@@ -2602,6 +2611,40 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   </div>
 </div>
 
+<!-- =========================================================
+     CONNECTED GOALS-IOS TASK ACTIONS
+========================================================= -->
+<div class="calendar-entry-modal" id="giosTaskModal">
+  <div class="calendar-entry-box">
+    <div class="calendar-entry-head">
+      <div>
+        <div class="calendar-entry-kicker">Connected Goals-IOS task</div>
+        <h3 id="giosTaskHeading">Task</h3>
+        <p id="giosTaskDateLabel">Scheduled date</p>
+      </div>
+      <button class="calendar-entry-close" type="button" id="giosTaskClose" aria-label="Close">×</button>
+    </div>
+
+    <div class="gios-task-summary">
+      <div><small>Focus area</small><b id="giosTaskDomain">—</b></div>
+      <div><small>Planning level</small><b id="giosTaskLevel">—</b></div>
+      <div><small>Priority</small><b id="giosTaskPriority">—</b></div>
+      <div><small>Progress</small><b id="giosTaskProgress">0%</b></div>
+    </div>
+
+    <p class="gios-task-note">Remove from calendar keeps the goal but clears its date. Delete removes the task from Goals-IOS and every connected H-IOS view.</p>
+
+    <div class="calendar-entry-actions">
+      <button class="calendar-delete" type="button" id="giosTaskDelete">Delete task</button>
+      <div class="calendar-entry-actions-right">
+        <button class="calendar-cancel" type="button" id="giosTaskCancel">Cancel</button>
+        <button class="calendar-unschedule" type="button" id="giosTaskUnschedule">Remove from calendar</button>
+        <button class="calendar-save" type="button" id="giosTaskOpen">Open Goals-IOS</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="hios-connection-layer.js"></script>
 <script>
 /* SAME SUPABASE AUTH PROJECT USED BY Traders-IOS */
@@ -2798,13 +2841,28 @@ renderProductManager();
 
 /* =========================================================
    H·IOS HOME INTELLIGENCE + Goals-IOS CALENDAR BRIDGE
-   Read-only: H·IOS consumes the existing Goals-IOS goal data.
+   H·IOS consumes goal data and sends change requests through the gateway.
 ========================================================= */
 const HIOS_GIOS_GOALS_KEY = 'hios_gios_goals_v2';
 const HIOS_GIOS_LEGACY_KEYS = ['hios_gios_goals_v1','gios_standalone_goals_v1'];
 const HIOS_GIOS_SNAPSHOT_KEY = 'hios_gios_dashboard_v1';
 const HIOS_CALENDAR_EVENTS_KEY = 'hios_calendar_events_v1';
 const hiosBridge=window.HIOSConnectionLayer.connect('h-ios');
+
+function pendingGoalRequests(){
+  return hiosBridge.getPendingRequests().filter(request=>
+    request?.source==='h-ios'&&String(request?.type||'').endsWith('.requested')
+  );
+}
+
+function pendingGoalIds(mode='any'){
+  const requests=pendingGoalRequests().filter(request=>{
+    if(mode==='delete')return request.type.includes('.delete.');
+    if(mode==='calendar')return request.type.includes('.calendar.remove.');
+    return true;
+  });
+  return new Set(requests.map(request=>String(request.payload?.goalId||'')).filter(Boolean));
+}
 
 let hiosCalendarCursor = new Date();
 hiosCalendarCursor = new Date(
@@ -2901,8 +2959,13 @@ function hiosEventTypeLabel(type){
 }
 
 function allHiosDatedCommitments(){
+  const pending=pendingGoalIds('any');
   const goalItems=loadHiosGoals()
-    .filter(goal=>goal.targetDate)
+    .filter(goal=>
+      goal.targetDate&&
+      Number(goal.progress??goal.manualProgress??0)<100&&
+      !pending.has(String(goal.id))
+    )
     .map(goal=>({
       id:`goal_${goal.id}`,
       title:goal.title,
@@ -2936,6 +2999,8 @@ function hiosDeadlineText(value){
 function renderGoalsDashboardViews(){
   const snapshot=loadHiosSnapshot();
   const goals=loadHiosGoals();
+  const goalsById=new Map(goals.map(goal=>[String(goal.id),goal]));
+  const pendingDeletes=pendingGoalIds('delete');
   const progressRoot=document.getElementById('hiosGoalProgressList');
   const focusRoot=document.getElementById('hiosFocusList');
 
@@ -2962,7 +3027,11 @@ function renderGoalsDashboardViews(){
       : '<div class="sub" style="margin-top:12px">No Goals-IOS progress is available yet.</div>';
   }
 
-  let focusItems=Array.isArray(snapshot.focusItems)?snapshot.focusItems:[];
+  let focusItems=(Array.isArray(snapshot.focusItems)?snapshot.focusItems:[]).filter(item=>{
+    const id=String(item.id||'');
+    const goal=goalsById.get(id);
+    return goal&&Number(goal.progress??goal.manualProgress??0)<100&&!pendingDeletes.has(id);
+  });
   if(!focusItems.length&&goals.length){
     focusItems=goals
       .filter(goal=>Number(goal.progress||goal.manualProgress||0)<100)
@@ -3045,8 +3114,13 @@ function renderHiosCalendar(){
   const monthLabel=document.getElementById('hiosCalendarMonth');
   if(!root||!monthLabel)return;
 
+  const pending=pendingGoalIds('any');
   const goals=loadHiosGoals()
-    .filter(goal=>goal.targetDate)
+    .filter(goal=>
+      goal.targetDate&&
+      Number(goal.progress??goal.manualProgress??0)<100&&
+      !pending.has(String(goal.id))
+    )
     .map(goal=>({...goal,_date:parseHiosDate(goal.targetDate),_source:'gios'}))
     .filter(goal=>goal._date);
 
@@ -3094,7 +3168,7 @@ function renderHiosCalendar(){
           : 'medium';
         const label=event.domain?`${event.domain}: ${event.title}`:event.title;
         const eventStatus=isPast?'event-past':(isToday?'event-today':'event-upcoming');
-        markup+=`<button type="button" class="calendar-event ${priority} ${eventStatus}" onclick="event.stopPropagation();openProduct('gios')">${hiosEscape(label)}</button>`;
+        markup+=`<button type="button" class="calendar-event ${priority} ${eventStatus}" onclick="event.stopPropagation();openGiosCalendarTask('${hiosEscape(event.id)}')">${hiosEscape(label)}</button>`;
       }
     });
 
@@ -3122,6 +3196,72 @@ const calendarEntryNotes=document.getElementById('calendarEntryNotes');
 const calendarEntryDelete=document.getElementById('calendarEntryDelete');
 const calendarEntryHeading=document.getElementById('calendarEntryHeading');
 const calendarEntryDateLabel=document.getElementById('calendarEntryDateLabel');
+const giosTaskModal=document.getElementById('giosTaskModal');
+const giosTaskHeading=document.getElementById('giosTaskHeading');
+const giosTaskDateLabel=document.getElementById('giosTaskDateLabel');
+const giosTaskDomain=document.getElementById('giosTaskDomain');
+const giosTaskLevel=document.getElementById('giosTaskLevel');
+const giosTaskPriority=document.getElementById('giosTaskPriority');
+const giosTaskProgress=document.getElementById('giosTaskProgress');
+let selectedGiosTaskId='';
+
+function openGiosCalendarTask(id){
+  const goal=loadHiosGoals().find(item=>String(item.id)===String(id));
+  if(!goal)return;
+  selectedGiosTaskId=String(goal.id);
+  giosTaskHeading.textContent=goal.title||'Goals-IOS task';
+  const parsed=parseHiosDate(goal.targetDate);
+  giosTaskDateLabel.textContent=parsed
+    ? parsed.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'})
+    : 'No scheduled date';
+  giosTaskDomain.textContent=goal.domain||'Other';
+  giosTaskLevel.textContent=String(goal.level||goal.horizon||'goal').replace(/^./,letter=>letter.toUpperCase());
+  giosTaskPriority.textContent=String(goal.priority||'medium').replace(/^./,letter=>letter.toUpperCase());
+  giosTaskProgress.textContent=Math.max(0,Math.min(100,Number(goal.progress??goal.manualProgress??0)))+'%';
+  giosTaskModal.classList.add('show');
+}
+
+function closeGiosTaskModal(){
+  giosTaskModal.classList.remove('show');
+  selectedGiosTaskId='';
+}
+
+function requestGiosTaskAction(action){
+  const goal=loadHiosGoals().find(item=>String(item.id)===selectedGiosTaskId);
+  if(!goal)return;
+  const entity=goal.level==='daily'?'task':'goal';
+  const type=action==='delete'
+    ? `${entity}.delete.requested`
+    : `${entity}.calendar.remove.requested`;
+  hiosBridge.emit(type,{
+    goalId:goal.id,
+    title:goal.title,
+    level:goal.level,
+    requestedAt:new Date().toISOString()
+  });
+  closeGiosTaskModal();
+  renderHiosHome();
+}
+
+document.getElementById('giosTaskClose').addEventListener('click',closeGiosTaskModal);
+document.getElementById('giosTaskCancel').addEventListener('click',closeGiosTaskModal);
+document.getElementById('giosTaskOpen').addEventListener('click',()=>{
+  closeGiosTaskModal();
+  openProduct('gios');
+});
+document.getElementById('giosTaskUnschedule').addEventListener('click',()=>{
+  requestGiosTaskAction('calendar');
+});
+document.getElementById('giosTaskDelete').addEventListener('click',()=>{
+  const goal=loadHiosGoals().find(item=>String(item.id)===selectedGiosTaskId);
+  if(!goal)return;
+  if(window.confirm(`Delete "${goal.title}" from Goals-IOS and all connected H-IOS views?`)){
+    requestGiosTaskAction('delete');
+  }
+});
+giosTaskModal.addEventListener('click',event=>{
+  if(event.target===giosTaskModal)closeGiosTaskModal();
+});
 
 function openCalendarEntryModal(dateKey){
   calendarEntryForm.reset();
@@ -3225,8 +3365,9 @@ calendarEntryModal.addEventListener('click',event=>{
 });
 
 document.addEventListener('keydown',event=>{
-  if(event.key==='Escape'&&calendarEntryModal.classList.contains('show')){
-    closeCalendarEntryModal();
+  if(event.key==='Escape'){
+    if(calendarEntryModal.classList.contains('show'))closeCalendarEntryModal();
+    if(giosTaskModal.classList.contains('show'))closeGiosTaskModal();
   }
 });
 
