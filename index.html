@@ -2350,7 +2350,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 
         <div class="hios-intelligence-metrics top-k-metrics">
           <div class="hios-intel-metric">
-            <span>Active goals</span>
+            <span>Active tasks</span>
             <b id="hiosMetricActiveGoals">0</b>
           </div>
           <div class="hios-intel-metric">
@@ -3013,6 +3013,14 @@ function hiosDeadlineText(value){
   return date.toLocaleDateString(undefined,{day:'numeric',month:'short'});
 }
 
+function isHiosTodayDailyTask(goal,todayKey=hiosDateKey(new Date())){
+  const level=String(goal?.level||goal?.horizon||'').toLowerCase();
+  return level==='daily'&&(
+    goal?.targetDate===todayKey||
+    goal?.periodKey===todayKey
+  );
+}
+
 function renderGoalsDashboardViews(){
   const snapshot=loadHiosSnapshot();
   const goals=loadHiosGoals();
@@ -3060,26 +3068,18 @@ function renderGoalsDashboardViews(){
       : '<div class="sub" style="margin-top:12px">Add a Goals-IOS category to begin daily progress tracking.</div>';
   }
 
-  const isTodayDailyTask=goal=>{
-    const level=String(goal?.level||goal?.horizon||'').toLowerCase();
-    return level==='daily'&&(
-      goal?.targetDate===todayKey||
-      goal?.periodKey===todayKey
-    );
-  };
-
   let focusItems=(Array.isArray(snapshot.focusItems)?snapshot.focusItems:[]).filter(item=>{
     const id=String(item.id||'');
     const goal=goalsById.get(id);
     return goal&&
-      isTodayDailyTask(goal)&&
+      isHiosTodayDailyTask(goal,todayKey)&&
       Number(goal.progress??goal.manualProgress??0)<100&&
       !pendingDeletes.has(id);
   });
   if(!focusItems.length&&goals.length){
     focusItems=goals
       .filter(goal=>
-        isTodayDailyTask(goal)&&
+        isHiosTodayDailyTask(goal,todayKey)&&
         Number(goal.progress??goal.manualProgress??0)<100&&
         !pendingDeletes.has(String(goal.id||''))
       )
@@ -3110,7 +3110,13 @@ function renderHiosIntelligence(){
   renderGoalsDashboardViews();
   const goals=loadHiosGoals();
   const manualEvents=loadHiosCalendarEvents();
-  const active=goals.filter(goal=>Number(goal.progress||0)<100);
+  const todayKey=hiosDateKey(new Date());
+  const pendingDeletes=pendingGoalIds('delete');
+  const active=goals.filter(goal=>
+    isHiosTodayDailyTask(goal,todayKey)&&
+    Number(goal.progress??goal.manualProgress??0)<100&&
+    !pendingDeletes.has(String(goal.id||''))
+  );
   const high=active.filter(goal=>String(goal.priority||'').toLowerCase()==='high');
   const connected=Array.isArray(addedProductIds)?addedProductIds.length:0;
   const today=new Date();
