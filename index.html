@@ -2506,20 +2506,13 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
                 Auto Zoom <span id="autoZoomState">Off</span>
               </button>
             </div>
-            <div class="goal-row"><div class="goal-head"><span>Engineering</span><b>72%</b></div><div class="bar"><span style="width:72%"></span></div></div>
-            <div class="goal-row"><div class="goal-head"><span>Trading</span><b>61%</b></div><div class="bar"><span style="width:61%"></span></div></div>
-            <div class="goal-row"><div class="goal-head"><span>Fitness</span><b>88%</b></div><div class="bar"><span style="width:88%"></span></div></div>
+            <div id="hiosGoalProgressList"></div>
           </div>
 
           <div class="card focus-card" data-home-panel="c">
             <h3>Today's Focus</h3>
             <div class="sub">Goals-IOS dynamically ranked from connected intelligence.</div>
-            <div class="focus-list focus-scroll">
-              <div class="focus-item"><div class="rank">1</div><div><b>Complete engineering assignment</b><small>Students-IOS · due tomorrow · 62% complete</small></div><span class="tag">Very high</span></div>
-              <div class="focus-item"><div class="rank">2</div><div><b>Study Test 2 scope</b><small>Students-IOS · assessment in 3 days · behind plan</small></div><span class="tag">High</span></div>
-              <div class="focus-item"><div class="rank">3</div><div><b>Review trading execution</b><small>Traders-IOS · execution quality below target</small></div><span class="tag">Moderate</span></div>
-              <div class="focus-item"><div class="rank">4</div><div><b>Continue trading sample</b><small>Traders-IOS · active milestone · no immediate deadline</small></div><span class="tag">Maintain</span></div>
-            </div>
+            <div class="focus-list focus-scroll" id="hiosFocusList"></div>
           </div>
         </aside>
       </section>
@@ -2609,6 +2602,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   </div>
 </div>
 
+<script src="hios-connection-layer.js"></script>
 <script>
 /* SAME SUPABASE AUTH PROJECT USED BY Traders-IOS */
 const SUPABASE_URL = "https://tmxosoyqflmwqzjgnkez.supabase.co";
@@ -2810,6 +2804,7 @@ const HIOS_GIOS_GOALS_KEY = 'hios_gios_goals_v2';
 const HIOS_GIOS_LEGACY_KEYS = ['hios_gios_goals_v1','gios_standalone_goals_v1'];
 const HIOS_GIOS_SNAPSHOT_KEY = 'hios_gios_dashboard_v1';
 const HIOS_CALENDAR_EVENTS_KEY = 'hios_calendar_events_v1';
+const hiosBridge=window.HIOSConnectionLayer.connect('h-ios');
 
 let hiosCalendarCursor = new Date();
 hiosCalendarCursor = new Date(
@@ -2829,22 +2824,18 @@ function hiosEscape(value){
 
 function loadHiosGoals(){
   try{
-    let raw=localStorage.getItem(HIOS_GIOS_GOALS_KEY);
-    if(!raw){
+    let goals=hiosBridge.readGoals();
+    if(!goals.length){
+      let raw='';
       for(const key of HIOS_GIOS_LEGACY_KEYS){
         const legacy=localStorage.getItem(key);
         if(legacy){raw=legacy;break;}
       }
+      const parsed=raw?JSON.parse(raw):[];
+      goals=Array.isArray(parsed)?parsed:[];
     }
-    const parsed=raw?JSON.parse(raw):[];
-    const goals=Array.isArray(parsed)?parsed:[];
-    let snapshotGoals=[];
-    try{
-      const snapshot=JSON.parse(localStorage.getItem(HIOS_GIOS_SNAPSHOT_KEY)||'null');
-      snapshotGoals=Array.isArray(snapshot?.goals)?snapshot.goals:[];
-    }catch(snapshotError){
-      console.warn('Could not read the Goals-IOS dashboard snapshot:',snapshotError);
-    }
+    const snapshot=hiosBridge.readSnapshot();
+    const snapshotGoals=Array.isArray(snapshot?.goals)?snapshot.goals:[];
     const progressById=new Map(snapshotGoals.map(goal=>[goal.id,Number(goal.progress??goal.manualProgress??0)]));
     return goals.map(goal=>({
       ...goal,
@@ -2856,6 +2847,15 @@ function loadHiosGoals(){
     console.warn('Could not read Goals-IOS goals for H·IOS:',error);
     return [];
   }
+}
+
+function loadHiosSnapshot(){
+  return hiosBridge.readSnapshot()||{
+    domainProgress:[],
+    focusItems:[],
+    activeGoals:0,
+    highPriority:0
+  };
 }
 
 function loadHiosCalendarEvents(){
@@ -2920,7 +2920,72 @@ function allHiosDatedCommitments(){
   return [...goalItems,...manualItems];
 }
 
+function hiosDeadlineText(value){
+  const date=parseHiosDate(value);
+  if(!date)return 'no deadline';
+  const today=new Date();
+  today.setHours(0,0,0,0);
+  const days=Math.round((date-today)/86400000);
+  if(days<0)return `${Math.abs(days)}d overdue`;
+  if(days===0)return 'due today';
+  if(days===1)return 'due tomorrow';
+  if(days<=30)return `due in ${days}d`;
+  return date.toLocaleDateString(undefined,{day:'numeric',month:'short'});
+}
+
+function renderGoalsDashboardViews(){
+  const snapshot=loadHiosSnapshot();
+  const goals=loadHiosGoals();
+  const progressRoot=document.getElementById('hiosGoalProgressList');
+  const focusRoot=document.getElementById('hiosFocusList');
+
+  let domainProgress=Array.isArray(snapshot.domainProgress)?snapshot.domainProgress:[];
+  if(!domainProgress.length&&goals.length){
+    const groups=new Map();
+    goals.forEach(goal=>{
+      const domain=goal.domain||'Other';
+      if(!groups.has(domain))groups.set(domain,[]);
+      groups.get(domain).push(Number(goal.progress||goal.manualProgress||0));
+    });
+    domainProgress=[...groups].map(([domain,values])=>({
+      domain,
+      progress:Math.round(values.reduce((sum,value)=>sum+value,0)/values.length)
+    })).sort((a,b)=>b.progress-a.progress);
+  }
+
+  if(progressRoot){
+    progressRoot.innerHTML=domainProgress.length
+      ? domainProgress.map(item=>{
+          const progress=Math.max(0,Math.min(100,Number(item.progress)||0));
+          return `<div class="goal-row"><div class="goal-head"><span>${hiosEscape(item.domain)}</span><b>${progress}%</b></div><div class="bar"><span style="width:${progress}%"></span></div></div>`;
+        }).join('')
+      : '<div class="sub" style="margin-top:12px">No Goals-IOS progress is available yet.</div>';
+  }
+
+  let focusItems=Array.isArray(snapshot.focusItems)?snapshot.focusItems:[];
+  if(!focusItems.length&&goals.length){
+    focusItems=goals
+      .filter(goal=>Number(goal.progress||goal.manualProgress||0)<100)
+      .slice(0,4)
+      .map((goal,index)=>({...goal,rank:index+1,urgency:goal.priority==='high'?'High':'Maintain'}));
+  }
+
+  if(focusRoot){
+    focusRoot.innerHTML=focusItems.length
+      ? focusItems.slice(0,6).map((item,index)=>{
+          const urgency=item.urgency||'Maintain';
+          const high=/high/i.test(urgency)?' high':'';
+          const progress=Math.max(0,Math.min(100,Number(item.progress)||0));
+          const level=String(item.level||item.horizon||'goal').replace(/^./,letter=>letter.toUpperCase());
+          const deadline=item.targetDate?` · ${hiosDeadlineText(item.targetDate)}`:'';
+          return `<div class="focus-item"><div class="rank">${index+1}</div><div><b>${hiosEscape(item.title)}</b><small>Goals-IOS · ${hiosEscape(item.domain||'Other')} · ${hiosEscape(level)} · ${progress}% complete${hiosEscape(deadline)}</small></div><span class="tag${high}">${hiosEscape(urgency)}</span></div>`;
+        }).join('')
+      : '<div class="sub">No active Goals-IOS priorities are available yet.</div>';
+  }
+}
+
 function renderHiosIntelligence(){
+  renderGoalsDashboardViews();
   const goals=loadHiosGoals();
   const manualEvents=loadHiosCalendarEvents();
   const active=goals.filter(goal=>Number(goal.progress||0)<100);
@@ -3125,6 +3190,13 @@ calendarEntryForm.addEventListener('submit',event=>{
   else events.push(next);
 
   saveHiosCalendarEvents(events);
+  hiosBridge.emit(index>=0?'calendar.item.updated':'calendar.item.created',{
+    itemId:id,
+    title:next.title,
+    date:next.date,
+    type:next.type,
+    domain:next.domain
+  });
   closeCalendarEntryModal();
   renderHiosHome();
 });
@@ -3132,8 +3204,15 @@ calendarEntryForm.addEventListener('submit',event=>{
 calendarEntryDelete.addEventListener('click',()=>{
   const id=calendarEntryId.value;
   if(!id)return;
-  const events=loadHiosCalendarEvents().filter(item=>item.id!==id);
+  const current=loadHiosCalendarEvents();
+  const removed=current.find(item=>item.id===id);
+  const events=current.filter(item=>item.id!==id);
   saveHiosCalendarEvents(events);
+  hiosBridge.emit('calendar.item.deleted',{
+    itemId:id,
+    title:removed?.title||'',
+    date:removed?.date||''
+  });
   closeCalendarEntryModal();
   renderHiosHome();
 });
@@ -3185,6 +3264,16 @@ window.addEventListener('storage',event=>{
   ){
     renderHiosHome();
   }
+});
+
+hiosBridge.subscribe(()=>renderHiosHome(),{
+  source:'goals-ios',
+  types:[
+    'goal.created','goal.updated','goal.completed','goal.deleted',
+    'goal.progress.changed','goal.deadline.changed',
+    'task.created','task.updated','task.completed','task.deleted',
+    'goals.snapshot.updated','goals.state.synchronised'
+  ]
 });
 
 window.addEventListener('pageshow',renderHiosHome);
