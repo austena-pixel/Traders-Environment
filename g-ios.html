@@ -657,10 +657,12 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 
 <div class="toast" id="toast"></div>
 
+<script src="hios-connection-layer.js"></script>
 <script>
 const GOALS_KEY='hios_gios_goals_v2';
 const OLD_GOALS_KEYS=['hios_gios_goals_v1','gios_standalone_goals_v1'];
 const SNAPSHOT_KEY='hios_gios_dashboard_v1';
+const goalsBridge=window.HIOSConnectionLayer.connect('goals-ios');
 const LEVELS=['yearly','semester','monthly','weekly','daily'];
 const LEVEL_LABEL={yearly:'Yearly / Long-term',semester:'Semester',monthly:'Monthly',weekly:'Weekly',daily:'Daily'};
 const LEVEL_RANK={yearly:5,semester:4,monthly:3,weekly:2,daily:1};
@@ -749,7 +751,27 @@ function loadGoals(){
  repairAllGoalChains();
  saveGoals(false);
 }
-function saveGoals(render=true){localStorage.setItem(GOALS_KEY,JSON.stringify(goals));if(render)renderAll()}
+function goalSignalPayload(goal,extra={}){
+ return {
+  goalId:goal?.id||extra.goalId||'',
+  title:goal?.title||extra.title||'',
+  category:goal?.domain||extra.category||'',
+  horizon:goal?.level||extra.horizon||'',
+  deadline:goal?.targetDate||extra.deadline||'',
+  priority:goal?.priority||extra.priority||'',
+  progress:goal?effectiveProgress(goal):Number(extra.progress||0),
+  parentId:goal?.parentId||extra.parentId||'',
+  ...extra
+ };
+}
+function emitGoalEvent(type,goal,extra={}){
+ goalsBridge.emit(type,goalSignalPayload(goal,extra));
+}
+function saveGoals(render=true,event=null){
+ goalsBridge.writeGoals(goals);
+ if(event?.type)emitGoalEvent(event.type,event.goal,event.extra||{});
+ if(render)renderAll();
+}
 function rootForDomain(domain){
  if(!domain||domain==='all')return null;
  const roots=goals.filter(g=>g.level==='yearly'&&sameDomain(g.domain,domain));
@@ -1119,7 +1141,7 @@ function removeGoalById(id){
    selectedRootId=replacement?replacement.id:'';
  }
 
- saveGoals();
+ saveGoals(true,{type:goal.level==='daily'?'task.deleted':'goal.deleted',goal,extra:{deletedAt:new Date().toISOString()}});
  toast(goal.title+' removed.');
 }
 
@@ -1189,9 +1211,9 @@ function renderForecast(){const root=goals.find(g=>g.id===selectedRootId)||prima
 function parentCandidates(level,domain,currentId=''){const rank=LEVEL_RANK[level]||0;return goals.filter(g=>g.id!==currentId&&LEVEL_RANK[g.level]>rank&&(!domain||sameDomain(g.domain,domain))).sort((a,b)=>LEVEL_RANK[a.level]-LEVEL_RANK[b.level])}
 function renderParentOptions(){const level=$('#goalLevel').value;const domain=$('#goalDomain').value;const options=parentCandidates(level,domain);$('#goalParent').innerHTML='<option value="">No parent - top-level goal</option>'+options.map(g=>`<option value="${g.id}">${LEVEL_LABEL[g.level]} · ${escapeHtml(g.title)}</option>`).join('')}
 function recordProgress(g,newValue){const old=clamp(g.manualProgress);const next=clamp(newValue);g.manualProgress=next;if(old!==next){g.history=g.history||[];g.history.push({at:new Date().toISOString(),progress:next});if(g.history.length>50)g.history=g.history.slice(-50)}}
-function adjustProgress(id,delta){const g=goals.find(x=>x.id===id);if(!g)return;if(childrenOf(g.id).length){toast('This goal rolls up from child goals. Update the lower-level goals instead.');return}recordProgress(g,clamp(g.manualProgress+delta));saveGoals()}
-function completeGoal(id){const g=goals.find(x=>x.id===id);if(!g||g.level!=='daily')return;if(childrenOf(g.id).length){toast('Complete the lower-level tasks first.');return}recordProgress(g,100);saveGoals();toast('Daily task completed. Weekly and higher progress recalculated.')}
-function completeStageGoal(id){const g=goals.find(x=>x.id===id);if(!g||g.level!=='daily')return;recordProgress(g,100);saveGoals();toast('Daily task completed. Weekly and higher progress recalculated.')}
+function adjustProgress(id,delta){const g=goals.find(x=>x.id===id);if(!g)return;if(childrenOf(g.id).length){toast('This goal rolls up from child goals. Update the lower-level goals instead.');return}const previousProgress=effectiveProgress(g);recordProgress(g,clamp(g.manualProgress+delta));const type=g.level==='daily'?(effectiveProgress(g)>=100?'task.completed':'task.updated'):'goal.progress.changed';saveGoals(true,{type,goal:g,extra:{previousProgress}})}
+function completeGoal(id){const g=goals.find(x=>x.id===id);if(!g||g.level!=='daily')return;if(childrenOf(g.id).length){toast('Complete the lower-level tasks first.');return}const previousProgress=effectiveProgress(g);recordProgress(g,100);saveGoals(true,{type:'task.completed',goal:g,extra:{previousProgress}});toast('Daily task completed. Weekly and higher progress recalculated.')}
+function completeStageGoal(id){const g=goals.find(x=>x.id===id);if(!g||g.level!=='daily')return;const previousProgress=effectiveProgress(g);recordProgress(g,100);saveGoals(true,{type:'task.completed',goal:g,extra:{previousProgress}});toast('Daily task completed. Weekly and higher progress recalculated.')}
 function publishDashboardSnapshot(showMessage=false){
  const root=goals.find(g=>g.id===selectedRootId)||primaryRoot();
  const active=goals.filter(g=>effectiveProgress(g)<100);
@@ -1239,7 +1261,7 @@ function publishDashboardSnapshot(showMessage=false){
   ):{},
   goals:goals.map(g=>({...g,progress:effectiveProgress(g)}))
  };
- localStorage.setItem(SNAPSHOT_KEY,JSON.stringify(snapshot));
+ goalsBridge.publishSnapshot(snapshot);
  if(showMessage)toast('Goals-IOS data updated in H-IOS.');
 }
 
@@ -1261,7 +1283,7 @@ function toast(message){const t=$('#toast');t.textContent=message;t.classList.ad
 $('#cancelGoal').addEventListener('click',()=>$('#goalModal').classList.remove('show'));
 $('#goalModal').addEventListener('click',e=>{if(e.target.id==='goalModal')$('#goalModal').classList.remove('show')});
 $('#goalLevel').addEventListener('change',renderParentOptions);$('#goalDomain').addEventListener('change',renderParentOptions);
-$('#goalForm').addEventListener('submit',e=>{e.preventDefault();const level=$('#goalLevel').value;const domain=$('#goalDomain').value;if(!domain||!focusAreas.includes(domain)){toast('Add and select a focus area first.');return;}const periodDate=(pendingCreateLevel===level&&pendingCreatePeriodKey)?pendingCreatePeriodKey:'';const targetDate=$('#goalDate').value||(level==='daily'?(periodDate||localDateKey(new Date())):'');const g=normalizeGoal({id:'g_'+Date.now(),title:$('#goalTitle').value.trim(),level,domain,priority:$('#goalPriority').value,manualProgress:clamp($('#goalProgress').value),parentId:$('#goalParent').value,weight:Number($('#goalWeight').value||1),targetDate,periodKey:periodDate||defaultPeriodKey(level,targetDate?new Date(targetDate+'T00:00:00'):new Date()),why:$('#goalWhy').value.trim(),history:[]});goals.unshift(g);autoLinkDomainGoalChain(domain);if(level==='yearly')selectedRootId=g.id;else selectRootForDomain(domain);saveGoals();e.target.reset();$('#goalWeight').value=1;$('#goalPriority').value='medium';pendingCreateLevel='';pendingCreatePeriodKey='';$('#goalModal').classList.remove('show');toast('Goal added and connected to the compounding structure.')});
+$('#goalForm').addEventListener('submit',e=>{e.preventDefault();const level=$('#goalLevel').value;const domain=$('#goalDomain').value;if(!domain||!focusAreas.includes(domain)){toast('Add and select a focus area first.');return;}const periodDate=(pendingCreateLevel===level&&pendingCreatePeriodKey)?pendingCreatePeriodKey:'';const targetDate=$('#goalDate').value||(level==='daily'?(periodDate||localDateKey(new Date())):'');const g=normalizeGoal({id:'g_'+Date.now(),title:$('#goalTitle').value.trim(),level,domain,priority:$('#goalPriority').value,manualProgress:clamp($('#goalProgress').value),parentId:$('#goalParent').value,weight:Number($('#goalWeight').value||1),targetDate,periodKey:periodDate||defaultPeriodKey(level,targetDate?new Date(targetDate+'T00:00:00'):new Date()),why:$('#goalWhy').value.trim(),history:[]});goals.unshift(g);autoLinkDomainGoalChain(domain);if(level==='yearly')selectedRootId=g.id;else selectRootForDomain(domain);saveGoals(true,{type:level==='daily'?'task.created':'goal.created',goal:g});e.target.reset();$('#goalWeight').value=1;$('#goalPriority').value='medium';pendingCreateLevel='';pendingCreatePeriodKey='';$('#goalModal').classList.remove('show');toast('Goal added and connected to the compounding structure.')});
 $('#categorySelectButton').addEventListener('click',e=>{
  e.preventDefault();
  e.stopPropagation();
@@ -1334,7 +1356,7 @@ $('#quickGoalForm').addEventListener('submit',e=>{
  if(setGoalsLevel==='yearly')selectedRootId=g.id;
  else selectRootForDomain(setGoalsCategory);
  if(setGoalsCategory)localStorage.setItem(SET_GOALS_CATEGORY_KEY,setGoalsCategory);
- saveGoals();
+ saveGoals(true,{type:setGoalsLevel==='daily'?'task.created':'goal.created',goal:g});
  $('#quickGoalTitle').value='';
  $('#quickGoalDate').value='';
  if(setGoalsLevel==='daily')$('#quickGoalDate').value=localDateKey(new Date());
