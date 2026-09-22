@@ -2511,7 +2511,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
           <div class="card goal-status-card" data-home-panel="b">
             <div class="goal-status-head">
               <div class="goal-status-copy">
-                <h3>Goal Progress</h3>
+                <h3>Daily Progress Status</h3>
                 <div class="sub">Today’s completed tasks across active Goals-IOS categories.</div>
               </div>
               <button class="auto-zoom-toggle" id="autoZoomToggle" type="button" aria-pressed="false">
@@ -2523,7 +2523,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 
           <div class="card focus-card" data-home-panel="c">
             <h3>Today's Focus</h3>
-            <div class="sub">Goals-IOS dynamically ranked from connected intelligence.</div>
+            <div class="sub">Today’s active Goals-IOS tasks. Completed tasks disappear automatically.</div>
             <div class="focus-list focus-scroll" id="hiosFocusList"></div>
           </div>
         </aside>
@@ -3060,15 +3060,35 @@ function renderGoalsDashboardViews(){
       : '<div class="sub" style="margin-top:12px">Add a Goals-IOS category to begin daily progress tracking.</div>';
   }
 
+  const isTodayDailyTask=goal=>{
+    const level=String(goal?.level||goal?.horizon||'').toLowerCase();
+    return level==='daily'&&(
+      goal?.targetDate===todayKey||
+      goal?.periodKey===todayKey
+    );
+  };
+
   let focusItems=(Array.isArray(snapshot.focusItems)?snapshot.focusItems:[]).filter(item=>{
     const id=String(item.id||'');
     const goal=goalsById.get(id);
-    return goal&&Number(goal.progress??goal.manualProgress??0)<100&&!pendingDeletes.has(id);
+    return goal&&
+      isTodayDailyTask(goal)&&
+      Number(goal.progress??goal.manualProgress??0)<100&&
+      !pendingDeletes.has(id);
   });
   if(!focusItems.length&&goals.length){
     focusItems=goals
-      .filter(goal=>Number(goal.progress||goal.manualProgress||0)<100)
-      .slice(0,4)
+      .filter(goal=>
+        isTodayDailyTask(goal)&&
+        Number(goal.progress??goal.manualProgress??0)<100&&
+        !pendingDeletes.has(String(goal.id||''))
+      )
+      .sort((a,b)=>{
+        const priority={high:3,medium:2,low:1};
+        return (priority[String(b.priority||'').toLowerCase()]||0)-
+          (priority[String(a.priority||'').toLowerCase()]||0);
+      })
+      .slice(0,6)
       .map((goal,index)=>({...goal,rank:index+1,urgency:goal.priority==='high'?'High':'Maintain'}));
   }
 
@@ -3082,7 +3102,7 @@ function renderGoalsDashboardViews(){
           const deadline=item.targetDate?` · ${hiosDeadlineText(item.targetDate)}`:'';
           return `<div class="focus-item"><div class="rank">${index+1}</div><div><b>${hiosEscape(item.title)}</b><small>Goals-IOS · ${hiosEscape(item.domain||'Other')} · ${hiosEscape(level)} · ${progress}% complete${hiosEscape(deadline)}</small></div><span class="tag${high}">${hiosEscape(urgency)}</span></div>`;
         }).join('')
-      : '<div class="sub">No active Goals-IOS priorities are available yet.</div>';
+      : '<div class="sub">No active tasks for today. Add a daily task in Goals-IOS.</div>';
   }
 }
 
