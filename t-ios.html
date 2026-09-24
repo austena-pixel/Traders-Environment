@@ -502,6 +502,42 @@ input:focus,select:focus,textarea:focus{
   font-size:10px;
 }
 
+
+.gios-direct-switch{
+  width:100%;
+  display:grid;
+  grid-template-columns:34px minmax(0,1fr) auto;
+  gap:9px;
+  align-items:center;
+  margin-bottom:10px;
+  padding:9px 10px;
+  border:1px solid rgba(139,92,246,.48);
+  border-radius:11px;
+  color:#f7f4ff;
+  text-decoration:none;
+  background:
+    radial-gradient(circle at 12% 12%,rgba(110,168,255,.14),transparent 30%),
+    linear-gradient(135deg,rgba(39,47,93,.90),rgba(74,42,111,.88));
+  box-shadow:0 8px 24px rgba(93,63,170,.14);
+  transition:.16s ease;
+}
+.gios-direct-switch[hidden]{display:none!important}
+.gios-direct-switch:hover{
+  transform:translateY(-1px);
+  border-color:rgba(167,139,250,.82);
+  box-shadow:0 10px 26px rgba(93,63,170,.22),0 0 0 3px rgba(139,92,246,.06);
+}
+.gios-direct-icon{
+  width:32px;height:32px;border-radius:9px;
+  display:grid;place-items:center;
+  background:linear-gradient(135deg,#6ea8ff,#9b6cff);
+  color:white;font-size:12px;font-weight:950;
+}
+.gios-direct-copy{min-width:0}
+.gios-direct-copy b{display:block;font-size:10px}
+.gios-direct-copy small{display:block;margin-top:2px;color:#c0b8d5;font-size:7.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gios-direct-arrow{color:#b9a7ff;font-size:15px;font-weight:900}
+
 .sidebar-footer{
   margin-top:auto;
   border-top:1px solid #151d28;
@@ -2676,6 +2712,11 @@ textarea{resize:vertical;min-height:90px}
     </nav>
 
     <div class="sidebar-footer">
+      <a class="gios-direct-switch" id="giosDirectSwitch" href="g-ios.html" title="Open Goals-IOS directly" hidden>
+        <span class="gios-direct-icon">G</span>
+        <span class="gios-direct-copy"><b>Goals-IOS</b><small>Trading goals · linked workspace</small></span>
+        <span class="gios-direct-arrow">→</span>
+      </a>
       <a class="hios-back-link" href="index.html?view=home" title="Return to H·IOS family">← H·IOS Family</a>
       <div class="side-user" id="sideUserEmail">—</div>
       <button class="btn danger logout-side" id="logoutBtn">Sign Out</button>
@@ -5700,6 +5741,28 @@ function subscribeToMt5Realtime(){
 /* =========================
    NAVIGATION
 ========================= */
+
+
+function renderGiosDirectSwitch(){
+ const link=document.getElementById('giosDirectSwitch');
+ if(!link)return;
+ try{
+  const links=JSON.parse(localStorage.getItem('hios_gios_product_focus_links_v1')||'{}');
+  const tiosLink=links?.tios || Object.values(links||{}).find(item=>item?.productId==='tios');
+  link.hidden=!tiosLink;
+  if(tiosLink?.area){
+   const small=link.querySelector('small');
+   if(small)small.textContent=`${tiosLink.area} goals · linked workspace`;
+  }
+ }catch(error){
+  link.hidden=true;
+ }
+}
+
+window.addEventListener('storage',event=>{
+ if(event.key==='hios_gios_product_focus_links_v1')renderGiosDirectSwitch();
+});
+renderGiosDirectSwitch();
 
 function navigate(page){
   $$('.nav-btn').forEach(btn=>{

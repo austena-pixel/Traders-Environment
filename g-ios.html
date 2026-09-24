@@ -18,6 +18,83 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .sidebar{position:sticky;top:0;height:100vh;padding:20px 16px;border-right:1px solid #142131;background:linear-gradient(180deg,rgba(7,12,19,.97),rgba(5,9,14,.98))}
 .brand{display:flex;align-items:center;gap:11px;padding:4px 8px 22px}.logo{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-weight:900;font-size:18px;background:linear-gradient(135deg,var(--blue),var(--violet));box-shadow:0 0 28px rgba(90,167,255,.16)}
 .brand h1{margin:0;font-size:17px}.brand small{color:#728095;font-size:9px}.nav{display:grid;gap:7px}.nav button,.family{width:100%;border:1px solid transparent;background:transparent;color:#8c9aad;text-align:left;border-radius:10px;padding:11px 12px;font-size:11px}.nav button.active{background:#101a27;color:#fff;border-color:#1f3146}.nav button:hover,.family:hover{background:#0d1621;color:#fff}.nav-note{position:absolute;left:16px;right:16px;bottom:18px}.family{border-color:#1b2b3d;background:#08111a;color:#9cadc1;text-align:center}
+
+/* ===== DIRECT PRODUCT SWITCHER ===== */
+.connected-product-shortcuts{
+  display:grid;
+  gap:7px;
+  margin-top:14px;
+  padding-top:13px;
+  border-top:1px solid #172434;
+}
+.connected-product-shortcuts[hidden]{display:none!important}
+.connected-product-label{
+  padding:0 4px 2px;
+  color:#5f7187;
+  font-size:7.5px;
+  font-weight:900;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+}
+.connected-product-btn{
+  position:relative;
+  width:100%;
+  display:grid;
+  grid-template-columns:36px minmax(0,1fr) auto;
+  gap:9px;
+  align-items:center;
+  padding:9px 10px;
+  border:1px solid rgba(90,167,255,.50);
+  border-radius:12px;
+  color:#f6fbff;
+  text-decoration:none;
+  background:
+    radial-gradient(circle at 12% 15%,rgba(79,220,255,.17),transparent 30%),
+    linear-gradient(135deg,rgba(20,54,86,.92),rgba(48,34,91,.92));
+  box-shadow:0 8px 24px rgba(35,102,170,.14),inset 0 0 0 1px rgba(255,255,255,.025);
+  transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;
+}
+.connected-product-btn:hover{
+  transform:translateY(-1px);
+  border-color:rgba(79,220,255,.82);
+  box-shadow:0 10px 28px rgba(35,102,170,.22),0 0 0 3px rgba(90,167,255,.06);
+}
+.connected-product-icon{
+  width:34px;
+  height:34px;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  font-size:9px;
+  font-weight:950;
+  letter-spacing:.02em;
+  color:#06101a;
+  background:linear-gradient(135deg,#8edbff,#9b86ff);
+  box-shadow:0 0 18px rgba(90,167,255,.20);
+}
+.connected-product-copy{min-width:0}
+.connected-product-copy b{
+  display:block;
+  font-size:10.5px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.connected-product-copy small{
+  display:block;
+  margin-top:2px;
+  color:#a9bbcf;
+  font-size:7.5px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.connected-product-arrow{
+  color:#8edbff;
+  font-size:15px;
+  font-weight:900;
+}
+
 .main{padding:22px;min-width:0}.topbar{display:flex;justify-content:space-between;gap:18px;align-items:center;margin-bottom:14px}.eyebrow{color:#69bcff;text-transform:uppercase;letter-spacing:.12em;font-size:9px;font-weight:900}.topbar h2{margin:4px 0 2px;font-size:20px}.topbar p{margin:0;color:#8a99ac;font-size:10px}.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid #26384d;background:#0c1520;color:#dce8f7;border-radius:9px;padding:9px 11px;font-size:9px;font-weight:800}.btn.primary{background:linear-gradient(135deg,#5aa7ff,#8b5cf6);border-color:transparent;color:white}.btn.success{background:rgba(52,211,153,.11);border-color:rgba(52,211,153,.35);color:#75e8be}
 .hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(480px,.85fr);border:1px solid #1b2938;background:linear-gradient(135deg,#0b141f,#0f1b2b 60%,#18213d);border-radius:16px;overflow:hidden;margin-bottom:12px}.hero-main{padding:20px}.kicker{color:#68c7ff;text-transform:uppercase;font-size:9px;letter-spacing:.1em;font-weight:900}.hero h1{font-size:24px;margin:7px 0 8px;line-height:1.06}.hero p{margin:0;color:#9aa9bb;font-size:10px;line-height:1.55;max-width:760px}.hero-summary{display:flex;gap:7px;flex-wrap:wrap;margin-top:15px}.pill{padding:7px 9px;border:1px solid #24374e;background:#0a121c;border-radius:999px;color:#9eb0c5;font-size:9px}.pill strong{color:#fff}.hero-side{padding:18px;border-left:1px solid #1c2b3d;background:rgba(4,9,16,.18)}.hero-side-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.hero-side h3{margin:0;font-size:12px}.live{font-size:8px;padding:4px 7px;border-radius:999px;border:1px solid rgba(52,211,153,.32);color:#64deb1;background:rgba(52,211,153,.06)}
 .progress-spotlight{margin-top:0;padding:13px;border:1px solid rgba(90,167,255,.18);border-radius:12px;background:linear-gradient(135deg,rgba(90,167,255,.07),rgba(139,92,246,.05))}.progress-spotlight .head{display:flex;justify-content:space-between;gap:12px;align-items:end}.progress-spotlight b{font-size:12px}.progress-spotlight strong{font-size:20px}.mini-bar{height:8px;margin-top:9px;border-radius:999px;background:#070d14;border:1px solid #152233;overflow:hidden}.mini-bar span{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--violet));border-radius:inherit}
@@ -747,6 +824,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
       <button class="active" type="button" data-page="overview">Overview</button>
       <button type="button" data-page="set-goals">Set Goals</button>
     </nav>
+    <div class="connected-product-shortcuts" id="connectedProductShortcuts" hidden></div>
     <div class="nav-note"><button class="family" id="backToHios">← H·IOS Family</button></div>
   </aside>
 
@@ -1170,6 +1248,36 @@ let productFocusLinks=loadProductFocusLinks();
 function saveProductFocusLinks(){
  localStorage.setItem(PRODUCT_FOCUS_LINKS_KEY,JSON.stringify(productFocusLinks));
 }
+
+function renderConnectedProductShortcuts(){
+ const root=document.getElementById('connectedProductShortcuts');
+ if(!root)return;
+
+ // A direct product switch only appears after that product has been linked
+ // to a Goals-IOS focus area. For now Traders-IOS is the active direct link.
+ const tiosLink=productFocusLinks?.tios || Object.values(productFocusLinks||{}).find(link=>link?.productId==='tios');
+ const tradingArea=tiosLink?.area || '';
+ const isLinked=!!tiosLink && focusAreas.some(area=>sameDomain(area,tradingArea||'Trading'));
+
+ root.hidden=!isLinked;
+ if(!isLinked){
+  root.innerHTML='';
+  return;
+ }
+
+ root.innerHTML=`
+  <div class="connected-product-label">Connected product</div>
+  <a class="connected-product-btn" href="t-ios.html" title="Open Traders-IOS directly">
+   <span class="connected-product-icon">T·IOS</span>
+   <span class="connected-product-copy">
+    <b>Traders-IOS</b>
+    <small>${escapeHtml(tradingArea||'Trading')} · linked workspace</small>
+   </span>
+   <span class="connected-product-arrow">→</span>
+  </a>
+ `;
+}
+
 
 function productLinkForArea(area){
  return Object.values(productFocusLinks).find(link=>sameDomain(link.area,area))||null;
@@ -1974,6 +2082,7 @@ function saveProgressModelFromModal(){
 }
 
 function renderAll(){
+ renderConnectedProductShortcuts();
  renderRootSelect();
  renderMetrics();
  renderChain();
@@ -2132,6 +2241,7 @@ window.addEventListener('storage',e=>{
  if([GOALS_KEY,...OLD_GOALS_KEYS].includes(e.key)){loadGoals();renderAll();return}
  if([PRODUCT_GOAL_EVIDENCE_KEY,PRODUCT_FOCUS_LINKS_KEY,'hios_product_connection_status_v1',GIOS_PROGRESS_MODELS_KEY,GIOS_EVIDENCE_REQUESTS_KEY,TIOS_EVIDENCE_RESPONSES_KEY].includes(e.key)){
   productFocusLinks=loadProductFocusLinks();
+  renderConnectedProductShortcuts();
   renderSelectedCategoryContext();
   renderProductEvidenceReceiver();
   renderPersonalIntelligenceResponse();
