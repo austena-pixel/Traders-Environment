@@ -440,6 +440,30 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
   .progress-evidence-overview .progress-model-grid{grid-template-columns:1fr}
 }
 
+
+/* ===== TRADING EVIDENCE FAMILIES: TECHNICAL / PSYCHOLOGICAL ===== */
+.phase-evidence-explainer{margin-top:6px;color:#6f8196;font-size:8px;line-height:1.45}
+.phase-evidence-family{margin-top:10px;border:1px solid #1d3043;border-radius:11px;padding:9px;background:#08121c}
+.phase-evidence-family.technical{border-color:rgba(79,156,255,.25)}
+.phase-evidence-family.psychological{border-color:rgba(167,139,250,.25)}
+.phase-evidence-family-head,.receiver-evidence-family-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}
+.phase-evidence-family-head b,.receiver-evidence-family-head b{font-size:8.5px;letter-spacing:.04em;text-transform:uppercase}
+.phase-evidence-family.technical .phase-evidence-family-head b,.receiver-evidence-family.technical .receiver-evidence-family-head b{color:#77b9ff}
+.phase-evidence-family.psychological .phase-evidence-family-head b,.receiver-evidence-family.psychological .receiver-evidence-family-head b{color:#b9a1ff}
+.phase-evidence-family-head span,.receiver-evidence-family-head span{color:#6e8197;font-size:7.5px}
+.phase-evidence-option.technical{border-color:rgba(79,156,255,.18)}
+.phase-evidence-option.psychological{border-color:rgba(167,139,250,.18)}
+.phase-evidence-option.technical input{accent-color:#5aa7ff}
+.phase-evidence-option.psychological input{accent-color:#9b7cff}
+.receiver-evidence-family{margin-bottom:8px;padding:8px;border:1px solid #1d3043;border-radius:10px;background:#08121b}
+.receiver-evidence-family.technical{border-color:rgba(79,156,255,.22)}
+.receiver-evidence-family.psychological{border-color:rgba(167,139,250,.22)}
+.receiver-event-name{display:grid;gap:3px;min-width:0}
+.receiver-event-name b{font-size:9px}
+.evidence-family-badge{width:max-content;padding:2px 5px;border-radius:999px;font-size:6.5px!important;text-transform:uppercase;letter-spacing:.05em;border:1px solid #28384c;color:#7f91a7}
+.evidence-family-badge.technical{color:#79baff;border-color:rgba(79,156,255,.25);background:rgba(79,156,255,.05)}
+.evidence-family-badge.psychological{color:#bea8ff;border-color:rgba(167,139,250,.25);background:rgba(167,139,250,.05)}
+
 </style>
 <!-- G-IOS BUILD: FOCUS-CONTEXT-AUTOMATION-V1 | 2026-09-19 -->
 
@@ -1156,27 +1180,36 @@ const TIOS_EVIDENCE_RESPONSES_KEY='hios_goal_evidence_responses_v1';
 
 const PRODUCT_EVIDENCE_CATALOG={
  tios:[
-  {id:'execution_adherence',label:'Execution adherence'},
-  {id:'execution_errors',label:'Execution errors'},
-  {id:'rule_violations',label:'Rule violations'},
-  {id:'missed_valid_opportunities',label:'Missed valid opportunities'},
-  {id:'impulsive_trades',label:'Impulsive trades'},
-  {id:'review_completion',label:'Review completion'},
-  {id:'expectancy',label:'System expectancy'},
-  {id:'sample_size',label:'Evidence sample size'},
-  {id:'setup_performance',label:'Setup / edge performance'},
-  {id:'system_version',label:'System version'},
-  {id:'regime_performance',label:'Market-regime performance'},
-  {id:'adaptation_changes',label:'Adaptation changes'},
-  {id:'risk_stability',label:'Risk stability'},
-  {id:'drawdown',label:'Drawdown'},
-  {id:'capital_growth',label:'Capital growth'}
+  /* Technical information: system, execution, market and bottom-line evidence. */
+  {id:'execution_adherence',label:'Execution adherence',family:'technical'},
+  {id:'execution_errors',label:'Execution errors',family:'technical'},
+  {id:'missed_valid_opportunities',label:'Missed valid opportunities',family:'technical'},
+  {id:'review_completion',label:'Execution review completion',family:'technical'},
+  {id:'expectancy',label:'System expectancy',family:'technical'},
+  {id:'sample_size',label:'Evidence sample size',family:'technical'},
+  {id:'setup_performance',label:'Setup / edge performance',family:'technical'},
+  {id:'system_version',label:'System version',family:'technical'},
+  {id:'regime_performance',label:'Market-regime performance',family:'technical'},
+  {id:'adaptation_changes',label:'Adaptation changes',family:'technical'},
+  {id:'risk_stability',label:'Risk stability',family:'technical'},
+  {id:'drawdown',label:'Drawdown',family:'technical'},
+  {id:'capital_growth',label:'Capital growth',family:'technical'},
+
+  /* Psychological information: internal/behavioural evidence captured by T-IOS. */
+  {id:'identity_expression',label:'Identity expression',family:'psychological'},
+  {id:'discipline_score',label:'Discipline',family:'psychological'},
+  {id:'patience_score',label:'Patience',family:'psychological'},
+  {id:'objectivity_score',label:'Objectivity',family:'psychological'},
+  {id:'psychology_rule_adherence',label:'Psychology rule adherence',family:'psychological'},
+  {id:'rule_violations',label:'Psychology rule violations',family:'psychological'},
+  {id:'affirmation_consistency',label:'Affirmation consistency',family:'psychological'},
+  {id:'impulsive_trades',label:'Impulsive-trade evidence',family:'psychological'}
  ],
  default:[
-  {id:'goal_completion',label:'Goal completion'},
-  {id:'milestone_progress',label:'Milestone progress'},
-  {id:'activity_consistency',label:'Activity consistency'},
-  {id:'outcome_quality',label:'Outcome quality'}
+  {id:'goal_completion',label:'Goal completion',family:'general'},
+  {id:'milestone_progress',label:'Milestone progress',family:'general'},
+  {id:'activity_consistency',label:'Activity consistency',family:'general'},
+  {id:'outcome_quality',label:'Outcome quality',family:'general'}
  ]
 };
 
@@ -1187,6 +1220,14 @@ function saveProgressModels(models){localStorage.setItem(GIOS_PROGRESS_MODELS_KE
 function progressModelForArea(area){return loadProgressModels()[canonicalDomain(area)]||null}
 function evidenceCatalogForProduct(productId){return PRODUCT_EVIDENCE_CATALOG[productId]||PRODUCT_EVIDENCE_CATALOG.default}
 function evidenceLabel(productId,id){return evidenceCatalogForProduct(productId).find(x=>x.id===id)?.label||id.replaceAll('_',' ')}
+function evidenceDefinition(productId,id){return evidenceCatalogForProduct(productId).find(x=>x.id===id)||null}
+function evidenceFamily(productId,id){return evidenceDefinition(productId,id)?.family||'general'}
+function evidenceFamilyLabel(family){return family==='technical'?'Technical Information':family==='psychological'?'Psychological Information':'Product Information'}
+function groupedEvidenceIds(productId,ids=[]){
+ const groups={technical:[],psychological:[],general:[]};
+ ids.forEach(id=>{const family=evidenceFamily(productId,id);(groups[family]||groups.general).push(id)});
+ return groups;
+}
 function createProgressPhase(title='New stage'){return{id:'phase_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),title,evidence:[]}}
 function activeProgressPhase(model){return model?.phases?.find(p=>p.id===model.activePhaseId)||model?.phases?.[0]||null}
 
@@ -1198,7 +1239,9 @@ function publishGoalEvidenceRequest(area,model){
   requestId:'req_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
   schema:'hios.goal-evidence-request.v1',source:'goals-ios',targetProductId:link.productId,
   area,modelName:model.name||area+' Progress Model',phaseId:phase.id,phaseName:phase.title,
-  metrics:[...(phase.evidence||[])],requestedAt:new Date().toISOString(),status:'requested'
+  metrics:[...(phase.evidence||[])],
+  metricGroups:groupedEvidenceIds(link.productId,phase.evidence||[]),
+  requestedAt:new Date().toISOString(),status:'requested'
  };
  let all={};try{all=JSON.parse(localStorage.getItem(GIOS_EVIDENCE_REQUESTS_KEY)||'{}')||{}}catch(e){}
  all[link.productId]=request;
@@ -2060,16 +2103,29 @@ function closeProgressModelModal(){
 function renderProgressPhaseEditors(){
  const root=$('#phaseEditorList');if(!root||!progressModelDraft)return;
  const link=productLinkForArea(progressModelDraft.area);
- const catalog=evidenceCatalogForProduct(link?.productId||'default');
- root.innerHTML=progressModelDraft.phases.map((phase,index)=>`<div class="phase-editor" data-phase-id="${escapeHtml(phase.id)}">
-  <div class="phase-editor-top">
-   <input type="radio" name="activeProgressPhase" value="${escapeHtml(phase.id)}" ${phase.id===progressModelDraft.activePhaseId?'checked':''} title="Current stage">
-   <input class="phase-title-input" data-phase-title="${escapeHtml(phase.id)}" value="${escapeHtml(phase.title)}" aria-label="Stage ${index+1} title">
-   <button class="phase-remove" type="button" data-remove-phase="${escapeHtml(phase.id)}" ${progressModelDraft.phases.length===1?'disabled':''}>Remove</button>
-  </div>
-  <div class="phase-evidence-title">Evidence needed to evaluate this stage</div>
-  <div class="phase-evidence-options">${catalog.map(item=>`<label class="phase-evidence-option"><input type="checkbox" data-phase-evidence="${escapeHtml(phase.id)}" value="${escapeHtml(item.id)}" ${(phase.evidence||[]).includes(item.id)?'checked':''}><span>${escapeHtml(item.label)}</span></label>`).join('')}</div>
- </div>`).join('');
+ const productId=link?.productId||'default';
+ const catalog=evidenceCatalogForProduct(productId);
+ const families=['technical','psychological','general'];
+ root.innerHTML=progressModelDraft.phases.map((phase,index)=>{
+  const familyBlocks=families.map(family=>{
+   const items=catalog.filter(item=>(item.family||'general')===family);
+   if(!items.length)return'';
+   return `<div class="phase-evidence-family ${escapeHtml(family)}">
+    <div class="phase-evidence-family-head"><b>${escapeHtml(evidenceFamilyLabel(family))}</b><span>${items.length} available signals</span></div>
+    <div class="phase-evidence-options">${items.map(item=>`<label class="phase-evidence-option ${escapeHtml(family)}"><input type="checkbox" data-phase-evidence="${escapeHtml(phase.id)}" value="${escapeHtml(item.id)}" ${(phase.evidence||[]).includes(item.id)?'checked':''}><span>${escapeHtml(item.label)}</span></label>`).join('')}</div>
+   </div>`;
+  }).join('');
+  return `<div class="phase-editor" data-phase-id="${escapeHtml(phase.id)}">
+   <div class="phase-editor-top">
+    <input type="radio" name="activeProgressPhase" value="${escapeHtml(phase.id)}" ${phase.id===progressModelDraft.activePhaseId?'checked':''} title="Current stage">
+    <input class="phase-title-input" data-phase-title="${escapeHtml(phase.id)}" value="${escapeHtml(phase.title)}" aria-label="Stage ${index+1} title">
+    <button class="phase-remove" type="button" data-remove-phase="${escapeHtml(phase.id)}" ${progressModelDraft.phases.length===1?'disabled':''}>Remove</button>
+   </div>
+   <div class="phase-evidence-title">Evidence needed to evaluate this stage</div>
+   <div class="phase-evidence-explainer">Technical information describes the trading system, execution and results. Psychological information describes the trader's internal/behavioural evidence. G-IOS requests only what this stage needs.</div>
+   ${familyBlocks}
+  </div>`;
+ }).join('');
 }
 function saveProgressModelFromModal(){
  if(!progressModelDraft)return;
@@ -2438,8 +2494,12 @@ function renderProductEvidenceReceiver(){
  }
 
  const productId=link?.productId||'default';
+ const requestedGroups=groupedEvidenceIds(productId,[...requested]);
  $id('receiverRequestedEvidence').innerHTML=requested.size
-  ? [...requested].map(id=>`<span class="evidence-request-chip ${relevantRows.some(r=>r.metric===id||r.signal===id)?'received':''}">${escapeHtml(evidenceLabel(productId,id))}</span>`).join('')
+  ? ['technical','psychological','general'].map(family=>{
+      const ids=requestedGroups[family]||[];if(!ids.length)return'';
+      return `<div class="receiver-evidence-family ${escapeHtml(family)}"><div class="receiver-evidence-family-head"><b>${escapeHtml(evidenceFamilyLabel(family))}</b><span>${ids.length} requested</span></div><div class="evidence-chip-list">${ids.map(id=>`<span class="evidence-request-chip ${relevantRows.some(r=>r.metric===id||r.signal===id)?'received':''}">${escapeHtml(evidenceLabel(productId,id))}</span>`).join('')}</div></div>`;
+    }).join('')
   : '<div class="receiver-empty">This stage has no evidence signals selected yet.</div>';
 
  const ordered=relevantRows.slice().sort((a,b)=>String(b.timestamp||'').localeCompare(String(a.timestamp||'')));
@@ -2450,7 +2510,9 @@ function renderProductEvidenceReceiver(){
    const sample=Number(r?.details?.sampleSize);
    const valueText=unit ? `${r.value??'—'} ${unit}` : String(r.value??'—');
    const sampleText=Number.isFinite(sample) && sample>0 ? ` · based on ${sample} ${sample===1?'record':'records'}` : '';
-   return `<div class="receiver-event"><b>${escapeHtml(evidenceLabel(productId,r.metric||r.signal))}</b><span>${escapeHtml(valueText+sampleText)}</span><time>${escapeHtml(r.timestamp?new Date(r.timestamp).toLocaleString():'—')}</time></div>`;
+   const metricId=r.metric||r.signal;
+   const family=evidenceFamily(productId,metricId);
+   return `<div class="receiver-event"><div class="receiver-event-name"><small class="evidence-family-badge ${escapeHtml(family)}">${escapeHtml(evidenceFamilyLabel(family))}</small><b>${escapeHtml(evidenceLabel(productId,metricId))}</b></div><span>${escapeHtml(valueText+sampleText)}</span><time>${escapeHtml(r.timestamp?new Date(r.timestamp).toLocaleString():'—')}</time></div>`;
  }).join('')||'<div class="receiver-empty">Waiting for evidence that matches this stage request.</div>';
 }
 
