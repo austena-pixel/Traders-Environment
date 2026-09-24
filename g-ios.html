@@ -142,6 +142,26 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .pi-context-grid strong{display:block;margin-top:5px;font-size:13px}
 @media(max-width:900px){.pi-layout{grid-template-columns:1fr}}
 
+
+/* ===== PERSONAL INTELLIGENCE — PRIMARY ATTENTION AREA ===== */
+.personal-intelligence-top{
+  margin-bottom:12px;
+  border-color:rgba(90,167,255,.34);
+  background:
+    radial-gradient(circle at 88% 0%,rgba(139,92,246,.11),transparent 32%),
+    linear-gradient(135deg,#0d1724,#0b121b);
+  box-shadow:0 10px 34px rgba(0,0,0,.18), inset 0 0 0 1px rgba(90,167,255,.035);
+}
+.personal-intelligence-top .card-head h3{
+  font-size:17px;
+}
+.personal-intelligence-top .sub{
+  font-size:10px;
+}
+.personal-intelligence-top .pi-response-box{
+  min-height:118px;
+}
+
 </style>
 <!-- G-IOS BUILD: FOCUS-CONTEXT-AUTOMATION-V1 | 2026-09-19 -->
 
@@ -531,6 +551,29 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 
   <main class="main">
     <section class="page active" id="page-overview">
+    <section class="card personal-intelligence-card personal-intelligence-top" id="personalIntelligenceCard">
+    <div class="card-head">
+      <div>
+        <h3 id="piTitle">Personal Intelligence Response</h3>
+        <div class="sub" id="piSubtitle">Evidence-based interpretation for the selected focus area only.</div>
+      </div>
+      <span class="pi-evidence-pill" id="piEvidencePill">No category selected</span>
+    </div>
+    <div class="pi-layout">
+      <div class="pi-response-box">
+        <span class="pi-label">Current response</span>
+        <strong id="piResponse">Select a category to view its Personal Intelligence response.</strong>
+        <p id="piResponseNote">G·IOS keeps evidence from different focus areas separated in this view.</p>
+      </div>
+      <div class="pi-context-grid">
+        <div><span>Selected category</span><strong id="piCategory">—</strong></div>
+        <div><span>Goals tracked</span><strong id="piGoalCount">0</strong></div>
+        <div><span>Chain progress</span><strong id="piChainProgress">0%</strong></div>
+        <div><span>Product evidence</span><strong id="piEvidenceCount">0</strong></div>
+      </div>
+    </div>
+  </section>
+
     <section class="hero overview-goal-architecture">
   <div class="hero-main">
     <div class="kicker">Core principle</div>
@@ -589,28 +632,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
     <div class="receiver-feed" id="receiverEvidenceFeed"><div class="receiver-empty">Product evidence will appear here automatically after H·IOS receives it.</div></div>
   </section>
 
-  <section class="card personal-intelligence-card" id="personalIntelligenceCard">
-    <div class="card-head">
-      <div>
-        <h3 id="piTitle">Personal Intelligence Response</h3>
-        <div class="sub" id="piSubtitle">Evidence-based interpretation for the selected focus area only.</div>
-      </div>
-      <span class="pi-evidence-pill" id="piEvidencePill">No category selected</span>
-    </div>
-    <div class="pi-layout">
-      <div class="pi-response-box">
-        <span class="pi-label">Current response</span>
-        <strong id="piResponse">Select a category to view its Personal Intelligence response.</strong>
-        <p id="piResponseNote">G·IOS keeps evidence from different focus areas separated in this view.</p>
-      </div>
-      <div class="pi-context-grid">
-        <div><span>Selected category</span><strong id="piCategory">—</strong></div>
-        <div><span>Goals tracked</span><strong id="piGoalCount">0</strong></div>
-        <div><span>Chain progress</span><strong id="piChainProgress">0%</strong></div>
-        <div><span>Product evidence</span><strong id="piEvidenceCount">0</strong></div>
-      </div>
-    </div>
-  </section>
+  
 
 
     </section>
