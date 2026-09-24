@@ -162,6 +162,108 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
   min-height:118px;
 }
 
+
+/* ===== COMPOUNDING CHAIN V4 — COMPACT + HORIZONTAL GOAL CAROUSELS ===== */
+.overview-goal-architecture{
+  display:block !important;
+  grid-template-columns:none !important;
+  margin-bottom:12px !important;
+}
+.overview-goal-architecture .hero-side{
+  display:block !important;
+  width:100% !important;
+  min-width:0 !important;
+  padding:14px !important;
+  border-left:0 !important;
+  background:rgba(4,9,16,.12) !important;
+}
+.hero-chain{
+  width:100% !important;
+  height:auto !important;
+  min-width:0 !important;
+}
+.hero-chain .card-head{margin-bottom:8px !important}
+.hero-chain .chain-grid{
+  display:grid !important;
+  grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  gap:8px !important;
+  align-items:start !important;
+  overflow:visible !important;
+}
+.hero-chain .stage{
+  min-height:0 !important;
+  height:auto !important;
+  padding:10px !important;
+  overflow:visible !important;
+}
+.hero-chain .stage .label,
+.hero-chain .stage .pct,
+.hero-chain .stage > .bar{
+  position:relative;
+  z-index:2;
+  flex:none;
+}
+.hero-chain .stage .pct{margin-top:7px !important}
+.hero-chain .stage > .bar{margin-top:5px !important}
+.hero-chain .stage-tasks{
+  display:grid !important;
+  grid-auto-flow:column !important;
+  grid-auto-columns:100% !important;
+  grid-template-columns:none !important;
+  align-items:start !important;
+  align-content:start !important;
+  gap:7px !important;
+  width:100% !important;
+  height:auto !important;
+  min-height:0 !important;
+  max-height:none !important;
+  margin-top:8px !important;
+  padding:0 0 6px !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  overscroll-behavior-inline:contain;
+  scroll-snap-type:x mandatory;
+  scrollbar-width:thin;
+  scrollbar-color:#38536f #091018;
+}
+.hero-chain .stage-tasks::-webkit-scrollbar{height:5px}
+.hero-chain .stage-tasks::-webkit-scrollbar-track{background:#091018;border-radius:999px}
+.hero-chain .stage-tasks::-webkit-scrollbar-thumb{background:#38536f;border-radius:999px}
+.hero-chain .stage-task,
+.hero-chain .stage-task-empty{
+  width:100% !important;
+  min-width:100% !important;
+  max-width:100% !important;
+  height:auto !important;
+  min-height:0 !important;
+  scroll-snap-align:start;
+  scroll-snap-stop:always;
+}
+.hero-chain .stage-task{
+  align-items:start !important;
+  padding:8px !important;
+}
+.hero-chain .stage-task span{
+  display:block !important;
+  min-width:0 !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  white-space:normal !important;
+  overflow-wrap:anywhere !important;
+  word-break:normal !important;
+  -webkit-line-clamp:unset !important;
+  -webkit-box-orient:initial !important;
+  line-height:1.42 !important;
+}
+.hero-chain .stage-task-empty{padding:9px 7px !important}
+@media(max-width:1180px){
+  .hero-chain .chain-grid{
+    grid-template-columns:repeat(5,minmax(170px,1fr)) !important;
+    overflow-x:auto !important;
+    padding-bottom:6px;
+  }
+}
+
 </style>
 <!-- G-IOS BUILD: FOCUS-CONTEXT-AUTOMATION-V1 | 2026-09-19 -->
 
@@ -575,11 +677,6 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
   </section>
 
     <section class="hero overview-goal-architecture">
-  <div class="hero-main">
-    <div class="kicker">Core principle</div>
-    <h1>Progress first. Time supports the plan - it does not define success.</h1>
-    <p>G·IOS tracks connected execution from daily actions to long-term outcomes. Product-linked areas can receive verified execution evidence instead of relying on manual completion.</p>
-  </div>
   <aside class="hero-side"><div class="hero-chain chain-card">
         <div class="card-head">
           <div><h3 id="chainTitle">Compounding Goal Chain</h3><div class="sub" id="chainSubtitle">Day 1 → Week 1 → Month 1 → Semester 1 → Year 1. Periods are planning layers, not rigid promises.</div></div>
@@ -1269,13 +1366,13 @@ function renderChain(){
    const pct=items.length?Math.round(weightedAverage(items,g=>effectiveProgress(g))):0;
    const key=cap(level);
    const taskBox=$('#stage'+key+'Tasks');
-   const oldScroll=taskBox.scrollTop;
+   const oldScroll=taskBox.scrollLeft;
    $('#stage'+key+'Pct').textContent=pct+'%';
    $('#stage'+key+'Bar').style.width=pct+'%';
    taskBox.innerHTML=items.length
      ? items.map(stageTaskHtml).join('')
      : `<div class="stage-task-empty">No ${escapeHtml(LEVEL_LABEL[level].toLowerCase())} tasks in this focus area.</div>`;
-   taskBox.scrollTop=oldScroll;
+   taskBox.scrollLeft=oldScroll;
  });
 }
 function renderQuickGoalParents(){
