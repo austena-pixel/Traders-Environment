@@ -2590,7 +2590,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     <div class="product-modal-head">
       <div>
         <h3>Add Product</h3>
-        <p>Select which specialized ·IOS products belong in your H·IOS workspace. Only added products appear in the sidebar.</p>
+        <p>Add optional specialized ·IOS products to your H·IOS workspace. Goals-IOS is included by default.</p>
       </div>
       <button class="modal-close" type="button" onclick="closeProductModal()" aria-label="Close">×</button>
     </div>
@@ -2721,6 +2721,45 @@ const HIOS_SIGNAL_BUS_KEY='hios_ecosystem_signal_bus_v1';
 const HIOS_PRODUCT_STATUS_KEY='hios_product_connection_status_v1';
 const HIOS_RECEIPT_KEY='hios_signal_receipts_v1';
 const HIOS_GOAL_EVIDENCE_KEY='hios_product_goal_evidence_v1';
+const GIOS_EVIDENCE_REQUESTS_KEY='hios_goal_evidence_requests_v1';
+const HIOS_EVIDENCE_REQUEST_RECEIPTS_KEY='hios_goal_evidence_request_receipts_v1';
+
+function verifyGoalEvidenceRequest(request){
+  return !!(request && request.schema==='hios.goal-evidence-request.v1' && request.requestId && request.source==='goals-ios' && request.targetProductId && Array.isArray(request.metrics) && request.requestedAt);
+}
+function receiveGoalEvidenceRequests(){
+  const requests=readHiosEcosystemJson(GIOS_EVIDENCE_REQUESTS_KEY,{});
+  const receipts=readHiosEcosystemJson(HIOS_EVIDENCE_REQUEST_RECEIPTS_KEY,{});
+  const status=readHiosEcosystemJson(HIOS_PRODUCT_STATUS_KEY,{});
+  let changed=false,received=0;
+  Object.entries(requests||{}).forEach(([productId,request])=>{
+    if(!verifyGoalEvidenceRequest(request)||request.targetProductId!==productId)return;
+    if(!receipts[request.requestId]){
+      receipts[request.requestId]={requestId:request.requestId,targetProductId:productId,area:request.area||null,phaseId:request.phaseId||null,phaseName:request.phaseName||null,metrics:[...request.metrics],receivedAt:new Date().toISOString(),verified:true};
+      received++;
+    }
+    if(!request.status||request.status==='requested'){
+      requests[productId]={...request,status:'routed',hiosReceivedAt:request.hiosReceivedAt||new Date().toISOString(),routedAt:new Date().toISOString(),router:'h-ios'};
+      changed=true;
+    }
+    status[productId]={...(status[productId]||{}),goalEvidenceRequestId:request.requestId,goalEvidenceRequestArea:request.area||null,goalEvidenceRequestPhase:request.phaseName||null,goalEvidenceRequestedMetrics:[...request.metrics],goalEvidenceRequestObservedAt:new Date().toISOString()};
+  });
+  writeHiosEcosystemJson(HIOS_EVIDENCE_REQUEST_RECEIPTS_KEY,receipts);
+  writeHiosEcosystemJson(HIOS_PRODUCT_STATUS_KEY,status);
+  if(changed)writeHiosEcosystemJson(GIOS_EVIDENCE_REQUESTS_KEY,requests);
+  if(received||changed)window.dispatchEvent(new CustomEvent('hios:goal-evidence-routed',{detail:{received,changed}}));
+  return {received,changed};
+}
+function hiosGoalEvidenceDiagnostic(productId='tios'){
+  receiveGoalEvidenceRequests();
+  const request=readHiosEcosystemJson(GIOS_EVIDENCE_REQUESTS_KEY,{})?.[productId]||null;
+  const receipts=readHiosEcosystemJson(HIOS_EVIDENCE_REQUEST_RECEIPTS_KEY,{});
+  const evidence=readHiosEcosystemJson(HIOS_GOAL_EVIDENCE_KEY,{})?.[productId]||[];
+  const matching=request?evidence.filter(row=>row?.details?.requestId===request.requestId):[];
+  return {productId,requestId:request?.requestId||null,status:request?.status||'none',phase:request?.phaseName||null,requestedMetrics:request?.metrics||[],hiosVerified:!!(request&&receipts[request.requestId]?.verified),returnedEvidence:matching.length,deliveredMetrics:[...new Set(matching.map(row=>row.metric).filter(Boolean))]};
+}
+window.HIOSGoalEvidenceDiagnostic=hiosGoalEvidenceDiagnostic;
+
 
 function readHiosEcosystemJson(key,fallback){
   try{
@@ -2803,8 +2842,12 @@ window.addEventListener('storage',event=>{
   if([HIOS_SIGNAL_BUS_KEY,HIOS_PRODUCT_STATUS_KEY,HIOS_GOAL_EVIDENCE_KEY].includes(event.key)){
     receiveHiosProductSignals();
   }
+  if(event.key===GIOS_EVIDENCE_REQUESTS_KEY){
+    receiveGoalEvidenceRequests();
+  }
 });
 window.addEventListener('hios:product-signal',()=>receiveHiosProductSignals());
+window.addEventListener('hios:goal-evidence-request',()=>receiveGoalEvidenceRequests());
 
 
 const HIOS_PRODUCT_CATALOG = [
@@ -2814,7 +2857,8 @@ const HIOS_PRODUCT_CATALOG = [
     icon:'G',
     description:'Dynamic goals, priorities, milestones, adaptive planning and cross-domain progress intelligence.',
     url:'g-ios.html',
-    availability:'Available'
+    availability:'Core · Included by default',
+    core:true
   },
   {
     id:'tios',
@@ -2835,30 +2879,46 @@ const HIOS_PRODUCT_CATALOG = [
 ];
 
 let addedProductIds = loadAddedProducts();
+saveAddedProducts();
 
 function loadAddedProducts(){
   try{
     const raw = localStorage.getItem(HIOS_PRODUCT_STORAGE_KEY);
-    if(!raw) return [];
-    const parsed = JSON.parse(raw);
-    if(!Array.isArray(parsed)) return [];
-    return parsed.filter(id => HIOS_PRODUCT_CATALOG.some(product => product.id === id));
+    const parsed = raw ? JSON.parse(raw) : [];
+    const valid = Array.isArray(parsed)
+      ? parsed.filter(id => HIOS_PRODUCT_CATALOG.some(product => product.id === id))
+      : [];
+
+    // Goals-IOS is a foundational H-IOS system, not an optional product.
+    return [...new Set(['gios', ...valid])];
   }catch(error){
     console.warn('Could not load H·IOS products:', error);
-    return [];
+    return ['gios'];
   }
 }
 
 function saveAddedProducts(){
+  // Keep Goals-IOS permanently included even if old storage or external code
+  // attempts to write a product list without it.
+  addedProductIds = [...new Set(['gios', ...addedProductIds.filter(Boolean)])];
   localStorage.setItem(HIOS_PRODUCT_STORAGE_KEY, JSON.stringify(addedProductIds));
 }
 
+function isCoreProduct(id){
+  return HIOS_PRODUCT_CATALOG.some(product => product.id === id && product.core === true);
+}
+
 function isProductAdded(id){
-  return addedProductIds.includes(id);
+  return isCoreProduct(id) || addedProductIds.includes(id);
 }
 
 function addProduct(id){
   if(!HIOS_PRODUCT_CATALOG.some(product => product.id === id)) return;
+  if(isCoreProduct(id)){
+    saveAddedProducts();
+    renderProductManager();
+    return;
+  }
   if(!isProductAdded(id)){
     addedProductIds.push(id);
     saveAddedProducts();
@@ -2867,12 +2927,22 @@ function addProduct(id){
 }
 
 function removeProduct(id){
+  // Core systems cannot be removed from H-IOS.
+  if(isCoreProduct(id)){
+    saveAddedProducts();
+    renderProductManager();
+    return;
+  }
   addedProductIds = addedProductIds.filter(productId => productId !== id);
   saveAddedProducts();
   renderProductManager();
 }
 
 function toggleProduct(id){
+  if(isCoreProduct(id)){
+    openProduct(id);
+    return;
+  }
   if(isProductAdded(id)) removeProduct(id);
   else addProduct(id);
 }
@@ -2896,6 +2966,7 @@ function openProduct(id){
 
 function renderProductManager(){
   receiveHiosProductSignals();
+  receiveGoalEvidenceRequests();
   const sidebar = document.getElementById('productSidebarNav');
   const grid = document.getElementById('productsGrid');
   const catalog = document.getElementById('productCatalogList');
@@ -2920,22 +2991,25 @@ function renderProductManager(){
 
   if(grid){
     grid.innerHTML = HIOS_PRODUCT_CATALOG.map(product => {
+      const core = isCoreProduct(product.id);
       const added = isProductAdded(product.id);
       return `
-        <div class="product">
+        <div class="product ${core ? 'core-product' : ''}">
           <div class="picon">${product.icon}</div>
           <h4>${product.name}</h4>
           <p>${product.description}</p>
           <span class="status ${added ? 'added' : 'not-added'}">
-            ${added ? 'Added to H·IOS' : product.availability}
+            ${core ? 'Core · Included by default' : (added ? 'Added to H·IOS' : product.availability)}
           </span>
 
           <div class="product-actions">
             ${
-              added
-                ? `<button class="product-action primary-action" type="button" onclick="openProduct('${product.id}')">Open</button>
-                   <button class="product-action remove-action" type="button" onclick="removeProduct('${product.id}')">Remove</button>`
-                : `<button class="product-action primary-action" type="button" onclick="addProduct('${product.id}')">Add Product</button>`
+              core
+                ? `<button class="product-action primary-action" type="button" onclick="openProduct('${product.id}')">Open</button>`
+                : added
+                  ? `<button class="product-action primary-action" type="button" onclick="openProduct('${product.id}')">Open</button>
+                     <button class="product-action remove-action" type="button" onclick="removeProduct('${product.id}')">Remove</button>`
+                  : `<button class="product-action primary-action" type="button" onclick="addProduct('${product.id}')">Add Product</button>`
             }
           </div>
         </div>
@@ -2944,26 +3018,29 @@ function renderProductManager(){
   }
 
   if(catalog){
-    catalog.innerHTML = HIOS_PRODUCT_CATALOG.map(product => {
-      const added = isProductAdded(product.id);
-      return `
-        <div class="catalog-item">
-          <div class="catalog-icon">${product.icon}</div>
-          <div>
-            <h4>${product.name}</h4>
-            <p>${product.description}</p>
+    // Add Product is only for modular/optional products. Goals-IOS is core.
+    catalog.innerHTML = HIOS_PRODUCT_CATALOG
+      .filter(product => !isCoreProduct(product.id))
+      .map(product => {
+        const added = isProductAdded(product.id);
+        return `
+          <div class="catalog-item">
+            <div class="catalog-icon">${product.icon}</div>
+            <div>
+              <h4>${product.name}</h4>
+              <p>${product.description}</p>
+            </div>
+            <div class="catalog-actions">
+              ${added && product.url ? `<button type="button" onclick="openProduct('${product.id}')">Open</button>` : ''}
+              <button
+                type="button"
+                class="${added ? 'added' : ''}"
+                onclick="toggleProduct('${product.id}')"
+              >${added ? 'Remove' : 'Add'}</button>
+            </div>
           </div>
-          <div class="catalog-actions">
-            ${added && product.url ? `<button type="button" onclick="openProduct('${product.id}')">Open</button>` : ''}
-            <button
-              type="button"
-              class="${added ? 'added' : ''}"
-              onclick="toggleProduct('${product.id}')"
-            >${added ? 'Remove' : 'Add'}</button>
-          </div>
-        </div>
-      `;
-    }).join('');
+        `;
+      }).join('');
   }
 }
 
