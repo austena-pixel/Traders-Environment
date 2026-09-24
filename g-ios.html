@@ -107,6 +107,12 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .product-focus-suggestion small{display:block;margin-top:3px;color:#778a9f;font-size:7.5px}
 .product-focus-suggestion em{font-style:normal;font-size:7px;color:#75e8be;border:1px solid rgba(52,211,153,.28);border-radius:999px;padding:4px 6px}
 .product-linked-badge{display:inline-flex;margin-top:4px;padding:3px 5px;border-radius:999px;border:1px solid rgba(52,211,153,.24);color:#69dcb2;background:rgba(52,211,153,.05);font-size:7px}
+
+/* ===== PRODUCT EVIDENCE RECEIVER — STAGE 1 ===== */
+.product-evidence-status{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.product-evidence-status span{display:inline-flex;align-items:center;gap:4px;padding:3px 6px;border:1px solid #25384d;border-radius:999px;background:#09131d;color:#8092a8;font-size:7px}
+.product-evidence-status span.ok{border-color:rgba(52,211,153,.30);background:rgba(52,211,153,.055);color:#6fdfb6}
+.product-evidence-status span.wait{border-color:rgba(251,191,36,.25);background:rgba(251,191,36,.04);color:#d6bd70}
 </style>
 <!-- G-IOS BUILD: FOCUS-CONTEXT-AUTOMATION-V1 | 2026-09-19 -->
 
@@ -836,6 +842,68 @@ function readProductGoalEvidence(productId){
  }catch(error){return []}
 }
 
+
+const HIOS_PRODUCT_STATUS_KEY='hios_product_connection_status_v1';
+const HIOS_SIGNAL_RECEIPT_KEY='hios_signal_receipts_v1';
+
+function readProductConnectionStatus(productId){
+ try{
+  const all=JSON.parse(localStorage.getItem(HIOS_PRODUCT_STATUS_KEY)||'{}');
+  return all&&all[productId]?all[productId]:null;
+ }catch(error){return null}
+}
+
+function productEvidenceSummary(productId){
+ const rows=readProductGoalEvidence(productId);
+ const status=readProductConnectionStatus(productId);
+ const latest=rows.length
+  ? [...rows].sort((a,b)=>String(b.timestamp||'').localeCompare(String(a.timestamp||'')))[0]
+  : null;
+
+ const snapshots=rows.filter(row=>row.signal==='performance_snapshot');
+ const latestSnapshot=snapshots.length
+  ? [...snapshots].sort((a,b)=>String(b.timestamp||'').localeCompare(String(a.timestamp||'')))[0]
+  : null;
+
+ return {
+  productId,
+  connected:!!status,
+  publisher:status?.publisher||'waiting',
+  hiosReceiver:status?.hiosReceiver||'waiting',
+  verifiedSignals:Number(status?.hiosVerifiedCount||0),
+  evidenceCount:rows.length,
+  latest,
+  latestSnapshot,
+  tradeCount:Number(latestSnapshot?.value||0),
+  totalPnl:Number(latestSnapshot?.details?.totalPnl||0),
+  winRate:Number(latestSnapshot?.details?.winRate||0)
+ };
+}
+
+function productEvidenceStatusHtml(area){
+ const link=productLinkForArea(area);
+ if(!link)return '';
+ const summary=productEvidenceSummary(link.productId);
+ const live=summary.publisher==='ready'&&summary.hiosReceiver==='receiving';
+ return `<span class="product-evidence-status">
+  <span class="${summary.publisher==='ready'?'ok':'wait'}">T·IOS ${summary.publisher==='ready'?'Publishing ✓':'Waiting'}</span>
+  <span class="${summary.hiosReceiver==='receiving'?'ok':'wait'}">H·IOS ${summary.hiosReceiver==='receiving'?'Receiving ✓':'Waiting'}</span>
+  <span class="${summary.evidenceCount?'ok':'wait'}">G·IOS ${summary.evidenceCount?`${summary.evidenceCount} evidence ✓`:'No evidence yet'}</span>
+ </span>`;
+}
+
+function refreshProductEvidenceConnections(){
+ productFocusLinks=loadProductFocusLinks();
+ renderAll();
+}
+
+window.addEventListener('storage',event=>{
+ if([PRODUCT_GOAL_EVIDENCE_KEY,HIOS_PRODUCT_STATUS_KEY,PRODUCT_FOCUS_LINKS_KEY].includes(event.key)){
+  refreshProductEvidenceConnections();
+ }
+});
+window.addEventListener('hios:product-signal',()=>refreshProductEvidenceConnections());
+
 function loadFocusAreas(){
  try{
   const parsed=JSON.parse(localStorage.getItem(FOCUS_AREAS_KEY)||'[]');
@@ -1365,7 +1433,7 @@ function renderSetGoals(){
   const items=goals.filter(g=>sameDomain(g.domain,category));
   const progress=items.length?Math.round(items.reduce((sum,g)=>sum+effectiveProgress(g),0)/items.length):0;
   const mark=category.replace(/[^a-z0-9]/gi,'').slice(0,2).toUpperCase()||'•';
-  return `<div class="goal-category-card ${setGoalsCategory===category?'active':''}" data-goal-category="${escapeHtml(category)}" role="button" tabindex="0"><span class="goal-category-mark">${escapeHtml(mark)}</span><span class="goal-category-copy"><b>${escapeHtml(category)}</b><small>${items.length} goal${items.length===1?'':'s'}</small>${productLinkForArea(category)?`<span class="product-linked-badge">Linked · ${escapeHtml(productLinkForArea(category).productName)}</span>`:''}</span><strong>${progress}%</strong><button type="button" class="focus-area-remove" data-remove-focus="${escapeHtml(category)}" aria-label="Remove ${escapeHtml(category)}">×</button><span class="goal-category-rail"><i style="width:${progress}%"></i></span></div>`;
+  return `<div class="goal-category-card ${setGoalsCategory===category?'active':''}" data-goal-category="${escapeHtml(category)}" role="button" tabindex="0"><span class="goal-category-mark">${escapeHtml(mark)}</span><span class="goal-category-copy"><b>${escapeHtml(category)}</b><small>${items.length} goal${items.length===1?'':'s'}</small>${productLinkForArea(category)?`<span class="product-linked-badge">Linked · ${escapeHtml(productLinkForArea(category).productName)}</span>${productEvidenceStatusHtml(category)}`:''}</span><strong>${progress}%</strong><button type="button" class="focus-area-remove" data-remove-focus="${escapeHtml(category)}" aria-label="Remove ${escapeHtml(category)}">×</button><span class="goal-category-rail"><i style="width:${progress}%"></i></span></div>`;
  }).join('');
  renderAdvancedFocusOptions();
 
@@ -1607,6 +1675,14 @@ if(selectedViewArea)selectRootForDomain(selectedViewArea);
 goalsBridge.subscribe(processHiosGoalRequest,{source:'h-ios',types:HIOS_GOAL_REQUEST_TYPES});
 goalsBridge.getPendingRequests().forEach(processHiosGoalRequest);
 renderAll();
+
+window.GIOSProductEvidenceDiagnostic=function(productId='tios'){
+ const link=productFocusLinks[productId]||null;
+ return {
+  linkedArea:link?.area||null,
+  ...productEvidenceSummary(productId)
+ };
+};
 </script>
 </body>
 </html>
