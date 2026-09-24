@@ -264,6 +264,46 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
   }
 }
 
+
+/* ===== GOAL PROGRESS EVIDENCE MODEL — STAGE 1 ===== */
+.progress-evidence-card{min-height:0}
+.receiver-head-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.evidence-config-btn{padding:7px 9px;font-size:8px}
+.progress-model-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr);gap:12px}
+.progress-model-main,.request-summary-panel{border:1px solid var(--line);border-radius:12px;background:#08111a;padding:12px}
+.progress-model-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.progress-model-row>div{display:flex;flex-direction:column;gap:4px}
+.request-summary-panel{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.request-summary-panel>div{border:1px solid #18283a;border-radius:9px;padding:9px;background:#0a1520}
+.request-summary-panel span{display:block;color:var(--muted);font-size:7.5px;text-transform:uppercase;letter-spacing:.06em}
+.request-summary-panel strong{display:block;margin-top:5px;font-size:12px}
+.requested-evidence-block,.received-evidence-block{margin-top:13px}
+.evidence-chip-list{display:flex;gap:7px;flex-wrap:wrap;min-height:42px;align-items:center}
+.evidence-request-chip{display:inline-flex;align-items:center;gap:5px;padding:7px 9px;border:1px solid #29445f;border-radius:999px;background:#0a1723;color:#b8d8f8;font-size:8px}
+.evidence-request-chip::before{content:'↗';color:#6eb8ff;font-weight:900}
+.evidence-request-chip.received{border-color:rgba(52,211,153,.34);color:#7de4bd;background:rgba(52,211,153,.05)}
+.evidence-model-modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:20px;z-index:120}
+.evidence-model-modal.show{display:flex}
+.evidence-model-box{width:min(900px,96vw);max-height:88vh;overflow:auto;border:1px solid #26394f;background:#0c141f;border-radius:16px;padding:18px;box-shadow:0 24px 70px rgba(0,0,0,.5)}
+.evidence-model-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px}
+.evidence-model-head h3{margin:0;font-size:17px}.evidence-model-head p{margin:5px 0 0;color:var(--muted);font-size:9px;line-height:1.5}
+.evidence-model-close{width:32px;height:32px;border:1px solid #293b50;background:#0a121c;color:#dce8f7;border-radius:9px;font-size:18px}
+.model-top-fields{display:grid;grid-template-columns:1.2fr .8fr;gap:10px;margin-bottom:12px}
+.model-field{display:grid;gap:5px}.model-field label{font-size:8px;color:#96a5b7}.model-field input,.model-field select{width:100%;border:1px solid #25364a;background:#091019;color:#edf3f9;border-radius:9px;padding:10px;outline:none}
+.phase-editor-list{display:grid;gap:10px}
+.phase-editor{border:1px solid #1f3144;border-radius:12px;background:#08111a;padding:11px}
+.phase-editor-top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center}
+.phase-editor-top input[type="radio"]{accent-color:#68a8ff}.phase-title-input{width:100%;border:1px solid #26394e;background:#0a1520;color:#edf3f9;border-radius:8px;padding:9px}
+.phase-remove{border:1px solid #4b2d36;background:#1a0f14;color:#f3a6b7;border-radius:8px;padding:8px 9px;font-size:8px}
+.phase-evidence-title{margin-top:10px;color:#7f91a6;font-size:8px;text-transform:uppercase;letter-spacing:.06em}
+.phase-evidence-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:7px}
+.phase-evidence-option{display:flex;align-items:flex-start;gap:7px;border:1px solid #1d3043;background:#0a141e;border-radius:9px;padding:8px;font-size:8px;line-height:1.35;color:#b8c7d8}
+.phase-evidence-option input{margin-top:1px;accent-color:#68a8ff}
+.evidence-model-actions{display:flex;justify-content:space-between;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.evidence-model-actions-right{display:flex;gap:8px}.model-add-phase{border:1px solid #29435e;background:#0b1723;color:#a9d0fa;border-radius:9px;padding:9px 11px;font-size:8px;font-weight:900}
+@media(max-width:900px){.progress-model-grid,.model-top-fields{grid-template-columns:1fr}.phase-evidence-options{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.phase-evidence-options{grid-template-columns:1fr}}
+
 </style>
 <!-- G-IOS BUILD: FOCUS-CONTEXT-AUTOMATION-V1 | 2026-09-19 -->
 
@@ -698,35 +738,58 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 </section>
 
 <section class="grid">
-  <section class="card product-receiver-card">
+  <section class="card product-receiver-card progress-evidence-card">
     <div class="card-head">
-      <div><h3 id="receiverTitle">Product Evidence Receiver</h3><div class="sub" id="receiverSubtitle">Execution evidence received from the H·IOS product connected to the selected focus area.</div></div>
-      <div class="receiver-live-pill" id="receiverLivePill">Waiting for product evidence</div>
+      <div>
+        <h3 id="receiverTitle">Goal Progress Evidence</h3>
+        <div class="sub" id="receiverSubtitle">Goals-IOS requests only the evidence needed to evaluate the selected category's progression model.</div>
+      </div>
+      <div class="receiver-head-actions">
+        <div class="receiver-live-pill" id="receiverLivePill">Model not configured</div>
+        <button class="btn evidence-config-btn" type="button" id="configureProgressModel">Configure Progress Model</button>
+      </div>
     </div>
-    <div class="receiver-grid">
-      <div class="receiver-summary">
+
+    <div class="progress-model-grid">
+      <div class="progress-model-main">
         <div class="receiver-source-row">
-          <div><span class="receiver-label">Linked focus area</span><strong id="receiverArea">Select a product-linked area</strong></div>
-          <div><span class="receiver-label">Source</span><strong id="receiverSource">—</strong></div>
+          <div><span class="receiver-label">Selected focus area</span><strong id="receiverArea">Select a focus area</strong></div>
+          <div><span class="receiver-label">Evidence source</span><strong id="receiverSource">Goals-IOS only</strong></div>
         </div>
-        <div class="receiver-status-row">
-          <span id="receiverPublisher">Product: waiting</span><span id="receiverHios">H·IOS: waiting</span><span id="receiverGios">G·IOS: waiting</span>
+
+        <div class="progress-model-row">
+          <div><span class="receiver-label">Progress model</span><strong id="receiverModelName">Not configured</strong></div>
+          <div><span class="receiver-label">Current stage</span><strong id="receiverActiveStage">Not configured</strong></div>
         </div>
+
         <div class="receiver-interpretation">
-          <span class="receiver-label">Current interpretation</span>
-          <strong id="receiverInterpretation">No verified product evidence has been received for this area yet.</strong>
-          <small id="receiverInterpretationNote">No-trade days are not automatically failures. Goal progress depends on the measurement rule attached to the goal.</small>
+          <span class="receiver-label">What G-IOS needs to know</span>
+          <strong id="receiverInterpretation">Configure how progress should be evaluated for this focus area.</strong>
+          <small id="receiverInterpretationNote">The user defines progression. Goals-IOS requests only the evidence needed for that model.</small>
         </div>
       </div>
-      <div class="receiver-metrics">
+
+      <div class="request-summary-panel">
+        <div><span>Goals tracked</span><strong id="receiverGoalCount">0</strong></div>
+        <div><span>Signals requested</span><strong id="receiverRequestedCount">0</strong></div>
         <div><span>Evidence received</span><strong id="receiverEvidenceCount">0</strong></div>
-        <div><span>Closed trades observed</span><strong id="receiverTradeCount">0</strong></div>
-        <div><span>Latest win rate</span><strong id="receiverWinRate">—</strong></div>
-        <div><span>Latest P&amp;L</span><strong id="receiverPnl">—</strong></div>
+        <div><span>Request state</span><strong id="receiverRequestState">Not configured</strong></div>
       </div>
     </div>
-    <div class="receiver-feed-head"><b>Recent verified evidence</b><span id="receiverLastUpdate">No evidence yet</span></div>
-    <div class="receiver-feed" id="receiverEvidenceFeed"><div class="receiver-empty">Product evidence will appear here automatically after H·IOS receives it.</div></div>
+
+    <div class="requested-evidence-block">
+      <div class="receiver-feed-head"><b>Evidence requested for the current stage</b><span id="receiverLastUpdate">No request yet</span></div>
+      <div class="evidence-chip-list" id="receiverRequestedEvidence">
+        <div class="receiver-empty">Configure a progression model to tell G-IOS what evidence matters.</div>
+      </div>
+    </div>
+
+    <div class="received-evidence-block">
+      <div class="receiver-feed-head"><b>Relevant evidence received</b><span id="receiverRelevantCount">0 relevant signals</span></div>
+      <div class="receiver-feed" id="receiverEvidenceFeed">
+        <div class="receiver-empty">Only evidence requested by the active progression stage will appear here.</div>
+      </div>
+    </div>
   </section>
 
   
@@ -809,6 +872,34 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
     </section>
 
   </main>
+</div>
+
+
+<div class="evidence-model-modal" id="evidenceModelModal" aria-hidden="true">
+  <div class="evidence-model-box" role="dialog" aria-modal="true" aria-labelledby="evidenceModelTitle">
+    <div class="evidence-model-head">
+      <div>
+        <h3 id="evidenceModelTitle">Configure Progress Model</h3>
+        <p>Define how this focus area progresses. Each stage requests only the product evidence needed to evaluate that stage.</p>
+      </div>
+      <button class="evidence-model-close" id="closeEvidenceModel" type="button" aria-label="Close">×</button>
+    </div>
+
+    <div class="model-top-fields">
+      <div class="model-field"><label>Progress model name</label><input id="progressModelName" placeholder="e.g. My Trading Development Plan"></div>
+      <div class="model-field"><label>Focus area</label><input id="progressModelArea" disabled></div>
+    </div>
+
+    <div class="phase-editor-list" id="phaseEditorList"></div>
+
+    <div class="evidence-model-actions">
+      <button class="model-add-phase" type="button" id="addProgressPhase">+ Add Stage</button>
+      <div class="evidence-model-actions-right">
+        <button class="btn" type="button" id="cancelEvidenceModel">Cancel</button>
+        <button class="btn primary" type="button" id="saveEvidenceModel">Save Progress Model</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="modal" id="goalModal">
@@ -915,6 +1006,67 @@ const VIEW_AREA_KEY='hios_gios_overview_view_area_v1';
 const HIOS_PRODUCT_STORAGE_KEY='hios_added_products_v1';
 const PRODUCT_FOCUS_LINKS_KEY='hios_gios_product_focus_links_v1';
 const PRODUCT_GOAL_EVIDENCE_KEY='hios_product_goal_evidence_v1';
+
+const GIOS_PROGRESS_MODELS_KEY='hios_gios_progress_models_v1';
+const GIOS_EVIDENCE_REQUESTS_KEY='hios_goal_evidence_requests_v1';
+
+const PRODUCT_EVIDENCE_CATALOG={
+ tios:[
+  {id:'execution_adherence',label:'Execution adherence'},
+  {id:'execution_errors',label:'Execution errors'},
+  {id:'rule_violations',label:'Rule violations'},
+  {id:'missed_valid_opportunities',label:'Missed valid opportunities'},
+  {id:'impulsive_trades',label:'Impulsive trades'},
+  {id:'review_completion',label:'Review completion'},
+  {id:'expectancy',label:'System expectancy'},
+  {id:'sample_size',label:'Evidence sample size'},
+  {id:'setup_performance',label:'Setup / edge performance'},
+  {id:'system_version',label:'System version'},
+  {id:'regime_performance',label:'Market-regime performance'},
+  {id:'adaptation_changes',label:'Adaptation changes'},
+  {id:'risk_stability',label:'Risk stability'},
+  {id:'drawdown',label:'Drawdown'},
+  {id:'capital_growth',label:'Capital growth'}
+ ],
+ default:[
+  {id:'goal_completion',label:'Goal completion'},
+  {id:'milestone_progress',label:'Milestone progress'},
+  {id:'activity_consistency',label:'Activity consistency'},
+  {id:'outcome_quality',label:'Outcome quality'}
+ ]
+};
+
+function loadProgressModels(){
+ try{const v=JSON.parse(localStorage.getItem(GIOS_PROGRESS_MODELS_KEY)||'{}');return v&&typeof v==='object'?v:{}}catch(e){return{}}
+}
+function saveProgressModels(models){localStorage.setItem(GIOS_PROGRESS_MODELS_KEY,JSON.stringify(models))}
+function progressModelForArea(area){return loadProgressModels()[canonicalDomain(area)]||null}
+function evidenceCatalogForProduct(productId){return PRODUCT_EVIDENCE_CATALOG[productId]||PRODUCT_EVIDENCE_CATALOG.default}
+function evidenceLabel(productId,id){return evidenceCatalogForProduct(productId).find(x=>x.id===id)?.label||id.replaceAll('_',' ')}
+function createProgressPhase(title='New stage'){return{id:'phase_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),title,evidence:[]}}
+function activeProgressPhase(model){return model?.phases?.find(p=>p.id===model.activePhaseId)||model?.phases?.[0]||null}
+
+function publishGoalEvidenceRequest(area,model){
+ const link=productLinkForArea(area);
+ const phase=activeProgressPhase(model);
+ if(!link||!phase)return null;
+ const request={
+  requestId:'req_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+  schema:'hios.goal-evidence-request.v1',source:'goals-ios',targetProductId:link.productId,
+  area,modelName:model.name||area+' Progress Model',phaseId:phase.id,phaseName:phase.title,
+  metrics:[...(phase.evidence||[])],requestedAt:new Date().toISOString(),status:'requested'
+ };
+ let all={};try{all=JSON.parse(localStorage.getItem(GIOS_EVIDENCE_REQUESTS_KEY)||'{}')||{}}catch(e){}
+ all[link.productId]=request;
+ localStorage.setItem(GIOS_EVIDENCE_REQUESTS_KEY,JSON.stringify(all));
+ window.dispatchEvent(new CustomEvent('hios:goal-evidence-request',{detail:request}));
+ return request;
+}
+function currentEvidenceRequest(area){
+ const link=productLinkForArea(area);if(!link)return null;
+ try{return (JSON.parse(localStorage.getItem(GIOS_EVIDENCE_REQUESTS_KEY)||'{}')||{})[link.productId]||null}catch(e){return null}
+}
+
 
 const PRODUCT_FOCUS_CATALOG={
  tios:{
@@ -1710,6 +1862,51 @@ function openGoalBuilder(level='yearly'){if(!focusAreas.length){toast('Add a foc
 function openGoalForPeriod(level,key){pendingCreateLevel=level;pendingCreatePeriodKey=key;$('#goalLevel').value=level;renderParentOptions();$('#goalModal').classList.add('show')}
 function handleTrackerClick(e){const adj=e.target.closest('[data-track-adjust]');if(adj){adjustProgress(adj.dataset.id,Number(adj.dataset.trackAdjust));return}const done=e.target.closest('[data-track-complete]');if(done)completeGoal(done.dataset.trackComplete)}
 
+
+let progressModelDraft=null;
+function openProgressModelModal(){
+ const area=currentViewArea();if(!area){toast('Select a focus area first.');return}
+ const link=productLinkForArea(area);
+ const existing=progressModelForArea(area);
+ progressModelDraft=existing?JSON.parse(JSON.stringify(existing)):{
+  area,productId:link?.productId||null,name:area+' Progress Model',activePhaseId:'',phases:[createProgressPhase('Stage 1')]
+ };
+ if(!progressModelDraft.activePhaseId)progressModelDraft.activePhaseId=progressModelDraft.phases[0]?.id||'';
+ $('#progressModelName').value=progressModelDraft.name||'';
+ $('#progressModelArea').value=area;
+ renderProgressPhaseEditors();
+ $('#evidenceModelModal').classList.add('show');
+ $('#evidenceModelModal').setAttribute('aria-hidden','false');
+}
+function closeProgressModelModal(){
+ $('#evidenceModelModal').classList.remove('show');
+ $('#evidenceModelModal').setAttribute('aria-hidden','true');
+ progressModelDraft=null;
+}
+function renderProgressPhaseEditors(){
+ const root=$('#phaseEditorList');if(!root||!progressModelDraft)return;
+ const link=productLinkForArea(progressModelDraft.area);
+ const catalog=evidenceCatalogForProduct(link?.productId||'default');
+ root.innerHTML=progressModelDraft.phases.map((phase,index)=>`<div class="phase-editor" data-phase-id="${escapeHtml(phase.id)}">
+  <div class="phase-editor-top">
+   <input type="radio" name="activeProgressPhase" value="${escapeHtml(phase.id)}" ${phase.id===progressModelDraft.activePhaseId?'checked':''} title="Current stage">
+   <input class="phase-title-input" data-phase-title="${escapeHtml(phase.id)}" value="${escapeHtml(phase.title)}" aria-label="Stage ${index+1} title">
+   <button class="phase-remove" type="button" data-remove-phase="${escapeHtml(phase.id)}" ${progressModelDraft.phases.length===1?'disabled':''}>Remove</button>
+  </div>
+  <div class="phase-evidence-title">Evidence needed to evaluate this stage</div>
+  <div class="phase-evidence-options">${catalog.map(item=>`<label class="phase-evidence-option"><input type="checkbox" data-phase-evidence="${escapeHtml(phase.id)}" value="${escapeHtml(item.id)}" ${(phase.evidence||[]).includes(item.id)?'checked':''}><span>${escapeHtml(item.label)}</span></label>`).join('')}</div>
+ </div>`).join('');
+}
+function saveProgressModelFromModal(){
+ if(!progressModelDraft)return;
+ progressModelDraft.name=$('#progressModelName').value.trim()||progressModelDraft.area+' Progress Model';
+ progressModelDraft.updatedAt=new Date().toISOString();
+ const models=loadProgressModels();models[canonicalDomain(progressModelDraft.area)]=progressModelDraft;saveProgressModels(models);
+ const request=publishGoalEvidenceRequest(progressModelDraft.area,progressModelDraft);
+ closeProgressModelModal();renderAll();
+ toast(request?'Progress model saved and evidence request prepared.':'Progress model saved.');
+}
+
 function renderAll(){
  renderRootSelect();
  renderMetrics();
@@ -1725,6 +1922,39 @@ function renderAll(){
  publishDashboardSnapshot(false)
 } // H-IOS syncs automatically on every Goals-IOS state update
 function toast(message){const t=$('#toast');t.textContent=message;t.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),2200)}
+
+$('#configureProgressModel').addEventListener('click',openProgressModelModal);
+$('#closeEvidenceModel').addEventListener('click',closeProgressModelModal);
+$('#cancelEvidenceModel').addEventListener('click',closeProgressModelModal);
+$('#saveEvidenceModel').addEventListener('click',saveProgressModelFromModal);
+$('#addProgressPhase').addEventListener('click',()=>{
+ if(!progressModelDraft)return;
+ const phase=createProgressPhase('Stage '+(progressModelDraft.phases.length+1));
+ progressModelDraft.phases.push(phase);
+ if(!progressModelDraft.activePhaseId)progressModelDraft.activePhaseId=phase.id;
+ renderProgressPhaseEditors();
+});
+$('#phaseEditorList').addEventListener('input',e=>{
+ if(!progressModelDraft)return;
+ const title=e.target.closest('[data-phase-title]');
+ if(title){const p=progressModelDraft.phases.find(x=>x.id===title.dataset.phaseTitle);if(p)p.title=title.value;return}
+ const evidence=e.target.closest('[data-phase-evidence]');
+ if(evidence){const p=progressModelDraft.phases.find(x=>x.id===evidence.dataset.phaseEvidence);if(!p)return;const set=new Set(p.evidence||[]);evidence.checked?set.add(evidence.value):set.delete(evidence.value);p.evidence=[...set];}
+});
+$('#phaseEditorList').addEventListener('change',e=>{
+ if(!progressModelDraft)return;
+ if(e.target.matches('input[name="activeProgressPhase"]'))progressModelDraft.activePhaseId=e.target.value;
+});
+$('#phaseEditorList').addEventListener('click',e=>{
+ const btn=e.target.closest('[data-remove-phase]');if(!btn||!progressModelDraft)return;
+ if(progressModelDraft.phases.length===1)return;
+ const id=btn.dataset.removePhase;
+ progressModelDraft.phases=progressModelDraft.phases.filter(p=>p.id!==id);
+ if(progressModelDraft.activePhaseId===id)progressModelDraft.activePhaseId=progressModelDraft.phases[0]?.id||'';
+ renderProgressPhaseEditors();
+});
+$('#evidenceModelModal').addEventListener('click',e=>{if(e.target.id==='evidenceModelModal')closeProgressModelModal()});
+
 $('#cancelGoal').addEventListener('click',()=>$('#goalModal').classList.remove('show'));
 $('#goalModal').addEventListener('click',e=>{if(e.target.id==='goalModal')$('#goalModal').classList.remove('show')});
 $('#goalLevel').addEventListener('change',renderParentOptions);$('#goalDomain').addEventListener('change',renderParentOptions);
@@ -1834,7 +2064,7 @@ $('#monthProgressStrip').addEventListener('wheel',e=>{
 },{passive:false});
 window.addEventListener('storage',e=>{
  if([GOALS_KEY,...OLD_GOALS_KEYS].includes(e.key)){loadGoals();renderAll();return}
- if([PRODUCT_GOAL_EVIDENCE_KEY,PRODUCT_FOCUS_LINKS_KEY,'hios_product_connection_status_v1'].includes(e.key)){
+ if([PRODUCT_GOAL_EVIDENCE_KEY,PRODUCT_FOCUS_LINKS_KEY,'hios_product_connection_status_v1',GIOS_PROGRESS_MODELS_KEY,GIOS_EVIDENCE_REQUESTS_KEY].includes(e.key)){
   productFocusLinks=loadProductFocusLinks();
   renderSelectedCategoryContext();
   renderProductEvidenceReceiver();
@@ -1876,10 +2106,10 @@ function renderSelectedCategoryContext(){
   ? `Only ${area} goals are shown here: Day → Week → Month → Semester → Year.`
   : 'Select a category to view its compounding goal chain only.';
 
- if(receiverTitle)receiverTitle.textContent=area ? `${area} · Evidence Receiver` : 'Product Evidence Receiver';
+ if(receiverTitle)receiverTitle.textContent=area ? `${area} · Goal Progress Evidence` : 'Goal Progress Evidence';
  if(receiverSubtitle)receiverSubtitle.textContent=area
-  ? `Only evidence connected to ${area} is shown in this receiver.`
-  : 'Select a category to view its evidence only.';
+  ? `Goals-IOS requests only the evidence needed to evaluate ${area} progress.`
+  : 'Select a category to define its progression evidence needs.';
 }
 
 function renderPersonalIntelligenceResponse(){
@@ -1950,49 +2180,69 @@ function renderPersonalIntelligenceResponse(){
 
 function renderProductEvidenceReceiver(){
  const area=currentViewArea()||'';
- const link=typeof productLinkForArea==='function'?productLinkForArea(area):null;
+ const link=area?productLinkForArea(area):null;
+ const model=area?progressModelForArea(area):null;
+ const phase=activeProgressPhase(model);
+ const rows=link?readProductGoalEvidence(link.productId):[];
+ const requested=new Set(phase?.evidence||[]);
+ const relevantRows=rows.filter(row=>requested.has(row.metric)||requested.has(row.signal));
+ const request=currentEvidenceRequest(area);
+ const scopedGoals=area?goals.filter(g=>sameDomain(g.domain,area)):[];
  const $id=id=>document.getElementById(id);
  if(!$id('receiverArea'))return;
+
  $id('receiverArea').textContent=area||'Select a focus area';
- if(!link){
-   $id('receiverSource').textContent='No linked product';
-   $id('receiverLivePill').textContent='Manual / unlinked area';
-   $id('receiverLivePill').classList.remove('live');
-   $id('receiverPublisher').textContent='Product: not linked';
-   $id('receiverHios').textContent='H·IOS: —';
-   $id('receiverGios').textContent='G·IOS: goal data only';
-   $id('receiverPublisher').classList.remove('ok');
-   $id('receiverHios').classList.remove('ok');
-   $id('receiverGios').classList.remove('ok');
-   $id('receiverEvidenceCount').textContent='0';
-   $id('receiverTradeCount').textContent='0';
-   $id('receiverWinRate').textContent='—';
-   $id('receiverPnl').textContent='—';
-   $id('receiverInterpretation').textContent=`${area||'This focus area'} is not currently receiving evidence from an H·IOS product.`;
-   $id('receiverInterpretationNote').textContent='Only evidence for the selected category is shown here.';
-   $id('receiverLastUpdate').textContent='No product evidence';
-   $id('receiverEvidenceFeed').innerHTML='<div class="receiver-empty">No product evidence is connected to this selected category.</div>';
-   return;
+ $id('receiverSource').textContent=link?(link.productName||link.productId):'Goals-IOS only';
+ $id('receiverGoalCount').textContent=String(scopedGoals.length);
+ $id('receiverEvidenceCount').textContent=String(relevantRows.length);
+ $id('receiverRequestedCount').textContent=String(requested.size);
+ $id('receiverModelName').textContent=model?.name||'Not configured';
+ $id('receiverActiveStage').textContent=phase?.title||'Not configured';
+
+ if(!area){
+  $id('receiverLivePill').textContent='Select a category';
+  $id('receiverRequestState').textContent='—';
+  $id('receiverInterpretation').textContent='Select a category to define how progress should be evaluated.';
+  $id('receiverInterpretationNote').textContent='Each category keeps its own progression model and evidence needs.';
+  $id('receiverRequestedEvidence').innerHTML='<div class="receiver-empty">No category selected.</div>';
+  $id('receiverEvidenceFeed').innerHTML='<div class="receiver-empty">No category selected.</div>';
+  $id('receiverRelevantCount').textContent='0 relevant signals';
+  $id('receiverLastUpdate').textContent='No request yet';
+  return;
  }
- const rows=typeof readProductGoalEvidence==='function'?(readProductGoalEvidence(link.productId)||[]):[];
- const status=typeof readProductConnectionStatus==='function'?readProductConnectionStatus(link.productId):null;
- $id('receiverSource').textContent=link.productName||link.productId;
- $id('receiverLivePill').textContent=rows.length?'Receiving category evidence':'Connected · waiting for evidence';
- $id('receiverLivePill').classList.toggle('live',rows.length>0);
- $id('receiverHios').textContent='H·IOS: category channel active ✓';
- $id('receiverHios').classList.add('ok');
- $id('receiverEvidenceCount').textContent=rows.length;
- const snap=rows.filter(r=>r.signal==='performance_snapshot').sort((a,b)=>String(b.timestamp||'').localeCompare(String(a.timestamp||'')))[0];
- $id('receiverTradeCount').textContent=snap?String(Number(snap.value||0)):'0';
- $id('receiverWinRate').textContent=snap&&Number.isFinite(Number(snap.details?.winRate))?Math.round(Number(snap.details.winRate))+'%':'—';
- $id('receiverPnl').textContent=snap&&Number.isFinite(Number(snap.details?.totalPnl))?Number(snap.details.totalPnl).toFixed(2):'—';
- $id('receiverPublisher').textContent='Product: linked ✓'; $id('receiverPublisher').classList.add('ok');
- $id('receiverGios').textContent=rows.length?'G·IOS: evidence available ✓':'G·IOS: waiting';
- $id('receiverGios').classList.toggle('ok',rows.length>0);
- $id('receiverInterpretation').textContent=rows.length?'Execution evidence is available for goal evaluation.':'Product is linked; waiting for verified execution evidence.';
- const ordered=rows.slice().sort((a,b)=>String(b.timestamp||'').localeCompare(String(a.timestamp||'')));
- $id('receiverLastUpdate').textContent=ordered[0]?'Last evidence · '+new Date(ordered[0].timestamp).toLocaleString():'No evidence yet';
- $id('receiverEvidenceFeed').innerHTML=ordered.slice(0,8).map(r=>`<div class="receiver-event"><b>${escapeHtml(String(r.signal||'evidence').replaceAll('_',' '))}</b><span>${escapeHtml(String(r.metric||'').replaceAll('_',' '))} · ${escapeHtml(String(r.value??'—'))}</span><time>${escapeHtml(r.timestamp?new Date(r.timestamp).toLocaleString():'—')}</time></div>`).join('')||'<div class="receiver-empty">No verified evidence received yet.</div>';
+
+ if(!model||!phase){
+  $id('receiverLivePill').textContent='Model not configured';
+  $id('receiverLivePill').classList.remove('live');
+  $id('receiverRequestState').textContent='Not configured';
+  $id('receiverInterpretation').textContent=`Define what progress means for ${area}.`;
+  $id('receiverInterpretationNote').textContent=link
+   ? `After configuration, G-IOS will request only the selected evidence from ${link.productName}.`
+   : 'This area currently has no linked H-IOS product, so progress can use Goals-IOS evidence only.';
+  $id('receiverRequestedEvidence').innerHTML='<div class="receiver-empty">Configure a progression model to specify the evidence G-IOS needs.</div>';
+  $id('receiverEvidenceFeed').innerHTML='<div class="receiver-empty">No requested product evidence yet.</div>';
+  $id('receiverRelevantCount').textContent='0 relevant signals';
+  $id('receiverLastUpdate').textContent='No request yet';
+  return;
+ }
+
+ $id('receiverLivePill').textContent=link?'Evidence request prepared':'Goals-IOS model active';
+ $id('receiverLivePill').classList.toggle('live',!!link);
+ $id('receiverRequestState').textContent=link?(request?'Requested':'Ready to request'):'Internal';
+ $id('receiverInterpretation').textContent=`Current stage: ${phase.title}. G-IOS needs ${requested.size} evidence signal${requested.size===1?'':'s'} to model this stage.`;
+ $id('receiverInterpretationNote').textContent=link
+  ? `Only the selected ${area} evidence should be returned by ${link.productName}. Other product data is outside this goal-progress request.`
+  : `This model currently relies on Goals-IOS progress because ${area} is not linked to a specialized product.`;
+
+ const productId=link?.productId||'default';
+ $id('receiverRequestedEvidence').innerHTML=requested.size
+  ? [...requested].map(id=>`<span class="evidence-request-chip ${relevantRows.some(r=>r.metric===id||r.signal===id)?'received':''}">${escapeHtml(evidenceLabel(productId,id))}</span>`).join('')
+  : '<div class="receiver-empty">This stage has no evidence signals selected yet.</div>';
+
+ const ordered=relevantRows.slice().sort((a,b)=>String(b.timestamp||'').localeCompare(String(a.timestamp||'')));
+ $id('receiverRelevantCount').textContent=`${ordered.length} relevant signal${ordered.length===1?'':'s'}`;
+ $id('receiverLastUpdate').textContent=request?.requestedAt?'Requested · '+new Date(request.requestedAt).toLocaleString():'Request not sent yet';
+ $id('receiverEvidenceFeed').innerHTML=ordered.slice(0,8).map(r=>`<div class="receiver-event"><b>${escapeHtml(evidenceLabel(productId,r.metric||r.signal))}</b><span>${escapeHtml(String(r.value??'—'))}</span><time>${escapeHtml(r.timestamp?new Date(r.timestamp).toLocaleString():'—')}</time></div>`).join('')||'<div class="receiver-empty">Waiting for evidence that matches this stage request.</div>';
 }
 
 </script>
