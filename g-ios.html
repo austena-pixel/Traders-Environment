@@ -837,23 +837,38 @@ function addProductLinkedFocus(productId){
   return;
  }
 
- let area=focusAreas.find(item=>sameDomain(item,spec.area))||spec.area;
+ // Use the canonical product area and make sure the in-memory state
+ // and persisted state are both updated before rendering.
+ const existing=focusAreas.find(item=>sameDomain(item,spec.area));
+ const area=existing||spec.area;
 
- if(!focusAreas.some(item=>sameDomain(item,area))){
-  focusAreas.push(area);
-  saveFocusAreas();
+ if(!existing){
+  focusAreas=[...focusAreas,area];
  }
+ saveFocusAreas();
 
+ // Create/refresh the product → focus-area relationship.
  linkProductFocus(productId,area);
 
+ // Make the new area the active context everywhere immediately.
  setGoalsCategory=area;
  selectedViewArea=area;
+ activeCategory=area;
  localStorage.setItem(SET_GOALS_CATEGORY_KEY,area);
  localStorage.setItem(VIEW_AREA_KEY,area);
 
  selectRootForDomain(area);
  closeFocusAreaModal();
+
+ // Re-read the persisted focus areas to keep every renderer on one state.
+ focusAreas=loadFocusAreas();
+
  renderAll();
+ renderProductFocusSuggestions();
+ if(typeof renderProductEvidenceReceiver==='function'){
+  renderProductEvidenceReceiver();
+ }
+
  toast(spec.productName+' linked to the '+area+' focus area.');
 }
 
@@ -1390,6 +1405,8 @@ function processHiosGoalRequest(signal){
 }
 
 function renderSetGoals(){
+ /* sync product-linked focus areas before rendering */
+ focusAreas=loadFocusAreas();
  const categoryRow=$('#goalCategoryRow'),list=$('#setGoalsLevelList');
  if(!categoryRow||!list)return;
  if(setGoalsCategory&&!focusAreas.includes(setGoalsCategory)){setGoalsCategory='';localStorage.removeItem(SET_GOALS_CATEGORY_KEY)}
