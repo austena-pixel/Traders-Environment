@@ -577,6 +577,19 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
     </section>
     </section>
 
+    <!-- Compatibility targets for the old Overview render logic.
+     Hidden because the visible UI has moved to the new A/B layout. -->
+<div style="display:none!important" aria-hidden="true">
+  <b id="primaryGoalTitle"></b>
+  <small id="primaryGoalDomain"></small>
+  <strong id="primaryGoalProgress"></strong>
+  <span id="primaryGoalBar"></span>
+  <small id="primaryGoalDistance"></small>
+
+  <span id="monthTimelineLabel"></span>
+  <div id="monthProgressStrip"></div>
+</div>
+
     <section class="page period-page" id="page-set-goals">
       <div class="view-head">
         <div><div class="eyebrow">Goal setup</div><h2>Set Goals</h2><p>Start with the outcome you want, then connect semester, monthly, weekly and daily tasks beneath it. Daily completion will drive progress upward automatically.</p></div>
