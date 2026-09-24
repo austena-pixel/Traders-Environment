@@ -126,6 +126,22 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .receiver-event{display:grid;grid-template-columns:minmax(130px,.8fr) minmax(160px,1fr) auto;gap:10px}.receiver-event span,.receiver-event time{color:var(--muted);font-size:8px}.receiver-empty{color:var(--muted);text-align:center;padding:18px}
 @media(max-width:1200px){.overview-goal-architecture{grid-template-columns:1fr}.hero-chain .chain-grid{overflow-x:auto;grid-template-columns:repeat(5,minmax(180px,1fr))}.receiver-grid{grid-template-columns:1fr}}
 
+
+/* ===== CATEGORY-SCOPED PERSONAL INTELLIGENCE RESPONSE ===== */
+.personal-intelligence-card{grid-column:1/-1}
+.pi-evidence-pill{padding:6px 9px;border:1px solid #26384d;border-radius:999px;background:#09131d;color:#879aaf;font-size:8px;white-space:nowrap}
+.pi-evidence-pill.ready{border-color:rgba(90,167,255,.34);color:#9dcbff;background:rgba(90,167,255,.06)}
+.pi-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr);gap:12px}
+.pi-response-box{border:1px solid #1d3044;border-radius:12px;background:linear-gradient(135deg,rgba(90,167,255,.055),rgba(139,92,246,.04));padding:14px}
+.pi-label{display:block;color:#75baff;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px}
+.pi-response-box strong{display:block;font-size:13px;line-height:1.45}
+.pi-response-box p{margin:7px 0 0;color:var(--muted);font-size:9px;line-height:1.5}
+.pi-context-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pi-context-grid>div{border:1px solid #1b2b3d;border-radius:10px;background:#09131d;padding:10px}
+.pi-context-grid span{display:block;color:var(--muted);font-size:7.5px;text-transform:uppercase;letter-spacing:.06em}
+.pi-context-grid strong{display:block;margin-top:5px;font-size:13px}
+@media(max-width:900px){.pi-layout{grid-template-columns:1fr}}
+
 </style>
 <!-- G-IOS BUILD: FOCUS-CONTEXT-AUTOMATION-V1 | 2026-09-19 -->
 
@@ -523,7 +539,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
   </div>
   <aside class="hero-side"><div class="hero-chain chain-card">
         <div class="card-head">
-          <div><h3>Compounding Goal Chain</h3><div class="sub">Day 1 → Week 1 → Month 1 → Semester 1 → Year 1. Periods are planning layers, not rigid promises.</div></div>
+          <div><h3 id="chainTitle">Compounding Goal Chain</h3><div class="sub" id="chainSubtitle">Day 1 → Week 1 → Month 1 → Semester 1 → Year 1. Periods are planning layers, not rigid promises.</div></div>
           <div class="chain-toolbar category-picker" id="categoryPicker">
             <button type="button" class="category-select-btn" id="categorySelectButton" aria-haspopup="true" aria-expanded="false">
               Select Category <span>⌄</span>
@@ -544,7 +560,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 <section class="grid">
   <section class="card product-receiver-card">
     <div class="card-head">
-      <div><h3>Product Evidence Receiver</h3><div class="sub">Execution evidence received from the H·IOS product connected to the selected focus area.</div></div>
+      <div><h3 id="receiverTitle">Product Evidence Receiver</h3><div class="sub" id="receiverSubtitle">Execution evidence received from the H·IOS product connected to the selected focus area.</div></div>
       <div class="receiver-live-pill" id="receiverLivePill">Waiting for product evidence</div>
     </div>
     <div class="receiver-grid">
@@ -570,22 +586,44 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
       </div>
     </div>
     <div class="receiver-feed-head"><b>Recent verified evidence</b><span id="receiverLastUpdate">No evidence yet</span></div>
-    <div class="receiver-feed" id="receiverEvidenceFeed"><div class="receiver-empty">T·IOS evidence will appear here automatically after H·IOS receives it.</div></div>
+    <div class="receiver-feed" id="receiverEvidenceFeed"><div class="receiver-empty">Product evidence will appear here automatically after H·IOS receives it.</div></div>
+  </section>
+
+  <section class="card personal-intelligence-card" id="personalIntelligenceCard">
+    <div class="card-head">
+      <div>
+        <h3 id="piTitle">Personal Intelligence Response</h3>
+        <div class="sub" id="piSubtitle">Evidence-based interpretation for the selected focus area only.</div>
+      </div>
+      <span class="pi-evidence-pill" id="piEvidencePill">No category selected</span>
+    </div>
+    <div class="pi-layout">
+      <div class="pi-response-box">
+        <span class="pi-label">Current response</span>
+        <strong id="piResponse">Select a category to view its Personal Intelligence response.</strong>
+        <p id="piResponseNote">G·IOS keeps evidence from different focus areas separated in this view.</p>
+      </div>
+      <div class="pi-context-grid">
+        <div><span>Selected category</span><strong id="piCategory">—</strong></div>
+        <div><span>Goals tracked</span><strong id="piGoalCount">0</strong></div>
+        <div><span>Chain progress</span><strong id="piChainProgress">0%</strong></div>
+        <div><span>Product evidence</span><strong id="piEvidenceCount">0</strong></div>
+      </div>
+    </div>
   </section>
 
 
     </section>
     </section>
 
-    <!-- Compatibility targets for the old Overview render logic.
-     Hidden because the visible UI has moved to the new A/B layout. -->
-<div style="display:none!important" aria-hidden="true">
+    
+<!-- Hidden compatibility targets retained for existing Goals-IOS render logic. -->
+<div id="giosLegacyOverviewTargets" style="display:none!important" aria-hidden="true">
   <b id="primaryGoalTitle"></b>
   <small id="primaryGoalDomain"></small>
   <strong id="primaryGoalProgress"></strong>
   <span id="primaryGoalBar"></span>
   <small id="primaryGoalDistance"></small>
-
   <span id="monthTimelineLabel"></span>
   <div id="monthProgressStrip"></div>
 </div>
@@ -866,7 +904,6 @@ function addProductLinkedFocus(productId){
  // Make the new area the active context everywhere immediately.
  setGoalsCategory=area;
  selectedViewArea=area;
- activeCategory=area;
  localStorage.setItem(SET_GOALS_CATEGORY_KEY,area);
  localStorage.setItem(VIEW_AREA_KEY,area);
 
@@ -1118,6 +1155,7 @@ function renderRootSelect(){
  button.disabled=false;
  const area=currentViewArea();
 
+ button.innerHTML=`${escapeHtml(area||'Select Category')} <span>⌄</span>`;
  menu.innerHTML=focusAreas.map(name=>{
    const root=rootForDomain(name);
    const mark=name.replace(/[^a-z0-9]/gi,'').slice(0,2).toUpperCase()||'•';
@@ -1554,7 +1592,19 @@ function openGoalForPeriod(level,key){pendingCreateLevel=level;pendingCreatePeri
 function handleTrackerClick(e){const adj=e.target.closest('[data-track-adjust]');if(adj){adjustProgress(adj.dataset.id,Number(adj.dataset.trackAdjust));return}const done=e.target.closest('[data-track-complete]');if(done)completeGoal(done.dataset.trackComplete)}
 
 function renderAll(){
- setTimeout(renderProductEvidenceReceiver,0);renderRootSelect();renderMetrics();renderChain();renderSetGoals();renderParentOptions();renderDailySystem();renderWeeklySystem();renderMonthlySystem();publishDashboardSnapshot(false)} // H-IOS syncs automatically on every Goals-IOS state update
+ renderRootSelect();
+ renderMetrics();
+ renderChain();
+ renderSelectedCategoryContext();
+ renderProductEvidenceReceiver();
+ renderPersonalIntelligenceResponse();
+ renderSetGoals();
+ renderParentOptions();
+ renderDailySystem();
+ renderWeeklySystem();
+ renderMonthlySystem();
+ publishDashboardSnapshot(false)
+} // H-IOS syncs automatically on every Goals-IOS state update
 function toast(message){const t=$('#toast');t.textContent=message;t.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),2200)}
 $('#cancelGoal').addEventListener('click',()=>$('#goalModal').classList.remove('show'));
 $('#goalModal').addEventListener('click',e=>{if(e.target.id==='goalModal')$('#goalModal').classList.remove('show')});
@@ -1663,7 +1713,15 @@ $('#monthProgressStrip').addEventListener('wheel',e=>{
    strip.scrollLeft+=e.deltaY;
  }
 },{passive:false});
-window.addEventListener('storage',e=>{if([GOALS_KEY,...OLD_GOALS_KEYS].includes(e.key)){loadGoals();renderAll()}});
+window.addEventListener('storage',e=>{
+ if([GOALS_KEY,...OLD_GOALS_KEYS].includes(e.key)){loadGoals();renderAll();return}
+ if([PRODUCT_GOAL_EVIDENCE_KEY,PRODUCT_FOCUS_LINKS_KEY,'hios_product_connection_status_v1'].includes(e.key)){
+  productFocusLinks=loadProductFocusLinks();
+  renderSelectedCategoryContext();
+  renderProductEvidenceReceiver();
+  renderPersonalIntelligenceResponse();
+ }
+});
 loadGoals();
 normalizeViewArea();
 if(selectedViewArea)selectRootForDomain(selectedViewArea);
@@ -1671,21 +1729,139 @@ goalsBridge.subscribe(processHiosGoalRequest,{source:'h-ios',types:HIOS_GOAL_REQ
 goalsBridge.getPendingRequests().forEach(processHiosGoalRequest);
 renderAll();
 
+
+function selectedCategoryEvidence(){
+ const area=currentViewArea();
+ if(!area)return {area:'',link:null,rows:[],status:null};
+ const link=productLinkForArea(area);
+ const rows=link ? readProductGoalEvidence(link.productId) : [];
+ let status=null;
+ if(link){
+  try{
+   const all=JSON.parse(localStorage.getItem('hios_product_connection_status_v1')||'{}');
+   status=all?.[link.productId]||null;
+  }catch(error){}
+ }
+ return {area,link,rows:Array.isArray(rows)?rows:[],status};
+}
+
+function renderSelectedCategoryContext(){
+ const area=currentViewArea();
+ const chainTitle=$('#chainTitle');
+ const chainSubtitle=$('#chainSubtitle');
+ const receiverTitle=$('#receiverTitle');
+ const receiverSubtitle=$('#receiverSubtitle');
+
+ if(chainTitle)chainTitle.textContent=area ? `${area} · Compounding Goal Chain` : 'Compounding Goal Chain';
+ if(chainSubtitle)chainSubtitle.textContent=area
+  ? `Only ${area} goals are shown here: Day → Week → Month → Semester → Year.`
+  : 'Select a category to view its compounding goal chain only.';
+
+ if(receiverTitle)receiverTitle.textContent=area ? `${area} · Evidence Receiver` : 'Product Evidence Receiver';
+ if(receiverSubtitle)receiverSubtitle.textContent=area
+  ? `Only evidence connected to ${area} is shown in this receiver.`
+  : 'Select a category to view its evidence only.';
+}
+
+function renderPersonalIntelligenceResponse(){
+ const area=currentViewArea();
+ const title=$('#piTitle');
+ const subtitle=$('#piSubtitle');
+ const pill=$('#piEvidencePill');
+ const response=$('#piResponse');
+ const note=$('#piResponseNote');
+ if(!title||!response)return;
+
+ if(!area){
+  title.textContent='Personal Intelligence Response';
+  subtitle.textContent='Evidence-based interpretation for the selected focus area only.';
+  pill.textContent='No category selected';
+  pill.classList.remove('ready');
+  $('#piCategory').textContent='—';
+  $('#piGoalCount').textContent='0';
+  $('#piChainProgress').textContent='0%';
+  $('#piEvidenceCount').textContent='0';
+  response.textContent='Select a category to view its Personal Intelligence response.';
+  note.textContent='Evidence from different areas is deliberately kept separate in this view.';
+  return;
+ }
+
+ const scopedGoals=goals.filter(g=>sameDomain(g.domain,area));
+ const yearly=scopedGoals.filter(g=>g.level==='yearly');
+ const chainProgress=yearly.length
+  ? Math.round(weightedAverage(yearly,g=>effectiveProgress(g)))
+  : (scopedGoals.length?Math.round(weightedAverage(scopedGoals,g=>effectiveProgress(g))):0);
+
+ const {link,rows}=selectedCategoryEvidence();
+ const latest=rows.slice().sort((a,b)=>String(b.timestamp||'').localeCompare(String(a.timestamp||'')))[0]||null;
+
+ title.textContent=`${area} · Personal Intelligence Response`;
+ subtitle.textContent=`Interpretation uses ${area} goals and ${area}-linked evidence only.`;
+ pill.textContent=rows.length?`${rows.length} evidence signal${rows.length===1?'':'s'}`:(link?'Waiting for evidence':'Goal evidence only');
+ pill.classList.toggle('ready',rows.length>0||scopedGoals.length>0);
+
+ $('#piCategory').textContent=area;
+ $('#piGoalCount').textContent=String(scopedGoals.length);
+ $('#piChainProgress').textContent=chainProgress+'%';
+ $('#piEvidenceCount').textContent=String(rows.length);
+
+ if(!scopedGoals.length && !rows.length){
+  response.textContent=`There is not enough ${area} evidence yet to form a useful personal interpretation.`;
+  note.textContent=`Add ${area} goals${link?' or allow the connected product to generate evidence':''}. No other category is used to fill this gap.`;
+  return;
+ }
+
+ if(link && rows.length){
+  const latestLabel=String(latest?.signal||'product evidence').replaceAll('_',' ');
+  response.textContent=`${area} has verified product evidence available alongside its goal chain. The latest signal is ${latestLabel}.`;
+  note.textContent=`This is an early evidence response, not a final intelligence conclusion. As ${area} history grows, stronger category-specific patterns can be evaluated.`;
+  return;
+ }
+
+ if(link && !rows.length){
+  response.textContent=`${area} is linked to ${link.productName}, but this category is still waiting for verified product evidence.`;
+  note.textContent=`Current progress reflects ${area} goal structure only. A lack of product activity is not automatically interpreted as failure.`;
+  return;
+ }
+
+ response.textContent=`${area} currently has ${scopedGoals.length} goal${scopedGoals.length===1?'':'s'} with visible chain progress of about ${chainProgress}%.`;
+ note.textContent=`This response uses Goals-IOS evidence from ${area} only and does not mix evidence from other focus areas.`;
+}
+
+
 function renderProductEvidenceReceiver(){
- const area=activeCategory||setGoalsCategory||'';
+ const area=currentViewArea()||'';
  const link=typeof productLinkForArea==='function'?productLinkForArea(area):null;
  const $id=id=>document.getElementById(id);
  if(!$id('receiverArea'))return;
  $id('receiverArea').textContent=area||'Select a focus area';
  if(!link){
-   $id('receiverSource').textContent='No linked product'; $id('receiverLivePill').textContent='Manual / unlinked area';
-   $id('receiverEvidenceCount').textContent='0'; $id('receiverTradeCount').textContent='0'; $id('receiverWinRate').textContent='—'; $id('receiverPnl').textContent='—';
-   $id('receiverInterpretation').textContent='This focus area is not currently receiving execution evidence from an H·IOS product.';
-   $id('receiverEvidenceFeed').innerHTML='<div class="receiver-empty">Select a product-linked focus area to inspect incoming evidence.</div>'; return;
+   $id('receiverSource').textContent='No linked product';
+   $id('receiverLivePill').textContent='Manual / unlinked area';
+   $id('receiverLivePill').classList.remove('live');
+   $id('receiverPublisher').textContent='Product: not linked';
+   $id('receiverHios').textContent='H·IOS: —';
+   $id('receiverGios').textContent='G·IOS: goal data only';
+   $id('receiverPublisher').classList.remove('ok');
+   $id('receiverHios').classList.remove('ok');
+   $id('receiverGios').classList.remove('ok');
+   $id('receiverEvidenceCount').textContent='0';
+   $id('receiverTradeCount').textContent='0';
+   $id('receiverWinRate').textContent='—';
+   $id('receiverPnl').textContent='—';
+   $id('receiverInterpretation').textContent=`${area||'This focus area'} is not currently receiving evidence from an H·IOS product.`;
+   $id('receiverInterpretationNote').textContent='Only evidence for the selected category is shown here.';
+   $id('receiverLastUpdate').textContent='No product evidence';
+   $id('receiverEvidenceFeed').innerHTML='<div class="receiver-empty">No product evidence is connected to this selected category.</div>';
+   return;
  }
  const rows=typeof readProductGoalEvidence==='function'?(readProductGoalEvidence(link.productId)||[]):[];
  const status=typeof readProductConnectionStatus==='function'?readProductConnectionStatus(link.productId):null;
  $id('receiverSource').textContent=link.productName||link.productId;
+ $id('receiverLivePill').textContent=rows.length?'Receiving category evidence':'Connected · waiting for evidence';
+ $id('receiverLivePill').classList.toggle('live',rows.length>0);
+ $id('receiverHios').textContent='H·IOS: category channel active ✓';
+ $id('receiverHios').classList.add('ok');
  $id('receiverEvidenceCount').textContent=rows.length;
  const snap=rows.filter(r=>r.signal==='performance_snapshot').sort((a,b)=>String(b.timestamp||'').localeCompare(String(a.timestamp||'')))[0];
  $id('receiverTradeCount').textContent=snap?String(Number(snap.value||0)):'0';
