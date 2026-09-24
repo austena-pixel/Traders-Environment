@@ -2589,6 +2589,26 @@ textarea{resize:vertical;min-height:90px}
   }
 }
 
+
+/* ===== SIDEBAR INFORMATION FAMILIES ===== */
+.nav{flex:1 1 auto;min-height:0;overflow-y:auto;scrollbar-width:thin;padding-right:2px}
+.nav-group{display:grid;gap:4px}
+.nav-group-toggle{width:100%;border:1px solid #172334;background:#0b1119;color:#c9d5e4;border-radius:11px;padding:9px 10px;display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:8px;align-items:center;text-align:left;cursor:pointer;transition:.16s ease}
+.nav-group-toggle:hover{background:#0f1722;color:#fff}
+.nav-group.technical .nav-group-toggle{border-color:rgba(90,167,255,.22)}
+.nav-group.psychological .nav-group-toggle{border-color:rgba(167,139,250,.22)}
+.nav-group.active.technical .nav-group-toggle,.nav-group.open.technical .nav-group-toggle{border-color:rgba(90,167,255,.48);background:rgba(90,167,255,.07)}
+.nav-group.active.psychological .nav-group-toggle,.nav-group.open.psychological .nav-group-toggle{border-color:rgba(167,139,250,.48);background:rgba(167,139,250,.07)}
+.nav-group-icon{width:27px;height:27px;border-radius:8px;display:grid;place-items:center;font-size:10px;font-weight:950}
+.nav-group.technical .nav-group-icon{color:#d8ebff;background:linear-gradient(135deg,#173a61,#244f7d)}
+.nav-group.psychological .nav-group-icon{color:#eee8ff;background:linear-gradient(135deg,#39295f,#5d3f86)}
+.nav-group-copy{min-width:0}.nav-group-copy b{display:block;font-size:10.5px}.nav-group-copy small{display:block;margin-top:2px;color:#718095;font-size:7.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-group-chevron{color:#74849a;font-size:13px;transition:transform .16s ease}.nav-group.open .nav-group-chevron{transform:rotate(180deg)}
+.nav-submenu{display:none;gap:3px;margin:1px 0 3px 13px;padding:3px 0 3px 9px;border-left:1px solid #1e2d3f}
+.nav-group.open .nav-submenu{display:grid}
+.nav-submenu .nav-btn{padding:8px 9px;font-size:10.5px;border-radius:9px}
+.nav-submenu .nav-icon{font-size:12px;width:18px}
+
 </style>
 </head>
 
@@ -2681,30 +2701,30 @@ textarea{resize:vertical;min-height:90px}
       <button class="nav-btn active" data-page="dashboard">
         <span class="nav-icon">▣</span> Dashboard
       </button>
+<div class="nav-group technical" data-nav-group="technical">
+        <button class="nav-group-toggle" type="button" data-nav-group-toggle="technical" aria-expanded="false">
+          <span class="nav-group-icon">T</span>
+          <span class="nav-group-copy"><b>Technicals</b><small>System · execution · results</small></span>
+          <span class="nav-group-chevron">⌄</span>
+        </button>
+        <div class="nav-submenu">
+          <button class="nav-btn" data-page="journal"><span class="nav-icon">◫</span> Journal</button>
+          <button class="nav-btn" data-page="statistics"><span class="nav-icon">◈</span> Statistics</button>
+          <button class="nav-btn" data-page="playbook"><span class="nav-icon">◎</span> Edge / Playbook</button>
+          <button class="nav-btn" data-page="execution"><span class="nav-icon">✓</span> Execution</button>
+        </div>
+      </div>
 
-      <button class="nav-btn" data-page="intelligence">
-        <span class="nav-icon">✦</span> Intelligence
-      </button>
-
-      <button class="nav-btn" data-page="journal">
-        <span class="nav-icon">◫</span> Journal
-      </button>
-
-      <button class="nav-btn" data-page="statistics">
-        <span class="nav-icon">◈</span> Statistics
-      </button>
-
-      <button class="nav-btn" data-page="psychology">
-        <span class="nav-icon">◇</span> Psychology
-      </button>
-
-      <button class="nav-btn" data-page="playbook">
-        <span class="nav-icon">◎</span> Edge / Playbook
-      </button>
-
-      <button class="nav-btn" data-page="execution">
-        <span class="nav-icon">✓</span> Execution
-      </button>
+      <div class="nav-group psychological" data-nav-group="psychological">
+        <button class="nav-group-toggle" type="button" data-nav-group-toggle="psychological" aria-expanded="false">
+          <span class="nav-group-icon">Ψ</span>
+          <span class="nav-group-copy"><b>Psychology</b><small>Mind · behaviour · identity</small></span>
+          <span class="nav-group-chevron">⌄</span>
+        </button>
+        <div class="nav-submenu">
+          <button class="nav-btn" data-page="psychology"><span class="nav-icon">◇</span> Psychology Dashboard</button>
+        </div>
+      </div>
 
       <button class="nav-btn" data-page="settings">
         <span class="nav-icon">⚙</span> Settings
@@ -2718,9 +2738,7 @@ textarea{resize:vertical;min-height:90px}
         <span class="gios-direct-arrow">→</span>
       </a>
       <a class="hios-back-link" href="index.html?view=home" title="Return to H·IOS family">← H·IOS Family</a>
-      <div class="side-user" id="sideUserEmail">—</div>
-      <button class="btn danger logout-side" id="logoutBtn">Sign Out</button>
-    </div>
+</div>
   </aside>
 
   <main class="main">
@@ -3939,245 +3957,7 @@ textarea{resize:vertical;min-height:90px}
 
 
     <!-- INTELLIGENCE -->
-    <section class="page" id="page-intelligence">
-      <header class="page-head">
-        <div>
-          <h1>Intelligence</h1>
-          <p>Connect your trading evidence into Specialized Intelligence, Cross-Intelligence and Personal Trader Intelligence.</p>
-        </div>
-        <div class="top-actions">
-          <button class="btn" id="intelligenceRefreshBtn">Refresh Intelligence</button>
-        </div>
-      </header>
-
-      <div class="intelligence-overview">
-
-
-        <div class="intelligence-section-head">
-          <div>
-            <h3>Specialized Intelligence</h3>
-            <p>Each system studies one part of your trading. A system can be active even while other systems are still waiting for evidence.</p>
-          </div>
-        </div>
-
-        <section class="intelligence-grid">
-          <div class="panel intelligence-card">
-            <div class="intelligence-card-top">
-              <div class="intel-name">Execution Intelligence</div>
-              <span class="intel-state" id="intelExecutionState">Waiting</span>
-            </div>
-            <div class="intel-value neutral" id="intelExecutionScore">—</div>
-            <div class="intel-evidence" id="intelExecutionEvidence">0 reviewed trades</div>
-            <div class="intel-detail-grid">
-              <div class="intel-detail"><span>Coverage</span><strong id="intelExecutionCoverage">0 / 0</strong></div>
-              <div class="intel-detail"><span>Next milestone</span><strong id="intelExecutionNext">Review 3 trades</strong></div>
-            </div>
-            <div class="intel-note" id="intelExecutionNote">Measures how consistently actual trade execution matched the intended process.</div>
-            <div class="intel-card-action"><button class="btn small" type="button" data-intel-nav="execution">Review Execution →</button></div>
-          </div>
-
-          <div class="panel intelligence-card">
-            <div class="intelligence-card-top">
-              <div class="intel-name">Psychology Intelligence</div>
-              <span class="intel-state" id="intelPsychState">Waiting</span>
-            </div>
-            <div class="intel-value neutral" id="intelPsychScore">—</div>
-            <div class="intel-evidence" id="intelPsychEvidence">0 recorded sessions</div>
-            <div class="intel-detail-grid">
-              <div class="intel-detail"><span>Identity</span><strong id="intelPsychIdentity">—</strong></div>
-              <div class="intel-detail"><span>Session rules</span><strong id="intelPsychRules">—</strong></div>
-            </div>
-            <div class="intel-note" id="intelPsychNote">Current v2 starts with identity-expression and session-rule evidence. Trigger analysis will become more specific as structured psychology data grows.</div>
-            <div class="intel-card-action"><button class="btn small" type="button" data-intel-nav="psychology">Record Psychology →</button></div>
-          </div>
-
-          <div class="panel intelligence-card">
-            <div class="intelligence-card-top">
-              <div class="intel-name">Edge / Playbook Intelligence</div>
-              <span class="intel-state" id="intelEdgeState">Waiting</span>
-            </div>
-            <div class="intel-value neutral" id="intelEdgeScore">—</div>
-            <div class="intel-evidence" id="intelEdgeEvidence">0 reviewed trades</div>
-            <div class="intel-detail-grid">
-              <div class="intel-detail"><span>Coverage</span><strong id="intelEdgeCoverage">0 / 0</strong></div>
-              <div class="intel-detail"><span>Next milestone</span><strong id="intelEdgeNext">Review 3 trades</strong></div>
-            </div>
-            <div class="intel-note" id="intelEdgeNote">Measures whether trades matched the conditions and rules defined in the current playbook.</div>
-            <div class="intel-card-action"><button class="btn small" type="button" data-intel-nav="playbook">Review Edge →</button></div>
-          </div>
-
-          <div class="panel intelligence-card">
-            <div class="intelligence-card-top">
-              <div class="intel-name">Performance Intelligence</div>
-              <span class="intel-state" id="intelPerformanceState">Waiting</span>
-            </div>
-            <div class="intel-value neutral" id="intelPerformanceScore">—</div>
-            <div class="intel-evidence" id="intelPerformanceEvidence">0 trades in active account</div>
-            <div class="intel-detail-grid">
-              <div class="intel-detail"><span>Win rate</span><strong id="intelPerformanceWinRate">—</strong></div>
-              <div class="intel-detail"><span>Profit factor</span><strong id="intelPerformanceProfitFactor">—</strong></div>
-              <div class="intel-detail"><span>Core data quality</span><strong id="intelPerformanceDataQuality">—</strong></div>
-              <div class="intel-detail"><span>Return basis</span><strong id="intelPerformanceReturnBasis">—</strong></div>
-            </div>
-            <div class="intel-note" id="intelPerformanceNote">Outcome data gives context, but T·IOS does not treat profit alone as proof of good process.</div>
-            <div class="intel-card-action"><button class="btn small" type="button" data-intel-nav="statistics">Open Statistics →</button></div>
-          </div>
-          <div class="panel intelligence-card">
-            <div class="intelligence-card-top">
-              <div class="intel-name">Strategy Intelligence</div>
-              <span class="intel-state" id="intelStrategyState">Waiting</span>
-            </div>
-            <div class="intel-value neutral" id="intelStrategyScore">—</div>
-            <div class="intel-evidence" id="intelStrategyEvidence">0 classified setups</div>
-            <div class="intel-detail-grid">
-              <div class="intel-detail"><span>Best sampled setup</span><strong id="intelStrategyBest">—</strong></div>
-              <div class="intel-detail"><span>Sample</span><strong id="intelStrategySample">—</strong></div>
-            </div>
-            <div class="intel-note" id="intelStrategyNote">Separates strategy/setup performance from whether the plan was executed correctly.</div>
-            <div class="intel-card-action"><button class="btn small" type="button" data-intel-nav="journal">Review Setups →</button></div>
-          </div>
-
-          <div class="panel intelligence-card">
-            <div class="intelligence-card-top">
-              <div class="intel-name">Behaviour Intelligence</div>
-              <span class="intel-state" id="intelBehaviourState">Waiting</span>
-            </div>
-            <div class="intel-value neutral" id="intelBehaviourScore">—</div>
-            <div class="intel-evidence" id="intelBehaviourEvidence">0 reviewed trades</div>
-            <div class="intel-detail-grid">
-              <div class="intel-detail"><span>Repeated deviation</span><strong id="intelBehaviourPattern">—</strong></div>
-              <div class="intel-detail"><span>Occurrences</span><strong id="intelBehaviourOccurrences">—</strong></div>
-            </div>
-            <div class="intel-note" id="intelBehaviourNote">Looks for repeated observable execution deviations rather than labeling your identity.</div>
-            <div class="intel-card-action"><button class="btn small" type="button" data-intel-nav="execution">Inspect Behaviour →</button></div>
-          </div>
-
-          <div class="panel intelligence-card">
-            <div class="intelligence-card-top">
-              <div class="intel-name">Context Intelligence</div>
-              <span class="intel-state" id="intelContextState">Waiting</span>
-            </div>
-            <div class="intel-value neutral" id="intelContextScore">—</div>
-            <div class="intel-evidence" id="intelContextEvidence">0 contextual reviews</div>
-            <div class="intel-detail-grid">
-              <div class="intel-detail"><span>Market states</span><strong id="intelContextStates">—</strong></div>
-              <div class="intel-detail"><span>Best sampled state</span><strong id="intelContextBestState">—</strong></div>
-            </div>
-            <div class="intel-note" id="intelContextNote">Studies the environment around trades so outcomes are not interpreted without market context.</div>
-            <div class="intel-card-action"><button class="btn small" type="button" data-intel-nav="playbook">Review Context →</button></div>
-          </div>
-
-          <div class="panel intelligence-card">
-            <div class="intelligence-card-top">
-              <div class="intel-name">Risk Intelligence</div>
-              <span class="intel-state" id="intelRiskState">Waiting</span>
-            </div>
-            <div class="intel-value neutral" id="intelRiskScore">—</div>
-            <div class="intel-evidence" id="intelRiskEvidence">0 risk reviews</div>
-            <div class="intel-detail-grid">
-              <div class="intel-detail"><span>Average losing trade</span><strong id="intelRiskAvgLoss">—</strong></div>
-              <div class="intel-detail"><span>Worst losing trade</span><strong id="intelRiskWorstLoss">—</strong></div>
-            </div>
-            <div class="intel-note" id="intelRiskNote">Connects stop placement and risk-sizing behaviour with the downside actually experienced.</div>
-            <div class="intel-card-action"><button class="btn small" type="button" data-intel-nav="execution">Review Risk →</button></div>
-          </div>
-        </section>
-
-        <section class="panel intelligence-route">
-          <strong>Intelligence route</strong>
-          <span>Trading evidence</span><span class="route-arrow">→</span>
-          <span>Specialized Intelligence</span><span class="route-arrow">→</span>
-          <span>Cross-Intelligence</span><span class="route-arrow">→</span>
-          <span>Personal Trader Intelligence</span><span class="route-arrow">→</span>
-          <span>Adaptation</span>
-        </section>
-
-        <div class="intelligence-lower">
-          <section class="panel cross-intelligence-panel">
-            <div class="intelligence-panel-head">
-              <div>
-                <h3>Cross-Intelligence · Execution × Performance</h3>
-                <p>Compares reviewed trades with 90%+ execution against lower-execution reviewed trades. Association is not causation.</p>
-              </div>
-            </div>
-
-            <div class="cross-flow">
-              <div class="cross-box">
-                <span>High Execution</span>
-                <strong id="intelHighExecReturn">—</strong>
-                <small id="intelHighExecCount">0 trades</small>
-              </div>
-              <div class="cross-arrow">→</div>
-              <div class="cross-box">
-                <span>Lower Execution</span>
-                <strong id="intelLowExecReturn">—</strong>
-                <small id="intelLowExecCount">0 trades</small>
-              </div>
-            </div>
-
-            <div class="cross-insight" id="intelCrossInsight">
-              More reviewed trades are needed before T·IOS can compare execution quality with performance.
-            </div>
-            <div class="cross-subsection">
-              <div class="intelligence-panel-head">
-                <div>
-                  <h3>Cross-Intelligence · Psychology × Execution</h3>
-                  <p>Compares execution under self-reported constructive states (Calm, Focused, Patient) with reactive states (Anxious, FOMO, Revenge impulse, Overconfident).</p>
-                </div>
-              </div>
-
-              <div class="cross-flow">
-                <div class="cross-box">
-                  <span>Constructive State</span>
-                  <strong id="intelConstructiveExec">—</strong>
-                  <small id="intelConstructiveCount">0 trades</small>
-                </div>
-                <div class="cross-arrow">↔</div>
-                <div class="cross-box">
-                  <span>Reactive State</span>
-                  <strong id="intelReactiveExec">—</strong>
-                  <small id="intelReactiveCount">0 trades</small>
-                </div>
-              </div>
-
-              <div class="cross-insight" id="intelPsychExecutionInsight">
-                T·IOS needs reviewed execution trades with psychology labels before it can test this relationship.
-              </div>
-            </div>
-          </section>
-
-          <div class="intelligence-side-stack">
-            <section class="panel intelligence-side-panel">
-              <div class="intelligence-panel-head">
-                <div>
-                  <h3>Evidence Coverage</h3>
-                  <p>How much structured evidence is currently available.</p>
-                </div>
-              </div>
-              <div class="intel-row"><span>Active-account trades</span><strong id="intelCoverageTrades">0</strong></div>
-              <div class="intel-row"><span>Execution reviewed</span><strong id="intelCoverageExecution">0 / 0</strong></div>
-              <div class="intel-row"><span>Edge reviewed</span><strong id="intelCoverageEdge">0 / 0</strong></div>
-              <div class="intel-row"><span>Psychology sessions</span><strong id="intelCoveragePsych">0</strong></div>
-              <div class="intel-row"><span>Evidence maturity</span><strong id="intelCoverageMaturity">Early</strong></div>
-              <div class="intelligence-footnote">Maturity is a simple v1 evidence-volume indicator, not statistical confidence.</div>
-            </section>
-
-            <section class="panel intelligence-side-panel">
-              <div class="intelligence-panel-head">
-                <div>
-                  <h3>Current Adaptation Priority</h3>
-                  <p>First-pass priority based on the lowest sufficiently measured process area.</p>
-                </div>
-              </div>
-              <div class="adaptation-priority" id="intelAdaptationPriority">
-                Collect more reviewed evidence before selecting a development priority.
-              </div>
-              <div class="intelligence-footnote">This is decision support, not an automatic diagnosis. Stronger adaptations should require stronger evidence.</div>
-            </section>
-          </div>
-        </div>
-      </div>
-    </section>
+    
 
     <section class="page" id="page-settings">
       <header class="page-head">
@@ -4614,6 +4394,25 @@ const HIOS_PRODUCT_GOAL_EVIDENCE_KEY='hios_product_goal_evidence_v1';
 const HIOS_SIGNAL_BUS_LIMIT=300;
 const GIOS_EVIDENCE_REQUESTS_KEY='hios_goal_evidence_requests_v1';
 const TIOS_EVIDENCE_RESPONSES_KEY='hios_goal_evidence_responses_v1';
+const TIOS_EVIDENCE_FAMILY={
+ execution_adherence:'technical',execution_errors:'technical',missed_valid_opportunities:'technical',review_completion:'technical',
+ expectancy:'technical',sample_size:'technical',setup_performance:'technical',system_version:'technical',regime_performance:'technical',
+ adaptation_changes:'technical',risk_stability:'technical',drawdown:'technical',capital_growth:'technical',
+ identity_expression:'psychological',discipline_score:'psychological',patience_score:'psychological',objectivity_score:'psychological',
+ psychology_rule_adherence:'psychological',rule_violations:'psychological',affirmation_consistency:'psychological',impulsive_trades:'psychological'
+};
+function tiosEvidenceFamily(metric){return TIOS_EVIDENCE_FAMILY[metric]||'technical'}
+function psychologyIdentityMetric(valueKey,label){
+ const sessions=Array.isArray(psychologySessions)?psychologySessions:[];
+ const values=sessions.map(session=>{
+  const row=sessionIdentityRows(session.id).find(item=>item.value_key===valueKey);
+  return row?Number(row.score):null;
+ }).filter(value=>Number.isFinite(value));
+ if(!values.length)return{available:false,reason:`No ${label.toLowerCase()} psychology scores have been recorded yet.`};
+ const avg=values.reduce((sum,value)=>sum+value,0)/values.length;
+ return{available:true,value:roundEvidence(avg/10*100,1),unit:'%',sampleSize:values.length,details:{averageScore:roundEvidence(avg,2),scale:'0-10'}};
+}
+
 
 function currentTiosEvidenceRequest(){
   const all=readHiosJson(GIOS_EVIDENCE_REQUESTS_KEY,{});
@@ -4638,6 +4437,24 @@ function tiosRequestedEvidenceMetric(metric){
   if(metric==='execution_errors'){
     const stats=executionCriterionStats(executionKeys);if(!stats.total)return{available:false,reason:'No reviewed execution evidence yet.'};
     return{available:true,value:Math.max(0,stats.total-stats.complied),unit:'errors',sampleSize:stats.reviewedTrades,details:{checks:stats.total}};
+  }
+  if(metric==='identity_expression'){
+    const values=(Array.isArray(psychologySessions)?psychologySessions:[]).map(session=>identityPercentForSession(session.id)).filter(value=>value!==null&&Number.isFinite(Number(value)));
+    if(!values.length)return{available:false,reason:'No psychology identity-expression sessions have been scored yet.'};
+    return{available:true,value:roundEvidence(values.reduce((a,b)=>a+Number(b),0)/values.length,1),unit:'%',sampleSize:values.length,details:{measure:'average identity expression'}};
+  }
+  if(metric==='discipline_score')return psychologyIdentityMetric('discipline','Discipline');
+  if(metric==='patience_score')return psychologyIdentityMetric('patience','Patience');
+  if(metric==='objectivity_score')return psychologyIdentityMetric('objectivity','Objectivity');
+  if(metric==='psychology_rule_adherence'){
+    const values=(Array.isArray(psychologySessions)?psychologySessions:[]).map(session=>rulePercentForSession(session.id)).filter(value=>value!==null&&Number.isFinite(Number(value)));
+    if(!values.length)return{available:false,reason:'No psychology rule-adherence sessions have been recorded yet.'};
+    return{available:true,value:roundEvidence(values.reduce((a,b)=>a+Number(b),0)/values.length,1),unit:'%',sampleSize:values.length,details:{measure:'average psychology rule adherence'}};
+  }
+  if(metric==='affirmation_consistency'){
+    const sessions=Array.isArray(psychologySessions)?psychologySessions:[];if(!sessions.length)return{available:false,reason:'No psychology sessions have been recorded yet.'};
+    const complete=sessions.filter(session=>session.affirmation_before&&session.affirmation_after).length;
+    return{available:true,value:roundEvidence(complete/sessions.length*100,1),unit:'%',sampleSize:sessions.length,details:{completeSessions:complete}};
   }
   if(metric==='rule_violations'){
     const rows=Array.isArray(ruleChecks)?ruleChecks:[];if(!rows.length)return{available:false,reason:'No psychology rule-check evidence yet.'};
@@ -4706,11 +4523,11 @@ function respondToGoalEvidenceRequest(reason='refresh'){
     if(!result.available){unavailable.push({metric,reason:result.reason||'Unavailable'});return}
     const previous=latestPublishedGoalEvidence(request.requestId,metric);
     if(!sameGoalEvidenceSnapshot(previous,result)){
-      publishTiosSignal('goal_evidence_response',metric,result.value,{requestId:request.requestId,area:request.area||'Trading',modelName:request.modelName||null,phaseId:request.phaseId||null,phaseName:request.phaseName||null,requestedBy:'goals-ios',responseReason:reason,unit:result.unit||null,sampleSize:result.sampleSize??null,available:true,...(result.details||{})});
+      publishTiosSignal('goal_evidence_response',metric,result.value,{requestId:request.requestId,area:request.area||'Trading',modelName:request.modelName||null,phaseId:request.phaseId||null,phaseName:request.phaseName||null,requestedBy:'goals-ios',responseReason:reason,evidenceFamily:tiosEvidenceFamily(metric),unit:result.unit||null,sampleSize:result.sampleSize??null,available:true,...(result.details||{})});
     }
     delivered.push(metric)
   });
-  const response={schema:'hios.goal-evidence-response.v1',requestId:request.requestId,source:'t-ios',target:'goals-ios',productId:'tios',area:request.area||'Trading',phaseId:request.phaseId||null,phaseName:request.phaseName||null,requestedMetrics:[...request.metrics],deliveredMetrics:delivered,unavailableMetrics:unavailable,status:unavailable.length?(delivered.length?'partial':'unavailable'):'fulfilled',respondedAt:new Date().toISOString(),reason};
+  const response={schema:'hios.goal-evidence-response.v1',requestId:request.requestId,source:'t-ios',target:'goals-ios',productId:'tios',area:request.area||'Trading',phaseId:request.phaseId||null,phaseName:request.phaseName||null,requestedMetrics:[...request.metrics],requestedMetricGroups:request.metricGroups||null,deliveredMetrics:delivered,deliveredMetricGroups:{technical:delivered.filter(metric=>tiosEvidenceFamily(metric)==='technical'),psychological:delivered.filter(metric=>tiosEvidenceFamily(metric)==='psychological')},unavailableMetrics:unavailable,status:unavailable.length?(delivered.length?'partial':'unavailable'):'fulfilled',respondedAt:new Date().toISOString(),reason};
   prior.tios=response;writeHiosJson(TIOS_EVIDENCE_RESPONSES_KEY,prior);
   const requests=readHiosJson(GIOS_EVIDENCE_REQUESTS_KEY,{});if(requests.tios?.requestId===request.requestId){requests.tios={...requests.tios,status:response.status,tiosReceivedAt:requests.tios.tiosReceivedAt||new Date().toISOString(),respondedAt:response.respondedAt,deliveredMetrics:[...delivered],unavailableMetrics:[...unavailable]};writeHiosJson(GIOS_EVIDENCE_REQUESTS_KEY,requests)}
   setTiosConnectionStatus({goalEvidenceRequestId:request.requestId,goalEvidenceResponseStatus:response.status,goalEvidenceRespondedAt:response.respondedAt,goalEvidenceDelivered:[...delivered]});
@@ -4899,7 +4716,8 @@ async function enterApp(user){
   currentUser=user;
 
   const email=user.email || 'Signed in';
-  $('#sideUserEmail').textContent=email;
+  const sideUserEmail=$('#sideUserEmail');
+  if(sideUserEmail) sideUserEmail.textContent=email;
 
   setLoggedInUI(true);
 
@@ -5764,20 +5582,44 @@ window.addEventListener('storage',event=>{
 });
 renderGiosDirectSwitch();
 
+function setTiosNavGroup(groupName,open=true){
+ $$('.nav-group').forEach(group=>{
+  const isTarget=group.dataset.navGroup===groupName;
+  const shouldOpen=isTarget&&open;
+  group.classList.toggle('open',shouldOpen);
+  const toggle=group.querySelector('[data-nav-group-toggle]');
+  if(toggle)toggle.setAttribute('aria-expanded',shouldOpen?'true':'false');
+ });
+}
+function syncTiosNavGroups(page){
+ $$('.nav-group').forEach(group=>{
+  const contains=[...group.querySelectorAll('.nav-btn')].some(btn=>btn.dataset.page===page);
+  group.classList.toggle('active',contains);
+  if(contains){
+   group.classList.add('open');
+   const toggle=group.querySelector('[data-nav-group-toggle]');
+   if(toggle)toggle.setAttribute('aria-expanded','true');
+  }
+ });
+}
+$$('[data-nav-group-toggle]').forEach(toggle=>{
+ toggle.addEventListener('click',()=>{
+  const group=toggle.closest('.nav-group');
+  const willOpen=!group.classList.contains('open');
+  setTiosNavGroup(group.dataset.navGroup,willOpen);
+ });
+});
+
 function navigate(page){
   $$('.nav-btn').forEach(btn=>{
     btn.classList.toggle('active', btn.dataset.page===page);
   });
+  syncTiosNavGroups(page);
 
   $$('.page').forEach(p=>{
     p.classList.toggle('active', p.id===`page-${page}`);
   });
-
-  if(page==='intelligence'){
-    renderIntelligence();
-  }
-
-  if(page==='journal'){
+if(page==='journal'){
     journalPage=1;
     renderJournal();
   }
@@ -7077,7 +6919,7 @@ async function saveExecutionReview(){
 
   renderExecution();
   renderDashboard();
-  renderIntelligence();
+  if($('#page-intelligence')) renderIntelligence();
   renderJournal();
   renderStatistics();
   respondToGoalEvidenceRequest('execution_review_saved');
@@ -9537,7 +9379,7 @@ if(intelligenceRefreshBtn){
       await loadPsychologyData();
       await loadEdgeData();
       await loadExecutionData();
-      renderIntelligence();
+      if($('#page-intelligence')) renderIntelligence();
       showStatus('Intelligence refreshed');
     }finally{
       intelligenceRefreshBtn.disabled=false;
@@ -9546,14 +9388,6 @@ if(intelligenceRefreshBtn){
   });
 }
 
-
-/* =========================
-   LOGOUT
-========================= */
-
-$('#logoutBtn').addEventListener('click',async()=>{
-  await db.auth.signOut();
-});
 
 /* =========================
    RENDER
@@ -9572,7 +9406,7 @@ function renderAll(){
   renderExecution();
   renderStatistics();
 
-  renderIntelligence();
+  if($('#page-intelligence')) renderIntelligence();
 }
 
 
