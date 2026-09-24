@@ -1009,6 +1009,7 @@ const PRODUCT_GOAL_EVIDENCE_KEY='hios_product_goal_evidence_v1';
 
 const GIOS_PROGRESS_MODELS_KEY='hios_gios_progress_models_v1';
 const GIOS_EVIDENCE_REQUESTS_KEY='hios_goal_evidence_requests_v1';
+const TIOS_EVIDENCE_RESPONSES_KEY='hios_goal_evidence_responses_v1';
 
 const PRODUCT_EVIDENCE_CATALOG={
  tios:[
@@ -2064,7 +2065,7 @@ $('#monthProgressStrip').addEventListener('wheel',e=>{
 },{passive:false});
 window.addEventListener('storage',e=>{
  if([GOALS_KEY,...OLD_GOALS_KEYS].includes(e.key)){loadGoals();renderAll();return}
- if([PRODUCT_GOAL_EVIDENCE_KEY,PRODUCT_FOCUS_LINKS_KEY,'hios_product_connection_status_v1',GIOS_PROGRESS_MODELS_KEY,GIOS_EVIDENCE_REQUESTS_KEY].includes(e.key)){
+ if([PRODUCT_GOAL_EVIDENCE_KEY,PRODUCT_FOCUS_LINKS_KEY,'hios_product_connection_status_v1',GIOS_PROGRESS_MODELS_KEY,GIOS_EVIDENCE_REQUESTS_KEY,TIOS_EVIDENCE_RESPONSES_KEY].includes(e.key)){
   productFocusLinks=loadProductFocusLinks();
   renderSelectedCategoryContext();
   renderProductEvidenceReceiver();
@@ -2185,8 +2186,11 @@ function renderProductEvidenceReceiver(){
  const phase=activeProgressPhase(model);
  const rows=link?readProductGoalEvidence(link.productId):[];
  const requested=new Set(phase?.evidence||[]);
- const relevantRows=rows.filter(row=>requested.has(row.metric)||requested.has(row.signal));
  const request=currentEvidenceRequest(area);
+ const relevantRows=rows.filter(row=>
+  (requested.has(row.metric)||requested.has(row.signal)) &&
+  (!request?.requestId || row?.details?.requestId===request.requestId)
+ );
  const scopedGoals=area?goals.filter(g=>sameDomain(g.domain,area)):[];
  const $id=id=>document.getElementById(id);
  if(!$id('receiverArea'))return;
@@ -2228,11 +2232,23 @@ function renderProductEvidenceReceiver(){
 
  $id('receiverLivePill').textContent=link?'Evidence request prepared':'Goals-IOS model active';
  $id('receiverLivePill').classList.toggle('live',!!link);
- $id('receiverRequestState').textContent=link?(request?'Requested':'Ready to request'):'Internal';
+ const requestStatus=request?.status||'';
+ $id('receiverRequestState').textContent=link
+  ? (requestStatus==='fulfilled'?'Fulfilled ✓':requestStatus==='partial'?'Partial response':requestStatus==='unavailable'?'Evidence unavailable':requestStatus==='routed'?'Routed through H·IOS':request?'Requested':'Ready to request')
+  : 'Internal';
  $id('receiverInterpretation').textContent=`Current stage: ${phase.title}. G-IOS needs ${requested.size} evidence signal${requested.size===1?'':'s'} to model this stage.`;
- $id('receiverInterpretationNote').textContent=link
-  ? `Only the selected ${area} evidence should be returned by ${link.productName}. Other product data is outside this goal-progress request.`
-  : `This model currently relies on Goals-IOS progress because ${area} is not linked to a specialized product.`;
+ if(link && request?.status==='partial'){
+  const missing=(request.unavailableMetrics||[]).map(item=>evidenceLabel(link.productId,item.metric));
+  $id('receiverInterpretationNote').textContent=missing.length
+   ? `T·IOS returned the evidence it can currently measure. Still unavailable: ${missing.join(', ')}.`
+   : `T·IOS returned a partial evidence response for this stage.`;
+ }else if(link && request?.status==='unavailable'){
+  $id('receiverInterpretationNote').textContent='T·IOS cannot yet measure the requested evidence for this stage. The goal model remains intact while the required capture tools are added.';
+ }else{
+  $id('receiverInterpretationNote').textContent=link
+   ? `Only the selected ${area} evidence should be returned by ${link.productName}. Other product data is outside this goal-progress request.`
+   : `This model currently relies on Goals-IOS progress because ${area} is not linked to a specialized product.`;
+ }
 
  const productId=link?.productId||'default';
  $id('receiverRequestedEvidence').innerHTML=requested.size
