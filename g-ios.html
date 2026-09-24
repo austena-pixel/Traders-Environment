@@ -17,7 +17,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .app{min-height:100vh;display:grid;grid-template-columns:238px minmax(0,1fr)}
 .sidebar{position:sticky;top:0;height:100vh;padding:20px 16px;border-right:1px solid #142131;background:linear-gradient(180deg,rgba(7,12,19,.97),rgba(5,9,14,.98))}
 .brand{display:flex;align-items:center;gap:11px;padding:4px 8px 22px}.logo{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-weight:900;font-size:18px;background:linear-gradient(135deg,var(--blue),var(--violet));box-shadow:0 0 28px rgba(90,167,255,.16)}
-.brand h1{margin:0;font-size:17px}.brand small{color:#728095;font-size:9px}.nav{display:grid;gap:7px}.nav button,.family{width:100%;border:1px solid transparent;background:transparent;color:#8c9aad;text-align:left;border-radius:10px;padding:11px 12px;font-size:11px}.nav button.active{background:#101a27;color:#fff;border-color:#1f3146}.nav button:hover,.family:hover{background:#0d1621;color:#fff}.nav-note{position:absolute;left:16px;right:16px;bottom:18px}.family{border-color:#1b2b3d;background:#08111a;color:#9cadc1;text-align:center}
+.brand h1{margin:0;font-size:17px}.brand small{color:#728095;font-size:9px}.nav{display:grid;gap:7px}.nav button,.family{width:100%;border:1px solid transparent;background:transparent;color:#8c9aad;text-align:left;border-radius:10px;padding:11px 12px;font-size:11px}.nav button.active{background:#101a27;color:#fff;border-color:#1f3146}.nav button:hover,.family:hover{background:#0d1621;color:#fff}.nav-note{position:absolute;left:16px;right:16px;bottom:18px;display:grid;gap:10px;padding-top:12px;border-top:1px solid #151f2b}.family{border-color:#1b2b3d;background:#08111a;color:#9cadc1;text-align:center}
 
 /* ===== DIRECT PRODUCT SWITCHER ===== */
 
@@ -491,6 +491,11 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .evidence-family-badge.technical{color:#79baff;border-color:rgba(79,156,255,.25);background:rgba(79,156,255,.05)}
 .evidence-family-badge.psychological{color:#bea8ff;border-color:rgba(167,139,250,.25);background:rgba(167,139,250,.05)}
 
+
+/* Direct linked-product switch stays at the bottom like the matching G-IOS button in T-IOS. */
+.nav-note .connected-product-shortcuts{margin:0;padding:0}
+.nav-note .connected-product-btn{margin:0}
+
 </style>
 <!-- G-IOS BUILD: FOCUS-CONTEXT-AUTOMATION-V1 | 2026-09-19 -->
 
@@ -892,19 +897,12 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
         </div>
       </div>
 
-      <div class="gios-nav-group products" id="connectedProductsNavGroup" data-gios-nav-group="products" hidden>
-        <button class="gios-nav-group-toggle" type="button" data-gios-nav-toggle="products" aria-expanded="true">
-          <span class="gios-nav-group-icon">↔</span>
-          <span class="gios-nav-group-copy"><b>Connected Products</b><small>Switch linked workspaces</small></span>
-          <span class="gios-nav-chevron">⌄</span>
-        </button>
-        <div class="gios-nav-submenu connected-products-submenu">
-          <div class="connected-product-shortcuts" id="connectedProductShortcuts" hidden></div>
-        </div>
-      </div>
     </nav>
 
-    <div class="nav-note"><button class="family" id="backToHios">← H·IOS Family</button></div>
+    <div class="nav-note">
+      <div class="connected-product-shortcuts" id="connectedProductShortcuts" hidden></div>
+      <button class="family" id="backToHios">← H·IOS Family</button>
+    </div>
   </aside>
 
   <main class="main">
@@ -1349,25 +1347,17 @@ function saveProductFocusLinks(){
 
 function renderConnectedProductShortcuts(){
  const root=document.getElementById('connectedProductShortcuts');
- const group=document.getElementById('connectedProductsNavGroup');
  if(!root)return;
 
- // A direct product switch only appears after that product has been linked
- // to a Goals-IOS focus area. For now Traders-IOS is the active direct link.
+ // Direct workspace switch lives in the sidebar footer, mirroring T-IOS.
  const tiosLink=productFocusLinks?.tios || Object.values(productFocusLinks||{}).find(link=>link?.productId==='tios');
  const tradingArea=tiosLink?.area || '';
  const isLinked=!!tiosLink && focusAreas.some(area=>sameDomain(area,tradingArea||'Trading'));
 
  root.hidden=!isLinked;
- if(group)group.hidden=!isLinked;
  if(!isLinked){
   root.innerHTML='';
   return;
- }
-
- if(group){
-  group.classList.add('open');
-  group.querySelector('[data-gios-nav-toggle]')?.setAttribute('aria-expanded','true');
  }
 
  root.innerHTML=`
