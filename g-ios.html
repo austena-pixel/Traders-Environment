@@ -20,12 +20,39 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .brand h1{margin:0;font-size:17px}.brand small{color:#728095;font-size:9px}.nav{display:grid;gap:7px}.nav button,.family{width:100%;border:1px solid transparent;background:transparent;color:#8c9aad;text-align:left;border-radius:10px;padding:11px 12px;font-size:11px}.nav button.active{background:#101a27;color:#fff;border-color:#1f3146}.nav button:hover,.family:hover{background:#0d1621;color:#fff}.nav-note{position:absolute;left:16px;right:16px;bottom:18px}.family{border-color:#1b2b3d;background:#08111a;color:#9cadc1;text-align:center}
 
 /* ===== DIRECT PRODUCT SWITCHER ===== */
+
+/* ===== G-IOS SIDEBAR INFORMATION FAMILIES ===== */
+.gios-nav{display:grid;gap:7px;align-content:start;max-height:calc(100vh - 155px);overflow-y:auto;scrollbar-width:thin;padding-right:2px}
+.gios-nav-btn{width:100%;display:flex;align-items:center;gap:9px;border:1px solid transparent;background:transparent;color:#8c9aad;text-align:left;border-radius:10px;padding:10px 11px;font-size:11px;cursor:pointer;transition:.16s ease}
+.gios-nav-btn:hover{background:#0d1621;color:#fff}
+.gios-nav-btn.active{background:#101a27;color:#fff;border-color:#1f3146}
+.gios-nav-icon{width:20px;display:inline-grid;place-items:center;flex:0 0 20px;color:#8fbfff;font-size:11px;font-weight:900}
+.gios-nav-group{display:grid;gap:4px}
+.gios-nav-group-toggle{width:100%!important;border:1px solid #172334!important;background:#0b1119!important;color:#c9d5e4!important;border-radius:11px!important;padding:9px 10px!important;display:grid!important;grid-template-columns:28px minmax(0,1fr) auto!important;gap:8px!important;align-items:center!important;text-align:left!important;cursor:pointer;transition:.16s ease}
+.gios-nav-group-toggle:hover{background:#0f1722!important;color:#fff!important}
+.gios-nav-group.goals .gios-nav-group-toggle{border-color:rgba(90,167,255,.22)!important}
+.gios-nav-group.products .gios-nav-group-toggle{border-color:rgba(139,92,246,.24)!important}
+.gios-nav-group.active.goals .gios-nav-group-toggle,.gios-nav-group.open.goals .gios-nav-group-toggle{border-color:rgba(90,167,255,.48)!important;background:rgba(90,167,255,.07)!important}
+.gios-nav-group.active.products .gios-nav-group-toggle,.gios-nav-group.open.products .gios-nav-group-toggle{border-color:rgba(139,92,246,.48)!important;background:rgba(139,92,246,.07)!important}
+.gios-nav-group-icon{width:27px;height:27px;border-radius:8px;display:grid;place-items:center;font-size:10px;font-weight:950}
+.gios-nav-group.goals .gios-nav-group-icon{color:#d8ebff;background:linear-gradient(135deg,#173a61,#244f7d)}
+.gios-nav-group.products .gios-nav-group-icon{color:#eee8ff;background:linear-gradient(135deg,#39295f,#5d3f86)}
+.gios-nav-group-copy{min-width:0}
+.gios-nav-group-copy b{display:block;font-size:10.5px}
+.gios-nav-group-copy small{display:block;margin-top:2px;color:#718095;font-size:7.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gios-nav-chevron{color:#74849a;font-size:13px;transition:transform .16s ease}
+.gios-nav-group.open .gios-nav-chevron{transform:rotate(180deg)}
+.gios-nav-submenu{display:none;gap:3px;margin:1px 0 3px 13px;padding:3px 0 3px 9px;border-left:1px solid #1e2d3f}
+.gios-nav-group.open .gios-nav-submenu{display:grid}
+.gios-nav-submenu .gios-nav-btn{padding:8px 9px;font-size:10.5px;border-radius:9px}
+.connected-products-submenu{padding-right:2px}
+
 .connected-product-shortcuts{
   display:grid;
   gap:7px;
-  margin-top:14px;
-  padding-top:13px;
-  border-top:1px solid #172434;
+  margin-top:1px;
+  padding-top:1px;
+  border-top:0;
 }
 .connected-product-shortcuts[hidden]{display:none!important}
 .connected-product-label{
@@ -844,11 +871,39 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 <div class="app">
   <aside class="sidebar">
     <div class="brand"><div class="logo">G</div><div><h1>G·IOS</h1><small>Goals Intelligence Operating System</small></div></div>
-    <nav class="nav">
-      <button class="active" type="button" data-page="overview">Overview</button>
-      <button type="button" data-page="set-goals">Set Goals</button>
+
+    <nav class="nav gios-nav">
+      <button class="gios-nav-btn active" type="button" data-page="overview">
+        <span class="gios-nav-icon">▣</span>
+        <span>Dashboard</span>
+      </button>
+
+      <div class="gios-nav-group goals open" data-gios-nav-group="goals">
+        <button class="gios-nav-group-toggle" type="button" data-gios-nav-toggle="goals" aria-expanded="true">
+          <span class="gios-nav-group-icon">G</span>
+          <span class="gios-nav-group-copy"><b>Goals</b><small>Plan · progress · outcomes</small></span>
+          <span class="gios-nav-chevron">⌄</span>
+        </button>
+        <div class="gios-nav-submenu">
+          <button class="gios-nav-btn" type="button" data-page="set-goals">
+            <span class="gios-nav-icon">＋</span>
+            <span>Set Goals</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="gios-nav-group products" id="connectedProductsNavGroup" data-gios-nav-group="products" hidden>
+        <button class="gios-nav-group-toggle" type="button" data-gios-nav-toggle="products" aria-expanded="true">
+          <span class="gios-nav-group-icon">↔</span>
+          <span class="gios-nav-group-copy"><b>Connected Products</b><small>Switch linked workspaces</small></span>
+          <span class="gios-nav-chevron">⌄</span>
+        </button>
+        <div class="gios-nav-submenu connected-products-submenu">
+          <div class="connected-product-shortcuts" id="connectedProductShortcuts" hidden></div>
+        </div>
+      </div>
     </nav>
-    <div class="connected-product-shortcuts" id="connectedProductShortcuts" hidden></div>
+
     <div class="nav-note"><button class="family" id="backToHios">← H·IOS Family</button></div>
   </aside>
 
@@ -1294,6 +1349,7 @@ function saveProductFocusLinks(){
 
 function renderConnectedProductShortcuts(){
  const root=document.getElementById('connectedProductShortcuts');
+ const group=document.getElementById('connectedProductsNavGroup');
  if(!root)return;
 
  // A direct product switch only appears after that product has been linked
@@ -1303,13 +1359,18 @@ function renderConnectedProductShortcuts(){
  const isLinked=!!tiosLink && focusAreas.some(area=>sameDomain(area,tradingArea||'Trading'));
 
  root.hidden=!isLinked;
+ if(group)group.hidden=!isLinked;
  if(!isLinked){
   root.innerHTML='';
   return;
  }
 
+ if(group){
+  group.classList.add('open');
+  group.querySelector('[data-gios-nav-toggle]')?.setAttribute('aria-expanded','true');
+ }
+
  root.innerHTML=`
-  <div class="connected-product-label">Connected product</div>
   <a class="connected-product-btn" href="t-ios.html" title="Open Traders-IOS directly">
    <span class="connected-product-icon">T·IOS</span>
    <span class="connected-product-copy">
@@ -2074,7 +2135,25 @@ function flowRows(items){const map=new Map();items.forEach(g=>{const p=goals.fin
 function renderDailySystem(){const key=localDateKey(dailyViewDate),items=goalsForPeriod('daily',key);$('#dailyPeriodLabel').textContent=formatDayHeading(dailyViewDate);$('#dailyMetricProgress').textContent=averageProgress(items)+'%';$('#dailyMetricDone').textContent=items.filter(g=>effectiveProgress(g)>=100).length;$('#dailyMetricRemaining').textContent=items.filter(g=>effectiveProgress(g)<100).length;$('#dailyMetricParents').textContent=new Set(items.map(g=>g.parentId).filter(Boolean)).size;$('#dailySystemList').innerHTML=items.length?items.map(g=>trackerItemHtml(g,'daily action')).join(''):'<div class="period-empty"><strong>No daily actions for this day.</strong>Add an action and connect it to a weekly target.</div>';$('#dailyFlow').innerHTML=flowRows(items)}
 function renderWeeklySystem(){const key=weekKey(weeklyViewDate),items=goalsForPeriod('weekly',key),dailyKids=items.flatMap(g=>childrenOf(g.id).filter(c=>c.level==='daily'));$('#weeklyPeriodLabel').textContent=formatWeekHeading(weeklyViewDate);$('#weeklyMetricProgress').textContent=averageProgress(items)+'%';$('#weeklyMetricTargets').textContent=items.length;$('#weeklyMetricDaily').textContent=dailyKids.length;$('#weeklyMetricParents').textContent=new Set(items.map(g=>g.parentId).filter(Boolean)).size;$('#weeklySystemList').innerHTML=items.length?items.map(g=>trackerItemHtml(g,'daily action')).join(''):'<div class="period-empty"><strong>No weekly targets for this week.</strong>Create a weekly target, then link daily actions beneath it.</div>';$('#weeklyFlow').innerHTML=flowRows(items)}
 function renderMonthlySystem(){const key=monthKey(monthlyViewDate),items=goalsForPeriod('monthly',key),weeklyKids=items.flatMap(g=>childrenOf(g.id).filter(c=>c.level==='weekly'));$('#monthlyPeriodLabel').textContent=formatMonthHeading(monthlyViewDate);$('#monthlyMetricProgress').textContent=averageProgress(items)+'%';$('#monthlyMetricTargets').textContent=items.length;$('#monthlyMetricWeekly').textContent=weeklyKids.length;$('#monthlyMetricParents').textContent=new Set(items.map(g=>g.parentId).filter(Boolean)).size;$('#monthlySystemList').innerHTML=items.length?items.map(g=>trackerItemHtml(g,'weekly target')).join(''):'<div class="period-empty"><strong>No monthly milestones for this month.</strong>Create a milestone and connect weekly targets beneath it.</div>';$('#monthlyFlow').innerHTML=flowRows(items)}
-function navigatePage(page){$$('.page').forEach(p=>p.classList.toggle('active',p.id===`page-${page}`));$$('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));if(page==='daily')renderDailySystem();if(page==='weekly')renderWeeklySystem();if(page==='monthly')renderMonthlySystem();window.scrollTo({top:0,behavior:'instant'})}
+function syncGiosSidebar(page){
+ $$('[data-gios-nav-group]').forEach(group=>{
+  const containsActive=!!group.querySelector(`[data-page="${page}"]`);
+  group.classList.toggle('active',containsActive);
+  if(containsActive){
+   group.classList.add('open');
+   group.querySelector('[data-gios-nav-toggle]')?.setAttribute('aria-expanded','true');
+  }
+ });
+}
+function navigatePage(page){
+ $$('.page').forEach(p=>p.classList.toggle('active',p.id===`page-${page}`));
+ $$('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
+ syncGiosSidebar(page);
+ if(page==='daily')renderDailySystem();
+ if(page==='weekly')renderWeeklySystem();
+ if(page==='monthly')renderMonthlySystem();
+ window.scrollTo({top:0,behavior:'instant'})
+}
 function openGoalBuilder(level='yearly'){if(!focusAreas.length){toast('Add a focus area first.');return}pendingCreateLevel='';pendingCreatePeriodKey='';$('#goalForm').reset();$('#goalWeight').value=1;$('#goalPriority').value='medium';$('#goalLevel').value=level;renderAdvancedFocusOptions();if(setGoalsCategory&&[...$('#goalDomain').options].some(option=>option.value===setGoalsCategory))$('#goalDomain').value=setGoalsCategory;renderParentOptions();$('#goalModal').classList.add('show');setTimeout(()=>$('#goalTitle').focus(),0)}
 function openGoalForPeriod(level,key){pendingCreateLevel=level;pendingCreatePeriodKey=key;$('#goalLevel').value=level;renderParentOptions();$('#goalModal').classList.add('show')}
 function handleTrackerClick(e){const adj=e.target.closest('[data-track-adjust]');if(adj){adjustProgress(adj.dataset.id,Number(adj.dataset.trackAdjust));return}const done=e.target.closest('[data-track-complete]');if(done)completeGoal(done.dataset.trackComplete)}
@@ -2273,6 +2352,13 @@ $('#quickGoalForm').addEventListener('submit',e=>{
  toast(SETUP_CONFIG[setGoalsLevel].label+' goal added.');
 });
 $$('[data-page]').forEach(btn=>btn.addEventListener('click',()=>navigatePage(btn.dataset.page)));
+$$('[data-gios-nav-toggle]').forEach(toggle=>toggle.addEventListener('click',()=>{
+ const group=toggle.closest('[data-gios-nav-group]');
+ if(!group)return;
+ const open=!group.classList.contains('open');
+ group.classList.toggle('open',open);
+ toggle.setAttribute('aria-expanded',String(open));
+}));
 $$('[data-next]').forEach(btn=>btn.addEventListener('click',()=>toast(btn.dataset.next+' will be expanded in the next G·IOS build.')));
 $('#dailyPrev').addEventListener('click',()=>{dailyViewDate.setDate(dailyViewDate.getDate()-1);renderDailySystem()});$('#dailyNext').addEventListener('click',()=>{dailyViewDate.setDate(dailyViewDate.getDate()+1);renderDailySystem()});$('#dailyToday').addEventListener('click',()=>{dailyViewDate=new Date();renderDailySystem()});
 $('#weeklyPrev').addEventListener('click',()=>{weeklyViewDate.setDate(weeklyViewDate.getDate()-7);renderWeeklySystem()});$('#weeklyNext').addEventListener('click',()=>{weeklyViewDate.setDate(weeklyViewDate.getDate()+7);renderWeeklySystem()});$('#weeklyCurrent').addEventListener('click',()=>{weeklyViewDate=new Date();renderWeeklySystem()});
@@ -2309,6 +2395,7 @@ if(selectedViewArea)selectRootForDomain(selectedViewArea);
 goalsBridge.subscribe(processHiosGoalRequest,{source:'h-ios',types:HIOS_GOAL_REQUEST_TYPES});
 goalsBridge.getPendingRequests().forEach(processHiosGoalRequest);
 renderAll();
+syncGiosSidebar('overview');
 
 
 function selectedCategoryEvidence(){
