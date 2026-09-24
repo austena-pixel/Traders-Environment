@@ -2721,6 +2721,45 @@ const HIOS_SIGNAL_BUS_KEY='hios_ecosystem_signal_bus_v1';
 const HIOS_PRODUCT_STATUS_KEY='hios_product_connection_status_v1';
 const HIOS_RECEIPT_KEY='hios_signal_receipts_v1';
 const HIOS_GOAL_EVIDENCE_KEY='hios_product_goal_evidence_v1';
+const GIOS_EVIDENCE_REQUESTS_KEY='hios_goal_evidence_requests_v1';
+const HIOS_EVIDENCE_REQUEST_RECEIPTS_KEY='hios_goal_evidence_request_receipts_v1';
+
+function verifyGoalEvidenceRequest(request){
+  return !!(request && request.schema==='hios.goal-evidence-request.v1' && request.requestId && request.source==='goals-ios' && request.targetProductId && Array.isArray(request.metrics) && request.requestedAt);
+}
+function receiveGoalEvidenceRequests(){
+  const requests=readHiosEcosystemJson(GIOS_EVIDENCE_REQUESTS_KEY,{});
+  const receipts=readHiosEcosystemJson(HIOS_EVIDENCE_REQUEST_RECEIPTS_KEY,{});
+  const status=readHiosEcosystemJson(HIOS_PRODUCT_STATUS_KEY,{});
+  let changed=false,received=0;
+  Object.entries(requests||{}).forEach(([productId,request])=>{
+    if(!verifyGoalEvidenceRequest(request)||request.targetProductId!==productId)return;
+    if(!receipts[request.requestId]){
+      receipts[request.requestId]={requestId:request.requestId,targetProductId:productId,area:request.area||null,phaseId:request.phaseId||null,phaseName:request.phaseName||null,metrics:[...request.metrics],receivedAt:new Date().toISOString(),verified:true};
+      received++;
+    }
+    if(!request.status||request.status==='requested'){
+      requests[productId]={...request,status:'routed',hiosReceivedAt:request.hiosReceivedAt||new Date().toISOString(),routedAt:new Date().toISOString(),router:'h-ios'};
+      changed=true;
+    }
+    status[productId]={...(status[productId]||{}),goalEvidenceRequestId:request.requestId,goalEvidenceRequestArea:request.area||null,goalEvidenceRequestPhase:request.phaseName||null,goalEvidenceRequestedMetrics:[...request.metrics],goalEvidenceRequestObservedAt:new Date().toISOString()};
+  });
+  writeHiosEcosystemJson(HIOS_EVIDENCE_REQUEST_RECEIPTS_KEY,receipts);
+  writeHiosEcosystemJson(HIOS_PRODUCT_STATUS_KEY,status);
+  if(changed)writeHiosEcosystemJson(GIOS_EVIDENCE_REQUESTS_KEY,requests);
+  if(received||changed)window.dispatchEvent(new CustomEvent('hios:goal-evidence-routed',{detail:{received,changed}}));
+  return {received,changed};
+}
+function hiosGoalEvidenceDiagnostic(productId='tios'){
+  receiveGoalEvidenceRequests();
+  const request=readHiosEcosystemJson(GIOS_EVIDENCE_REQUESTS_KEY,{})?.[productId]||null;
+  const receipts=readHiosEcosystemJson(HIOS_EVIDENCE_REQUEST_RECEIPTS_KEY,{});
+  const evidence=readHiosEcosystemJson(HIOS_GOAL_EVIDENCE_KEY,{})?.[productId]||[];
+  const matching=request?evidence.filter(row=>row?.details?.requestId===request.requestId):[];
+  return {productId,requestId:request?.requestId||null,status:request?.status||'none',phase:request?.phaseName||null,requestedMetrics:request?.metrics||[],hiosVerified:!!(request&&receipts[request.requestId]?.verified),returnedEvidence:matching.length,deliveredMetrics:[...new Set(matching.map(row=>row.metric).filter(Boolean))]};
+}
+window.HIOSGoalEvidenceDiagnostic=hiosGoalEvidenceDiagnostic;
+
 
 function readHiosEcosystemJson(key,fallback){
   try{
@@ -2803,8 +2842,12 @@ window.addEventListener('storage',event=>{
   if([HIOS_SIGNAL_BUS_KEY,HIOS_PRODUCT_STATUS_KEY,HIOS_GOAL_EVIDENCE_KEY].includes(event.key)){
     receiveHiosProductSignals();
   }
+  if(event.key===GIOS_EVIDENCE_REQUESTS_KEY){
+    receiveGoalEvidenceRequests();
+  }
 });
 window.addEventListener('hios:product-signal',()=>receiveHiosProductSignals());
+window.addEventListener('hios:goal-evidence-request',()=>receiveGoalEvidenceRequests());
 
 
 const HIOS_PRODUCT_CATALOG = [
@@ -2923,6 +2966,7 @@ function openProduct(id){
 
 function renderProductManager(){
   receiveHiosProductSignals();
+  receiveGoalEvidenceRequests();
   const sidebar = document.getElementById('productSidebarNav');
   const grid = document.getElementById('productsGrid');
   const catalog = document.getElementById('productCatalogList');
