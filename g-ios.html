@@ -2252,10 +2252,22 @@ function renderProductEvidenceReceiver(){
  const rows=link?readProductGoalEvidence(link.productId):[];
  const requested=new Set(phase?.evidence||[]);
  const request=currentEvidenceRequest(area);
- const relevantRows=rows.filter(row=>
+ const matchingRows=rows.filter(row=>
   (requested.has(row.metric)||requested.has(row.signal)) &&
   (!request?.requestId || row?.details?.requestId===request.requestId)
  );
+ // Evidence is a current metric snapshot, not one progress item per trade/event.
+ // Keep only the latest response for each requested metric so repeated refreshes
+ // never look like multiple expectancy observations.
+ const latestByMetric=new Map();
+ matchingRows
+  .slice()
+  .sort((a,b)=>String(b.timestamp||'').localeCompare(String(a.timestamp||'')))
+  .forEach(row=>{
+    const key=row.metric||row.signal;
+    if(key&&!latestByMetric.has(key))latestByMetric.set(key,row);
+  });
+ const relevantRows=[...latestByMetric.values()];
  const scopedGoals=area?goals.filter(g=>sameDomain(g.domain,area)):[];
  const $id=id=>document.getElementById(id);
  if(!$id('receiverArea'))return;
@@ -2321,9 +2333,15 @@ function renderProductEvidenceReceiver(){
   : '<div class="receiver-empty">This stage has no evidence signals selected yet.</div>';
 
  const ordered=relevantRows.slice().sort((a,b)=>String(b.timestamp||'').localeCompare(String(a.timestamp||'')));
- $id('receiverRelevantCount').textContent=`${ordered.length} relevant signal${ordered.length===1?'':'s'}`;
+ $id('receiverRelevantCount').textContent=`${ordered.length} metric${ordered.length===1?'':'s'} received`;
  $id('receiverLastUpdate').textContent=request?.requestedAt?'Requested · '+new Date(request.requestedAt).toLocaleString():'Request not sent yet';
- $id('receiverEvidenceFeed').innerHTML=ordered.slice(0,8).map(r=>`<div class="receiver-event"><b>${escapeHtml(evidenceLabel(productId,r.metric||r.signal))}</b><span>${escapeHtml(String(r.value??'—'))}</span><time>${escapeHtml(r.timestamp?new Date(r.timestamp).toLocaleString():'—')}</time></div>`).join('')||'<div class="receiver-empty">Waiting for evidence that matches this stage request.</div>';
+ $id('receiverEvidenceFeed').innerHTML=ordered.slice(0,8).map(r=>{
+   const unit=r?.details?.unit||'';
+   const sample=Number(r?.details?.sampleSize);
+   const valueText=unit ? `${r.value??'—'} ${unit}` : String(r.value??'—');
+   const sampleText=Number.isFinite(sample) && sample>0 ? ` · based on ${sample} ${sample===1?'record':'records'}` : '';
+   return `<div class="receiver-event"><b>${escapeHtml(evidenceLabel(productId,r.metric||r.signal))}</b><span>${escapeHtml(valueText+sampleText)}</span><time>${escapeHtml(r.timestamp?new Date(r.timestamp).toLocaleString():'—')}</time></div>`;
+ }).join('')||'<div class="receiver-empty">Waiting for evidence that matches this stage request.</div>';
 }
 
 </script>

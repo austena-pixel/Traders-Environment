@@ -4613,7 +4613,7 @@ function tiosRequestedEvidenceMetric(metric){
   }
   if(metric==='expectancy'){
     if(!trades.length)return{available:false,reason:'No closed trades are available.'};const net=trades.reduce((sum,t)=>sum+(Number(t.pnl)||0),0);
-    return{available:true,value:roundEvidence(net/trades.length),unit:'account-currency/trade',sampleSize:trades.length,details:{netPnl:roundEvidence(net)}};
+    return{available:true,value:roundEvidence(net/trades.length),unit:'account-currency/trade',sampleSize:trades.length,details:{netPnl:roundEvidence(net),calculation:'aggregate expectancy = total net P&L ÷ closed-trade sample size'}};
   }
   if(metric==='sample_size')return{available:true,value:trades.length,unit:'closed trades',sampleSize:trades.length};
   if(metric==='setup_performance'){
@@ -4642,11 +4642,33 @@ function tiosRequestedEvidenceMetric(metric){
   }
   return{available:false,reason:'This evidence metric is not supported by the current T·IOS evidence contract.'};
 }
+function sameGoalEvidenceSnapshot(previous,result){
+  if(!previous)return false;
+  const prevSample=previous?.details?.sampleSize??null;
+  const nextSample=result?.sampleSize??null;
+  const prevUnit=previous?.details?.unit??null;
+  const nextUnit=result?.unit??null;
+  return Number(previous.value)===Number(result.value) && prevSample===nextSample && prevUnit===nextUnit;
+}
+function latestPublishedGoalEvidence(requestId,metric){
+  const store=readHiosJson(HIOS_PRODUCT_GOAL_EVIDENCE_KEY,{});
+  const rows=Array.isArray(store?.tios)?store.tios:[];
+  return rows
+    .filter(row=>row?.details?.requestId===requestId && row?.metric===metric)
+    .sort((a,b)=>String(b.timestamp||'').localeCompare(String(a.timestamp||'')))[0]||null;
+}
 function respondToGoalEvidenceRequest(reason='refresh'){
   if(!currentUser)return null;const request=currentTiosEvidenceRequest();if(!request)return null;
   const prior=readHiosJson(TIOS_EVIDENCE_RESPONSES_KEY,{});const delivered=[],unavailable=[];
-  request.metrics.forEach(metric=>{const result=tiosRequestedEvidenceMetric(metric);if(!result.available){unavailable.push({metric,reason:result.reason||'Unavailable'});return}
-    publishTiosSignal('goal_evidence_response',metric,result.value,{requestId:request.requestId,area:request.area||'Trading',modelName:request.modelName||null,phaseId:request.phaseId||null,phaseName:request.phaseName||null,requestedBy:'goals-ios',responseReason:reason,unit:result.unit||null,sampleSize:result.sampleSize??null,available:true,...(result.details||{})});delivered.push(metric)});
+  request.metrics.forEach(metric=>{
+    const result=tiosRequestedEvidenceMetric(metric);
+    if(!result.available){unavailable.push({metric,reason:result.reason||'Unavailable'});return}
+    const previous=latestPublishedGoalEvidence(request.requestId,metric);
+    if(!sameGoalEvidenceSnapshot(previous,result)){
+      publishTiosSignal('goal_evidence_response',metric,result.value,{requestId:request.requestId,area:request.area||'Trading',modelName:request.modelName||null,phaseId:request.phaseId||null,phaseName:request.phaseName||null,requestedBy:'goals-ios',responseReason:reason,unit:result.unit||null,sampleSize:result.sampleSize??null,available:true,...(result.details||{})});
+    }
+    delivered.push(metric)
+  });
   const response={schema:'hios.goal-evidence-response.v1',requestId:request.requestId,source:'t-ios',target:'goals-ios',productId:'tios',area:request.area||'Trading',phaseId:request.phaseId||null,phaseName:request.phaseName||null,requestedMetrics:[...request.metrics],deliveredMetrics:delivered,unavailableMetrics:unavailable,status:unavailable.length?(delivered.length?'partial':'unavailable'):'fulfilled',respondedAt:new Date().toISOString(),reason};
   prior.tios=response;writeHiosJson(TIOS_EVIDENCE_RESPONSES_KEY,prior);
   const requests=readHiosJson(GIOS_EVIDENCE_REQUESTS_KEY,{});if(requests.tios?.requestId===request.requestId){requests.tios={...requests.tios,status:response.status,tiosReceivedAt:requests.tios.tiosReceivedAt||new Date().toISOString(),respondedAt:response.respondedAt,deliveredMetrics:[...delivered],unavailableMetrics:[...unavailable]};writeHiosJson(GIOS_EVIDENCE_REQUESTS_KEY,requests)}
