@@ -4561,6 +4561,110 @@ function setLoggedInUI(loggedIn){
   $('#appShell').classList.toggle('hidden', !loggedIn);
 }
 
+
+/* =========================
+   H·IOS ECOSYSTEM SIGNAL BRIDGE — STAGE 1
+   T·IOS publishes normalized evidence without exposing its internal UI/tables.
+========================= */
+
+const HIOS_SIGNAL_BUS_KEY='hios_ecosystem_signal_bus_v1';
+const HIOS_PRODUCT_STATUS_KEY='hios_product_connection_status_v1';
+const HIOS_PRODUCT_GOAL_EVIDENCE_KEY='hios_product_goal_evidence_v1';
+const HIOS_SIGNAL_BUS_LIMIT=300;
+
+function readHiosJson(key,fallback){
+  try{
+    const value=JSON.parse(localStorage.getItem(key)||'null');
+    return value===null ? fallback : value;
+  }catch(error){
+    return fallback;
+  }
+}
+
+function writeHiosJson(key,value){
+  localStorage.setItem(key,JSON.stringify(value));
+}
+
+function setTiosConnectionStatus(extra={}){
+  const status=readHiosJson(HIOS_PRODUCT_STATUS_KEY,{});
+  status.tios={
+    productId:'tios',
+    productName:'Traders-IOS',
+    domain:'trading',
+    state:'connected',
+    publisher:'ready',
+    userId:currentUser?.id || null,
+    accountId:tradingAccount?.id || null,
+    lastSeenAt:new Date().toISOString(),
+    ...extra
+  };
+  writeHiosJson(HIOS_PRODUCT_STATUS_KEY,status);
+}
+
+function publishTiosSignal(signal,metric,value,details={}){
+  if(!currentUser) return null;
+
+  const now=new Date().toISOString();
+  const event={
+    id:`tios_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
+    schema:'hios.signal.v1',
+    productId:'tios',
+    productName:'Traders-IOS',
+    domain:'trading',
+    signal,
+    metric,
+    value,
+    timestamp:now,
+    userId:currentUser.id,
+    accountId:tradingAccount?.id || null,
+    source:'t-ios',
+    details
+  };
+
+  const bus=readHiosJson(HIOS_SIGNAL_BUS_KEY,[]);
+  const next=(Array.isArray(bus)?bus:[]).concat(event).slice(-HIOS_SIGNAL_BUS_LIMIT);
+  writeHiosJson(HIOS_SIGNAL_BUS_KEY,next);
+
+  const evidence=readHiosJson(HIOS_PRODUCT_GOAL_EVIDENCE_KEY,{});
+  const productEvidence=Array.isArray(evidence.tios)?evidence.tios:[];
+  evidence.tios=productEvidence.concat({
+    id:event.id,
+    schema:'hios.goal-evidence.v1',
+    productId:'tios',
+    domain:'trading',
+    signal,
+    metric,
+    value,
+    timestamp:now,
+    source:'t-ios',
+    accountId:event.accountId,
+    details
+  }).slice(-HIOS_SIGNAL_BUS_LIMIT);
+  writeHiosJson(HIOS_PRODUCT_GOAL_EVIDENCE_KEY,evidence);
+
+  setTiosConnectionStatus({
+    lastPublishedAt:now,
+    lastSignal:signal,
+    lastMetric:metric
+  });
+
+  window.dispatchEvent(new CustomEvent('hios:product-signal',{detail:event}));
+  return event;
+}
+
+function publishTiosSnapshot(reason='refresh'){
+  if(!currentUser) return;
+
+  const wins=trades.filter(t=>Number(t.pnl)>0).length;
+  const losses=trades.filter(t=>Number(t.pnl)<0).length;
+  const totalPnl=trades.reduce((sum,t)=>sum+(Number(t.pnl)||0),0);
+  const winRate=trades.length ? wins/trades.length*100 : 0;
+
+  publishTiosSignal('performance_snapshot','closed_trade_count',trades.length,{
+    reason,wins,losses,totalPnl,winRate
+  });
+}
+
 /* =========================
    AUTH / SUPABASE
 ========================= */
@@ -4660,6 +4764,11 @@ async function enterApp(user){
   await loadPsychologyData();
   await loadEdgeData();
   await loadExecutionData();
+
+  /* H·IOS ecosystem connection checkpoint */
+  setTiosConnectionStatus({state:'connected',publisher:'ready'});
+  publishTiosSnapshot('app_loaded');
+
   renderAll();
   renderSettings();
   subscribeToMt5Realtime();
@@ -5010,6 +5119,9 @@ async function switchTradingAccount(accountId){
   renderAccountSelector();
   renderAll();
   renderSettings();
+
+  setTiosConnectionStatus({accountId:next.id,lastAccountSwitchAt:new Date().toISOString()});
+  publishTiosSnapshot('account_switched');
 
   showStatus(`Switched to ${accountDisplayName(next)}`);
 }
@@ -6115,6 +6227,16 @@ async function deleteTrade(trade, dayToRefresh=null){
   await loadTrades();
   await loadEdgeData();
   await loadExecutionData();
+
+  publishTiosSignal('trade_removed','closed_trade_removed',1,{
+    tradeId:trade.id,
+    tradeDate:trade.trade_date,
+    instrument:trade.instrument || null,
+    pnl:Number(trade.pnl)||0,
+    source:trade.source || null
+  });
+  publishTiosSnapshot('trade_removed');
+
   renderAll();
 
   if(dayToRefresh){
@@ -6190,6 +6312,26 @@ $('#tradeForm').addEventListener('submit',async e=>{
   $('#tradeDate').value=date;
 
   await loadTrades();
+
+  const savedTrade=trades.find(t=>t.id===result.data?.id) || null;
+  publishTiosSignal(
+    wasEditing ? 'trade_updated' : 'trade_executed',
+    'closed_trade',
+    1,
+    {
+      tradeId:result.data?.id || null,
+      tradeDate:payload.trade_date,
+      instrument:payload.instrument,
+      direction:payload.direction,
+      setup:payload.setup,
+      pnl:payload.pnl,
+      executionScore:payload.execution_score,
+      source:payload.source,
+      returnPct:savedTrade ? tradeReturnPct(savedTrade) : returnPctFromPnl(payload.pnl)
+    }
+  );
+  publishTiosSnapshot(wasEditing ? 'trade_updated' : 'trade_saved');
+
   renderAll();
   renderDayTrades(date);
 
