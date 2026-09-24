@@ -94,45 +94,37 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 @media(max-width:1050px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid #182536}.nav{grid-template-columns:repeat(3,1fr)}.nav-note{position:static;margin-top:14px}.hero,.grid{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}.chain-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:650px){.main{padding:16px}.topbar{align-items:flex-start;flex-direction:column}.metrics,.chain-grid,.form-grid{grid-template-columns:1fr}.nav{grid-template-columns:1fr 1fr}.exec-item{grid-template-columns:1fr}.hero{grid-template-columns:1fr}}
 
-/* ===== OVERVIEW ARCHITECTURE: A = GOAL CHAIN, B = PRODUCT RECEIVER ===== */
+/* ===== PRODUCT-LINKED FOCUS AREAS V1 ===== */
+.product-focus-suggestions{margin:12px 0 14px;padding:11px;border:1px solid #20364d;border-radius:11px;background:#08111a}
+.product-focus-suggestions-head{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px}
+.product-focus-suggestions-head b{font-size:9px}
+.product-focus-suggestions-head span{font-size:7.5px;color:#6f8197}
+.product-focus-list{display:grid;gap:7px}
+.product-focus-suggestion{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:9px;align-items:center;padding:9px;border:1px solid #24394f;border-radius:10px;background:#0b1520;color:#e8f2ff;text-align:left}
+.product-focus-suggestion:hover{border-color:#5aa7ff;background:#0e1b29}
+.product-focus-suggestion .pfs-mark{width:32px;height:32px;display:grid;place-items:center;border-radius:9px;background:linear-gradient(135deg,#17416e,#422c79);font-weight:900;font-size:10px}
+.product-focus-suggestion b{display:block;font-size:9px}
+.product-focus-suggestion small{display:block;margin-top:3px;color:#778a9f;font-size:7.5px}
+.product-focus-suggestion em{font-style:normal;font-size:7px;color:#75e8be;border:1px solid rgba(52,211,153,.28);border-radius:999px;padding:4px 6px}
+.product-linked-badge{display:inline-flex;margin-top:4px;padding:3px 5px;border-radius:999px;border:1px solid rgba(52,211,153,.24);color:#69dcb2;background:rgba(52,211,153,.05);font-size:7px}
+
+/* A = Compounding Goal Chain | B = Product Evidence Receiver */
 .overview-goal-architecture{grid-template-columns:minmax(280px,.72fr) minmax(720px,1.28fr);align-items:stretch}
-.overview-goal-architecture .hero-side{display:block;min-width:0}
-.hero-chain{height:100%;min-width:0}
-.hero-chain .card-head{margin-bottom:10px}
-.hero-chain .chain-grid{grid-template-columns:repeat(5,minmax(135px,1fr));gap:8px}
-.hero-chain .stage{min-height:188px;padding:12px}
-.hero-chain .stage-tasks{max-height:118px;overflow:auto}
-.hero-chain .chain-toolbar{flex:0 0 auto}
-.product-receiver-card{min-height:330px}
-.receiver-live-pill{padding:6px 9px;border:1px solid #263a4e;border-radius:999px;color:#8da2b8;background:#09131d;font-size:8px;white-space:nowrap}
+.overview-goal-architecture .hero-side{display:block;min-width:0}.hero-chain{height:100%;min-width:0}
+.hero-chain .chain-grid{grid-template-columns:repeat(5,minmax(135px,1fr));gap:8px}.hero-chain .stage{min-height:188px;padding:12px}.hero-chain .stage-tasks{max-height:118px;overflow:auto}
+.product-receiver-card{min-height:330px}.receiver-live-pill{padding:6px 9px;border:1px solid #263a4e;border-radius:999px;color:#8da2b8;background:#09131d;font-size:8px}
 .receiver-live-pill.live{color:#6fdfb6;border-color:rgba(52,211,153,.35);background:rgba(52,211,153,.06)}
-.receiver-grid{display:grid;grid-template-columns:1.35fr .65fr;gap:12px;margin-top:8px}
-.receiver-summary,.receiver-metrics{border:1px solid var(--line);border-radius:12px;background:#08111a;padding:12px}
-.receiver-source-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.receiver-source-row>div,.receiver-metrics>div{display:flex;flex-direction:column;gap:4px}
-.receiver-label,.receiver-metrics span{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-.receiver-source-row strong{font-size:12px}
-.receiver-status-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
-.receiver-status-row span{padding:4px 7px;border:1px solid #25384d;border-radius:999px;color:#8194aa;font-size:8px}
-.receiver-status-row span.ok{border-color:rgba(52,211,153,.32);color:#6fdfb6;background:rgba(52,211,153,.05)}
-.receiver-interpretation{margin-top:12px;border-top:1px solid var(--line);padding-top:11px;display:flex;flex-direction:column;gap:5px}
-.receiver-interpretation strong{font-size:12px;line-height:1.35}
-.receiver-interpretation small{color:var(--muted);font-size:9px;line-height:1.45}
-.receiver-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.receiver-metrics>div{border:1px solid #18283a;border-radius:9px;padding:9px;background:#0a1520}
-.receiver-metrics strong{font-size:15px}
-.receiver-feed-head{display:flex;justify-content:space-between;align-items:center;margin:13px 2px 7px;font-size:9px}
-.receiver-feed-head span{color:var(--muted)}
-.receiver-feed{display:grid;gap:6px;max-height:170px;overflow:auto}
-.receiver-event,.receiver-empty{border:1px solid var(--line);border-radius:9px;background:#08111a;padding:9px 10px;font-size:9px}
-.receiver-event{display:grid;grid-template-columns:minmax(130px,.8fr) minmax(160px,1fr) auto;gap:10px;align-items:center}
-.receiver-event b{font-size:9px}.receiver-event span,.receiver-event time{color:var(--muted);font-size:8px}
-.receiver-empty{color:var(--muted);text-align:center;padding:18px}
-@media(max-width:1200px){
- .overview-goal-architecture{grid-template-columns:1fr}
- .hero-chain .chain-grid{overflow-x:auto;grid-template-columns:repeat(5,minmax(180px,1fr))}
- .receiver-grid{grid-template-columns:1fr}
-}
+.receiver-grid{display:grid;grid-template-columns:1.35fr .65fr;gap:12px;margin-top:8px}.receiver-summary,.receiver-metrics{border:1px solid var(--line);border-radius:12px;background:#08111a;padding:12px}
+.receiver-source-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.receiver-source-row>div,.receiver-metrics>div{display:flex;flex-direction:column;gap:4px}
+.receiver-label,.receiver-metrics span{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}.receiver-source-row strong{font-size:12px}
+.receiver-status-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.receiver-status-row span{padding:4px 7px;border:1px solid #25384d;border-radius:999px;color:#8194aa;font-size:8px}
+.receiver-status-row span.ok{border-color:rgba(52,211,153,.32);color:#6fdfb6}.receiver-interpretation{margin-top:12px;border-top:1px solid var(--line);padding-top:11px;display:flex;flex-direction:column;gap:5px}
+.receiver-interpretation strong{font-size:12px}.receiver-interpretation small{color:var(--muted);font-size:9px}.receiver-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.receiver-metrics>div{border:1px solid #18283a;border-radius:9px;padding:9px;background:#0a1520}.receiver-metrics strong{font-size:15px}
+.receiver-feed-head{display:flex;justify-content:space-between;margin:13px 2px 7px;font-size:9px}.receiver-feed-head span{color:var(--muted)}
+.receiver-feed{display:grid;gap:6px;max-height:170px;overflow:auto}.receiver-event,.receiver-empty{border:1px solid var(--line);border-radius:9px;background:#08111a;padding:9px 10px;font-size:9px}
+.receiver-event{display:grid;grid-template-columns:minmax(130px,.8fr) minmax(160px,1fr) auto;gap:10px}.receiver-event span,.receiver-event time{color:var(--muted);font-size:8px}.receiver-empty{color:var(--muted);text-align:center;padding:18px}
+@media(max-width:1200px){.overview-goal-architecture{grid-template-columns:1fr}.hero-chain .chain-grid{overflow-x:auto;grid-template-columns:repeat(5,minmax(180px,1fr))}.receiver-grid{grid-template-columns:1fr}}
 
 </style>
 <!-- G-IOS BUILD: FOCUS-CONTEXT-AUTOMATION-V1 | 2026-09-19 -->
@@ -524,13 +516,12 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
   <main class="main">
     <section class="page active" id="page-overview">
     <section class="hero overview-goal-architecture">
-      <div class="hero-main">
-        <div class="kicker">Core principle</div>
-        <h1>Progress first. Time supports the plan - it does not define success.</h1>
-        <p>G·IOS tracks connected execution from daily actions to weekly targets, monthly milestones, semester outcomes and yearly / long-term goals. Product-linked areas can use verified execution evidence instead of manual completion.</p>
-      </div>
-      <aside class="hero-side">
-        <div class="hero-chain chain-card">
+  <div class="hero-main">
+    <div class="kicker">Core principle</div>
+    <h1>Progress first. Time supports the plan - it does not define success.</h1>
+    <p>G·IOS tracks connected execution from daily actions to long-term outcomes. Product-linked areas can receive verified execution evidence instead of relying on manual completion.</p>
+  </div>
+  <aside class="hero-side"><div class="hero-chain chain-card">
         <div class="card-head">
           <div><h3>Compounding Goal Chain</h3><div class="sub">Day 1 → Week 1 → Month 1 → Semester 1 → Year 1. Periods are planning layers, not rigid promises.</div></div>
           <div class="chain-toolbar category-picker" id="categoryPicker">
@@ -547,54 +538,40 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
           <div class="stage" data-level="semester"><div class="label">Semester 1</div><div class="pct"><span>Progress</span><b id="stageSemesterPct">0%</b></div><div class="bar"><span id="stageSemesterBar" style="width:0%"></span></div><div class="stage-tasks" id="stageSemesterTasks" aria-label="Semester 1 tasks"></div></div>
           <div class="stage" data-level="yearly"><div class="label">Year 1</div><div class="pct"><span>Progress</span><b id="stageYearlyPct">0%</b></div><div class="bar"><span id="stageYearlyBar" style="width:0%"></span></div><div class="stage-tasks" id="stageYearlyTasks" aria-label="Year 1 tasks"></div></div>
         </div>
-      </div>
-      </aside>
-    </section>
+      </div></aside>
+</section>
 
-    <section class="grid">
-      <section class="card product-receiver-card">
-        <div class="card-head">
-          <div>
-            <h3>Product Evidence Receiver</h3>
-            <div class="sub">Verified execution evidence from connected H·IOS products. Goals-IOS interprets evidence against the goal; it does not force activity when no valid opportunity existed.</div>
-          </div>
-          <div class="receiver-live-pill" id="receiverLivePill">Waiting for product evidence</div>
+<section class="grid">
+  <section class="card product-receiver-card">
+    <div class="card-head">
+      <div><h3>Product Evidence Receiver</h3><div class="sub">Execution evidence received from the H·IOS product connected to the selected focus area.</div></div>
+      <div class="receiver-live-pill" id="receiverLivePill">Waiting for product evidence</div>
+    </div>
+    <div class="receiver-grid">
+      <div class="receiver-summary">
+        <div class="receiver-source-row">
+          <div><span class="receiver-label">Linked focus area</span><strong id="receiverArea">Select a product-linked area</strong></div>
+          <div><span class="receiver-label">Source</span><strong id="receiverSource">—</strong></div>
         </div>
-        <div class="receiver-grid">
-          <div class="receiver-summary">
-            <div class="receiver-source-row">
-              <div>
-                <span class="receiver-label">Linked focus area</span>
-                <strong id="receiverArea">Select a product-linked area</strong>
-              </div>
-              <div>
-                <span class="receiver-label">Source</span>
-                <strong id="receiverSource">—</strong>
-              </div>
-            </div>
-            <div class="receiver-status-row">
-              <span id="receiverPublisher">Product: waiting</span>
-              <span id="receiverHios">H·IOS: waiting</span>
-              <span id="receiverGios">G·IOS: waiting</span>
-            </div>
-            <div class="receiver-interpretation">
-              <span class="receiver-label">Current interpretation</span>
-              <strong id="receiverInterpretation">No verified product evidence has been received for the selected focus area yet.</strong>
-              <small id="receiverInterpretationNote">A zero-trade day is not automatically failure. Progress will depend on the measurement rule attached to the trading goal.</small>
-            </div>
-          </div>
-          <div class="receiver-metrics">
-            <div><span>Evidence received</span><strong id="receiverEvidenceCount">0</strong></div>
-            <div><span>Closed trades observed</span><strong id="receiverTradeCount">0</strong></div>
-            <div><span>Latest win rate</span><strong id="receiverWinRate">—</strong></div>
-            <div><span>Latest P&amp;L</span><strong id="receiverPnl">—</strong></div>
-          </div>
+        <div class="receiver-status-row">
+          <span id="receiverPublisher">Product: waiting</span><span id="receiverHios">H·IOS: waiting</span><span id="receiverGios">G·IOS: waiting</span>
         </div>
-        <div class="receiver-feed-head"><b>Recent verified evidence</b><span id="receiverLastUpdate">No evidence yet</span></div>
-        <div class="receiver-feed" id="receiverEvidenceFeed">
-          <div class="receiver-empty">T·IOS evidence will appear here automatically after H·IOS receives and verifies it.</div>
+        <div class="receiver-interpretation">
+          <span class="receiver-label">Current interpretation</span>
+          <strong id="receiverInterpretation">No verified product evidence has been received for this area yet.</strong>
+          <small id="receiverInterpretationNote">No-trade days are not automatically failures. Goal progress depends on the measurement rule attached to the goal.</small>
         </div>
-      </section>
+      </div>
+      <div class="receiver-metrics">
+        <div><span>Evidence received</span><strong id="receiverEvidenceCount">0</strong></div>
+        <div><span>Closed trades observed</span><strong id="receiverTradeCount">0</strong></div>
+        <div><span>Latest win rate</span><strong id="receiverWinRate">—</strong></div>
+        <div><span>Latest P&amp;L</span><strong id="receiverPnl">—</strong></div>
+      </div>
+    </div>
+    <div class="receiver-feed-head"><b>Recent verified evidence</b><span id="receiverLastUpdate">No evidence yet</span></div>
+    <div class="receiver-feed" id="receiverEvidenceFeed"><div class="receiver-empty">T·IOS evidence will appear here automatically after H·IOS receives it.</div></div>
+  </section>
 
 
     </section>
@@ -714,6 +691,13 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
         placeholder="e.g. Engineering, Trading, Fitness"
       />
       <div class="focus-modal-error" id="focusAreaModalError"></div>
+      <div class="product-focus-suggestions" id="productFocusSuggestions" hidden>
+        <div class="product-focus-suggestions-head">
+          <b>Suggested from your H·IOS products</b>
+          <span>Product-linked areas can receive progress evidence.</span>
+        </div>
+        <div class="product-focus-list" id="productFocusSuggestionList"></div>
+      </div>
       <div class="focus-modal-tip">Use a broad area of life or work. You can create Daily, Weekly, Monthly, 6-Month and 1-Year goals inside it.</div>
 
       <div class="focus-modal-actions">
@@ -758,6 +742,132 @@ let pendingCreateLevel='';
 const SET_GOALS_CATEGORY_KEY='hios_gios_focus_area_v1';
 const FOCUS_AREAS_KEY='hios_gios_focus_areas_v1';
 const VIEW_AREA_KEY='hios_gios_overview_view_area_v1';
+const HIOS_PRODUCT_STORAGE_KEY='hios_added_products_v1';
+const PRODUCT_FOCUS_LINKS_KEY='hios_gios_product_focus_links_v1';
+const PRODUCT_GOAL_EVIDENCE_KEY='hios_product_goal_evidence_v1';
+
+const PRODUCT_FOCUS_CATALOG={
+ tios:{
+  productId:'tios',
+  productName:'Traders-IOS',
+  area:'Trading',
+  mark:'T',
+  description:'Map trading execution, performance and development evidence into Goals-IOS.'
+ },
+ sios:{
+  productId:'sios',
+  productName:'Students-IOS',
+  area:'Learning',
+  mark:'S',
+  description:'Map study and assessment evidence into Goals-IOS.'
+ }
+};
+
+function loadAddedHiosProducts(){
+ try{
+  const value=JSON.parse(localStorage.getItem(HIOS_PRODUCT_STORAGE_KEY)||'[]');
+  return Array.isArray(value)?value:[];
+ }catch(error){return []}
+}
+
+function loadProductFocusLinks(){
+ try{
+  const value=JSON.parse(localStorage.getItem(PRODUCT_FOCUS_LINKS_KEY)||'{}');
+  return value&&typeof value==='object'?value:{};
+ }catch(error){return {}}
+}
+
+let productFocusLinks=loadProductFocusLinks();
+
+function saveProductFocusLinks(){
+ localStorage.setItem(PRODUCT_FOCUS_LINKS_KEY,JSON.stringify(productFocusLinks));
+}
+
+function productLinkForArea(area){
+ return Object.values(productFocusLinks).find(link=>sameDomain(link.area,area))||null;
+}
+
+function linkProductFocus(productId,area){
+ const spec=PRODUCT_FOCUS_CATALOG[productId];
+ if(!spec)return;
+ productFocusLinks[productId]={
+  productId,
+  productName:spec.productName,
+  area,
+  linkedAt:new Date().toISOString(),
+  evidenceKey:PRODUCT_GOAL_EVIDENCE_KEY
+ };
+ saveProductFocusLinks();
+}
+
+function availableProductFocusSuggestions(){
+ const installed=new Set(loadAddedHiosProducts());
+ return Object.values(PRODUCT_FOCUS_CATALOG).filter(spec=>
+  installed.has(spec.productId)&&
+  !focusAreas.some(area=>sameDomain(area,spec.area))
+ );
+}
+
+function renderProductFocusSuggestions(){
+ const box=$('#productFocusSuggestions');
+ const root=$('#productFocusSuggestionList');
+ if(!box||!root)return;
+
+ const suggestions=availableProductFocusSuggestions();
+ box.hidden=!suggestions.length;
+
+ root.innerHTML=suggestions.map(spec=>`
+  <button type="button" class="product-focus-suggestion" data-product-focus="${escapeHtml(spec.productId)}">
+   <span class="pfs-mark">${escapeHtml(spec.mark)}</span>
+   <span>
+    <b>${escapeHtml(spec.area)} · ${escapeHtml(spec.productName)}</b>
+    <small>${escapeHtml(spec.description)}</small>
+   </span>
+   <em>Connected product</em>
+  </button>
+ `).join('');
+}
+
+function addProductLinkedFocus(productId){
+ const spec=PRODUCT_FOCUS_CATALOG[productId];
+ if(!spec)return;
+
+ if(!loadAddedHiosProducts().includes(productId)){
+  toast(spec.productName+' is not currently added in H·IOS.');
+  return;
+ }
+
+ let area=focusAreas.find(item=>sameDomain(item,spec.area))||spec.area;
+
+ if(!focusAreas.some(item=>sameDomain(item,area))){
+  focusAreas.push(area);
+  saveFocusAreas();
+ }
+
+ linkProductFocus(productId,area);
+
+ setGoalsCategory=area;
+ selectedViewArea=area;
+ localStorage.setItem(SET_GOALS_CATEGORY_KEY,area);
+ localStorage.setItem(VIEW_AREA_KEY,area);
+
+ selectRootForDomain(area);
+ closeFocusAreaModal();
+ renderAll();
+ toast(spec.productName+' linked to the '+area+' focus area.');
+}
+
+/* Initial standardized read point.
+   Traders-IOS can later publish normalized goal evidence here instead
+   of Goals-IOS depending directly on T-IOS internal tables/UI. */
+function readProductGoalEvidence(productId){
+ try{
+  const all=JSON.parse(localStorage.getItem(PRODUCT_GOAL_EVIDENCE_KEY)||'{}');
+  const rows=all&&all[productId];
+  return Array.isArray(rows)?rows:[];
+ }catch(error){return []}
+}
+
 function loadFocusAreas(){
  try{
   const parsed=JSON.parse(localStorage.getItem(FOCUS_AREAS_KEY)||'[]');
@@ -1143,6 +1253,7 @@ function openFocusAreaModal(){
  modal.classList.add('show');
  modal.setAttribute('aria-hidden','false');
  updateFocusAreaModalPreview();
+ renderProductFocusSuggestions();
  requestAnimationFrame(()=>input.focus());
 }
 function closeFocusAreaModal(){
@@ -1286,7 +1397,7 @@ function renderSetGoals(){
   const items=goals.filter(g=>sameDomain(g.domain,category));
   const progress=items.length?Math.round(items.reduce((sum,g)=>sum+effectiveProgress(g),0)/items.length):0;
   const mark=category.replace(/[^a-z0-9]/gi,'').slice(0,2).toUpperCase()||'•';
-  return `<div class="goal-category-card ${setGoalsCategory===category?'active':''}" data-goal-category="${escapeHtml(category)}" role="button" tabindex="0"><span class="goal-category-mark">${escapeHtml(mark)}</span><span class="goal-category-copy"><b>${escapeHtml(category)}</b><small>${items.length} goal${items.length===1?'':'s'}</small></span><strong>${progress}%</strong><button type="button" class="focus-area-remove" data-remove-focus="${escapeHtml(category)}" aria-label="Remove ${escapeHtml(category)}">×</button><span class="goal-category-rail"><i style="width:${progress}%"></i></span></div>`;
+  return `<div class="goal-category-card ${setGoalsCategory===category?'active':''}" data-goal-category="${escapeHtml(category)}" role="button" tabindex="0"><span class="goal-category-mark">${escapeHtml(mark)}</span><span class="goal-category-copy"><b>${escapeHtml(category)}</b><small>${items.length} goal${items.length===1?'':'s'}</small>${productLinkForArea(category)?`<span class="product-linked-badge">Linked · ${escapeHtml(productLinkForArea(category).productName)}</span>`:''}</span><strong>${progress}%</strong><button type="button" class="focus-area-remove" data-remove-focus="${escapeHtml(category)}" aria-label="Remove ${escapeHtml(category)}">×</button><span class="goal-category-rail"><i style="width:${progress}%"></i></span></div>`;
  }).join('');
  renderAdvancedFocusOptions();
 
@@ -1413,7 +1524,7 @@ function openGoalForPeriod(level,key){pendingCreateLevel=level;pendingCreatePeri
 function handleTrackerClick(e){const adj=e.target.closest('[data-track-adjust]');if(adj){adjustProgress(adj.dataset.id,Number(adj.dataset.trackAdjust));return}const done=e.target.closest('[data-track-complete]');if(done)completeGoal(done.dataset.trackComplete)}
 
 function renderAll(){
-  setTimeout(renderProductEvidenceReceiver,0);renderRootSelect();renderMetrics();renderChain();renderSetGoals();renderParentOptions();renderDailySystem();renderWeeklySystem();renderMonthlySystem();publishDashboardSnapshot(false)} // H-IOS syncs automatically on every Goals-IOS state update
+ setTimeout(renderProductEvidenceReceiver,0);renderRootSelect();renderMetrics();renderChain();renderSetGoals();renderParentOptions();renderDailySystem();renderWeeklySystem();renderMonthlySystem();publishDashboardSnapshot(false)} // H-IOS syncs automatically on every Goals-IOS state update
 function toast(message){const t=$('#toast');t.textContent=message;t.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),2200)}
 $('#cancelGoal').addEventListener('click',()=>$('#goalModal').classList.remove('show'));
 $('#goalModal').addEventListener('click',e=>{if(e.target.id==='goalModal')$('#goalModal').classList.remove('show')});
@@ -1457,6 +1568,10 @@ $('#startGoalSetup').addEventListener('click',()=>openGoalBuilder(setGoalsLevel)
 $('#goalCategoryRow').addEventListener('click',e=>{const remove=e.target.closest('[data-remove-focus]');if(remove){e.stopPropagation();removeFocusArea(remove.dataset.removeFocus);return}const card=e.target.closest('[data-goal-category]');if(!card)return;setGoalsCategory=card.dataset.goalCategory;selectedViewArea=setGoalsCategory;localStorage.setItem(SET_GOALS_CATEGORY_KEY,setGoalsCategory);localStorage.setItem(VIEW_AREA_KEY,selectedViewArea);selectRootForDomain(setGoalsCategory);renderAll()});
 $('#goalCategoryRow').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-goal-category]')){e.preventDefault();e.target.click()}});
 $('#addFocusArea').addEventListener('click',addFocusArea);
+$('#productFocusSuggestionList').addEventListener('click',e=>{
+ const button=e.target.closest('[data-product-focus]');
+ if(button)addProductLinkedFocus(button.dataset.productFocus);
+});
 
 $('#focusAreaNameInput').addEventListener('input',updateFocusAreaModalPreview);
 $('#confirmFocusAreaModal').addEventListener('click',commitFocusArea);
@@ -1526,111 +1641,34 @@ goalsBridge.subscribe(processHiosGoalRequest,{source:'h-ios',types:HIOS_GOAL_REQ
 goalsBridge.getPendingRequests().forEach(processHiosGoalRequest);
 renderAll();
 
-/* ===== PRODUCT EVIDENCE RECEIVER UI — STAGE 1 ===== */
-function receiverProductForArea(area){
-  try{
-    const link=typeof productLinkForArea==='function' ? productLinkForArea(area) : null;
-    return link || null;
-  }catch(error){ return null; }
-}
-function receiverEvidenceRows(productId){
-  try{
-    if(typeof readProductGoalEvidence==='function') return readProductGoalEvidence(productId)||[];
-  }catch(error){}
-  try{
-    const all=JSON.parse(localStorage.getItem('hios_product_goal_evidence_v1')||'{}');
-    return Array.isArray(all?.[productId])?all[productId]:[];
-  }catch(error){ return []; }
-}
-function receiverStatus(productId){
-  try{
-    const all=JSON.parse(localStorage.getItem('hios_product_connection_status_v1')||'{}');
-    return all?.[productId]||null;
-  }catch(error){ return null; }
-}
-function formatReceiverTime(value){
-  if(!value)return '—';
-  const d=new Date(value);
-  return Number.isNaN(d.getTime())?'—':d.toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
-}
 function renderProductEvidenceReceiver(){
-  const area=activeCategory || '';
-  const link=receiverProductForArea(area);
-  const areaEl=document.getElementById('receiverArea');
-  const sourceEl=document.getElementById('receiverSource');
-  const feed=document.getElementById('receiverEvidenceFeed');
-  if(!areaEl||!sourceEl||!feed)return;
-
-  areaEl.textContent=area || 'Select a focus area';
-  if(!link){
-    sourceEl.textContent='No linked product';
-    document.getElementById('receiverLivePill').textContent='Manual / unlinked area';
-    document.getElementById('receiverLivePill').classList.remove('live');
-    document.getElementById('receiverPublisher').textContent='Product: not linked';
-    document.getElementById('receiverHios').textContent='H·IOS: —';
-    document.getElementById('receiverGios').textContent='G·IOS: —';
-    document.getElementById('receiverEvidenceCount').textContent='0';
-    document.getElementById('receiverTradeCount').textContent='0';
-    document.getElementById('receiverWinRate').textContent='—';
-    document.getElementById('receiverPnl').textContent='—';
-    document.getElementById('receiverInterpretation').textContent='This focus area is not currently receiving execution evidence from an H·IOS product.';
-    document.getElementById('receiverInterpretationNote').textContent='Manual goal areas can continue using Goals-IOS tasks. Product-linked areas can be automated as their evidence contracts mature.';
-    document.getElementById('receiverLastUpdate').textContent='No product connection';
-    feed.innerHTML='<div class="receiver-empty">Select a product-linked focus area to inspect incoming evidence.</div>';
-    return;
-  }
-
-  const rows=receiverEvidenceRows(link.productId).slice().sort((a,b)=>String(b.timestamp||'').localeCompare(String(a.timestamp||'')));
-  const status=receiverStatus(link.productId);
-  const snapshots=rows.filter(r=>r.signal==='performance_snapshot');
-  const snap=snapshots[0]||null;
-  const live=status?.publisher==='ready' && status?.hiosReceiver==='receiving';
-
-  sourceEl.textContent=link.productName || link.productId;
-  const pill=document.getElementById('receiverLivePill');
-  pill.textContent=live?'Receiving verified evidence':'Connection waiting';
-  pill.classList.toggle('live',live);
-
-  const pub=document.getElementById('receiverPublisher');
-  const hios=document.getElementById('receiverHios');
-  const gios=document.getElementById('receiverGios');
-  pub.textContent=status?.publisher==='ready'?'Product: publishing ✓':'Product: waiting';
-  hios.textContent=status?.hiosReceiver==='receiving'?'H·IOS: receiving ✓':'H·IOS: waiting';
-  gios.textContent=rows.length?'G·IOS: evidence available ✓':'G·IOS: waiting';
-  pub.classList.toggle('ok',status?.publisher==='ready');
-  hios.classList.toggle('ok',status?.hiosReceiver==='receiving');
-  gios.classList.toggle('ok',rows.length>0);
-
-  document.getElementById('receiverEvidenceCount').textContent=String(rows.length);
-  document.getElementById('receiverTradeCount').textContent=snap?String(Number(snap.value||0)):'0';
-  document.getElementById('receiverWinRate').textContent=snap && Number.isFinite(Number(snap.details?.winRate)) ? `${Math.round(Number(snap.details.winRate))}%` : '—';
-  document.getElementById('receiverPnl').textContent=snap && Number.isFinite(Number(snap.details?.totalPnl)) ? Number(snap.details.totalPnl).toFixed(2) : '—';
-
-  const interpretation=document.getElementById('receiverInterpretation');
-  const note=document.getElementById('receiverInterpretationNote');
-  if(!rows.length){
-    interpretation.textContent='The product is linked, but no verified execution evidence has arrived yet.';
-    note.textContent='Goals-IOS will not mark a trading goal incomplete simply because no trade occurred.';
-  }else{
-    interpretation.textContent='Execution evidence is available. Goals-IOS can use it to evaluate product-linked goals without a manual Done button.';
-    note.textContent='Next, each trading goal will receive a measurement rule such as execution adherence, rule compliance, review completion, performance outcome or explicit volume target.';
-  }
-  document.getElementById('receiverLastUpdate').textContent=rows[0]?`Last evidence · ${formatReceiverTime(rows[0].timestamp)}`:'No evidence yet';
-
-  feed.innerHTML=rows.slice(0,8).map(row=>{
-    const label=String(row.signal||'evidence').replaceAll('_',' ');
-    const metric=String(row.metric||'').replaceAll('_',' ');
-    return `<div class="receiver-event"><b>${escapeHtml(label)}</b><span>${escapeHtml(metric)} · ${escapeHtml(String(row.value??'—'))}</span><time>${escapeHtml(formatReceiverTime(row.timestamp))}</time></div>`;
-  }).join('') || '<div class="receiver-empty">No verified evidence received yet.</div>';
+ const area=activeCategory||setGoalsCategory||'';
+ const link=typeof productLinkForArea==='function'?productLinkForArea(area):null;
+ const $id=id=>document.getElementById(id);
+ if(!$id('receiverArea'))return;
+ $id('receiverArea').textContent=area||'Select a focus area';
+ if(!link){
+   $id('receiverSource').textContent='No linked product'; $id('receiverLivePill').textContent='Manual / unlinked area';
+   $id('receiverEvidenceCount').textContent='0'; $id('receiverTradeCount').textContent='0'; $id('receiverWinRate').textContent='—'; $id('receiverPnl').textContent='—';
+   $id('receiverInterpretation').textContent='This focus area is not currently receiving execution evidence from an H·IOS product.';
+   $id('receiverEvidenceFeed').innerHTML='<div class="receiver-empty">Select a product-linked focus area to inspect incoming evidence.</div>'; return;
+ }
+ const rows=typeof readProductGoalEvidence==='function'?(readProductGoalEvidence(link.productId)||[]):[];
+ const status=typeof readProductConnectionStatus==='function'?readProductConnectionStatus(link.productId):null;
+ $id('receiverSource').textContent=link.productName||link.productId;
+ $id('receiverEvidenceCount').textContent=rows.length;
+ const snap=rows.filter(r=>r.signal==='performance_snapshot').sort((a,b)=>String(b.timestamp||'').localeCompare(String(a.timestamp||'')))[0];
+ $id('receiverTradeCount').textContent=snap?String(Number(snap.value||0)):'0';
+ $id('receiverWinRate').textContent=snap&&Number.isFinite(Number(snap.details?.winRate))?Math.round(Number(snap.details.winRate))+'%':'—';
+ $id('receiverPnl').textContent=snap&&Number.isFinite(Number(snap.details?.totalPnl))?Number(snap.details.totalPnl).toFixed(2):'—';
+ $id('receiverPublisher').textContent='Product: linked ✓'; $id('receiverPublisher').classList.add('ok');
+ $id('receiverGios').textContent=rows.length?'G·IOS: evidence available ✓':'G·IOS: waiting';
+ $id('receiverGios').classList.toggle('ok',rows.length>0);
+ $id('receiverInterpretation').textContent=rows.length?'Execution evidence is available for goal evaluation.':'Product is linked; waiting for verified execution evidence.';
+ const ordered=rows.slice().sort((a,b)=>String(b.timestamp||'').localeCompare(String(a.timestamp||'')));
+ $id('receiverLastUpdate').textContent=ordered[0]?'Last evidence · '+new Date(ordered[0].timestamp).toLocaleString():'No evidence yet';
+ $id('receiverEvidenceFeed').innerHTML=ordered.slice(0,8).map(r=>`<div class="receiver-event"><b>${escapeHtml(String(r.signal||'evidence').replaceAll('_',' '))}</b><span>${escapeHtml(String(r.metric||'').replaceAll('_',' '))} · ${escapeHtml(String(r.value??'—'))}</span><time>${escapeHtml(r.timestamp?new Date(r.timestamp).toLocaleString():'—')}</time></div>`).join('')||'<div class="receiver-empty">No verified evidence received yet.</div>';
 }
-
-
-window.addEventListener('storage',event=>{
-  if(['hios_product_goal_evidence_v1','hios_product_connection_status_v1','hios_product_focus_links_v1'].includes(event.key)){
-    renderProductEvidenceReceiver();
-  }
-});
-window.addEventListener('hios:product-signal',()=>renderProductEvidenceReceiver());
 
 </script>
 </body>
