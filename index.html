@@ -336,6 +336,8 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 .alert{margin-top:16px;padding:14px;border-radius:13px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.22)}
 .alert strong{display:block;margin-bottom:4px}.alert span{color:#d5c48b;font-size:13px}
 .goal-row{margin-top:15px}.goal-head{display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px}
+.goal-row.overall-daily{padding:8px 10px 10px;margin-top:10px;border:1px solid rgba(110,168,255,.18);border-radius:11px;background:rgba(110,168,255,.055)}
+.goal-row.overall-daily .goal-head{font-size:12px}.goal-row.overall-daily .goal-head b{color:#c9dcff;font-size:14px}.goal-row.overall-daily .bar{height:8px}
 .goal-area-copy{display:grid;gap:2px;min-width:0}.goal-area-copy>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.goal-area-copy small{color:#778397;font-size:8px;font-weight:500}
 #hiosGoalProgressList{max-height:190px;overflow-y:auto;overscroll-behavior:contain;padding-right:4px;scrollbar-width:thin;scrollbar-color:#36455c transparent}
 #hiosGoalProgressList::-webkit-scrollbar{width:4px}#hiosGoalProgressList::-webkit-scrollbar-thumb{background:#36455c;border-radius:999px}
@@ -2125,6 +2127,53 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
     position:relative !important;
     z-index:1 !important;
   }
+
+  /* =========================================================
+   H·IOS DAILY PROGRESS — SHOW ALL AREAS
+========================================================= */
+
+@media (min-width:900px){
+
+  .home-layout{
+    align-items:start !important;
+  }
+
+  .home-sidebar{
+    grid-template-rows:auto auto !important;
+    height:auto !important;
+    min-height:0 !important;
+    align-content:start !important;
+    overflow:visible !important;
+  }
+
+  .goal-status-card{
+    height:auto !important;
+    min-height:max-content !important;
+    overflow:visible !important;
+  }
+
+  #hiosGoalProgressList{
+    max-height:none !important;
+    height:auto !important;
+    overflow:visible !important;
+  }
+
+  /* Auto Zoom must not force the card back into fixed heights */
+  .home-layout.hios-focus-b .home-sidebar,
+  .home-layout.hios-focus-c .home-sidebar{
+    grid-template-rows:auto auto !important;
+  }
+
+  .focus-card{
+    height:auto !important;
+    min-height:0 !important;
+  }
+
+  /* Allow the dashboard to grow if many goal areas exist */
+  #appScreen .main{
+    overflow-y:auto !important;
+  }
+}
 }
 </style>
 
@@ -3057,15 +3106,33 @@ function renderGoalsDashboardViews(){
   });
 
   if(progressRoot){
-    progressRoot.innerHTML=domainProgress.length
-      ? domainProgress.map(item=>{
-          const progress=Math.max(0,Math.min(100,Number(item.progress)||0));
-          const expected=Math.max(0,Number(item.expected)||0);
-          const completed=Math.max(0,Math.min(expected,Number(item.completed)||0));
-          const detail=expected?`${completed} of ${expected} done today`:'No tasks expected today';
-          return `<div class="goal-row"><div class="goal-head"><span class="goal-area-copy"><span>${hiosEscape(item.domain)}</span><small>${hiosEscape(detail)}</small></span><b>${progress}%</b></div><div class="bar"><span style="width:${progress}%"></span></div></div>`;
-        }).join('')
-      : '<div class="sub" style="margin-top:12px">Add a Goals-IOS category to begin daily progress tracking.</div>';
+    if(domainProgress.length){
+      const overallExpected=domainProgress.reduce((sum,item)=>sum+Math.max(0,Number(item.expected)||0),0);
+      const overallCompleted=domainProgress.reduce((sum,item)=>{
+        const expected=Math.max(0,Number(item.expected)||0);
+        return sum+Math.max(0,Math.min(expected,Number(item.completed)||0));
+      },0);
+      const overallProgress=overallExpected
+        ? Math.round((overallCompleted/overallExpected)*100)
+        : 0;
+      const overallDetail=overallExpected
+        ? `${overallCompleted} of ${overallExpected} tasks done today`
+        : 'No tasks expected today';
+
+      const overallHtml=`<div class="goal-row overall-daily"><div class="goal-head"><span class="goal-area-copy"><span>Overall Today</span><small>${hiosEscape(overallDetail)}</small></span><b>${overallProgress}%</b></div><div class="bar"><span style="width:${overallProgress}%"></span></div></div>`;
+
+      const categoryHtml=domainProgress.map(item=>{
+        const progress=Math.max(0,Math.min(100,Number(item.progress)||0));
+        const expected=Math.max(0,Number(item.expected)||0);
+        const completed=Math.max(0,Math.min(expected,Number(item.completed)||0));
+        const detail=expected?`${completed} of ${expected} done today`:'No tasks expected today';
+        return `<div class="goal-row"><div class="goal-head"><span class="goal-area-copy"><span>${hiosEscape(item.domain)}</span><small>${hiosEscape(detail)}</small></span><b>${progress}%</b></div><div class="bar"><span style="width:${progress}%"></span></div></div>`;
+      }).join('');
+
+      progressRoot.innerHTML=overallHtml+categoryHtml;
+    }else{
+      progressRoot.innerHTML='<div class="sub" style="margin-top:12px">Add a Goals-IOS category to begin daily progress tracking.</div>';
+    }
   }
 
   let focusItems=(Array.isArray(snapshot.focusItems)?snapshot.focusItems:[]).filter(item=>{
