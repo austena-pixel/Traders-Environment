@@ -93,6 +93,20 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 @media(max-width:1180px){.chain-grid{grid-template-columns:repeat(3,1fr)}.stage:after{display:none}}
 @media(max-width:1050px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid #182536}.nav{grid-template-columns:repeat(3,1fr)}.nav-note{position:static;margin-top:14px}.hero,.grid{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}.chain-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:650px){.main{padding:16px}.topbar{align-items:flex-start;flex-direction:column}.metrics,.chain-grid,.form-grid{grid-template-columns:1fr}.nav{grid-template-columns:1fr 1fr}.exec-item{grid-template-columns:1fr}.hero{grid-template-columns:1fr}}
+
+/* ===== PRODUCT-LINKED FOCUS AREAS V1 ===== */
+.product-focus-suggestions{margin:12px 0 14px;padding:11px;border:1px solid #20364d;border-radius:11px;background:#08111a}
+.product-focus-suggestions-head{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px}
+.product-focus-suggestions-head b{font-size:9px}
+.product-focus-suggestions-head span{font-size:7.5px;color:#6f8197}
+.product-focus-list{display:grid;gap:7px}
+.product-focus-suggestion{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:9px;align-items:center;padding:9px;border:1px solid #24394f;border-radius:10px;background:#0b1520;color:#e8f2ff;text-align:left}
+.product-focus-suggestion:hover{border-color:#5aa7ff;background:#0e1b29}
+.product-focus-suggestion .pfs-mark{width:32px;height:32px;display:grid;place-items:center;border-radius:9px;background:linear-gradient(135deg,#17416e,#422c79);font-weight:900;font-size:10px}
+.product-focus-suggestion b{display:block;font-size:9px}
+.product-focus-suggestion small{display:block;margin-top:3px;color:#778a9f;font-size:7.5px}
+.product-focus-suggestion em{font-style:normal;font-size:7px;color:#75e8be;border:1px solid rgba(52,211,153,.28);border-radius:999px;padding:4px 6px}
+.product-linked-badge{display:inline-flex;margin-top:4px;padding:3px 5px;border-radius:999px;border:1px solid rgba(52,211,153,.24);color:#69dcb2;background:rgba(52,211,153,.05);font-size:7px}
 </style>
 <!-- G-IOS BUILD: FOCUS-CONTEXT-AUTOMATION-V1 | 2026-09-19 -->
 
@@ -645,6 +659,13 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
         placeholder="e.g. Engineering, Trading, Fitness"
       />
       <div class="focus-modal-error" id="focusAreaModalError"></div>
+      <div class="product-focus-suggestions" id="productFocusSuggestions" hidden>
+        <div class="product-focus-suggestions-head">
+          <b>Suggested from your H·IOS products</b>
+          <span>Product-linked areas can receive progress evidence.</span>
+        </div>
+        <div class="product-focus-list" id="productFocusSuggestionList"></div>
+      </div>
       <div class="focus-modal-tip">Use a broad area of life or work. You can create Daily, Weekly, Monthly, 6-Month and 1-Year goals inside it.</div>
 
       <div class="focus-modal-actions">
@@ -689,6 +710,132 @@ let pendingCreateLevel='';
 const SET_GOALS_CATEGORY_KEY='hios_gios_focus_area_v1';
 const FOCUS_AREAS_KEY='hios_gios_focus_areas_v1';
 const VIEW_AREA_KEY='hios_gios_overview_view_area_v1';
+const HIOS_PRODUCT_STORAGE_KEY='hios_added_products_v1';
+const PRODUCT_FOCUS_LINKS_KEY='hios_gios_product_focus_links_v1';
+const PRODUCT_GOAL_EVIDENCE_KEY='hios_product_goal_evidence_v1';
+
+const PRODUCT_FOCUS_CATALOG={
+ tios:{
+  productId:'tios',
+  productName:'Traders-IOS',
+  area:'Trading',
+  mark:'T',
+  description:'Map trading execution, performance and development evidence into Goals-IOS.'
+ },
+ sios:{
+  productId:'sios',
+  productName:'Students-IOS',
+  area:'Learning',
+  mark:'S',
+  description:'Map study and assessment evidence into Goals-IOS.'
+ }
+};
+
+function loadAddedHiosProducts(){
+ try{
+  const value=JSON.parse(localStorage.getItem(HIOS_PRODUCT_STORAGE_KEY)||'[]');
+  return Array.isArray(value)?value:[];
+ }catch(error){return []}
+}
+
+function loadProductFocusLinks(){
+ try{
+  const value=JSON.parse(localStorage.getItem(PRODUCT_FOCUS_LINKS_KEY)||'{}');
+  return value&&typeof value==='object'?value:{};
+ }catch(error){return {}}
+}
+
+let productFocusLinks=loadProductFocusLinks();
+
+function saveProductFocusLinks(){
+ localStorage.setItem(PRODUCT_FOCUS_LINKS_KEY,JSON.stringify(productFocusLinks));
+}
+
+function productLinkForArea(area){
+ return Object.values(productFocusLinks).find(link=>sameDomain(link.area,area))||null;
+}
+
+function linkProductFocus(productId,area){
+ const spec=PRODUCT_FOCUS_CATALOG[productId];
+ if(!spec)return;
+ productFocusLinks[productId]={
+  productId,
+  productName:spec.productName,
+  area,
+  linkedAt:new Date().toISOString(),
+  evidenceKey:PRODUCT_GOAL_EVIDENCE_KEY
+ };
+ saveProductFocusLinks();
+}
+
+function availableProductFocusSuggestions(){
+ const installed=new Set(loadAddedHiosProducts());
+ return Object.values(PRODUCT_FOCUS_CATALOG).filter(spec=>
+  installed.has(spec.productId)&&
+  !focusAreas.some(area=>sameDomain(area,spec.area))
+ );
+}
+
+function renderProductFocusSuggestions(){
+ const box=$('#productFocusSuggestions');
+ const root=$('#productFocusSuggestionList');
+ if(!box||!root)return;
+
+ const suggestions=availableProductFocusSuggestions();
+ box.hidden=!suggestions.length;
+
+ root.innerHTML=suggestions.map(spec=>`
+  <button type="button" class="product-focus-suggestion" data-product-focus="${escapeHtml(spec.productId)}">
+   <span class="pfs-mark">${escapeHtml(spec.mark)}</span>
+   <span>
+    <b>${escapeHtml(spec.area)} · ${escapeHtml(spec.productName)}</b>
+    <small>${escapeHtml(spec.description)}</small>
+   </span>
+   <em>Connected product</em>
+  </button>
+ `).join('');
+}
+
+function addProductLinkedFocus(productId){
+ const spec=PRODUCT_FOCUS_CATALOG[productId];
+ if(!spec)return;
+
+ if(!loadAddedHiosProducts().includes(productId)){
+  toast(spec.productName+' is not currently added in H·IOS.');
+  return;
+ }
+
+ let area=focusAreas.find(item=>sameDomain(item,spec.area))||spec.area;
+
+ if(!focusAreas.some(item=>sameDomain(item,area))){
+  focusAreas.push(area);
+  saveFocusAreas();
+ }
+
+ linkProductFocus(productId,area);
+
+ setGoalsCategory=area;
+ selectedViewArea=area;
+ localStorage.setItem(SET_GOALS_CATEGORY_KEY,area);
+ localStorage.setItem(VIEW_AREA_KEY,area);
+
+ selectRootForDomain(area);
+ closeFocusAreaModal();
+ renderAll();
+ toast(spec.productName+' linked to the '+area+' focus area.');
+}
+
+/* Initial standardized read point.
+   Traders-IOS can later publish normalized goal evidence here instead
+   of Goals-IOS depending directly on T-IOS internal tables/UI. */
+function readProductGoalEvidence(productId){
+ try{
+  const all=JSON.parse(localStorage.getItem(PRODUCT_GOAL_EVIDENCE_KEY)||'{}');
+  const rows=all&&all[productId];
+  return Array.isArray(rows)?rows:[];
+ }catch(error){return []}
+}
+
 function loadFocusAreas(){
  try{
   const parsed=JSON.parse(localStorage.getItem(FOCUS_AREAS_KEY)||'[]');
@@ -1074,6 +1221,7 @@ function openFocusAreaModal(){
  modal.classList.add('show');
  modal.setAttribute('aria-hidden','false');
  updateFocusAreaModalPreview();
+ renderProductFocusSuggestions();
  requestAnimationFrame(()=>input.focus());
 }
 function closeFocusAreaModal(){
@@ -1217,7 +1365,7 @@ function renderSetGoals(){
   const items=goals.filter(g=>sameDomain(g.domain,category));
   const progress=items.length?Math.round(items.reduce((sum,g)=>sum+effectiveProgress(g),0)/items.length):0;
   const mark=category.replace(/[^a-z0-9]/gi,'').slice(0,2).toUpperCase()||'•';
-  return `<div class="goal-category-card ${setGoalsCategory===category?'active':''}" data-goal-category="${escapeHtml(category)}" role="button" tabindex="0"><span class="goal-category-mark">${escapeHtml(mark)}</span><span class="goal-category-copy"><b>${escapeHtml(category)}</b><small>${items.length} goal${items.length===1?'':'s'}</small></span><strong>${progress}%</strong><button type="button" class="focus-area-remove" data-remove-focus="${escapeHtml(category)}" aria-label="Remove ${escapeHtml(category)}">×</button><span class="goal-category-rail"><i style="width:${progress}%"></i></span></div>`;
+  return `<div class="goal-category-card ${setGoalsCategory===category?'active':''}" data-goal-category="${escapeHtml(category)}" role="button" tabindex="0"><span class="goal-category-mark">${escapeHtml(mark)}</span><span class="goal-category-copy"><b>${escapeHtml(category)}</b><small>${items.length} goal${items.length===1?'':'s'}</small>${productLinkForArea(category)?`<span class="product-linked-badge">Linked · ${escapeHtml(productLinkForArea(category).productName)}</span>`:''}</span><strong>${progress}%</strong><button type="button" class="focus-area-remove" data-remove-focus="${escapeHtml(category)}" aria-label="Remove ${escapeHtml(category)}">×</button><span class="goal-category-rail"><i style="width:${progress}%"></i></span></div>`;
  }).join('');
  renderAdvancedFocusOptions();
 
@@ -1387,6 +1535,10 @@ $('#startGoalSetup').addEventListener('click',()=>openGoalBuilder(setGoalsLevel)
 $('#goalCategoryRow').addEventListener('click',e=>{const remove=e.target.closest('[data-remove-focus]');if(remove){e.stopPropagation();removeFocusArea(remove.dataset.removeFocus);return}const card=e.target.closest('[data-goal-category]');if(!card)return;setGoalsCategory=card.dataset.goalCategory;selectedViewArea=setGoalsCategory;localStorage.setItem(SET_GOALS_CATEGORY_KEY,setGoalsCategory);localStorage.setItem(VIEW_AREA_KEY,selectedViewArea);selectRootForDomain(setGoalsCategory);renderAll()});
 $('#goalCategoryRow').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-goal-category]')){e.preventDefault();e.target.click()}});
 $('#addFocusArea').addEventListener('click',addFocusArea);
+$('#productFocusSuggestionList').addEventListener('click',e=>{
+ const button=e.target.closest('[data-product-focus]');
+ if(button)addProductLinkedFocus(button.dataset.productFocus);
+});
 
 $('#focusAreaNameInput').addEventListener('input',updateFocusAreaModalPreview);
 $('#confirmFocusAreaModal').addEventListener('click',commitFocusArea);
