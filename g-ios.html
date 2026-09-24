@@ -304,6 +304,65 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 @media(max-width:900px){.progress-model-grid,.model-top-fields{grid-template-columns:1fr}.phase-evidence-options{grid-template-columns:1fr 1fr}}
 @media(max-width:620px){.phase-evidence-options{grid-template-columns:1fr}}
 
+
+/* ===== GOAL PROGRESS EVIDENCE — TWO-COLUMN COMPACT LAYOUT ===== */
+.progress-evidence-card{
+  grid-column:1 / -1 !important;
+  width:100%;
+}
+.progress-evidence-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1.02fr) minmax(420px,.98fr);
+  gap:14px;
+  align-items:start;
+}
+.progress-evidence-overview,
+.progress-evidence-detail{min-width:0}
+.progress-evidence-overview .progress-model-grid{
+  grid-template-columns:minmax(0,1.2fr) minmax(230px,.8fr);
+  gap:10px;
+}
+.progress-evidence-detail{
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#08111a;
+  padding:11px 12px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.progress-evidence-detail .requested-evidence-block,
+.progress-evidence-detail .received-evidence-block{
+  margin-top:0 !important;
+}
+.progress-evidence-detail .received-evidence-block{
+  border-top:1px solid var(--line);
+  padding-top:9px;
+}
+.progress-evidence-detail .receiver-feed-head{
+  margin:0 0 7px;
+}
+.progress-evidence-detail .evidence-chip-list{
+  min-height:34px;
+}
+.progress-evidence-detail .receiver-feed{
+  max-height:132px;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+}
+.progress-evidence-detail .receiver-event,
+.progress-evidence-detail .receiver-empty{
+  padding:7px 8px;
+}
+@media(max-width:1120px){
+  .progress-evidence-layout{grid-template-columns:1fr}
+  .progress-evidence-detail .receiver-feed{max-height:170px}
+}
+@media(max-width:720px){
+  .progress-evidence-overview .progress-model-grid{grid-template-columns:1fr}
+}
+
 </style>
 <!-- G-IOS BUILD: FOCUS-CONTEXT-AUTOMATION-V1 | 2026-09-19 -->
 
@@ -750,45 +809,51 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
       </div>
     </div>
 
-    <div class="progress-model-grid">
-      <div class="progress-model-main">
-        <div class="receiver-source-row">
-          <div><span class="receiver-label">Selected focus area</span><strong id="receiverArea">Select a focus area</strong></div>
-          <div><span class="receiver-label">Evidence source</span><strong id="receiverSource">Goals-IOS only</strong></div>
+    <div class="progress-evidence-layout">
+      <div class="progress-evidence-overview">
+        <div class="progress-model-grid">
+          <div class="progress-model-main">
+            <div class="receiver-source-row">
+              <div><span class="receiver-label">Selected focus area</span><strong id="receiverArea">Select a focus area</strong></div>
+              <div><span class="receiver-label">Evidence source</span><strong id="receiverSource">Goals-IOS only</strong></div>
+            </div>
+
+            <div class="progress-model-row">
+              <div><span class="receiver-label">Progress model</span><strong id="receiverModelName">Not configured</strong></div>
+              <div><span class="receiver-label">Current stage</span><strong id="receiverActiveStage">Not configured</strong></div>
+            </div>
+
+            <div class="receiver-interpretation">
+              <span class="receiver-label">What G-IOS needs to know</span>
+              <strong id="receiverInterpretation">Configure how progress should be evaluated for this focus area.</strong>
+              <small id="receiverInterpretationNote">The user defines progression. Goals-IOS requests only the evidence needed for that model.</small>
+            </div>
+          </div>
+
+          <div class="request-summary-panel">
+            <div><span>Goals tracked</span><strong id="receiverGoalCount">0</strong></div>
+            <div><span>Signals requested</span><strong id="receiverRequestedCount">0</strong></div>
+            <div><span>Evidence received</span><strong id="receiverEvidenceCount">0</strong></div>
+            <div><span>Request state</span><strong id="receiverRequestState">Not configured</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="progress-evidence-detail" aria-label="Requested and received evidence">
+        <div class="requested-evidence-block">
+          <div class="receiver-feed-head"><b>Evidence requested for the current stage</b><span id="receiverLastUpdate">No request yet</span></div>
+          <div class="evidence-chip-list" id="receiverRequestedEvidence">
+            <div class="receiver-empty">Configure a progression model to tell G-IOS what evidence matters.</div>
+          </div>
         </div>
 
-        <div class="progress-model-row">
-          <div><span class="receiver-label">Progress model</span><strong id="receiverModelName">Not configured</strong></div>
-          <div><span class="receiver-label">Current stage</span><strong id="receiverActiveStage">Not configured</strong></div>
+        <div class="received-evidence-block">
+          <div class="receiver-feed-head"><b>Relevant evidence received</b><span id="receiverRelevantCount">0 relevant signals</span></div>
+          <div class="receiver-feed" id="receiverEvidenceFeed">
+            <div class="receiver-empty">Only evidence requested by the active progression stage will appear here.</div>
+          </div>
         </div>
-
-        <div class="receiver-interpretation">
-          <span class="receiver-label">What G-IOS needs to know</span>
-          <strong id="receiverInterpretation">Configure how progress should be evaluated for this focus area.</strong>
-          <small id="receiverInterpretationNote">The user defines progression. Goals-IOS requests only the evidence needed for that model.</small>
-        </div>
-      </div>
-
-      <div class="request-summary-panel">
-        <div><span>Goals tracked</span><strong id="receiverGoalCount">0</strong></div>
-        <div><span>Signals requested</span><strong id="receiverRequestedCount">0</strong></div>
-        <div><span>Evidence received</span><strong id="receiverEvidenceCount">0</strong></div>
-        <div><span>Request state</span><strong id="receiverRequestState">Not configured</strong></div>
-      </div>
-    </div>
-
-    <div class="requested-evidence-block">
-      <div class="receiver-feed-head"><b>Evidence requested for the current stage</b><span id="receiverLastUpdate">No request yet</span></div>
-      <div class="evidence-chip-list" id="receiverRequestedEvidence">
-        <div class="receiver-empty">Configure a progression model to tell G-IOS what evidence matters.</div>
-      </div>
-    </div>
-
-    <div class="received-evidence-block">
-      <div class="receiver-feed-head"><b>Relevant evidence received</b><span id="receiverRelevantCount">0 relevant signals</span></div>
-      <div class="receiver-feed" id="receiverEvidenceFeed">
-        <div class="receiver-empty">Only evidence requested by the active progression stage will appear here.</div>
-      </div>
+      </aside>
     </div>
   </section>
 
