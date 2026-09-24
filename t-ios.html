@@ -2701,12 +2701,7 @@ textarea{resize:vertical;min-height:90px}
       <button class="nav-btn active" data-page="dashboard">
         <span class="nav-icon">▣</span> Dashboard
       </button>
-
-      <button class="nav-btn" data-page="intelligence">
-        <span class="nav-icon">✦</span> Intelligence
-      </button>
-
-      <div class="nav-group technical" data-nav-group="technical">
+<div class="nav-group technical" data-nav-group="technical">
         <button class="nav-group-toggle" type="button" data-nav-group-toggle="technical" aria-expanded="false">
           <span class="nav-group-icon">T</span>
           <span class="nav-group-copy"><b>Technicals</b><small>System · execution · results</small></span>
@@ -2743,9 +2738,7 @@ textarea{resize:vertical;min-height:90px}
         <span class="gios-direct-arrow">→</span>
       </a>
       <a class="hios-back-link" href="index.html?view=home" title="Return to H·IOS family">← H·IOS Family</a>
-      <div class="side-user" id="sideUserEmail">—</div>
-      <button class="btn danger logout-side" id="logoutBtn">Sign Out</button>
-    </div>
+</div>
   </aside>
 
   <main class="main">
@@ -3964,245 +3957,7 @@ textarea{resize:vertical;min-height:90px}
 
 
     <!-- INTELLIGENCE -->
-    <section class="page" id="page-intelligence">
-      <header class="page-head">
-        <div>
-          <h1>Intelligence</h1>
-          <p>Connect your trading evidence into Specialized Intelligence, Cross-Intelligence and Personal Trader Intelligence.</p>
-        </div>
-        <div class="top-actions">
-          <button class="btn" id="intelligenceRefreshBtn">Refresh Intelligence</button>
-        </div>
-      </header>
-
-      <div class="intelligence-overview">
-
-
-        <div class="intelligence-section-head">
-          <div>
-            <h3>Specialized Intelligence</h3>
-            <p>Each system studies one part of your trading. A system can be active even while other systems are still waiting for evidence.</p>
-          </div>
-        </div>
-
-        <section class="intelligence-grid">
-          <div class="panel intelligence-card">
-            <div class="intelligence-card-top">
-              <div class="intel-name">Execution Intelligence</div>
-              <span class="intel-state" id="intelExecutionState">Waiting</span>
-            </div>
-            <div class="intel-value neutral" id="intelExecutionScore">—</div>
-            <div class="intel-evidence" id="intelExecutionEvidence">0 reviewed trades</div>
-            <div class="intel-detail-grid">
-              <div class="intel-detail"><span>Coverage</span><strong id="intelExecutionCoverage">0 / 0</strong></div>
-              <div class="intel-detail"><span>Next milestone</span><strong id="intelExecutionNext">Review 3 trades</strong></div>
-            </div>
-            <div class="intel-note" id="intelExecutionNote">Measures how consistently actual trade execution matched the intended process.</div>
-            <div class="intel-card-action"><button class="btn small" type="button" data-intel-nav="execution">Review Execution →</button></div>
-          </div>
-
-          <div class="panel intelligence-card">
-            <div class="intelligence-card-top">
-              <div class="intel-name">Psychology Intelligence</div>
-              <span class="intel-state" id="intelPsychState">Waiting</span>
-            </div>
-            <div class="intel-value neutral" id="intelPsychScore">—</div>
-            <div class="intel-evidence" id="intelPsychEvidence">0 recorded sessions</div>
-            <div class="intel-detail-grid">
-              <div class="intel-detail"><span>Identity</span><strong id="intelPsychIdentity">—</strong></div>
-              <div class="intel-detail"><span>Session rules</span><strong id="intelPsychRules">—</strong></div>
-            </div>
-            <div class="intel-note" id="intelPsychNote">Current v2 starts with identity-expression and session-rule evidence. Trigger analysis will become more specific as structured psychology data grows.</div>
-            <div class="intel-card-action"><button class="btn small" type="button" data-intel-nav="psychology">Record Psychology →</button></div>
-          </div>
-
-          <div class="panel intelligence-card">
-            <div class="intelligence-card-top">
-              <div class="intel-name">Edge / Playbook Intelligence</div>
-              <span class="intel-state" id="intelEdgeState">Waiting</span>
-            </div>
-            <div class="intel-value neutral" id="intelEdgeScore">—</div>
-            <div class="intel-evidence" id="intelEdgeEvidence">0 reviewed trades</div>
-            <div class="intel-detail-grid">
-              <div class="intel-detail"><span>Coverage</span><strong id="intelEdgeCoverage">0 / 0</strong></div>
-              <div class="intel-detail"><span>Next milestone</span><strong id="intelEdgeNext">Review 3 trades</strong></div>
-            </div>
-            <div class="intel-note" id="intelEdgeNote">Measures whether trades matched the conditions and rules defined in the current playbook.</div>
-            <div class="intel-card-action"><button class="btn small" type="button" data-intel-nav="playbook">Review Edge →</button></div>
-          </div>
-
-          <div class="panel intelligence-card">
-            <div class="intelligence-card-top">
-              <div class="intel-name">Performance Intelligence</div>
-              <span class="intel-state" id="intelPerformanceState">Waiting</span>
-            </div>
-            <div class="intel-value neutral" id="intelPerformanceScore">—</div>
-            <div class="intel-evidence" id="intelPerformanceEvidence">0 trades in active account</div>
-            <div class="intel-detail-grid">
-              <div class="intel-detail"><span>Win rate</span><strong id="intelPerformanceWinRate">—</strong></div>
-              <div class="intel-detail"><span>Profit factor</span><strong id="intelPerformanceProfitFactor">—</strong></div>
-              <div class="intel-detail"><span>Core data quality</span><strong id="intelPerformanceDataQuality">—</strong></div>
-              <div class="intel-detail"><span>Return basis</span><strong id="intelPerformanceReturnBasis">—</strong></div>
-            </div>
-            <div class="intel-note" id="intelPerformanceNote">Outcome data gives context, but T·IOS does not treat profit alone as proof of good process.</div>
-            <div class="intel-card-action"><button class="btn small" type="button" data-intel-nav="statistics">Open Statistics →</button></div>
-          </div>
-          <div class="panel intelligence-card">
-            <div class="intelligence-card-top">
-              <div class="intel-name">Strategy Intelligence</div>
-              <span class="intel-state" id="intelStrategyState">Waiting</span>
-            </div>
-            <div class="intel-value neutral" id="intelStrategyScore">—</div>
-            <div class="intel-evidence" id="intelStrategyEvidence">0 classified setups</div>
-            <div class="intel-detail-grid">
-              <div class="intel-detail"><span>Best sampled setup</span><strong id="intelStrategyBest">—</strong></div>
-              <div class="intel-detail"><span>Sample</span><strong id="intelStrategySample">—</strong></div>
-            </div>
-            <div class="intel-note" id="intelStrategyNote">Separates strategy/setup performance from whether the plan was executed correctly.</div>
-            <div class="intel-card-action"><button class="btn small" type="button" data-intel-nav="journal">Review Setups →</button></div>
-          </div>
-
-          <div class="panel intelligence-card">
-            <div class="intelligence-card-top">
-              <div class="intel-name">Behaviour Intelligence</div>
-              <span class="intel-state" id="intelBehaviourState">Waiting</span>
-            </div>
-            <div class="intel-value neutral" id="intelBehaviourScore">—</div>
-            <div class="intel-evidence" id="intelBehaviourEvidence">0 reviewed trades</div>
-            <div class="intel-detail-grid">
-              <div class="intel-detail"><span>Repeated deviation</span><strong id="intelBehaviourPattern">—</strong></div>
-              <div class="intel-detail"><span>Occurrences</span><strong id="intelBehaviourOccurrences">—</strong></div>
-            </div>
-            <div class="intel-note" id="intelBehaviourNote">Looks for repeated observable execution deviations rather than labeling your identity.</div>
-            <div class="intel-card-action"><button class="btn small" type="button" data-intel-nav="execution">Inspect Behaviour →</button></div>
-          </div>
-
-          <div class="panel intelligence-card">
-            <div class="intelligence-card-top">
-              <div class="intel-name">Context Intelligence</div>
-              <span class="intel-state" id="intelContextState">Waiting</span>
-            </div>
-            <div class="intel-value neutral" id="intelContextScore">—</div>
-            <div class="intel-evidence" id="intelContextEvidence">0 contextual reviews</div>
-            <div class="intel-detail-grid">
-              <div class="intel-detail"><span>Market states</span><strong id="intelContextStates">—</strong></div>
-              <div class="intel-detail"><span>Best sampled state</span><strong id="intelContextBestState">—</strong></div>
-            </div>
-            <div class="intel-note" id="intelContextNote">Studies the environment around trades so outcomes are not interpreted without market context.</div>
-            <div class="intel-card-action"><button class="btn small" type="button" data-intel-nav="playbook">Review Context →</button></div>
-          </div>
-
-          <div class="panel intelligence-card">
-            <div class="intelligence-card-top">
-              <div class="intel-name">Risk Intelligence</div>
-              <span class="intel-state" id="intelRiskState">Waiting</span>
-            </div>
-            <div class="intel-value neutral" id="intelRiskScore">—</div>
-            <div class="intel-evidence" id="intelRiskEvidence">0 risk reviews</div>
-            <div class="intel-detail-grid">
-              <div class="intel-detail"><span>Average losing trade</span><strong id="intelRiskAvgLoss">—</strong></div>
-              <div class="intel-detail"><span>Worst losing trade</span><strong id="intelRiskWorstLoss">—</strong></div>
-            </div>
-            <div class="intel-note" id="intelRiskNote">Connects stop placement and risk-sizing behaviour with the downside actually experienced.</div>
-            <div class="intel-card-action"><button class="btn small" type="button" data-intel-nav="execution">Review Risk →</button></div>
-          </div>
-        </section>
-
-        <section class="panel intelligence-route">
-          <strong>Intelligence route</strong>
-          <span>Trading evidence</span><span class="route-arrow">→</span>
-          <span>Specialized Intelligence</span><span class="route-arrow">→</span>
-          <span>Cross-Intelligence</span><span class="route-arrow">→</span>
-          <span>Personal Trader Intelligence</span><span class="route-arrow">→</span>
-          <span>Adaptation</span>
-        </section>
-
-        <div class="intelligence-lower">
-          <section class="panel cross-intelligence-panel">
-            <div class="intelligence-panel-head">
-              <div>
-                <h3>Cross-Intelligence · Execution × Performance</h3>
-                <p>Compares reviewed trades with 90%+ execution against lower-execution reviewed trades. Association is not causation.</p>
-              </div>
-            </div>
-
-            <div class="cross-flow">
-              <div class="cross-box">
-                <span>High Execution</span>
-                <strong id="intelHighExecReturn">—</strong>
-                <small id="intelHighExecCount">0 trades</small>
-              </div>
-              <div class="cross-arrow">→</div>
-              <div class="cross-box">
-                <span>Lower Execution</span>
-                <strong id="intelLowExecReturn">—</strong>
-                <small id="intelLowExecCount">0 trades</small>
-              </div>
-            </div>
-
-            <div class="cross-insight" id="intelCrossInsight">
-              More reviewed trades are needed before T·IOS can compare execution quality with performance.
-            </div>
-            <div class="cross-subsection">
-              <div class="intelligence-panel-head">
-                <div>
-                  <h3>Cross-Intelligence · Psychology × Execution</h3>
-                  <p>Compares execution under self-reported constructive states (Calm, Focused, Patient) with reactive states (Anxious, FOMO, Revenge impulse, Overconfident).</p>
-                </div>
-              </div>
-
-              <div class="cross-flow">
-                <div class="cross-box">
-                  <span>Constructive State</span>
-                  <strong id="intelConstructiveExec">—</strong>
-                  <small id="intelConstructiveCount">0 trades</small>
-                </div>
-                <div class="cross-arrow">↔</div>
-                <div class="cross-box">
-                  <span>Reactive State</span>
-                  <strong id="intelReactiveExec">—</strong>
-                  <small id="intelReactiveCount">0 trades</small>
-                </div>
-              </div>
-
-              <div class="cross-insight" id="intelPsychExecutionInsight">
-                T·IOS needs reviewed execution trades with psychology labels before it can test this relationship.
-              </div>
-            </div>
-          </section>
-
-          <div class="intelligence-side-stack">
-            <section class="panel intelligence-side-panel">
-              <div class="intelligence-panel-head">
-                <div>
-                  <h3>Evidence Coverage</h3>
-                  <p>How much structured evidence is currently available.</p>
-                </div>
-              </div>
-              <div class="intel-row"><span>Active-account trades</span><strong id="intelCoverageTrades">0</strong></div>
-              <div class="intel-row"><span>Execution reviewed</span><strong id="intelCoverageExecution">0 / 0</strong></div>
-              <div class="intel-row"><span>Edge reviewed</span><strong id="intelCoverageEdge">0 / 0</strong></div>
-              <div class="intel-row"><span>Psychology sessions</span><strong id="intelCoveragePsych">0</strong></div>
-              <div class="intel-row"><span>Evidence maturity</span><strong id="intelCoverageMaturity">Early</strong></div>
-              <div class="intelligence-footnote">Maturity is a simple v1 evidence-volume indicator, not statistical confidence.</div>
-            </section>
-
-            <section class="panel intelligence-side-panel">
-              <div class="intelligence-panel-head">
-                <div>
-                  <h3>Current Adaptation Priority</h3>
-                  <p>First-pass priority based on the lowest sufficiently measured process area.</p>
-                </div>
-              </div>
-              <div class="adaptation-priority" id="intelAdaptationPriority">
-                Collect more reviewed evidence before selecting a development priority.
-              </div>
-              <div class="intelligence-footnote">This is decision support, not an automatic diagnosis. Stronger adaptations should require stronger evidence.</div>
-            </section>
-          </div>
-        </div>
-      </div>
-    </section>
+    
 
     <section class="page" id="page-settings">
       <header class="page-head">
@@ -4961,7 +4716,8 @@ async function enterApp(user){
   currentUser=user;
 
   const email=user.email || 'Signed in';
-  $('#sideUserEmail').textContent=email;
+  const sideUserEmail=$('#sideUserEmail');
+  if(sideUserEmail) sideUserEmail.textContent=email;
 
   setLoggedInUI(true);
 
@@ -5863,12 +5619,7 @@ function navigate(page){
   $$('.page').forEach(p=>{
     p.classList.toggle('active', p.id===`page-${page}`);
   });
-
-  if(page==='intelligence'){
-    renderIntelligence();
-  }
-
-  if(page==='journal'){
+if(page==='journal'){
     journalPage=1;
     renderJournal();
   }
@@ -7168,7 +6919,7 @@ async function saveExecutionReview(){
 
   renderExecution();
   renderDashboard();
-  renderIntelligence();
+  if($('#page-intelligence')) renderIntelligence();
   renderJournal();
   renderStatistics();
   respondToGoalEvidenceRequest('execution_review_saved');
@@ -9628,7 +9379,7 @@ if(intelligenceRefreshBtn){
       await loadPsychologyData();
       await loadEdgeData();
       await loadExecutionData();
-      renderIntelligence();
+      if($('#page-intelligence')) renderIntelligence();
       showStatus('Intelligence refreshed');
     }finally{
       intelligenceRefreshBtn.disabled=false;
@@ -9637,14 +9388,6 @@ if(intelligenceRefreshBtn){
   });
 }
 
-
-/* =========================
-   LOGOUT
-========================= */
-
-$('#logoutBtn').addEventListener('click',async()=>{
-  await db.auth.signOut();
-});
 
 /* =========================
    RENDER
@@ -9663,7 +9406,7 @@ function renderAll(){
   renderExecution();
   renderStatistics();
 
-  renderIntelligence();
+  if($('#page-intelligence')) renderIntelligence();
 }
 
 
