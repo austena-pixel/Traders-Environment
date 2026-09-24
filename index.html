@@ -2713,6 +2713,100 @@ const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 ========================================================= */
 const HIOS_PRODUCT_STORAGE_KEY = 'hios_added_products_v1';
 
+/* =========================================================
+   H·IOS ECOSYSTEM SIGNAL RECEIVER — STAGE 1
+   Observes normalized product signals and records verified receipt.
+========================================================= */
+const HIOS_SIGNAL_BUS_KEY='hios_ecosystem_signal_bus_v1';
+const HIOS_PRODUCT_STATUS_KEY='hios_product_connection_status_v1';
+const HIOS_RECEIPT_KEY='hios_signal_receipts_v1';
+const HIOS_GOAL_EVIDENCE_KEY='hios_product_goal_evidence_v1';
+
+function readHiosEcosystemJson(key,fallback){
+  try{
+    const value=JSON.parse(localStorage.getItem(key)||'null');
+    return value===null ? fallback : value;
+  }catch(error){ return fallback; }
+}
+function writeHiosEcosystemJson(key,value){
+  localStorage.setItem(key,JSON.stringify(value));
+}
+function verifyHiosProductSignal(event){
+  return !!(
+    event &&
+    event.schema==='hios.signal.v1' &&
+    event.id &&
+    event.productId &&
+    event.domain &&
+    event.signal &&
+    event.metric &&
+    event.timestamp
+  );
+}
+function receiveHiosProductSignals(){
+  const bus=readHiosEcosystemJson(HIOS_SIGNAL_BUS_KEY,[]);
+  const receipts=readHiosEcosystemJson(HIOS_RECEIPT_KEY,{});
+  let received=0;
+
+  (Array.isArray(bus)?bus:[]).forEach(event=>{
+    if(!verifyHiosProductSignal(event) || receipts[event.id]) return;
+    receipts[event.id]={
+      signalId:event.id,
+      productId:event.productId,
+      domain:event.domain,
+      signal:event.signal,
+      metric:event.metric,
+      receivedAt:new Date().toISOString(),
+      verified:true
+    };
+    received++;
+  });
+
+  const ids=Object.keys(receipts);
+  if(ids.length>500){
+    ids.sort((a,b)=>String(receipts[a].receivedAt).localeCompare(String(receipts[b].receivedAt)))
+       .slice(0,ids.length-500)
+       .forEach(id=>delete receipts[id]);
+  }
+  writeHiosEcosystemJson(HIOS_RECEIPT_KEY,receipts);
+
+  const status=readHiosEcosystemJson(HIOS_PRODUCT_STATUS_KEY,{});
+  if(status.tios){
+    const tiosReceipts=Object.values(receipts).filter(r=>r.productId==='tios');
+    status.tios.hiosReceiver='receiving';
+    status.tios.hiosVerifiedCount=tiosReceipts.length;
+    status.tios.hiosLastReceivedAt=tiosReceipts.length
+      ? tiosReceipts.sort((a,b)=>String(b.receivedAt).localeCompare(String(a.receivedAt)))[0].receivedAt
+      : null;
+    writeHiosEcosystemJson(HIOS_PRODUCT_STATUS_KEY,status);
+  }
+  return received;
+}
+function hiosConnectionDiagnostic(productId='tios'){
+  receiveHiosProductSignals();
+  const status=readHiosEcosystemJson(HIOS_PRODUCT_STATUS_KEY,{})[productId]||null;
+  const evidence=readHiosEcosystemJson(HIOS_GOAL_EVIDENCE_KEY,{})[productId]||[];
+  return {
+    productId,
+    installed:isProductAdded(productId),
+    publisher:status?.publisher||'not-seen',
+    receiver:status?.hiosReceiver||'waiting',
+    verifiedSignals:Number(status?.hiosVerifiedCount||0),
+    evidenceAvailable:Array.isArray(evidence)?evidence.length:0,
+    lastSignal:status?.lastSignal||null,
+    lastPublishedAt:status?.lastPublishedAt||null,
+    lastReceivedAt:status?.hiosLastReceivedAt||null
+  };
+}
+window.HIOSConnectionDiagnostic=hiosConnectionDiagnostic;
+window.addEventListener('storage',event=>{
+  if([HIOS_SIGNAL_BUS_KEY,HIOS_PRODUCT_STATUS_KEY,HIOS_GOAL_EVIDENCE_KEY].includes(event.key)){
+    receiveHiosProductSignals();
+  }
+});
+window.addEventListener('hios:product-signal',()=>receiveHiosProductSignals());
+
+
 const HIOS_PRODUCT_CATALOG = [
   {
     id:'gios',
@@ -2801,6 +2895,7 @@ function openProduct(id){
 }
 
 function renderProductManager(){
+  receiveHiosProductSignals();
   const sidebar = document.getElementById('productSidebarNav');
   const grid = document.getElementById('productsGrid');
   const catalog = document.getElementById('productCatalogList');
