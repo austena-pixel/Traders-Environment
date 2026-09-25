@@ -2646,6 +2646,13 @@ textarea{resize:vertical;min-height:90px}
 .playbook-heading-row input{width:100%;border:1px solid #26394f;border-radius:8px;background:#09131e;color:#eaf2fb;padding:8px 9px;font-size:10px}
 .playbook-heading-row[data-subheading-level="1"]{margin-left:10px}.playbook-heading-row[data-subheading-level="2"]{margin-left:20px}.playbook-heading-row[data-subheading-level="3"]{margin-left:30px}.playbook-heading-row[data-subheading-level="4"]{margin-left:40px}
 .playbook-add-subheading{margin-top:7px}
+.playbook-section-logic{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:9px 0 2px;padding:8px 9px;border:1px solid #24364b;border-radius:9px;background:#0a131d}
+.playbook-section-logic-copy{display:grid;gap:2px;min-width:0}.playbook-section-logic-copy strong{font-size:9px;color:#dce8f6}.playbook-section-logic-copy span{font-size:8px;color:#7f93aa;line-height:1.35}
+.playbook-section-logic select{flex:0 0 210px;border:1px solid #2b3d53;border-radius:8px;background:#09121c;color:#dbe8f6;padding:7px 8px;font-size:9px}
+.playbook-match-mode-badge{display:inline-flex;align-items:center;margin-left:7px;padding:2px 6px;border:1px solid #315276;border-radius:999px;background:#0d1d2e;color:#9ecbff;font-size:7px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;vertical-align:middle}
+.playbook-match-mode-badge.any{border-color:rgba(52,211,153,.32);background:rgba(52,211,153,.055);color:#7ce1ba}
+@media(max-width:850px){.playbook-section-logic{align-items:stretch;flex-direction:column}.playbook-section-logic select{flex:auto;width:100%}}
+
 .playbook-heading-limit{margin-left:7px;color:#71859d;font-size:8px}
 .playbook-section-path{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:5px}
 .playbook-section-path .path-node{display:inline-flex;align-items:center;min-height:22px;padding:3px 7px;border:1px solid #25384d;border-radius:7px;background:#09131d;color:#a9bfd6;font-size:8px}
@@ -3623,7 +3630,7 @@ textarea{resize:vertical;min-height:90px}
               </div>
 
               <div class="edge-help">
-                <strong>Strict review:</strong> every Required rule counts toward the Playbook Match score. Reference items are recorded for context but do not reduce the score.
+                <strong>Strict review:</strong> Required criteria follow the logic you set for each subsection: ALL must match, or ANY ONE alternative can match. Reference items are recorded for context but do not reduce the score.
               </div>
 
               <div class="edge-actions">
@@ -3659,7 +3666,7 @@ textarea{resize:vertical;min-height:90px}
 
           <div class="playbook-builder-guide">
             <strong>Build it in your own language.</strong>
-            <span>Start with several sections so the playbook is easy to organize. Each section can have a main Heading plus up to 4 nested Subheadings (5 levels total), for example: Market Context → Structure → Setup → Trigger → Entry. Add as many sections as you need. Required rules are enforced; Reference items are informational.</span>
+            <span>Start with several sections so the playbook is easy to organize. Each section can have a main Heading plus up to 4 nested Subheadings (5 levels total), for example: Market Context → Structure → Setup → Trigger → Entry. Add as many sections as you need. Required criteria can be enforced as ALL-required or ANY-ONE alternatives per subsection; Reference items are informational.</span>
           </div>
 
           <div class="playbook-builder-sections" id="edgeBuilderSections"></div>
@@ -7796,23 +7803,59 @@ function scoringRowsForReview(reviewId){
   const rows=checksForReview(reviewId);
   const dynamic=rows.filter(r=>String(r.criterion_key||'').startsWith('pb_req_'));
   if(dynamic.length)return dynamic;
-  // Backward-compatible score for reviews created before flexible playbooks.
   return rows.filter(r=>r.criterion_key!=='entry_timing'&&!String(r.criterion_key||'').startsWith('pb_ref_'));
+}
+function scoringUnitsForTrade(tradeId){
+  const review=reviewForTrade(tradeId);
+  if(!review)return [];
+  const assignment=tradePlaybookMap[String(tradeId)]||null;
+  const pb=assignment?playbookById(assignment.playbookId):null;
+  const snapshot=assignment?playbookVersion(pb,assignment.version):null;
+  const rows=checksForReview(review.id);
+  const rowMap=new Map(rows.map(row=>[String(row.criterion_key||''),row]));
+
+  if(snapshot){
+    const units=[];
+    (snapshot.sections||[]).forEach(section=>{
+      const required=(section.rules||[]).filter(rule=>rule.kind!=='reference');
+      if(!required.length)return;
+      const mode=section.matchMode==='any'?'any':'all';
+      if(mode==='any'){
+        units.push({
+          sectionId:section.id,
+          mode:'any',
+          passed:required.some(rule=>Boolean(rowMap.get(criterionKeyForRule(rule))?.complied)),
+          ruleCount:required.length
+        });
+      }else{
+        required.forEach(rule=>units.push({
+          sectionId:section.id,
+          mode:'all',
+          ruleId:rule.id,
+          passed:Boolean(rowMap.get(criterionKeyForRule(rule))?.complied),
+          ruleCount:1
+        }));
+      }
+    });
+    if(units.length)return units;
+  }
+
+  return scoringRowsForReview(review.id).map(row=>({mode:'all',passed:Boolean(row.complied),ruleCount:1}));
 }
 function edgeScoreForTrade(tradeId){
   const review=reviewForTrade(tradeId);
   if(!review)return null;
-  const rows=scoringRowsForReview(review.id);
-  if(!rows.length)return null;
-  const passed=rows.filter(r=>Boolean(r.complied)).length;
-  return passed/rows.length*100;
+  const units=scoringUnitsForTrade(tradeId);
+  if(!units.length)return null;
+  const passed=units.filter(unit=>unit.passed).length;
+  return passed/units.length*100;
 }
 function edgeMissedCountForTrade(tradeId){
   const review=reviewForTrade(tradeId);
   if(!review)return null;
-  const rows=scoringRowsForReview(review.id);
-  if(!rows.length)return null;
-  return rows.filter(r=>!Boolean(r.complied)).length;
+  const units=scoringUnitsForTrade(tradeId);
+  if(!units.length)return null;
+  return units.filter(unit=>!unit.passed).length;
 }
 function edgeRatingForTrade(tradeId){
   const missed=edgeMissedCountForTrade(tradeId);
@@ -7833,15 +7876,27 @@ function journalEdgeBadge(tradeId){
   if(!rating||score===null)return '<span class="grade-badge grade-none">—</span>';
   return `<span class="grade-badge ${edgeGradeClass(rating)}" title="${score.toFixed(1)}%">${rating}</span>`;
 }
+function liveScoringUnits(){
+  const sections=[...document.querySelectorAll('#edgeDynamicCriteria .dynamic-playbook-section')];
+  const units=[];
+  sections.forEach(section=>{
+    const checks=[...section.querySelectorAll('.edge-check-input[data-edge-scoring="1"]')];
+    if(!checks.length)return;
+    const mode=section.dataset.matchMode==='any'?'any':'all';
+    if(mode==='any')units.push({mode:'any',passed:checks.some(check=>check.checked)});
+    else checks.forEach(check=>units.push({mode:'all',passed:check.checked}));
+  });
+  return units;
+}
 function currentEdgeScore(){
-  const checks=$$('.edge-check-input[data-edge-scoring="1"]');
-  if(!checks.length)return 0;
-  return checks.filter(x=>x.checked).length/checks.length*100;
+  const units=liveScoringUnits();
+  if(!units.length)return 0;
+  return units.filter(unit=>unit.passed).length/units.length*100;
 }
 function ratingFromLiveChecks(){
-  const checks=$$('.edge-check-input[data-edge-scoring="1"]');
-  if(!checks.length)return '—';
-  const missed=checks.filter(x=>!x.checked).length;
+  const units=liveScoringUnits();
+  if(!units.length)return '—';
+  const missed=units.filter(unit=>!unit.passed).length;
   if(missed===0)return 'A+';
   if(missed===1)return 'A';
   return 'B';
@@ -7915,9 +7970,19 @@ function renderDynamicPlaybookCriteria(trade,assignment){
   root.innerHTML=(snapshot.sections||[]).map((section,sectionIndex)=>{
     const rules=section.rules||[];
     const pathHtml=renderSectionHeadingPath(section,sectionIndex);
-    return `<div class="dynamic-playbook-section"><div class="edge-section-head"><div>${pathHtml}${section.description?`<span>${escapeHtml(section.description)}</span>`:''}</div></div><div class="playbook-rules-under-path">${rules.length?rules.map(rule=>{
+    const matchMode=section.matchMode==='any'?'any':'all';
+    const requiredCount=rules.filter(rule=>rule.kind!=='reference').length;
+    const modeBadge=requiredCount>1
+      ? `<span class="playbook-match-mode-badge ${matchMode==='any'?'any':''}">${matchMode==='any'?'Any one required':'All required'}</span>`
+      : '';
+    return `<div class="dynamic-playbook-section" data-match-mode="${matchMode}"><div class="edge-section-head"><div>${pathHtml}${modeBadge}${section.description?`<span>${escapeHtml(section.description)}</span>`:''}</div></div><div class="playbook-rules-under-path">${rules.length?rules.map(rule=>{
       const key=criterionKeyForRule(rule); const saved=savedMap[key]; const required=rule.kind!=='reference';
-      return `<div class="edge-check ${required?'':'reference-rule'}"><div class="edge-check-main"><input type="checkbox" class="edge-check-input" data-edge-scoring="${required?'1':'0'}" data-edge-key="${escapeHtml(key)}" ${saved?.complied?'checked':''}><div class="edge-check-copy"><strong>${escapeHtml(rule.text)}${required?'':' <span class="playbook-reference-note">Reference</span>'}</strong><span>${required?'Required — this affects the Playbook Match score.':'Reference only — record it without penalizing the score.'}</span></div></div><input class="edge-check-comment" data-edge-comment="${escapeHtml(key)}" type="text" value="${escapeHtml(saved?.comment||'')}" placeholder="Optional observation"></div>`;
+      const ruleHelp=!required
+        ? 'Reference only — record it without penalizing the score.'
+        : (matchMode==='any'&&requiredCount>1
+          ? 'Alternative criterion — matching any one required criterion in this subsection is enough.'
+          : 'Required — this criterion must be satisfied.');
+      return `<div class="edge-check ${required?'':'reference-rule'}"><div class="edge-check-main"><input type="checkbox" class="edge-check-input" data-edge-scoring="${required?'1':'0'}" data-edge-key="${escapeHtml(key)}" ${saved?.complied?'checked':''}><div class="edge-check-copy"><strong>${escapeHtml(rule.text)}${required?'':' <span class="playbook-reference-note">Reference</span>'}</strong><span>${ruleHelp}</span></div></div><input class="edge-check-comment" data-edge-comment="${escapeHtml(key)}" type="text" value="${escapeHtml(saved?.comment||'')}" placeholder="Optional observation"></div>`;
     }).join(''):'<div class="empty-state">No rules in this step yet. Edit the playbook to add them.</div>'}</div></div>`;
   }).join('')||'<div class="empty-state">This playbook has no steps yet.</div>';
   updateEdgeLiveScore();
@@ -8063,7 +8128,8 @@ function builderSectionTemplate(section={},index=0){
   const id=section.id||edgeUid('sec');
   const rules=Array.isArray(section.rules)?section.rules:[];
   const subheadings=(Array.isArray(section.subheadings)?section.subheadings:[]).slice(0,4);
-  return `<div class="playbook-step-editor" data-builder-section="${escapeHtml(id)}"><div class="playbook-step-index">Playbook section <span data-step-number>${index+1}</span></div><div class="playbook-step-top"><input data-section-title type="text" value="${escapeHtml(section.title||'')}" placeholder="Main heading — e.g. Market Context 4H"><input data-section-description type="text" value="${escapeHtml(section.description||'')}" placeholder="What is this part of the playbook for? (optional)"><div class="playbook-step-tools"><button class="playbook-mini-btn" type="button" data-step-up>↑</button><button class="playbook-mini-btn" type="button" data-step-down>↓</button><button class="playbook-mini-btn danger" type="button" data-step-remove>Remove</button></div></div><div class="playbook-heading-stack">${subheadings.map((value,subIndex)=>builderSubheadingTemplate(value,subIndex)).join('')}</div><div><button class="playbook-mini-btn playbook-add-subheading" type="button" data-add-subheading>+ Add Subheading</button><span class="playbook-heading-limit" data-heading-limit>${1+subheadings.length}/5 heading levels</span></div><div class="playbook-rules">${rules.map(rule=>builderRuleTemplate(rule)).join('')}</div><button class="playbook-mini-btn playbook-add-rule" type="button" data-add-rule>+ Add Rule</button></div>`;
+  const matchMode=section.matchMode==='any'?'any':'all';
+  return `<div class="playbook-step-editor" data-builder-section="${escapeHtml(id)}"><div class="playbook-step-index">Playbook section <span data-step-number>${index+1}</span></div><div class="playbook-step-top"><input data-section-title type="text" value="${escapeHtml(section.title||'')}" placeholder="Main heading — e.g. Market Context 4H"><input data-section-description type="text" value="${escapeHtml(section.description||'')}" placeholder="What is this part of the playbook for? (optional)"><div class="playbook-step-tools"><button class="playbook-mini-btn" type="button" data-step-up>↑</button><button class="playbook-mini-btn" type="button" data-step-down>↓</button><button class="playbook-mini-btn danger" type="button" data-step-remove>Remove</button></div></div><div class="playbook-heading-stack">${subheadings.map((value,subIndex)=>builderSubheadingTemplate(value,subIndex)).join('')}</div><div><button class="playbook-mini-btn playbook-add-subheading" type="button" data-add-subheading>+ Add Subheading</button><span class="playbook-heading-limit" data-heading-limit>${1+subheadings.length}/5 heading levels</span></div><div class="playbook-section-logic"><div class="playbook-section-logic-copy"><strong>How should these criteria be satisfied?</strong><span>Use “Any one” for alternatives such as Pattern 1 OR Pattern 2. Reference items never affect the score.</span></div><select data-section-match-mode><option value="all" ${matchMode==='all'?'selected':''}>All required criteria must match</option><option value="any" ${matchMode==='any'?'selected':''}>Any ONE required criterion can match</option></select></div><div class="playbook-rules">${rules.map(rule=>builderRuleTemplate(rule)).join('')}</div><button class="playbook-mini-btn playbook-add-rule" type="button" data-add-rule>+ Add Rule</button></div>`;
 }
 function refreshBuilderStepLabels(){
   $$('[data-builder-section]').forEach((section,index)=>{
@@ -8095,6 +8161,7 @@ function collectBuilderSections(){
     title:section.querySelector('[data-section-title]').value.trim(),
     description:section.querySelector('[data-section-description]').value.trim(),
     subheadings:[...section.querySelectorAll('[data-subheading-text]')].map(input=>input.value.trim()).filter(Boolean).slice(0,4),
+    matchMode:section.querySelector('[data-section-match-mode]')?.value==='any'?'any':'all',
     rules:[...section.querySelectorAll('[data-builder-rule]')].map(rule=>({id:rule.dataset.builderRule,text:rule.querySelector('[data-rule-text]').value.trim(),kind:rule.querySelector('[data-rule-kind]').value})).filter(rule=>rule.text)
   })).filter(section=>section.title||section.subheadings.length||section.rules.length);
 }
