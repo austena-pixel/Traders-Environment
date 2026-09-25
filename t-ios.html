@@ -2661,6 +2661,50 @@ textarea{resize:vertical;min-height:90px}
 .dynamic-playbook-section .playbook-rules-under-path{margin-top:8px}
 @media(max-width:850px){.playbook-heading-row{grid-template-columns:1fr}.playbook-heading-row[data-subheading-level]{margin-left:0}.playbook-heading-row .playbook-heading-label{margin-top:3px}}
 
+
+/* ===== PLAYBOOK REVIEW POLISH: larger headings + ANY-ONE alternatives in a row ===== */
+.playbook-section-path .path-node.depth-0{
+  min-height:30px;
+  padding:5px 10px;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.025em;
+  border-radius:8px;
+}
+.playbook-section-path .path-node:not(.depth-0){
+  font-size:9px;
+}
+
+/* When only one of several required alternatives is needed, show the choices side-by-side. */
+.dynamic-playbook-section[data-match-mode="any"] .playbook-rules-under-path{
+  display:grid;
+  grid-auto-flow:column;
+  grid-auto-columns:minmax(240px,1fr);
+  gap:10px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding:2px 0 8px;
+  scroll-snap-type:x proximity;
+  scrollbar-width:thin;
+}
+.dynamic-playbook-section[data-match-mode="any"] .playbook-rules-under-path .edge-check{
+  min-width:0;
+  margin-bottom:0;
+  height:100%;
+  scroll-snap-align:start;
+}
+.dynamic-playbook-section[data-match-mode="any"] .playbook-rules-under-path .edge-check-main{
+  align-items:flex-start;
+}
+.dynamic-playbook-section[data-match-mode="any"] .playbook-rules-under-path .edge-check-comment{
+  width:100%;
+}
+@media(max-width:900px){
+  .dynamic-playbook-section[data-match-mode="any"] .playbook-rules-under-path{
+    grid-auto-columns:minmax(220px,85%);
+  }
+}
+
 </style>
 </head>
 
