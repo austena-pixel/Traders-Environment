@@ -8239,7 +8239,7 @@ async function hydratePlaybookImages(root=document){
 }
 
 function playbookBuilderImageItem(key){
-  return `<div class="playbook-rule-image-item" data-rule-image-key="${escapeHtml(key)}" data-playbook-image-key="${escapeHtml(key)}"><span class="playbook-media-loading">Loading image…</span><div class="playbook-rule-image-actions"><button type="button" data-rule-image-replace>Replace</button><button class="delete" type="button" data-rule-image-delete>Delete</button></div></div>`;
+  return `<div class="playbook-rule-image-item" data-rule-image-key="${escapeHtml(key)}" data-playbook-image-key="${escapeHtml(key)}"><span class="playbook-media-loading">Loading image…</span><div class="playbook-rule-image-actions"><button type="button" data-rule-image-replace>Replace</button><button class="delete" type="button" data-rule-image-delete>Delete permanently</button></div></div>`;
 }
 
 function playbookReviewImagesHtml(rule){
@@ -8298,16 +8298,49 @@ async function discardUnsavedPlaybookMedia(){
   ));
 }
 
+function purgePlaybookMediaKeyEverywhere(key){
+  if(!key)return;
+
+  playbooks=playbooks.map(playbook=>({
+    ...playbook,
+    versions:(playbook.versions||[]).map(version=>({
+      ...version,
+      sections:(version.sections||[]).map(section=>({
+        ...section,
+        groups:normalizedPlaybookGroups(section).map(group=>({
+          ...group,
+          rules:(group.rules||[]).map(rule=>({
+            ...rule,
+            imageKeys:Array.isArray(rule.imageKeys)
+              ? rule.imageKeys.filter(imageKey=>imageKey!==key)
+              : []
+          }))
+        }))
+      }))
+    }))
+  }));
+}
+
 async function finalizePlaybookMediaAfterSave(){
   const deletions=[...pendingPlaybookMediaDeletes];
   pendingPlaybookMediaAdds.clear();
   pendingPlaybookMediaDeletes.clear();
 
-  // Preserve images still referenced by older playbook versions.
+  // "Delete" now means permanent deletion:
+  // remove the picture reference from every stored playbook version,
+  // then remove the actual image from IndexedDB.
+  deletions.forEach(key=>purgePlaybookMediaKeyEverywhere(key));
+
+  if(deletions.length){
+    savePlaybooksLocal();
+  }
+
   await Promise.all(deletions.map(async key=>{
-    if(playbookMediaKeyReferenced(key))return;
-    try{await deletePlaybookMediaRecord(key)}
-    catch(error){console.warn('Could not delete unused playbook image:',error)}
+    try{
+      await deletePlaybookMediaRecord(key);
+    }catch(error){
+      console.warn('Could not permanently delete playbook image:',error);
+    }
   }));
 }
 
@@ -9198,7 +9231,7 @@ $('#edgeBuilderSections').addEventListener('click',async event=>{
     const rule=event.target.closest('[data-builder-rule]');
     const key=item?.dataset.ruleImageKey||'';
     if(!item||!rule||!key)return;
-    if(!confirm('Delete this demonstrative picture from this playbook criterion?'))return;
+    if(!confirm('Permanently delete this demonstrative picture from this playbook? This removes it from all saved playbook versions.'))return;
 
     if(pendingPlaybookMediaAdds.has(key)){
       pendingPlaybookMediaAdds.delete(key);
@@ -9214,7 +9247,7 @@ $('#edgeBuilderSections').addEventListener('click',async event=>{
     const limit=rule.querySelector('[data-rule-media-limit]');
     if(limit)limit.textContent=`${count}/${PLAYBOOK_MEDIA_MAX_PER_RULE} pictures`;
 
-    showStatus('Picture removed from this playbook draft. Save Playbook to apply the change.');
+    showStatus('Picture marked for permanent deletion. Save Playbook to apply it.');
   }
   else if(event.target.matches('[data-rule-remove]'))event.target.closest('[data-builder-rule]')?.remove();
   else if(event.target.matches('[data-step-remove]')){
