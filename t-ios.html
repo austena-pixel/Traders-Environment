@@ -8494,6 +8494,32 @@ function playbookGroupScoringRules(group){
 function criterionKeyForRule(rule){
   return `${rule.kind==='reference'?'pb_ref':'pb_req'}_${rule.id}`;
 }
+
+function databaseSectionForPlaybookRule(rule){
+  const text=[
+    rule?.sectionTitle||'',
+    ...(Array.isArray(rule?.sectionPath)?rule.sectionPath:[]),
+    rule?.groupTitle||'',
+    rule?.text||''
+  ].join(' ').toLowerCase();
+
+  if(/\b(context|4h|higher[\s-]*timeframe|htf)\b/.test(text)){
+    return 'market_context';
+  }
+
+  if(/\b(structure|30\s*m|30min|15\s*m|15min|market\s*state|trend|range)\b/.test(text)){
+    return 'market_structure';
+  }
+
+  if(/\b(exit|stop|management|manage|target|take[\s-]*profit|tp|close|reversal)\b/.test(text)){
+    return 'exit';
+  }
+
+  // Entry is the safe general-purpose Playbook bucket for things
+  // such as setup, trigger, pattern, volume and user-defined rules.
+  return 'entry';
+}
+
 function rawReviewForTrade(tradeId){
   return planReviews.find(r=>r.trade_id===tradeId) || null;
 }
@@ -8977,13 +9003,38 @@ async function saveEdgeReview(){
   const inputs=$$('.edge-check-input');
   const checkPayload=inputs.map((input,index)=>{
     const key=input.dataset.edgeKey; const comment=$(`[data-edge-comment="${key}"]`);
-    let label='Playbook rule'; let section='playbook';
+    let label='Playbook rule';
+    let section='entry';
+
     if(assignment){
-      const pb=playbookById(assignment.playbookId); const rules=flattenPlaybookRules(pb,assignment.version); const match=rules.find(r=>criterionKeyForRule(r)===key); if(match){label=match.text;section=match.sectionTitle}
+      const pb=playbookById(assignment.playbookId);
+      const rules=flattenPlaybookRules(pb,assignment.version);
+      const match=rules.find(r=>criterionKeyForRule(r)===key);
+
+      if(match){
+        label=match.text;
+        section=databaseSectionForPlaybookRule(match);
+      }
     }else{
-      const old=checksForReview(review.id).find(r=>r.criterion_key===key); if(old){label=old.criterion_label;section=old.section}
+      const old=checksForReview(review.id).find(r=>r.criterion_key===key);
+      if(old){
+        label=old.criterion_label;
+        section=['market_context','market_structure','entry','exit'].includes(old.section)
+          ? old.section
+          : 'entry';
+      }
     }
-    return {review_id:review.id,user_id:currentUser.id,section,criterion_key:key,criterion_label:label,complied:input.checked,comment:comment?.value.trim()||null,sort_order:index+1};
+
+    return {
+      review_id:review.id,
+      user_id:currentUser.id,
+      section,
+      criterion_key:key,
+      criterion_label:label,
+      complied:input.checked,
+      comment:comment?.value.trim()||null,
+      sort_order:index+1
+    };
   });
   // Update the existing review in place. The original T-IOS review
   // system used this composite key successfully; it also avoids
@@ -8999,7 +9050,12 @@ async function saveEdgeReview(){
   $('#edgeSaveTopBtn').disabled=false;
 
   if(checkResult.error){
-    alert('Could not update this Playbook review: '+checkResult.error.message);
+    const message=String(checkResult.error.message||'');
+    if(message.includes('trade_plan_checks_section_check')){
+      alert('T-IOS could not save the review because the Playbook section could not be mapped to the database review structure. Refresh the page and try again with this updated version.');
+    }else{
+      alert('Could not update this Playbook review: '+message);
+    }
     return;
   }
   if(assignment)assignPlaybookToTrade(trade.id,assignment.playbookId,assignment.version);
