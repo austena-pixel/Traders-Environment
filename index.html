@@ -2723,6 +2723,11 @@ const HIOS_RECEIPT_KEY='hios_signal_receipts_v1';
 const HIOS_GOAL_EVIDENCE_KEY='hios_product_goal_evidence_v1';
 const GIOS_EVIDENCE_REQUESTS_KEY='hios_goal_evidence_requests_v1';
 const HIOS_EVIDENCE_REQUEST_RECEIPTS_KEY='hios_goal_evidence_request_receipts_v1';
+const HIOS_STRUCTURED_EVIDENCE_BUS_KEY='hios_structured_evidence_bus_v1';
+const HIOS_VERIFIED_EVIDENCE_KEY='hios_verified_evidence_v1';
+const HIOS_STRUCTURED_EVIDENCE_RECEIPTS_KEY='hios_structured_evidence_receipts_v1';
+const HIOS_STRUCTURED_EVIDENCE_LIMIT=500;
+
 
 function verifyGoalEvidenceRequest(request){
   return !!(request && request.schema==='hios.goal-evidence-request.v1' && request.requestId && request.source==='goals-ios' && request.targetProductId && Array.isArray(request.metrics) && request.requestedAt);
@@ -2770,6 +2775,88 @@ function readHiosEcosystemJson(key,fallback){
 function writeHiosEcosystemJson(key,value){
   localStorage.setItem(key,JSON.stringify(value));
 }
+
+/* H·IOS generic structured-evidence foundation.
+   H·IOS validates structure, but does not interpret domain-specific meaning. */
+function verifyHiosStructuredEvidence(item){
+  return !!(
+    item &&
+    item.schema==='hios.evidence.v1' &&
+    item.id &&
+    item.sourceProductId &&
+    item.domain &&
+    item.evidenceType &&
+    item.observedAt &&
+    item.subject?.type &&
+    item.subject?.id &&
+    item.observation && typeof item.observation==='object' &&
+    item.evaluation && typeof item.evaluation==='object'
+  );
+}
+function receiveHiosStructuredEvidence(){
+  const bus=readHiosEcosystemJson(HIOS_STRUCTURED_EVIDENCE_BUS_KEY,[]);
+  const receipts=readHiosEcosystemJson(HIOS_STRUCTURED_EVIDENCE_RECEIPTS_KEY,{});
+  const verified=readHiosEcosystemJson(HIOS_VERIFIED_EVIDENCE_KEY,{});
+  let received=0;
+
+  (Array.isArray(bus)?bus:[]).forEach(item=>{
+    if(!verifyHiosStructuredEvidence(item)||receipts[item.id])return;
+
+    const receivedAt=new Date().toISOString();
+    receipts[item.id]={
+      evidenceId:item.id,
+      sourceProductId:item.sourceProductId,
+      domain:item.domain,
+      evidenceType:item.evidenceType,
+      receivedAt,
+      verified:true,
+      verifiedBy:'h-ios'
+    };
+
+    const rows=Array.isArray(verified[item.sourceProductId])
+      ? verified[item.sourceProductId]
+      : [];
+    verified[item.sourceProductId]=rows.concat({
+      ...item,
+      hiosVerified:true,
+      hiosReceivedAt:receivedAt
+    }).slice(-HIOS_STRUCTURED_EVIDENCE_LIMIT);
+    received++;
+  });
+
+  const ids=Object.keys(receipts);
+  if(ids.length>HIOS_STRUCTURED_EVIDENCE_LIMIT){
+    ids.sort((a,b)=>String(receipts[a].receivedAt).localeCompare(String(receipts[b].receivedAt)))
+      .slice(0,ids.length-HIOS_STRUCTURED_EVIDENCE_LIMIT)
+      .forEach(id=>delete receipts[id]);
+  }
+
+  writeHiosEcosystemJson(HIOS_STRUCTURED_EVIDENCE_RECEIPTS_KEY,receipts);
+  writeHiosEcosystemJson(HIOS_VERIFIED_EVIDENCE_KEY,verified);
+
+  if(received){
+    window.dispatchEvent(new CustomEvent('hios:structured-evidence-verified',{detail:{received}}));
+  }
+  return received;
+}
+function hiosStructuredEvidenceDiagnostic(productId='tios'){
+  receiveHiosStructuredEvidence();
+  const rows=readHiosEcosystemJson(HIOS_VERIFIED_EVIDENCE_KEY,{})?.[productId]||[];
+  const latest=rows.length
+    ? rows.slice().sort((a,b)=>String(b.observedAt||'').localeCompare(String(a.observedAt||'')))[0]
+    : null;
+  return {
+    productId,
+    verifiedEvidenceCount:rows.length,
+    latestEvidenceType:latest?.evidenceType||null,
+    latestMetric:latest?.evaluation?.metric||null,
+    latestValue:latest?.evaluation?.value??null,
+    latestObservedAt:latest?.observedAt||null,
+    latestSubject:latest?.subject||null
+  };
+}
+window.HIOSStructuredEvidenceDiagnostic=hiosStructuredEvidenceDiagnostic;
+
 function verifyHiosProductSignal(event){
   return !!(
     event &&
@@ -2842,11 +2929,15 @@ window.addEventListener('storage',event=>{
   if([HIOS_SIGNAL_BUS_KEY,HIOS_PRODUCT_STATUS_KEY,HIOS_GOAL_EVIDENCE_KEY].includes(event.key)){
     receiveHiosProductSignals();
   }
+  if(event.key===HIOS_STRUCTURED_EVIDENCE_BUS_KEY){
+    receiveHiosStructuredEvidence();
+  }
   if(event.key===GIOS_EVIDENCE_REQUESTS_KEY){
     receiveGoalEvidenceRequests();
   }
 });
 window.addEventListener('hios:product-signal',()=>receiveHiosProductSignals());
+window.addEventListener('hios:structured-evidence',()=>receiveHiosStructuredEvidence());
 window.addEventListener('hios:goal-evidence-request',()=>receiveGoalEvidenceRequests());
 
 
@@ -2966,6 +3057,7 @@ function openProduct(id){
 
 function renderProductManager(){
   receiveHiosProductSignals();
+  receiveHiosStructuredEvidence();
   receiveGoalEvidenceRequests();
   const sidebar = document.getElementById('productSidebarNav');
   const grid = document.getElementById('productsGrid');
