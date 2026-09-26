@@ -4412,8 +4412,12 @@ const HIOS_PRODUCT_GOAL_EVIDENCE_KEY='hios_product_goal_evidence_v1';
 const HIOS_SIGNAL_BUS_LIMIT=300;
 const GIOS_EVIDENCE_REQUESTS_KEY='hios_goal_evidence_requests_v1';
 const TIOS_EVIDENCE_RESPONSES_KEY='hios_goal_evidence_responses_v1';
+const HIOS_STRUCTURED_EVIDENCE_BUS_KEY='hios_structured_evidence_bus_v1';
+const HIOS_STRUCTURED_EVIDENCE_LIMIT=300;
+
 const TIOS_EVIDENCE_FAMILY={
  execution_adherence:'technical',execution_errors:'technical',missed_valid_opportunities:'technical',review_completion:'technical',
+ playbook_adherence:'technical',playbook_errors:'technical',playbook_review_completion:'technical',
  expectancy:'technical',sample_size:'technical',setup_performance:'technical',system_version:'technical',regime_performance:'technical',
  adaptation_changes:'technical',risk_stability:'technical',drawdown:'technical',capital_growth:'technical',
  identity_expression:'psychological',discipline_score:'psychological',patience_score:'psychological',objectivity_score:'psychological',
@@ -4486,6 +4490,37 @@ function tiosRequestedEvidenceMetric(metric){
   if(metric==='review_completion'){
     if(!trades.length)return{available:false,reason:'No closed trades are available.'};const reviewed=activeExecutionReviews().length;
     return{available:true,value:roundEvidence(reviewed/trades.length*100,1),unit:'%',sampleSize:trades.length,details:{reviewed,totalTrades:trades.length}};
+  }
+
+  if(metric==='playbook_adherence'){
+    const reviewed=trades
+      .map(trade=>({trade,score:edgeScoreForTrade(trade.id)}))
+      .filter(item=>Number.isFinite(item.score));
+    if(!reviewed.length)return{available:false,reason:'No playbook-reviewed trades are available yet.'};
+    const avg=reviewed.reduce((sum,item)=>sum+item.score,0)/reviewed.length;
+    return{
+      available:true,value:roundEvidence(avg,1),unit:'%',sampleSize:reviewed.length,
+      details:{measure:'average playbook adherence',perfectReviews:reviewed.filter(item=>item.score===100).length}
+    };
+  }
+  if(metric==='playbook_errors'){
+    const reviewed=trades
+      .map(trade=>({trade,units:scoringUnitsForTrade(trade.id)}))
+      .filter(item=>item.units.length);
+    if(!reviewed.length)return{available:false,reason:'No playbook-reviewed trades are available yet.'};
+    const totalErrors=reviewed.reduce((sum,item)=>sum+item.units.filter(unit=>!unit.passed).length,0);
+    return{
+      available:true,value:totalErrors,unit:'missed playbook requirements',sampleSize:reviewed.length,
+      details:{averageErrorsPerReview:roundEvidence(totalErrors/reviewed.length,2)}
+    };
+  }
+  if(metric==='playbook_review_completion'){
+    if(!trades.length)return{available:false,reason:'No closed trades are available.'};
+    const reviewed=trades.filter(trade=>reviewForTrade(trade.id)).length;
+    return{
+      available:true,value:roundEvidence(reviewed/trades.length*100,1),unit:'%',sampleSize:trades.length,
+      details:{reviewed,totalTrades:trades.length}
+    };
   }
   if(metric==='expectancy'){
     if(!trades.length)return{available:false,reason:'No closed trades are available.'};const net=trades.reduce((sum,t)=>sum+(Number(t.pnl)||0),0);
@@ -4635,6 +4670,53 @@ function publishTiosSignal(signal,metric,value,details={}){
 
   window.dispatchEvent(new CustomEvent('hios:product-signal',{detail:event}));
   return event;
+}
+
+
+function publishTiosStructuredEvidence({
+  evidenceType,
+  subject,
+  observation,
+  evaluation,
+  model=null,
+  evidenceFamily='technical',
+  context={}
+}={}){
+  if(!currentUser||!evidenceType||!subject?.type||!subject?.id)return null;
+  const now=new Date().toISOString();
+
+  const item={
+    id:`evidence_tios_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
+    schema:'hios.evidence.v1',
+    sourceProductId:'tios',
+    sourceProductName:'Traders-IOS',
+    source:'t-ios',
+    domain:'trading',
+    evidenceFamily,
+    evidenceType,
+    subject:{type:String(subject.type),id:String(subject.id)},
+    model:model?{...model}:null,
+    observation:observation&&typeof observation==='object'?observation:{},
+    evaluation:evaluation&&typeof evaluation==='object'?evaluation:{},
+    context:{accountId:tradingAccount?.id||null,...context},
+    userId:currentUser.id,
+    observedAt:now
+  };
+
+  const bus=readHiosJson(HIOS_STRUCTURED_EVIDENCE_BUS_KEY,[]);
+  writeHiosJson(
+    HIOS_STRUCTURED_EVIDENCE_BUS_KEY,
+    (Array.isArray(bus)?bus:[]).concat(item).slice(-HIOS_STRUCTURED_EVIDENCE_LIMIT)
+  );
+
+  setTiosConnectionStatus({
+    lastStructuredEvidenceAt:now,
+    lastStructuredEvidenceType:evidenceType,
+    lastStructuredEvidenceMetric:item.evaluation?.metric||null
+  });
+
+  window.dispatchEvent(new CustomEvent('hios:structured-evidence',{detail:item}));
+  return item;
 }
 
 function publishTiosSnapshot(reason='refresh'){
@@ -8193,6 +8275,119 @@ function renderEdgePlaybook(){
   renderPlaybookLibrary(); renderEdgeSummary(); renderEdgeTradeList(); renderSelectedEdgeTrade();
 }
 
+
+function playbookReviewEvidenceForTrade(tradeId){
+  const trade=trades.find(item=>String(item.id)===String(tradeId));
+  const review=reviewForTrade(tradeId);
+  const assignment=tradePlaybookMap[String(tradeId)]||null;
+  const playbook=assignment?playbookById(assignment.playbookId):null;
+  const snapshot=assignment?playbookVersion(playbook,assignment.version):null;
+  if(!trade||!review||!assignment||!playbook||!snapshot)return null;
+
+  const rows=checksForReview(review.id);
+  const rowMap=new Map(rows.map(row=>[String(row.criterion_key||''),row]));
+  const criteriaGroups=[];
+  const conditionalRoutes=[];
+
+  (snapshot.sections||[]).forEach((section,sectionIndex)=>{
+    const sectionPath=sectionHeadingPath(section,sectionIndex);
+
+    normalizedPlaybookGroups(section).forEach((group,groupIndex)=>{
+      const rules=Array.isArray(group.rules)?group.rules:[];
+      const required=rules.filter(rule=>rule.kind!=='reference');
+
+      const criteria=rules.map(rule=>{
+        const row=rowMap.get(criterionKeyForRule(rule));
+        const selected=Boolean(row?.complied);
+        const outcome=String(rule.outcome||'').trim();
+
+        if(selected&&outcome){
+          conditionalRoutes.push({
+            sectionPath:[...sectionPath],
+            groupId:group.id||null,
+            groupTitle:group.title||`Criteria ${groupIndex+1}`,
+            selectedCriterion:rule.text,
+            expectedOutcome:outcome
+          });
+        }
+
+        return{
+          ruleId:rule.id,
+          criterion:rule.text,
+          kind:rule.kind==='reference'?'reference':'required',
+          selected,
+          outcome:outcome||null,
+          comment:row?.comment||null
+        };
+      });
+
+      const requiredCriteria=criteria.filter(item=>item.kind==='required');
+      const passed=group.matchMode==='any'
+        ? requiredCriteria.some(item=>item.selected)
+        : requiredCriteria.length>0&&requiredCriteria.every(item=>item.selected);
+
+      criteriaGroups.push({
+        sectionId:section.id||null,
+        sectionPath:[...sectionPath],
+        groupId:group.id||null,
+        groupTitle:group.title||`Criteria ${groupIndex+1}`,
+        logic:group.matchMode==='any'?'one_of':'all_of',
+        passed,
+        criteria
+      });
+    });
+  });
+
+  const units=scoringUnitsForTrade(tradeId);
+  const passedUnits=units.filter(unit=>unit.passed).length;
+  const totalUnits=units.length;
+  const score=totalUnits?passedUnits/totalUnits*100:null;
+
+  return{
+    trade,playbook,snapshot,
+    observation:{
+      reviewId:review.id,
+      reviewedAt:review.updated_at||new Date().toISOString(),
+      criteriaGroups,
+      conditionalRoutes,
+      tradeContext:{
+        instrument:trade.instrument||null,
+        direction:trade.direction||null,
+        tradeDate:trade.trade_date||null,
+        setup:trade.setup||null
+      }
+    },
+    evaluation:{
+      metric:'playbook_adherence',
+      value:Number.isFinite(score)?roundEvidence(score,1):null,
+      unit:'%',
+      compliant:Number.isFinite(score)?score===100:null,
+      passedUnits,totalUnits,
+      missedUnits:Math.max(0,totalUnits-passedUnits),
+      rating:edgeRatingForTrade(tradeId)||null
+    }
+  };
+}
+
+function publishPlaybookReviewStructuredEvidence(tradeId){
+  const payload=playbookReviewEvidenceForTrade(tradeId);
+  if(!payload)return null;
+  return publishTiosStructuredEvidence({
+    evidenceType:'rule_compliance_assessment',
+    subject:{type:'trade',id:payload.trade.id},
+    model:{
+      type:'trading_playbook',
+      id:payload.playbook.id,
+      name:payload.playbook.name,
+      version:payload.snapshot.version
+    },
+    observation:payload.observation,
+    evaluation:payload.evaluation,
+    evidenceFamily:'technical',
+    context:{evidenceSource:'playbook_review'}
+  });
+}
+
 async function saveEdgeReview(){
   if(!selectedEdgeTradeId){alert('Select a trade first.');return}
   const trade=trades.find(t=>t.id===selectedEdgeTradeId); if(!trade){alert('The selected trade could not be found.');return}
@@ -8227,7 +8422,11 @@ async function saveEdgeReview(){
   $('#edgeSaveReviewBtn').disabled=false; $('#edgeSaveTopBtn').disabled=false;
   if(checkResult.error){alert(checkResult.error.message);return}
   if(assignment)assignPlaybookToTrade(trade.id,assignment.playbookId,assignment.version);
-  await loadEdgeData(); renderEdgePlaybook(); renderJournal(); respondToGoalEvidenceRequest('edge_review_saved');
+  await loadEdgeData();
+  renderEdgePlaybook();
+  renderJournal();
+  publishPlaybookReviewStructuredEvidence(trade.id);
+  respondToGoalEvidenceRequest('edge_review_saved');
   const score=edgeScoreForTrade(trade.id); showStatus(`Playbook review saved • ${edgeRatingForTrade(trade.id)||'—'}${score===null?'':` • ${score.toFixed(1)}%`}`);
 }
 async function deleteEdgeReview(){
