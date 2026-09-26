@@ -2981,6 +2981,16 @@ textarea{resize:vertical;min-height:90px}
   display:none!important;
 }
 
+
+/* Keep picture controls visible after image hydration */
+.playbook-rule-image-actions{
+  position:relative;
+  z-index:3;
+}
+.playbook-rule-image-item:hover .playbook-rule-image-actions{
+  background:#0b1825;
+}
+
 </style>
 </head>
 
@@ -8177,22 +8187,53 @@ async function storePlaybookDemoImage(file,ruleId){
 
 async function hydratePlaybookImages(root=document){
   const nodes=[...root.querySelectorAll('[data-playbook-image-key]')];
+
   await Promise.all(nodes.map(async node=>{
     const key=node.dataset.playbookImageKey;
     if(!key||node.dataset.playbookImageHydrated==='1')return;
+
     node.dataset.playbookImageHydrated='1';
+
+    const isBuilderItem=node.classList.contains('playbook-rule-image-item');
+    const loading=node.querySelector('.playbook-media-loading');
+
     try{
       const record=await getPlaybookMediaRecord(key);
+
       if(!record?.dataUrl){
-        node.innerHTML='<span class="playbook-media-loading">Image unavailable on this device</span>';
+        if(isBuilderItem){
+          if(loading)loading.textContent='Image unavailable on this device';
+        }else{
+          node.innerHTML='<span class="playbook-media-loading">Image unavailable on this device</span>';
+        }
         return;
       }
-      node.innerHTML=`<img src="${record.dataUrl}" alt="Playbook demonstration image">`+
-        (node.classList.contains('playbook-demo-thumb')?'<span class="playbook-demo-badge">Demo</span>':'');
+
+      if(isBuilderItem){
+        // IMPORTANT: only replace the preview area.
+        // Keep the Replace / Delete controls inside the builder item.
+        const image=document.createElement('img');
+        image.src=record.dataUrl;
+        image.alt='Playbook demonstration image';
+
+        const existing=node.querySelector(':scope > img');
+        if(existing)existing.replaceWith(image);
+        else if(loading)loading.replaceWith(image);
+        else node.prepend(image);
+      }else{
+        node.innerHTML=`<img src="${record.dataUrl}" alt="Playbook demonstration image">`+
+          (node.classList.contains('playbook-demo-thumb')?'<span class="playbook-demo-badge">Demo</span>':'');
+      }
+
       node.dataset.playbookImageSrc=record.dataUrl;
     }catch(error){
       console.warn('Could not hydrate playbook image:',error);
-      node.innerHTML='<span class="playbook-media-loading">Image unavailable</span>';
+
+      if(isBuilderItem){
+        if(loading)loading.textContent='Image unavailable';
+      }else{
+        node.innerHTML='<span class="playbook-media-loading">Image unavailable</span>';
+      }
     }
   }));
 }
@@ -9168,9 +9209,12 @@ $('#edgeBuilderSections').addEventListener('click',async event=>{
     }
 
     item.remove();
+
     const count=rule.querySelectorAll('[data-rule-image-key]').length;
     const limit=rule.querySelector('[data-rule-media-limit]');
     if(limit)limit.textContent=`${count}/${PLAYBOOK_MEDIA_MAX_PER_RULE} pictures`;
+
+    showStatus('Picture removed from this playbook draft. Save Playbook to apply the change.');
   }
   else if(event.target.matches('[data-rule-remove]'))event.target.closest('[data-builder-rule]')?.remove();
   else if(event.target.matches('[data-step-remove]')){
