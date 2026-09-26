@@ -3038,6 +3038,88 @@ textarea{resize:vertical;min-height:90px}
   .session-meta-grid{grid-template-columns:1fr!important;}
 }
 
+
+/* ===== JOURNAL — GROUP TRADES BY TRADING DAY ===== */
+.trade-table .journal-day-divider td{
+  padding:0!important;
+  border-top:12px solid #060b11!important;
+  border-bottom:1px solid #263b51!important;
+  background:#101b28!important;
+}
+.trade-table .journal-day-divider:first-child td{
+  border-top-width:0!important;
+}
+.journal-day-divider-inner{
+  min-height:48px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:10px 14px;
+}
+.journal-day-title{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  min-width:170px;
+}
+.journal-day-title strong{
+  color:#f4f8ff;
+  font-size:13px;
+  letter-spacing:.01em;
+}
+.journal-day-title span{
+  color:#7f94aa;
+  font-size:9px;
+}
+.journal-day-execution{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.journal-day-stat{
+  padding:4px 8px;
+  border:1px solid #294057;
+  border-radius:999px;
+  color:#bcd0e5;
+  background:#0a141f;
+  font-size:8px;
+  white-space:nowrap;
+}
+.journal-day-stat b{
+  color:#fff;
+  margin-right:3px;
+}
+.journal-day-stat.coverage{
+  color:#90a7be;
+}
+.journal-day-stat.muted{
+  color:#758ba1;
+}
+.journal-trade-row td{
+  background:#0a1119;
+}
+.journal-trade-row:hover td{
+  background:#0d1722;
+}
+.journal-trade-number{
+  color:#8fa6bd;
+  font-size:9px;
+  font-weight:800;
+  white-space:nowrap;
+}
+@media(max-width:900px){
+  .journal-day-divider-inner{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  .journal-day-execution{
+    justify-content:flex-start;
+  }
+}
+
 </style>
 </head>
 
@@ -3367,7 +3449,7 @@ textarea{resize:vertical;min-height:90px}
           <table class="trade-table">
             <thead>
               <tr>
-                <th>Date</th>
+                <th>Trade</th>
                 <th>Instrument</th>
                 <th>Direction</th>
                 <th>Setup / Edge</th>
@@ -6465,6 +6547,40 @@ function formatGradeShare(value){
   return value===null ? '—' : value.toFixed(1)+'%';
 }
 
+
+function journalDayGroups(source=[]){
+  const groups=[];
+  const byDate=new Map();
+
+  (Array.isArray(source)?source:[]).forEach(trade=>{
+    const date=String(trade.trade_date||'').slice(0,10)||'undated';
+    if(!byDate.has(date)){
+      const group={date,trades:[]};
+      byDate.set(date,group);
+      groups.push(group);
+    }
+    byDate.get(date).trades.push(trade);
+  });
+
+  return groups;
+}
+
+function journalDayHeaderHtml(group){
+  const distribution=playbookGradeDistribution(group.trades);
+  const reviewed=distribution.reviewed;
+  const total=group.trades.length;
+  const coverage=total?reviewed/total*100:0;
+  const dateLabel=group.date==='undated'?'Undated trades':formatDate(group.date);
+
+  const executionSummary=reviewed
+    ? `<span class="journal-day-stat"><b>A+</b> ${formatGradeShare(distribution.percentages['A+'])}</span>
+       <span class="journal-day-stat"><b>A</b> ${formatGradeShare(distribution.percentages['A'])}</span>
+       <span class="journal-day-stat"><b>B</b> ${formatGradeShare(distribution.percentages['B'])}</span>`
+    : '<span class="journal-day-stat muted">No reviewed trades yet</span>';
+
+  return `<tr class="journal-day-divider"><td colspan="10"><div class="journal-day-divider-inner"><div class="journal-day-title"><strong>${escapeHtml(dateLabel)}</strong><span>${total} trade${total===1?'':'s'}</span></div><div class="journal-day-execution">${executionSummary}<span class="journal-day-stat coverage">Reviewed ${reviewed}/${total} · ${coverage.toFixed(0)}%</span></div></div></td></tr>`;
+}
+
 function renderJournal(){
   populateInstrumentFilter();
 
@@ -6511,33 +6627,38 @@ function renderJournal(){
       </tr>
     `;
   }else{
-    pageItems.forEach(t=>{
-      const pnl=Number(t.pnl)||0;
-      const tr=document.createElement('tr');
+    journalDayGroups(pageItems).forEach(group=>{
+      body.insertAdjacentHTML('beforeend',journalDayHeaderHtml(group));
 
-      tr.innerHTML=`
-        <td>${formatDate(t.trade_date)}</td>
-        <td><strong>${escapeHtml(t.instrument||'—')}</strong></td>
-        <td>
-          <span class="direction-badge ${t.direction==='Buy'?'buy':'sell'}">
-            ${escapeHtml(t.direction||'—')}
-          </span>
-        </td>
-        <td>${escapeHtml(t.setup||'—')}</td>
-        <td class="${pnlClass(pnl)}"><strong>${signedMoney(pnl)}</strong></td>
-        <td>${journalExecutionBadge(t.id,t.execution_score)}</td>
-        <td>${escapeHtml(t.psychology||'—')}</td>
-        <td>${journalEdgeBadge(t.id)}</td>
-        <td title="${escapeHtml(t.notes||'')}">${escapeHtml((t.notes||'—').slice(0,55))}${(t.notes||'').length>55?'…':''}</td>
-        <td>
-          <div class="table-actions">
-            <button class="btn small edit-trade" data-id="${t.id}">Edit</button>
-            <button class="btn small danger delete-trade" data-id="${t.id}">Delete</button>
-          </div>
-        </td>
-      `;
+      group.trades.forEach((t,index)=>{
+        const pnl=Number(t.pnl)||0;
+        const tr=document.createElement('tr');
+        tr.className='journal-trade-row';
 
-      body.appendChild(tr);
+        tr.innerHTML=`
+          <td><span class="journal-trade-number">Trade ${index+1}</span></td>
+          <td><strong>${escapeHtml(t.instrument||'—')}</strong></td>
+          <td>
+            <span class="direction-badge ${t.direction==='Buy'?'buy':'sell'}">
+              ${escapeHtml(t.direction||'—')}
+            </span>
+          </td>
+          <td>${escapeHtml(t.setup||'—')}</td>
+          <td class="${pnlClass(pnl)}"><strong>${signedMoney(pnl)}</strong></td>
+          <td>${journalExecutionBadge(t.id,t.execution_score)}</td>
+          <td>${escapeHtml(t.psychology||'—')}</td>
+          <td>${journalEdgeBadge(t.id)}</td>
+          <td title="${escapeHtml(t.notes||'')}">${escapeHtml((t.notes||'—').slice(0,55))}${(t.notes||'').length>55?'…':''}</td>
+          <td>
+            <div class="table-actions">
+              <button class="btn small edit-trade" data-id="${t.id}">Edit</button>
+              <button class="btn small danger delete-trade" data-id="${t.id}">Delete</button>
+            </div>
+          </td>
+        `;
+
+        body.appendChild(tr);
+      });
     });
   }
 
