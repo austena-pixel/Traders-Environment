@@ -2936,6 +2936,51 @@ textarea{resize:vertical;min-height:90px}
   .playbook-demo-images{margin-left:0}
 }
 
+
+/* ===== PLAYBOOK DEMO IMAGE REPLACE / DELETE ===== */
+.playbook-rule-image-item{
+  flex-basis:142px!important;
+  height:108px!important;
+  display:grid!important;
+  grid-template-rows:76px 32px!important;
+}
+.playbook-rule-image-item > img,
+.playbook-rule-image-item > .playbook-media-loading{
+  grid-row:1!important;
+}
+.playbook-rule-image-actions{
+  grid-row:2;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:5px;
+  padding:5px;
+  border-top:1px solid #22364a;
+  background:#071019;
+}
+.playbook-rule-image-actions button{
+  border:1px solid #2a425b;
+  border-radius:6px;
+  background:#0c1824;
+  color:#b9cce0;
+  font-size:7px;
+  font-weight:800;
+  cursor:pointer;
+}
+.playbook-rule-image-actions button:hover{
+  border-color:#4e87bd;
+  color:#fff;
+}
+.playbook-rule-image-actions .delete{
+  border-color:rgba(248,113,113,.32);
+  color:#fca5a5;
+}
+.playbook-rule-image-actions .delete:hover{
+  border-color:#f87171;
+}
+.playbook-rule-image-remove{
+  display:none!important;
+}
+
 </style>
 </head>
 
@@ -8061,6 +8106,18 @@ async function savePlaybookMediaRecord(record){
   });
 }
 
+
+async function deletePlaybookMediaRecord(key){
+  if(!key)return;
+  const db=await openPlaybookMediaDb();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(PLAYBOOK_MEDIA_STORE,'readwrite');
+    tx.objectStore(PLAYBOOK_MEDIA_STORE).delete(key);
+    tx.oncomplete=()=>{db.close();resolve(true)};
+    tx.onerror=()=>{const error=tx.error;db.close();reject(error)};
+  });
+}
+
 async function getPlaybookMediaRecord(key){
   if(!key)return null;
   const db=await openPlaybookMediaDb();
@@ -8141,7 +8198,7 @@ async function hydratePlaybookImages(root=document){
 }
 
 function playbookBuilderImageItem(key){
-  return `<div class="playbook-rule-image-item" data-rule-image-key="${escapeHtml(key)}" data-playbook-image-key="${escapeHtml(key)}"><span class="playbook-media-loading">Loading image…</span><button class="playbook-rule-image-remove" type="button" data-rule-image-remove aria-label="Remove demonstration image">×</button></div>`;
+  return `<div class="playbook-rule-image-item" data-rule-image-key="${escapeHtml(key)}" data-playbook-image-key="${escapeHtml(key)}"><span class="playbook-media-loading">Loading image…</span><div class="playbook-rule-image-actions"><button type="button" data-rule-image-replace>Replace</button><button class="delete" type="button" data-rule-image-delete>Delete</button></div></div>`;
 }
 
 function playbookReviewImagesHtml(rule){
@@ -8172,6 +8229,48 @@ const PLAYBOOK_RESET_BASE='tios_playbook_reset_v3';
 let playbooks=[];
 let tradePlaybookMap={};
 let editingPlaybookId=null;
+
+let pendingPlaybookMediaAdds=new Set();
+let pendingPlaybookMediaDeletes=new Set();
+
+function playbookMediaKeyReferenced(key){
+  if(!key)return false;
+  return playbooks.some(playbook=>
+    (playbook.versions||[]).some(version=>
+      (version.sections||[]).some(section=>
+        normalizedPlaybookGroups(section).some(group=>
+          (group.rules||[]).some(rule=>
+            Array.isArray(rule.imageKeys)&&rule.imageKeys.includes(key)
+          )
+        )
+      )
+    )
+  );
+}
+
+async function discardUnsavedPlaybookMedia(){
+  const unsaved=[...pendingPlaybookMediaAdds];
+  pendingPlaybookMediaAdds.clear();
+  pendingPlaybookMediaDeletes.clear();
+  await Promise.all(unsaved.map(key=>
+    deletePlaybookMediaRecord(key).catch(error=>console.warn('Could not discard unsaved playbook image:',error))
+  ));
+}
+
+async function finalizePlaybookMediaAfterSave(){
+  const deletions=[...pendingPlaybookMediaDeletes];
+  pendingPlaybookMediaAdds.clear();
+  pendingPlaybookMediaDeletes.clear();
+
+  // Preserve images still referenced by older playbook versions.
+  await Promise.all(deletions.map(async key=>{
+    if(playbookMediaKeyReferenced(key))return;
+    try{await deletePlaybookMediaRecord(key)}
+    catch(error){console.warn('Could not delete unused playbook image:',error)}
+  }));
+}
+
+
 
 function edgeStorageScope(){
   return `${currentUser?.id||'anon'}:${tradingAccount?.id||'default'}`;
@@ -8592,6 +8691,20 @@ function clearEdgeEditor(){
   $('#edgeDynamicPlanFlow').textContent='Create a playbook to define the sequence you want to follow.';
   updateEdgeLiveScore();
 }
+
+function syncEdgeReviewActionState(){
+  const saved=Boolean(selectedEdgeTradeId&&reviewForTrade(selectedEdgeTradeId));
+  const label=saved?'Update Review':'Save Review';
+
+  const bottom=$('#edgeSaveReviewBtn');
+  const top=$('#edgeSaveTopBtn');
+  const del=$('#edgeDeleteReviewBtn');
+
+  if(bottom)bottom.textContent=label;
+  if(top)top.textContent=label;
+  if(del)del.style.display=saved?'':'none';
+}
+
 function loadEdgeReviewIntoEditor(trade){
   selectedEdgeTradeId=trade.id;
   const review=reviewForTrade(trade.id);
@@ -8608,6 +8721,7 @@ function loadEdgeReviewIntoEditor(trade){
   const assignment=playbookAssignmentForTrade(trade.id);
   renderDynamicPlaybookCriteria(trade,assignment);
   updateEdgeLiveScore();
+  syncEdgeReviewActionState();
   renderEdgeTradeList();
 }
 function filteredEdgeTrades(){
@@ -8797,19 +8911,32 @@ async function saveEdgeReview(){
     }
     return {review_id:review.id,user_id:currentUser.id,section,criterion_key:key,criterion_label:label,complied:input.checked,comment:comment?.value.trim()||null,sort_order:index+1};
   });
-  // Remove criteria from a previous playbook/version before writing this review snapshot.
-  const del=await db.from('trade_plan_checks').delete().eq('review_id',review.id).eq('user_id',currentUser.id);
-  if(del.error){$('#edgeSaveReviewBtn').disabled=false;$('#edgeSaveTopBtn').disabled=false;alert(del.error.message);return}
-  const checkResult=checkPayload.length?await db.from('trade_plan_checks').insert(checkPayload):{error:null};
-  $('#edgeSaveReviewBtn').disabled=false; $('#edgeSaveTopBtn').disabled=false;
-  if(checkResult.error){alert(checkResult.error.message);return}
+  // Update the existing review in place. The original T-IOS review
+  // system used this composite key successfully; it also avoids
+  // deleting the whole review snapshot before an update is written.
+  const checkResult=checkPayload.length
+    ? await db.from('trade_plan_checks').upsert(
+        checkPayload,
+        {onConflict:'review_id,criterion_key'}
+      )
+    : {error:null};
+
+  $('#edgeSaveReviewBtn').disabled=false;
+  $('#edgeSaveTopBtn').disabled=false;
+
+  if(checkResult.error){
+    alert('Could not update this Playbook review: '+checkResult.error.message);
+    return;
+  }
   if(assignment)assignPlaybookToTrade(trade.id,assignment.playbookId,assignment.version);
   await loadEdgeData();
   renderEdgePlaybook();
   renderJournal();
+  syncEdgeReviewActionState();
   publishPlaybookReviewStructuredEvidence(trade.id);
   respondToGoalEvidenceRequest('edge_review_saved');
-  const score=edgeScoreForTrade(trade.id); showStatus(`Playbook review saved • ${edgeRatingForTrade(trade.id)||'—'}${score===null?'':` • ${score.toFixed(1)}%`}`);
+  const score=edgeScoreForTrade(trade.id);
+  showStatus(`Playbook review updated • ${edgeRatingForTrade(trade.id)||'—'}${score===null?'':` • ${score.toFixed(1)}%`}`);
 }
 async function deleteEdgeReview(){
   if(!selectedEdgeTradeId)return; const review=reviewForTrade(selectedEdgeTradeId); if(!review){alert('This trade does not have a saved review yet.');return}
@@ -8877,7 +9004,10 @@ function builderRuleTemplate(rule={}){
   return `<div class="playbook-rule-editor" data-builder-rule="${escapeHtml(id)}"><input data-rule-text type="text" value="${escapeHtml(rule.text||'')}" placeholder="Criterion / alternative"><select data-rule-kind><option value="required" ${rule.kind!=='reference'?'selected':''}>Required</option><option value="reference" ${rule.kind==='reference'?'selected':''}>Reference</option></select><input class="playbook-rule-outcome" data-rule-outcome type="text" value="${escapeHtml(rule.outcome||'')}" placeholder="If selected → optional result, e.g. Execute on 5 min"><button class="playbook-mini-btn danger" type="button" data-rule-remove>×</button><div class="playbook-rule-media"><div class="playbook-rule-media-head"><div class="playbook-rule-media-copy"><strong>Demonstrative pictures</strong><span>Optional visual examples for this criterion or pattern. These are references during trade review.</span></div><button class="playbook-mini-btn playbook-rule-media-add" type="button" data-rule-image-add>+ Add Demo Picture</button><input class="playbook-rule-image-input" data-rule-image-input type="file" accept="image/*"></div><div class="playbook-rule-media-list" data-rule-media-list>${imageKeys.map(playbookBuilderImageItem).join('')}</div><span class="playbook-media-limit" data-rule-media-limit>${imageKeys.length}/${PLAYBOOK_MEDIA_MAX_PER_RULE} pictures</span></div></div>`;
 }
 function openPlaybookBuilder(id=null){
-  refreshPlaybookState(); editingPlaybookId=id;
+  refreshPlaybookState();
+  pendingPlaybookMediaAdds.clear();
+  pendingPlaybookMediaDeletes.clear();
+  editingPlaybookId=id;
   const pb=id?playbookById(id):null; const snapshot=pb?playbookVersion(pb,pb.currentVersion):null;
   $('#edgeBuilderTitle').textContent=pb?'Edit Playbook':'Create Playbook';
   $('#edgeBuilderName').value=pb?.name||''; $('#edgeBuilderDescription').value=pb?.description||''; $('#edgeBuilderSetActive').checked=pb?Boolean(pb.active):true;
@@ -8889,7 +9019,12 @@ function openPlaybookBuilder(id=null){
   $('#edgePlaybookModal').classList.add('show'); $('#edgePlaybookModal').setAttribute('aria-hidden','false');
   hydratePlaybookImages($('#edgeBuilderSections'));
 }
-function closePlaybookBuilder(){editingPlaybookId=null;$('#edgePlaybookModal').classList.remove('show');$('#edgePlaybookModal').setAttribute('aria-hidden','true')}
+async function closePlaybookBuilder({discardMedia=true}={}){
+  if(discardMedia)await discardUnsavedPlaybookMedia();
+  editingPlaybookId=null;
+  $('#edgePlaybookModal').classList.remove('show');
+  $('#edgePlaybookModal').setAttribute('aria-hidden','true');
+}
 function collectBuilderSections(){
   return $$('[data-builder-section]').map(section=>({
     id:section.dataset.builderSection,
@@ -8910,7 +9045,7 @@ function collectBuilderSections(){
     })).filter(group=>group.title||group.rules.length)
   })).filter(section=>section.title||section.subheadings.length||section.groups.length);
 }
-function savePlaybookFromBuilder(){
+async function savePlaybookFromBuilder(){
   const name=$('#edgeBuilderName').value.trim(); if(!name){alert('Give the playbook a name.');return}
   const sections=collectBuilderSections(); if(!sections.length){alert('Add at least one section to the playbook.');return}
   const missingHeading=sections.find(section=>!section.title);
@@ -8928,13 +9063,31 @@ function savePlaybookFromBuilder(){
   }
   const savedId=editingPlaybookId;
   savePlaybooksLocal();
-  closePlaybookBuilder();
+  await finalizePlaybookMediaAfterSave();
+  await closePlaybookBuilder({discardMedia:false});
   refreshPlaybookState();
   if(savedId&&playbookById(savedId))setActivePlaybook(savedId);else renderEdgePlaybook();
   showStatus('Playbook saved and added to your library');
 }
 
-$('#edgeDynamicCriteria').addEventListener('change',event=>{if(event.target.classList.contains('edge-check-input')){updatePlaybookBranchOutcomes();updateEdgeLiveScore()}});
+
+$('#edgeReviewNotes').addEventListener('input',()=>{
+  if(reviewForTrade(selectedEdgeTradeId)){
+    $('#edgeSaveReviewBtn').textContent='Update Review';
+    $('#edgeSaveTopBtn').textContent='Update Review';
+  }
+});
+
+$('#edgeDynamicCriteria').addEventListener('change',event=>{
+  if(!event.target.classList.contains('edge-check-input'))return;
+  updatePlaybookBranchOutcomes();
+  updateEdgeLiveScore();
+
+  if(reviewForTrade(selectedEdgeTradeId)){
+    $('#edgeSaveReviewBtn').textContent='Update Review';
+    $('#edgeSaveTopBtn').textContent='Update Review';
+  }
+});
 $('#edgeSearch').addEventListener('input',renderEdgeTradeList); $('#edgeStatusFilter').addEventListener('change',renderEdgeTradeList);
 $('#edgePlaybookSelect').addEventListener('change',()=>{if($('#edgePlaybookSelect').value)setActivePlaybook($('#edgePlaybookSelect').value)});
 $('#edgePlaybookLibraryList')?.addEventListener('click',event=>{
@@ -8965,7 +9118,7 @@ $('#edgeNewPlaybookBtn').addEventListener('click',()=>openPlaybookBuilder());
 $('#edgeEditPlaybookBtn').addEventListener('click',()=>{const pb=activePlaybook(); if(pb)openPlaybookBuilder(pb.id)});
 $('#edgeBuilderClose').addEventListener('click',closePlaybookBuilder); $('#edgeBuilderCancel').addEventListener('click',closePlaybookBuilder); $('#edgeBuilderSave').addEventListener('click',savePlaybookFromBuilder);
 $('#edgeAddSectionBtn').addEventListener('click',()=>{const index=$$('[data-builder-section]').length;$('#edgeBuilderSections').insertAdjacentHTML('beforeend',builderSectionTemplate({},index));refreshBuilderStepLabels()});
-$('#edgeBuilderSections').addEventListener('click',event=>{
+$('#edgeBuilderSections').addEventListener('click',async event=>{
   const section=event.target.closest('[data-builder-section]'); if(!section)return;
   if(event.target.matches('[data-add-subheading]')){
     const stack=section.querySelector('.playbook-heading-stack');
@@ -8990,12 +9143,33 @@ $('#edgeBuilderSections').addEventListener('click',event=>{
     const input=rule?.querySelector('[data-rule-image-input]');
     if(input){input.value='';input.click();}
   }
-  else if(event.target.matches('[data-rule-image-remove]')){
+  else if(event.target.matches('[data-rule-image-replace]')){
     const item=event.target.closest('[data-rule-image-key]');
     const rule=event.target.closest('[data-builder-rule]');
-    item?.remove();
-    const count=rule?.querySelectorAll('[data-rule-image-key]').length||0;
-    const limit=rule?.querySelector('[data-rule-media-limit]');
+    const input=rule?.querySelector('[data-rule-image-input]');
+    if(!item||!input)return;
+    input.dataset.replaceKey=item.dataset.ruleImageKey||'';
+    input.value='';
+    input.click();
+  }
+  else if(event.target.matches('[data-rule-image-delete]')){
+    const item=event.target.closest('[data-rule-image-key]');
+    const rule=event.target.closest('[data-builder-rule]');
+    const key=item?.dataset.ruleImageKey||'';
+    if(!item||!rule||!key)return;
+    if(!confirm('Delete this demonstrative picture from this playbook criterion?'))return;
+
+    if(pendingPlaybookMediaAdds.has(key)){
+      pendingPlaybookMediaAdds.delete(key);
+      try{await deletePlaybookMediaRecord(key)}
+      catch(error){console.warn('Could not delete new playbook image:',error)}
+    }else{
+      pendingPlaybookMediaDeletes.add(key);
+    }
+
+    item.remove();
+    const count=rule.querySelectorAll('[data-rule-image-key]').length;
+    const limit=rule.querySelector('[data-rule-media-limit]');
     if(limit)limit.textContent=`${count}/${PLAYBOOK_MEDIA_MAX_PER_RULE} pictures`;
   }
   else if(event.target.matches('[data-rule-remove]'))event.target.closest('[data-builder-rule]')?.remove();
@@ -9024,8 +9198,11 @@ $('#edgeBuilderSections').addEventListener('change',async event=>{
   const list=rule?.querySelector('[data-rule-media-list]');
   if(!rule||!list)return;
 
+  const replaceKey=input.dataset.replaceKey||'';
+  delete input.dataset.replaceKey;
+
   const count=list.querySelectorAll('[data-rule-image-key]').length;
-  if(count>=PLAYBOOK_MEDIA_MAX_PER_RULE){
+  if(!replaceKey&&count>=PLAYBOOK_MEDIA_MAX_PER_RULE){
     alert(`You can attach up to ${PLAYBOOK_MEDIA_MAX_PER_RULE} demonstrative pictures to one criterion.`);
     input.value='';
     return;
@@ -9036,7 +9213,30 @@ $('#edgeBuilderSections').addEventListener('change',async event=>{
 
   try{
     const key=await storePlaybookDemoImage(file,rule.dataset.builderRule);
-    list.insertAdjacentHTML('beforeend',playbookBuilderImageItem(key));
+    pendingPlaybookMediaAdds.add(key);
+
+    if(replaceKey){
+      const oldItem=[...list.querySelectorAll('[data-rule-image-key]')]
+        .find(item=>item.dataset.ruleImageKey===replaceKey);
+
+      if(oldItem){
+        oldItem.insertAdjacentHTML('beforebegin',playbookBuilderImageItem(key));
+        oldItem.remove();
+      }else{
+        list.insertAdjacentHTML('beforeend',playbookBuilderImageItem(key));
+      }
+
+      if(pendingPlaybookMediaAdds.has(replaceKey)){
+        pendingPlaybookMediaAdds.delete(replaceKey);
+        try{await deletePlaybookMediaRecord(replaceKey)}
+        catch(error){console.warn('Could not remove replaced draft image:',error)}
+      }else{
+        pendingPlaybookMediaDeletes.add(replaceKey);
+      }
+    }else{
+      list.insertAdjacentHTML('beforeend',playbookBuilderImageItem(key));
+    }
+
     const limit=rule.querySelector('[data-rule-media-limit]');
     const nextCount=list.querySelectorAll('[data-rule-image-key]').length;
     if(limit)limit.textContent=`${nextCount}/${PLAYBOOK_MEDIA_MAX_PER_RULE} pictures`;
