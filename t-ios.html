@@ -2737,6 +2737,32 @@ textarea{resize:vertical;min-height:90px}
  .dynamic-playbook-group[data-match-mode="any"] .playbook-rules-under-path .edge-check{flex-basis:90%}
 }
 
+
+/* ===== PLAYBOOK EXCLUSIVE CHOICE FIX ===== */
+.dynamic-playbook-group[data-match-mode="any"] .playbook-rules-under-path{
+  display:flex!important;
+  gap:10px!important;
+  overflow-x:auto!important;
+  align-items:stretch!important;
+  padding-bottom:6px!important;
+}
+.dynamic-playbook-group[data-match-mode="any"] .playbook-rules-under-path .edge-check{
+  flex:1 0 min(330px,84%)!important;
+  min-width:270px!important;
+  margin:0!important;
+  border-color:#294762!important;
+}
+.dynamic-playbook-group[data-match-mode="any"] .playbook-choice-radio{
+  width:18px!important;
+  height:18px!important;
+  accent-color:#4ca5ff;
+}
+.dynamic-playbook-group[data-match-mode="any"] .edge-check:has(.playbook-choice-radio:checked){
+  border-color:#4ca5ff!important;
+  box-shadow:inset 0 0 0 1px rgba(76,165,255,.18);
+  background:rgba(76,165,255,.035);
+}
+
 </style>
 </head>
 
@@ -7967,6 +7993,23 @@ function flattenPlaybookRules(playbook,version){
   });
   return rows;
 }
+
+function playbookGroupRuntimeMode(group){
+  const rules=Array.isArray(group?.rules)?group.rules:[];
+  if(group?.matchMode==='any')return 'any';
+
+  const required=rules.filter(rule=>rule.kind!=='reference');
+  const referenceOnlyChoice=rules.length>1 && required.length===0;
+  return referenceOnlyChoice?'any':'all';
+}
+
+function playbookGroupScoringRules(group){
+  const rules=Array.isArray(group?.rules)?group.rules:[];
+  const mode=playbookGroupRuntimeMode(group);
+  if(mode==='any')return rules;
+  return rules.filter(rule=>rule.kind!=='reference');
+}
+
 function criterionKeyForRule(rule){
   return `${rule.kind==='reference'?'pb_ref':'pb_req'}_${rule.id}`;
 }
@@ -8002,18 +8045,20 @@ function scoringUnitsForTrade(tradeId){
     const units=[];
     (snapshot.sections||[]).forEach(section=>{
       normalizedPlaybookGroups(section).forEach(group=>{
-        const required=(group.rules||[]).filter(rule=>rule.kind!=='reference');
-        if(!required.length)return;
-        if(group.matchMode==='any'){
+        const mode=playbookGroupRuntimeMode(group);
+        const scoringRules=playbookGroupScoringRules(group);
+        if(!scoringRules.length)return;
+
+        if(mode==='any'){
           units.push({
             sectionId:section.id,
             groupId:group.id,
             mode:'any',
-            passed:required.some(rule=>Boolean(rowMap.get(criterionKeyForRule(rule))?.complied)),
-            ruleCount:required.length
+            passed:scoringRules.some(rule=>Boolean(rowMap.get(criterionKeyForRule(rule))?.complied)),
+            ruleCount:scoringRules.length
           });
         }else{
-          required.forEach(rule=>units.push({
+          scoringRules.forEach(rule=>units.push({
             sectionId:section.id,
             groupId:group.id,
             mode:'all',
@@ -8161,28 +8206,53 @@ function renderDynamicPlaybookCriteria(trade,assignment){
     const groupsHtml=groups.map((group,groupIndex)=>{
       const rules=group.rules||[];
       const required=rules.filter(rule=>rule.kind!=='reference');
-      const matchMode=group.matchMode==='any'?'any':'all';
-      const badge=required.length>1?`<span class="playbook-match-mode-badge ${matchMode==='any'?'any':''}">${matchMode==='any'?'Choose one':'All required'}</span>`:'';
+      const matchMode=playbookGroupRuntimeMode(group);
+      const contextualChoice=matchMode==='any'&&required.length===0&&rules.length>1;
+      const scoringRules=playbookGroupScoringRules(group);
+      const badge=scoringRules.length>1
+        ? `<span class="playbook-match-mode-badge ${matchMode==='any'?'any':''}">${matchMode==='any'?'Choose one':'All required'}</span>`
+        : '';
       const radioName=`pb_choice_${section.id||sectionIndex}_${group.id||groupIndex}`;
+
       const ruleCards=rules.map(rule=>{
         const key=criterionKeyForRule(rule);
         const saved=savedMap[key];
         const isRequired=rule.kind!=='reference';
-        const choice=isRequired&&matchMode==='any'&&required.length>1;
+        const choice=matchMode==='any'&&rules.length>1;
+        const scoring=matchMode==='any' ? true : isRequired;
         const inputType=choice?'radio':'checkbox';
         const nameAttr=choice?` name="${escapeHtml(radioName)}"`:'';
-        const ruleHelp=!isRequired
-          ? 'Reference only — record it without penalizing the score.'
-          : choice
-            ? 'Choose one alternative only.'
+        const ruleHelp=choice
+          ? (contextualChoice
+              ? 'Context option — choose only one. Selecting another option replaces this one.'
+              : 'Choose one alternative only. Selecting another option replaces this one.')
+          : !isRequired
+            ? 'Reference only — record it without penalizing the score.'
             : 'Required — this criterion must be satisfied.';
         const outcome=String(rule.outcome||'').trim();
-        return `<div class="edge-check ${isRequired?'':'reference-rule'}"><div class="edge-check-main"><input type="${inputType}"${nameAttr} class="edge-check-input ${choice?'playbook-choice-radio':''}" data-edge-scoring="${isRequired?'1':'0'}" data-edge-key="${escapeHtml(key)}" data-edge-outcome="${escapeHtml(outcome)}" ${saved?.complied?'checked':''}><div class="edge-check-copy"><strong>${escapeHtml(rule.text)}${isRequired?'':' <span class="playbook-reference-note">Reference</span>'}</strong><span>${ruleHelp}</span>${outcome?`<span class="playbook-conditional-hint">If selected → ${escapeHtml(outcome)}</span>`:''}</div></div><input class="edge-check-comment" data-edge-comment="${escapeHtml(key)}" type="text" value="${escapeHtml(saved?.comment||'')}" placeholder="Optional observation"></div>`;
+        const referenceBadge=!isRequired&&!choice
+          ? ' <span class="playbook-reference-note">Reference</span>'
+          : '';
+
+        return `<div class="edge-check ${!isRequired&&!choice?'reference-rule':''}"><div class="edge-check-main"><input type="${inputType}"${nameAttr} class="edge-check-input ${choice?'playbook-choice-radio':''}" data-edge-scoring="${scoring?'1':'0'}" data-edge-key="${escapeHtml(key)}" data-edge-outcome="${escapeHtml(outcome)}" ${saved?.complied?'checked':''}><div class="edge-check-copy"><strong>${escapeHtml(rule.text)}${referenceBadge}</strong><span>${ruleHelp}</span>${outcome?`<span class="playbook-conditional-hint">If selected → ${escapeHtml(outcome)}</span>`:''}</div></div><input class="edge-check-comment" data-edge-comment="${escapeHtml(key)}" type="text" value="${escapeHtml(saved?.comment||'')}" placeholder="Optional observation"></div>`;
       }).join('');
-      return `<div class="dynamic-playbook-group" data-match-mode="${matchMode}" data-group-id="${escapeHtml(group.id||String(groupIndex))}"><div class="dynamic-playbook-group-head"><div><strong>${escapeHtml(group.title||`Criteria ${groupIndex+1}`)}</strong><small>${matchMode==='any'?' Select exactly one required alternative.':' Every required item in this subsection must be satisfied.'}</small></div>${badge}</div><div class="playbook-rules-under-path">${ruleCards||'<div class="empty-state">No criteria in this subsection yet.</div>'}</div><div class="playbook-group-result" data-group-result><span>Active route</span><b data-group-result-text></b></div></div>`;
+
+      const groupHelp=matchMode==='any'
+        ? (contextualChoice
+            ? ' Select one context option. Only one can remain selected.'
+            : ' Select exactly one alternative. Only one can remain selected.')
+        : ' Every required item in this subsection must be satisfied.';
+
+      return `<div class="dynamic-playbook-group" data-match-mode="${matchMode}" data-group-id="${escapeHtml(group.id||String(groupIndex))}"><div class="dynamic-playbook-group-head"><div><strong>${escapeHtml(group.title||`Criteria ${groupIndex+1}`)}</strong><small>${groupHelp}</small></div>${badge}</div><div class="playbook-rules-under-path">${ruleCards||'<div class="empty-state">No criteria in this subsection yet.</div>'}</div><div class="playbook-group-result" data-group-result><span>Active route</span><b data-group-result-text></b></div></div>`;
     }).join('');
     return `<div class="dynamic-playbook-section"><div class="edge-section-head"><div>${pathHtml}${section.description?`<span>${escapeHtml(section.description)}</span>`:''}</div></div>${groupsHtml||'<div class="empty-state">No subsections in this playbook section yet.</div>'}</div>`;
   }).join('')||'<div class="empty-state">This playbook has no steps yet.</div>';
+
+  document.querySelectorAll('#edgeDynamicCriteria .dynamic-playbook-group[data-match-mode="any"]').forEach(group=>{
+    const checked=[...group.querySelectorAll('.edge-check-input:checked')];
+    checked.slice(1).forEach(input=>{input.checked=false;});
+  });
+
   updatePlaybookBranchOutcomes();
   updateEdgeLiveScore();
 }
@@ -8294,7 +8364,8 @@ function playbookReviewEvidenceForTrade(tradeId){
 
     normalizedPlaybookGroups(section).forEach((group,groupIndex)=>{
       const rules=Array.isArray(group.rules)?group.rules:[];
-      const required=rules.filter(rule=>rule.kind!=='reference');
+      const mode=playbookGroupRuntimeMode(group);
+      const scoringRules=playbookGroupScoringRules(group);
 
       const criteria=rules.map(rule=>{
         const row=rowMap.get(criterionKeyForRule(rule));
@@ -8321,17 +8392,18 @@ function playbookReviewEvidenceForTrade(tradeId){
         };
       });
 
-      const requiredCriteria=criteria.filter(item=>item.kind==='required');
-      const passed=group.matchMode==='any'
-        ? requiredCriteria.some(item=>item.selected)
-        : requiredCriteria.length>0&&requiredCriteria.every(item=>item.selected);
+      const scoringIds=new Set(scoringRules.map(rule=>String(rule.id)));
+      const scoringCriteria=criteria.filter(item=>scoringIds.has(String(item.ruleId)));
+      const passed=mode==='any'
+        ? scoringCriteria.some(item=>item.selected)
+        : scoringCriteria.length>0&&scoringCriteria.every(item=>item.selected);
 
       criteriaGroups.push({
         sectionId:section.id||null,
         sectionPath:[...sectionPath],
         groupId:group.id||null,
         groupTitle:group.title||`Criteria ${groupIndex+1}`,
-        logic:group.matchMode==='any'?'one_of':'all_of',
+        logic:mode==='any'?'one_of':'all_of',
         passed,
         criteria
       });
