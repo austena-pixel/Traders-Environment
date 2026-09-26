@@ -2763,6 +2763,179 @@ textarea{resize:vertical;min-height:90px}
   background:rgba(76,165,255,.035);
 }
 
+
+/* ===== PLAYBOOK DEMONSTRATIVE IMAGES ===== */
+.playbook-rule-editor{
+  align-items:start!important;
+}
+.playbook-rule-media{
+  grid-column:1 / -1;
+  display:grid;
+  gap:7px;
+  margin-top:2px;
+  padding:8px;
+  border:1px dashed #263a50;
+  border-radius:9px;
+  background:#08111a;
+}
+.playbook-rule-media-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.playbook-rule-media-copy{
+  display:grid;
+  gap:2px;
+  color:#8ca0b7;
+  font-size:8px;
+  line-height:1.35;
+}
+.playbook-rule-media-copy strong{
+  color:#cfe0f2;
+  font-size:9px;
+}
+.playbook-rule-media-add{
+  white-space:nowrap;
+}
+.playbook-rule-image-input{
+  display:none!important;
+}
+.playbook-rule-media-list{
+  display:flex;
+  gap:7px;
+  overflow-x:auto;
+  padding-bottom:2px;
+  scrollbar-width:thin;
+}
+.playbook-rule-image-item{
+  position:relative;
+  flex:0 0 118px;
+  height:78px;
+  overflow:hidden;
+  border:1px solid #2a4159;
+  border-radius:8px;
+  background:#09131e;
+}
+.playbook-rule-image-item img,
+.playbook-demo-thumb img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.playbook-rule-image-item .playbook-media-loading,
+.playbook-demo-thumb .playbook-media-loading{
+  width:100%;
+  height:100%;
+  display:grid;
+  place-items:center;
+  color:#6f8399;
+  font-size:8px;
+  text-align:center;
+  padding:5px;
+}
+.playbook-rule-image-remove{
+  position:absolute;
+  top:4px;
+  right:4px;
+  width:22px;
+  height:22px;
+  border:1px solid rgba(248,113,113,.35);
+  border-radius:999px;
+  background:rgba(11,17,25,.88);
+  color:#fca5a5;
+  cursor:pointer;
+  font-size:12px;
+  line-height:1;
+}
+.playbook-media-limit{
+  color:#667d96;
+  font-size:7px;
+}
+.playbook-demo-images{
+  display:flex;
+  gap:7px;
+  overflow-x:auto;
+  margin:8px 0 2px 29px;
+  padding-bottom:3px;
+  scrollbar-width:thin;
+}
+.playbook-demo-thumb{
+  position:relative;
+  flex:0 0 120px;
+  height:78px;
+  overflow:hidden;
+  border:1px solid #2c4865;
+  border-radius:8px;
+  background:#09131e;
+  cursor:zoom-in;
+}
+.playbook-demo-thumb:hover{
+  border-color:#5aa7ff;
+}
+.playbook-demo-badge{
+  position:absolute;
+  left:5px;
+  bottom:5px;
+  padding:2px 5px;
+  border:1px solid rgba(90,167,255,.35);
+  border-radius:999px;
+  background:rgba(5,11,18,.86);
+  color:#b9d9ff;
+  font-size:6px;
+  font-weight:900;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.playbook-image-viewer{
+  position:fixed;
+  inset:0;
+  z-index:650;
+  display:none;
+  place-items:center;
+  padding:24px;
+  background:rgba(0,0,0,.88);
+  backdrop-filter:blur(7px);
+}
+.playbook-image-viewer.show{
+  display:grid;
+}
+.playbook-image-viewer-shell{
+  position:relative;
+  width:min(1180px,96vw);
+  max-height:92vh;
+  display:grid;
+  place-items:center;
+}
+.playbook-image-viewer img{
+  max-width:100%;
+  max-height:88vh;
+  object-fit:contain;
+  border:1px solid #30465e;
+  border-radius:12px;
+  box-shadow:0 24px 90px rgba(0,0,0,.62);
+  background:#05090e;
+}
+.playbook-image-viewer-close{
+  position:absolute;
+  top:-15px;
+  right:-15px;
+  width:34px;
+  height:34px;
+  border:1px solid #3a4d64;
+  border-radius:999px;
+  background:#0d1622;
+  color:#eef5ff;
+  cursor:pointer;
+  font-size:17px;
+  z-index:2;
+}
+@media(max-width:850px){
+  .playbook-rule-media-head{align-items:stretch;flex-direction:column}
+  .playbook-demo-images{margin-left:0}
+}
+
 </style>
 </head>
 
@@ -7858,6 +8031,141 @@ $('#statsMonthInput').addEventListener('change',e=>{
    Creation is user-defined. Review is strict against the rules the user marks Required.
 ========================= */
 
+
+const PLAYBOOK_MEDIA_DB='tios_playbook_media_v1';
+const PLAYBOOK_MEDIA_STORE='images';
+const PLAYBOOK_MEDIA_MAX_PER_RULE=3;
+
+function openPlaybookMediaDb(){
+  return new Promise((resolve,reject)=>{
+    if(!('indexedDB' in window)){reject(new Error('IndexedDB is not supported in this browser.'));return;}
+    const request=indexedDB.open(PLAYBOOK_MEDIA_DB,1);
+    request.onupgradeneeded=()=>{
+      const db=request.result;
+      if(!db.objectStoreNames.contains(PLAYBOOK_MEDIA_STORE)){
+        db.createObjectStore(PLAYBOOK_MEDIA_STORE,{keyPath:'key'});
+      }
+    };
+    request.onsuccess=()=>resolve(request.result);
+    request.onerror=()=>reject(request.error||new Error('Could not open playbook media storage.'));
+  });
+}
+
+async function savePlaybookMediaRecord(record){
+  const db=await openPlaybookMediaDb();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(PLAYBOOK_MEDIA_STORE,'readwrite');
+    tx.objectStore(PLAYBOOK_MEDIA_STORE).put(record);
+    tx.oncomplete=()=>{db.close();resolve(record)};
+    tx.onerror=()=>{const error=tx.error;db.close();reject(error)};
+  });
+}
+
+async function getPlaybookMediaRecord(key){
+  if(!key)return null;
+  const db=await openPlaybookMediaDb();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(PLAYBOOK_MEDIA_STORE,'readonly');
+    const request=tx.objectStore(PLAYBOOK_MEDIA_STORE).get(key);
+    request.onsuccess=()=>{const value=request.result||null;db.close();resolve(value)};
+    request.onerror=()=>{const error=request.error;db.close();reject(error)};
+  });
+}
+
+function readFileAsDataUrl(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(String(reader.result||''));
+    reader.onerror=()=>reject(reader.error||new Error('Could not read image.'));
+    reader.readAsDataURL(file);
+  });
+}
+
+function loadImageElement(src){
+  return new Promise((resolve,reject)=>{
+    const image=new Image();
+    image.onload=()=>resolve(image);
+    image.onerror=()=>reject(new Error('Could not decode image.'));
+    image.src=src;
+  });
+}
+
+async function compressPlaybookDemoImage(file){
+  const source=await readFileAsDataUrl(file);
+  const image=await loadImageElement(source);
+  const maxSide=1400;
+  const scale=Math.min(1,maxSide/Math.max(image.naturalWidth||1,image.naturalHeight||1));
+  const width=Math.max(1,Math.round(image.naturalWidth*scale));
+  const height=Math.max(1,Math.round(image.naturalHeight*scale));
+  const canvas=document.createElement('canvas');
+  canvas.width=width;canvas.height=height;
+  const ctx=canvas.getContext('2d',{alpha:false});
+  ctx.drawImage(image,0,0,width,height);
+  return canvas.toDataURL('image/jpeg',0.82);
+}
+
+async function storePlaybookDemoImage(file,ruleId){
+  if(!file?.type?.startsWith('image/'))throw new Error('Choose an image file.');
+  const dataUrl=await compressPlaybookDemoImage(file);
+  const key=`pbimg_${currentUser?.id||'anon'}_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
+  await savePlaybookMediaRecord({
+    key,
+    ruleId:String(ruleId||''),
+    name:file.name||'playbook-demo.jpg',
+    dataUrl,
+    createdAt:new Date().toISOString()
+  });
+  return key;
+}
+
+async function hydratePlaybookImages(root=document){
+  const nodes=[...root.querySelectorAll('[data-playbook-image-key]')];
+  await Promise.all(nodes.map(async node=>{
+    const key=node.dataset.playbookImageKey;
+    if(!key||node.dataset.playbookImageHydrated==='1')return;
+    node.dataset.playbookImageHydrated='1';
+    try{
+      const record=await getPlaybookMediaRecord(key);
+      if(!record?.dataUrl){
+        node.innerHTML='<span class="playbook-media-loading">Image unavailable on this device</span>';
+        return;
+      }
+      node.innerHTML=`<img src="${record.dataUrl}" alt="Playbook demonstration image">`+
+        (node.classList.contains('playbook-demo-thumb')?'<span class="playbook-demo-badge">Demo</span>':'');
+      node.dataset.playbookImageSrc=record.dataUrl;
+    }catch(error){
+      console.warn('Could not hydrate playbook image:',error);
+      node.innerHTML='<span class="playbook-media-loading">Image unavailable</span>';
+    }
+  }));
+}
+
+function playbookBuilderImageItem(key){
+  return `<div class="playbook-rule-image-item" data-rule-image-key="${escapeHtml(key)}" data-playbook-image-key="${escapeHtml(key)}"><span class="playbook-media-loading">Loading image…</span><button class="playbook-rule-image-remove" type="button" data-rule-image-remove aria-label="Remove demonstration image">×</button></div>`;
+}
+
+function playbookReviewImagesHtml(rule){
+  const keys=Array.isArray(rule?.imageKeys)?rule.imageKeys.filter(Boolean).slice(0,PLAYBOOK_MEDIA_MAX_PER_RULE):[];
+  if(!keys.length)return '';
+  return `<div class="playbook-demo-images">${keys.map(key=>`<button type="button" class="playbook-demo-thumb" data-playbook-demo-open data-playbook-image-key="${escapeHtml(key)}" aria-label="Open demonstration image"><span class="playbook-media-loading">Loading demo…</span></button>`).join('')}</div>`;
+}
+
+function openPlaybookImageViewer(src){
+  const viewer=$('#playbookImageViewer');
+  const image=$('#playbookImageViewerImg');
+  if(!viewer||!image||!src)return;
+  image.src=src;
+  viewer.classList.add('show');
+  viewer.setAttribute('aria-hidden','false');
+}
+function closePlaybookImageViewer(){
+  const viewer=$('#playbookImageViewer');
+  const image=$('#playbookImageViewerImg');
+  if(viewer)viewer.classList.remove('show');
+  if(viewer)viewer.setAttribute('aria-hidden','true');
+  if(image)image.removeAttribute('src');
+}
+
 const PLAYBOOK_STORAGE_BASE='tios_playbooks_v3';
 const TRADE_PLAYBOOK_MAP_BASE='tios_trade_playbook_map_v3';
 const PLAYBOOK_RESET_BASE='tios_playbook_reset_v3';
@@ -8234,7 +8542,8 @@ function renderDynamicPlaybookCriteria(trade,assignment){
           ? ' <span class="playbook-reference-note">Reference</span>'
           : '';
 
-        return `<div class="edge-check ${!isRequired&&!choice?'reference-rule':''}"><div class="edge-check-main"><input type="${inputType}"${nameAttr} class="edge-check-input ${choice?'playbook-choice-radio':''}" data-edge-scoring="${scoring?'1':'0'}" data-edge-key="${escapeHtml(key)}" data-edge-outcome="${escapeHtml(outcome)}" ${saved?.complied?'checked':''}><div class="edge-check-copy"><strong>${escapeHtml(rule.text)}${referenceBadge}</strong><span>${ruleHelp}</span>${outcome?`<span class="playbook-conditional-hint">If selected → ${escapeHtml(outcome)}</span>`:''}</div></div><input class="edge-check-comment" data-edge-comment="${escapeHtml(key)}" type="text" value="${escapeHtml(saved?.comment||'')}" placeholder="Optional observation"></div>`;
+        const demoImages=playbookReviewImagesHtml(rule);
+        return `<div class="edge-check ${!isRequired&&!choice?'reference-rule':''}"><div class="edge-check-main"><input type="${inputType}"${nameAttr} class="edge-check-input ${choice?'playbook-choice-radio':''}" data-edge-scoring="${scoring?'1':'0'}" data-edge-key="${escapeHtml(key)}" data-edge-outcome="${escapeHtml(outcome)}" ${saved?.complied?'checked':''}><div class="edge-check-copy"><strong>${escapeHtml(rule.text)}${referenceBadge}</strong><span>${ruleHelp}</span>${outcome?`<span class="playbook-conditional-hint">If selected → ${escapeHtml(outcome)}</span>`:''}</div></div>${demoImages}<input class="edge-check-comment" data-edge-comment="${escapeHtml(key)}" type="text" value="${escapeHtml(saved?.comment||'')}" placeholder="Optional observation"></div>`;
       }).join('');
 
       const groupHelp=matchMode==='any'
@@ -8253,6 +8562,7 @@ function renderDynamicPlaybookCriteria(trade,assignment){
     checked.slice(1).forEach(input=>{input.checked=false;});
   });
 
+  hydratePlaybookImages(root);
   updatePlaybookBranchOutcomes();
   updateEdgeLiveScore();
 }
@@ -8563,7 +8873,8 @@ function builderGroupTemplate(group={},index=0){
 }
 function builderRuleTemplate(rule={}){
   const id=rule.id||edgeUid('rule');
-  return `<div class="playbook-rule-editor" data-builder-rule="${escapeHtml(id)}"><input data-rule-text type="text" value="${escapeHtml(rule.text||'')}" placeholder="Criterion / alternative"><select data-rule-kind><option value="required" ${rule.kind!=='reference'?'selected':''}>Required</option><option value="reference" ${rule.kind==='reference'?'selected':''}>Reference</option></select><input class="playbook-rule-outcome" data-rule-outcome type="text" value="${escapeHtml(rule.outcome||'')}" placeholder="If selected → optional result, e.g. Execute on 5 min"><button class="playbook-mini-btn danger" type="button" data-rule-remove>×</button></div>`;
+  const imageKeys=Array.isArray(rule.imageKeys)?rule.imageKeys.filter(Boolean).slice(0,PLAYBOOK_MEDIA_MAX_PER_RULE):[];
+  return `<div class="playbook-rule-editor" data-builder-rule="${escapeHtml(id)}"><input data-rule-text type="text" value="${escapeHtml(rule.text||'')}" placeholder="Criterion / alternative"><select data-rule-kind><option value="required" ${rule.kind!=='reference'?'selected':''}>Required</option><option value="reference" ${rule.kind==='reference'?'selected':''}>Reference</option></select><input class="playbook-rule-outcome" data-rule-outcome type="text" value="${escapeHtml(rule.outcome||'')}" placeholder="If selected → optional result, e.g. Execute on 5 min"><button class="playbook-mini-btn danger" type="button" data-rule-remove>×</button><div class="playbook-rule-media"><div class="playbook-rule-media-head"><div class="playbook-rule-media-copy"><strong>Demonstrative pictures</strong><span>Optional visual examples for this criterion or pattern. These are references during trade review.</span></div><button class="playbook-mini-btn playbook-rule-media-add" type="button" data-rule-image-add>+ Add Demo Picture</button><input class="playbook-rule-image-input" data-rule-image-input type="file" accept="image/*"></div><div class="playbook-rule-media-list" data-rule-media-list>${imageKeys.map(playbookBuilderImageItem).join('')}</div><span class="playbook-media-limit" data-rule-media-limit>${imageKeys.length}/${PLAYBOOK_MEDIA_MAX_PER_RULE} pictures</span></div></div>`;
 }
 function openPlaybookBuilder(id=null){
   refreshPlaybookState(); editingPlaybookId=id;
@@ -8576,6 +8887,7 @@ function openPlaybookBuilder(id=null){
   }
   refreshBuilderStepLabels();
   $('#edgePlaybookModal').classList.add('show'); $('#edgePlaybookModal').setAttribute('aria-hidden','false');
+  hydratePlaybookImages($('#edgeBuilderSections'));
 }
 function closePlaybookBuilder(){editingPlaybookId=null;$('#edgePlaybookModal').classList.remove('show');$('#edgePlaybookModal').setAttribute('aria-hidden','true')}
 function collectBuilderSections(){
@@ -8592,7 +8904,8 @@ function collectBuilderSections(){
         id:rule.dataset.builderRule,
         text:rule.querySelector('[data-rule-text]').value.trim(),
         kind:rule.querySelector('[data-rule-kind]').value,
-        outcome:rule.querySelector('[data-rule-outcome]')?.value.trim()||''
+        outcome:rule.querySelector('[data-rule-outcome]')?.value.trim()||'',
+        imageKeys:[...rule.querySelectorAll('[data-rule-image-key]')].map(item=>item.dataset.ruleImageKey).filter(Boolean).slice(0,PLAYBOOK_MEDIA_MAX_PER_RULE)
       })).filter(rule=>rule.text)
     })).filter(group=>group.title||group.rules.length)
   })).filter(section=>section.title||section.subheadings.length||section.groups.length);
@@ -8638,7 +8951,9 @@ function setEdgeFocusMode(enabled){
 }
 $('#edgeFocusReviewBtn')?.addEventListener('click',()=>setEdgeFocusMode(!$('#page-playbook').classList.contains('playbook-focus-mode')));
 document.addEventListener('keydown',event=>{
-  if(event.key==='Escape'&&$('#page-playbook')?.classList.contains('playbook-focus-mode')&&!$('#edgePlaybookModal')?.classList.contains('show'))setEdgeFocusMode(false);
+  if(event.key!=='Escape')return;
+  if($('#playbookImageViewer')?.classList.contains('show')){closePlaybookImageViewer();return}
+  if($('#page-playbook')?.classList.contains('playbook-focus-mode')&&!$('#edgePlaybookModal')?.classList.contains('show'))setEdgeFocusMode(false);
 });
 
 $('#edgeTradePlaybookSelect').addEventListener('change',()=>{
@@ -8667,6 +8982,22 @@ $('#edgeBuilderSections').addEventListener('click',event=>{
   else if(event.target.matches('[data-add-group]')){const groups=section.querySelector('.playbook-criteria-groups');const index=groups.querySelectorAll('[data-builder-group]').length;groups.insertAdjacentHTML('beforeend',builderGroupTemplate({},index));refreshBuilderStepLabels()}
   else if(event.target.matches('[data-add-group-rule]'))event.target.closest('[data-builder-group]')?.querySelector('.playbook-group-rules')?.insertAdjacentHTML('beforeend',builderRuleTemplate());
   else if(event.target.matches('[data-group-remove]')){const group=event.target.closest('[data-builder-group]');const groups=section.querySelectorAll('[data-builder-group]');if(groups.length===1){group.querySelector('[data-group-title]').value='';group.querySelector('.playbook-group-rules').innerHTML=''}else group.remove();refreshBuilderStepLabels()}
+  else if(event.target.matches('[data-rule-image-add]')){
+    const rule=event.target.closest('[data-builder-rule]');
+    const list=rule?.querySelector('[data-rule-media-list]');
+    const count=list?.querySelectorAll('[data-rule-image-key]').length||0;
+    if(count>=PLAYBOOK_MEDIA_MAX_PER_RULE){alert(`You can attach up to ${PLAYBOOK_MEDIA_MAX_PER_RULE} demonstrative pictures to one criterion.`);return}
+    const input=rule?.querySelector('[data-rule-image-input]');
+    if(input){input.value='';input.click();}
+  }
+  else if(event.target.matches('[data-rule-image-remove]')){
+    const item=event.target.closest('[data-rule-image-key]');
+    const rule=event.target.closest('[data-builder-rule]');
+    item?.remove();
+    const count=rule?.querySelectorAll('[data-rule-image-key]').length||0;
+    const limit=rule?.querySelector('[data-rule-media-limit]');
+    if(limit)limit.textContent=`${count}/${PLAYBOOK_MEDIA_MAX_PER_RULE} pictures`;
+  }
   else if(event.target.matches('[data-rule-remove]'))event.target.closest('[data-builder-rule]')?.remove();
   else if(event.target.matches('[data-step-remove]')){
     if($$('[data-builder-section]').length===1){
@@ -8682,6 +9013,55 @@ $('#edgeBuilderSections').addEventListener('click',event=>{
   else if(event.target.matches('[data-step-down]')&&section.nextElementSibling){section.parentNode.insertBefore(section.nextElementSibling,section);refreshBuilderStepLabels()}
 });
 $('#edgePlaybookModal').addEventListener('click',event=>{if(event.target.id==='edgePlaybookModal')closePlaybookBuilder()});
+
+$('#edgeBuilderSections').addEventListener('change',async event=>{
+  if(!event.target.matches('[data-rule-image-input]'))return;
+  const input=event.target;
+  const file=input.files?.[0];
+  if(!file)return;
+
+  const rule=input.closest('[data-builder-rule]');
+  const list=rule?.querySelector('[data-rule-media-list]');
+  if(!rule||!list)return;
+
+  const count=list.querySelectorAll('[data-rule-image-key]').length;
+  if(count>=PLAYBOOK_MEDIA_MAX_PER_RULE){
+    alert(`You can attach up to ${PLAYBOOK_MEDIA_MAX_PER_RULE} demonstrative pictures to one criterion.`);
+    input.value='';
+    return;
+  }
+
+  const addButton=rule.querySelector('[data-rule-image-add]');
+  if(addButton){addButton.disabled=true;addButton.textContent='Saving picture…';}
+
+  try{
+    const key=await storePlaybookDemoImage(file,rule.dataset.builderRule);
+    list.insertAdjacentHTML('beforeend',playbookBuilderImageItem(key));
+    const limit=rule.querySelector('[data-rule-media-limit]');
+    const nextCount=list.querySelectorAll('[data-rule-image-key]').length;
+    if(limit)limit.textContent=`${nextCount}/${PLAYBOOK_MEDIA_MAX_PER_RULE} pictures`;
+    await hydratePlaybookImages(list);
+  }catch(error){
+    console.error(error);
+    alert(error?.message||'Could not save the demonstrative picture.');
+  }finally{
+    input.value='';
+    if(addButton){addButton.disabled=false;addButton.textContent='+ Add Demo Picture';}
+  }
+});
+
+document.addEventListener('click',event=>{
+  const thumb=event.target.closest('[data-playbook-demo-open]');
+  if(thumb){
+    const src=thumb.dataset.playbookImageSrc||thumb.querySelector('img')?.src||'';
+    if(src)openPlaybookImageViewer(src);
+    return;
+  }
+  if(event.target.closest('[data-playbook-image-viewer-close]')||event.target.id==='playbookImageViewer'){
+    closePlaybookImageViewer();
+  }
+});
+
 $('#edgeRefreshBtn')?.addEventListener('click',async()=>{await loadTrades();await loadEdgeData();renderEdgePlaybook();renderJournal();showStatus('Edge data refreshed')});
 $('#edgeSaveReviewBtn').addEventListener('click',saveEdgeReview); $('#edgeSaveTopBtn').addEventListener('click',saveEdgeReview); $('#edgeDeleteReviewBtn').addEventListener('click',deleteEdgeReview);
 
@@ -9984,6 +10364,14 @@ initAuthIntelligenceAnimation();
 
 initializeSupabase();
 </script>
+
+
+<div class="playbook-image-viewer" id="playbookImageViewer" aria-hidden="true">
+  <div class="playbook-image-viewer-shell">
+    <button class="playbook-image-viewer-close" type="button" data-playbook-image-viewer-close aria-label="Close image">×</button>
+    <img id="playbookImageViewerImg" alt="Playbook demonstration image">
+  </div>
+</div>
 
 </body>
 </html>
