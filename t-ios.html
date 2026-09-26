@@ -2991,6 +2991,29 @@ textarea{resize:vertical;min-height:90px}
   background:#0b1825;
 }
 
+
+/* ===== JOURNAL PLAYBOOK EXECUTION DISTRIBUTION ===== */
+.journal-execution-summary .journal-grade-card{
+  position:relative;
+  overflow:hidden;
+}
+.journal-execution-summary .journal-grade-card::before{
+  content:'';
+  position:absolute;
+  left:0;
+  top:0;
+  bottom:0;
+  width:3px;
+  background:#24384e;
+}
+.journal-execution-summary .grade-aplus-card::before{background:#38c98b}
+.journal-execution-summary .grade-a-card::before{background:#5aa7ff}
+.journal-execution-summary .grade-b-card::before{background:#a78bfa}
+.journal-execution-summary .review-coverage-card::before{background:#7c8da1}
+.journal-execution-summary .value{
+  font-size:26px;
+}
+
 </style>
 </head>
 
@@ -3247,23 +3270,26 @@ textarea{resize:vertical;min-height:90px}
         </div>
       </header>
 
-      <section class="journal-summary">
-        <div class="metric">
-          <div class="label">Filtered Trades</div>
-          <div class="value" id="jTrades">0</div>
+      <section class="journal-summary journal-execution-summary">
+        <div class="metric journal-grade-card grade-aplus-card">
+          <div class="label">A+ Trades</div>
+          <div class="value" id="jGradeAPlus">—</div>
+          <div class="sub" id="jGradeAPlusSub">Perfect playbook execution</div>
         </div>
-        <div class="metric">
-          <div class="label">Filtered P&amp;L</div>
-          <div class="value" id="jPnl">R0.00</div>
+        <div class="metric journal-grade-card grade-a-card">
+          <div class="label">A Trades</div>
+          <div class="value" id="jGradeA">—</div>
+          <div class="sub" id="jGradeASub">1 playbook requirement missed</div>
         </div>
-        <div class="metric">
-          <div class="label">Win Rate</div>
-          <div class="value" id="jWinRate">0%</div>
+        <div class="metric journal-grade-card grade-b-card">
+          <div class="label">B Trades</div>
+          <div class="value" id="jGradeB">—</div>
+          <div class="sub" id="jGradeBSub">2+ playbook requirements missed</div>
         </div>
-        <div class="metric">
-          <div class="label">Return</div>
-          <div class="value" id="jReturn">0.00%</div>
-          <div class="sub">Filtered P&amp;L ÷ initial balance</div>
+        <div class="metric journal-grade-card review-coverage-card">
+          <div class="label">Review Coverage</div>
+          <div class="value" id="jReviewCoverage">0%</div>
+          <div class="sub" id="jReviewCoverageSub">0 of 0 filtered trades reviewed</div>
         </div>
       </section>
 
@@ -6346,22 +6372,56 @@ function filteredJournalTrades(){
   });
 }
 
+
+function playbookGradeDistribution(source=[]){
+  const reviewed=(Array.isArray(source)?source:[])
+    .map(trade=>({trade,rating:edgeRatingForTrade(trade.id)}))
+    .filter(item=>['A+','A','B'].includes(item.rating));
+
+  const total=reviewed.length;
+  const counts={'A+':0,'A':0,'B':0};
+  reviewed.forEach(item=>{counts[item.rating]=(counts[item.rating]||0)+1;});
+
+  const percent=rating=>total ? counts[rating]/total*100 : null;
+  return {
+    reviewed:total,
+    counts,
+    percentages:{
+      'A+':percent('A+'),
+      'A':percent('A'),
+      'B':percent('B')
+    }
+  };
+}
+
+function formatGradeShare(value){
+  return value===null ? '—' : value.toFixed(1)+'%';
+}
+
 function renderJournal(){
   populateInstrumentFilter();
 
   const filtered=filteredJournalTrades();
 
-  const totalPnl=filtered.reduce((s,t)=>s+(Number(t.pnl)||0),0);
-  const wins=filtered.filter(t=>Number(t.pnl)>0).length;
-  $('#jTrades').textContent=filtered.length;
-  $('#jPnl').textContent=signedMoney(totalPnl);
-  $('#jPnl').className='value '+pnlClass(totalPnl);
+  const gradeDistribution=playbookGradeDistribution(filtered);
+  const reviewed=gradeDistribution.reviewed;
+  const coverage=filtered.length ? reviewed/filtered.length*100 : 0;
 
-  $('#jWinRate').textContent=(filtered.length ? wins/filtered.length*100 : 0).toFixed(1)+'%';
+  $('#jGradeAPlus').textContent=formatGradeShare(gradeDistribution.percentages['A+']);
+  $('#jGradeA').textContent=formatGradeShare(gradeDistribution.percentages['A']);
+  $('#jGradeB').textContent=formatGradeShare(gradeDistribution.percentages['B']);
+  $('#jReviewCoverage').textContent=coverage.toFixed(1)+'%';
 
-  const filteredReturn=returnPctFromPnl(totalPnl);
-  $('#jReturn').textContent=formatReturnPct(filteredReturn);
-  $('#jReturn').className='value '+(filteredReturn===null?'neutral':pnlClass(filteredReturn));
+  $('#jGradeAPlusSub').textContent=reviewed
+    ? `${gradeDistribution.counts['A+']} of ${reviewed} reviewed trades`
+    : 'No reviewed trades in this filter';
+  $('#jGradeASub').textContent=reviewed
+    ? `${gradeDistribution.counts['A']} of ${reviewed} reviewed trades`
+    : 'No reviewed trades in this filter';
+  $('#jGradeBSub').textContent=reviewed
+    ? `${gradeDistribution.counts['B']} of ${reviewed} reviewed trades`
+    : 'No reviewed trades in this filter';
+  $('#jReviewCoverageSub').textContent=`${reviewed} of ${filtered.length} filtered trades reviewed`;
 
   const totalPages=Math.max(1,Math.ceil(filtered.length/JOURNAL_PAGE_SIZE));
 
