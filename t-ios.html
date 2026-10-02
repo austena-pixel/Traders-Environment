@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <!-- T·IOS: percentage returns on initial balance + Personal Trader Intelligence -->
 <title>T·IOS — Trader Intelligence Operating System</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20x%3D%221%22%20y%3D%221%22%20width%3D%2262%22%20height%3D%2262%22%20rx%3D%2218%22%20fill%3D%22%23192c40%22%20stroke%3D%22%23416589%22%2F%3E%3Csvg%20x%3D%2212%22%20y%3D%2212%22%20width%3D%2240%22%20height%3D%2240%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2383b5f4%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M4%204v16h16M7%2015l4-4%204%203%205-7M16%207h4v4%22%2F%3E%3C%2Fsvg%3E%3C%2Fsvg%3E">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
@@ -205,16 +206,9 @@ button{cursor:pointer}
 .auth-brand-wrap{display:flex;gap:14px;align-items:flex-start;min-width:0}
 .auth-brand{
   width:60px;height:60px;
-  display:grid;place-items:center;
-  background:linear-gradient(145deg,#f8fbff,#dce9ff 82%);
-  color:#07090d;
   border-radius:18px;
-  font-size:14px;
-  letter-spacing:.4px;
-  font-weight:900;
+  flex:0 0 auto;
   margin-bottom:0;
-  border:1px solid rgba(255,255,255,.75);
-  box-shadow:0 12px 40px rgba(108,168,255,.18), inset 0 -8px 16px rgba(153,190,255,.18);
 }
 .auth-title-wrap{min-width:0}
 .auth-card h1{
@@ -409,16 +403,9 @@ input:focus,select:focus,textarea:focus{
   border-bottom:1px solid #151d28;
 }
 .side-logo{
-  width:40px;height:40px;
-  border-radius:50%;
-  background:#f4f7fb;
-  color:#07090d;
-  display:grid;
-  place-items:center;
-  font-size:9px;
-  letter-spacing:.3px;
-  font-weight:900;
-  border:2px solid #dbe5f2;
+  width:41px;height:41px;
+  border-radius:13px;
+  flex:0 0 auto;
 }
 .side-brand strong{font-size:14px}
 .side-brand span{
@@ -528,10 +515,7 @@ input:focus,select:focus,textarea:focus{
   box-shadow:0 10px 26px rgba(93,63,170,.22),0 0 0 3px rgba(139,92,246,.06);
 }
 .gios-direct-icon{
-  width:32px;height:32px;border-radius:9px;
-  display:grid;place-items:center;
-  background:linear-gradient(135deg,#6ea8ff,#9b6cff);
-  color:white;font-size:12px;font-weight:950;
+  width:32px;height:32px;border-radius:10px;
 }
 .gios-direct-copy{min-width:0}
 .gios-direct-copy b{display:block;font-size:10px}
@@ -2600,7 +2584,6 @@ textarea{resize:vertical;min-height:90px}
 .nav-group.active.technical .nav-group-toggle,.nav-group.open.technical .nav-group-toggle{border-color:rgba(90,167,255,.48);background:rgba(90,167,255,.07)}
 .nav-group.active.psychological .nav-group-toggle,.nav-group.open.psychological .nav-group-toggle{border-color:rgba(167,139,250,.48);background:rgba(167,139,250,.07)}
 .nav-group-icon{width:27px;height:27px;border-radius:8px;display:grid;place-items:center;font-size:10px;font-weight:950}
-.nav-group.technical .nav-group-icon{color:#d8ebff;background:linear-gradient(135deg,#173a61,#244f7d)}
 .nav-group.psychological .nav-group-icon{color:#eee8ff;background:linear-gradient(135deg,#39295f,#5d3f86)}
 .nav-group-copy{min-width:0}.nav-group-copy b{display:block;font-size:10.5px}.nav-group-copy small{display:block;margin-top:2px;color:#718095;font-size:7.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nav-group-chevron{color:#74849a;font-size:13px;transition:transform .16s ease}.nav-group.open .nav-group-chevron{transform:rotate(180deg)}
@@ -3121,9 +3104,28 @@ textarea{resize:vertical;min-height:90px}
 }
 
 </style>
+<style id="hios-product-brand-icons">
+/* Product marks use the same symbols and accents as the H-IOS sidebar. */
+.product-mark{display:grid;place-items:center;flex-shrink:0;color:rgb(var(--product-accent));background:var(--product-icon-surface);border:1px solid var(--product-icon-border);box-shadow:inset 0 1px 0 rgb(255 255 255/.035),0 0 16px rgb(var(--product-accent)/.025)}
+.product-mark svg{display:block;width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.product-mark-gios{--product-accent:166 152 233;--product-icon-surface:#25213d;--product-icon-border:#5a4c7d}
+.product-mark-tios{--product-accent:131 181 244;--product-icon-surface:#192c40;--product-icon-border:#416589}
+.auth-brand.product-mark svg{width:36px;height:36px}
+.nav-group-icon.product-mark svg{width:17px;height:17px}
+.gios-direct-icon.product-mark svg{width:20px;height:20px}
+.mobile-product-brand{display:flex;align-items:center;gap:8px}
+.mobile-product-brand .product-mark{width:29px;height:29px;border-radius:9px}
+.mobile-product-brand .product-mark svg{width:18px;height:18px}
+</style>
 </head>
 
 <body>
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="product-icon-gios" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+    <symbol id="product-icon-tios" viewBox="0 0 24 24"><path d="M4 4v16h16M7 15l4-4 4 3 5-7M16 7h4v4"/></symbol>
+  </defs>
+</svg>
 
 <!-- LOGIN -->
 <section class="auth-screen hidden" id="authScreen">
@@ -3149,7 +3151,7 @@ textarea{resize:vertical;min-height:90px}
 
     <div class="auth-top">
       <div class="auth-brand-wrap">
-        <div class="auth-brand" title="Trader Intelligence Operating System">T·IOS</div>
+        <div class="auth-brand product-mark product-mark-tios" data-product-icon="trading-chart" title="Trader Intelligence Operating System" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><use href="#product-icon-tios"/></svg></div>
         <div class="auth-title-wrap">
           <h1>Trader Intelligence Operating System</h1>
           <p class="auth-subtitle">Execution Intelligence, Playbook Intelligence, Chart Intelligence, and Performance Intelligence connect here to build one Personal Trader Intelligence System.</p>
@@ -3193,7 +3195,7 @@ textarea{resize:vertical;min-height:90px}
 
   <aside class="sidebar" id="sidebar">
     <div class="side-brand">
-      <div class="side-logo" title="Trader Intelligence Operating System">T·IOS</div>
+      <div class="side-logo product-mark product-mark-tios" data-product-icon="trading-chart" title="Trader Intelligence Operating System" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><use href="#product-icon-tios"/></svg></div>
       <div>
         <strong>T·IOS</strong>
         <span>Trader Intelligence Operating System</span>
@@ -3214,7 +3216,7 @@ textarea{resize:vertical;min-height:90px}
       </button>
 <div class="nav-group technical" data-nav-group="technical">
         <button class="nav-group-toggle" type="button" data-nav-group-toggle="technical" aria-expanded="false">
-          <span class="nav-group-icon">T</span>
+          <span class="nav-group-icon product-mark product-mark-tios" data-product-icon="trading-chart" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><use href="#product-icon-tios"/></svg></span>
           <span class="nav-group-copy"><b>Technicals</b><small>System · execution · results</small></span>
           <span class="nav-group-chevron">⌄</span>
         </button>
@@ -3244,7 +3246,7 @@ textarea{resize:vertical;min-height:90px}
 
     <div class="sidebar-footer">
       <a class="gios-direct-switch" id="giosDirectSwitch" href="g-ios.html" title="Open Goals-IOS directly" hidden>
-        <span class="gios-direct-icon">G</span>
+        <span class="gios-direct-icon product-mark product-mark-gios" data-product-icon="target" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><use href="#product-icon-gios"/></svg></span>
         <span class="gios-direct-copy"><b>Goals-IOS</b><small>Trading goals · linked workspace</small></span>
         <span class="gios-direct-arrow">→</span>
       </a>
@@ -3256,7 +3258,7 @@ textarea{resize:vertical;min-height:90px}
 
     <div class="mobile-top">
       <button class="mobile-menu" id="mobileMenuBtn">☰</button>
-      <strong>T·IOS</strong>
+      <strong class="mobile-product-brand"><span class="product-mark product-mark-tios" data-product-icon="trading-chart" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><use href="#product-icon-tios"/></svg></span>T·IOS</strong>
       <a class="hios-back-link mobile-hios-link" href="index.html?view=home" title="Return to H·IOS">H·IOS</a>
     </div>
 
