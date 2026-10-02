@@ -874,6 +874,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .gios-nav-group-icon.product-mark svg{width:17px;height:17px}
 .connected-product-icon.product-mark svg{width:21px;height:21px}
 .product-mark-sios{--product-accent:121 194 214;--product-icon-surface:#19333c;--product-icon-border:#3b7180}
+.product-mark-healthios{--product-accent:117 239 192;--product-icon-surface:#17372d;--product-icon-border:#407e6d}
 .pfs-mark.product-mark svg{width:20px;height:20px}
 </style>
 </head>
@@ -884,6 +885,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
     <symbol id="product-icon-tios" viewBox="0 0 24 24"><path d="M4 4v16h16M7 15l4-4 4 3 5-7M16 7h4v4"/></symbol>
   </defs>
   <defs><symbol id="product-icon-sios" viewBox="0 0 24 24"><path d="M12 7c-2.8-2-6.1-2.5-9-1v14c2.9-1.5 6.2-1 9 1m0-14c2.8-2 6.1-2.5 9-1v14c-2.9-1.5-6.2-1-9 1V7"/></symbol></defs>
+  <defs><symbol id="product-icon-healthios" viewBox="0 0 24 24"><path d="M2 12h5l3-8 4 16 3-8h5"/></symbol></defs>
 </svg>
 <div class="app">
   <aside class="sidebar">
@@ -1329,13 +1331,26 @@ const PRODUCT_FOCUS_CATALOG={
   productName:'Traders-IOS',
   area:'Trading',
   mark:'T',
+  icon:'trading-chart',
+  route:'t-ios.html',
   description:'Map trading execution, performance and development evidence into Goals-IOS.'
+ },
+ healthios:{
+  productId:'healthios',
+  productName:'Health-IOS',
+  area:'Health',
+  mark:'H',
+  icon:'pulse',
+  route:'health-ios.html',
+  description:'Organize health, routines and wellbeing goals with Health-IOS.'
  },
  sios:{
   productId:'sios',
   productName:'Students-IOS',
   area:'Learning',
   mark:'S',
+  icon:'open-book',
+  route:'',
   description:'Map study and assessment evidence into Goals-IOS.'
  }
 };
@@ -1360,31 +1375,36 @@ function saveProductFocusLinks(){
  localStorage.setItem(PRODUCT_FOCUS_LINKS_KEY,JSON.stringify(productFocusLinks));
 }
 
+function productFocusLinkForProduct(productId){
+ const spec=PRODUCT_FOCUS_CATALOG[productId];
+ if(!spec)return null;
+ const link=productFocusLinks?.[productId] || Object.values(productFocusLinks||{}).find(item=>item?.productId===productId);
+ if(!link)return null;
+ const area=link.area||spec.area;
+ return focusAreas.some(item=>sameDomain(item,area)) ? {...link,area} : null;
+}
+
 function renderConnectedProductShortcuts(){
  const root=document.getElementById('connectedProductShortcuts');
  if(!root)return;
 
- // Direct workspace switch lives in the sidebar footer, mirroring T-IOS.
- const tiosLink=productFocusLinks?.tios || Object.values(productFocusLinks||{}).find(link=>link?.productId==='tios');
- const tradingArea=tiosLink?.area || '';
- const isLinked=!!tiosLink && focusAreas.some(area=>sameDomain(area,tradingArea||'Trading'));
+ // Use the same product catalog for suggestions and linked workspace routes.
+ const installed=new Set(loadAddedHiosProducts());
+ const linkedProducts=Object.values(PRODUCT_FOCUS_CATALOG)
+  .map(spec=>({spec,link:productFocusLinkForProduct(spec.productId)}))
+  .filter(({spec,link})=>installed.has(spec.productId)&&spec.route&&link);
 
- root.hidden=!isLinked;
- if(!isLinked){
-  root.innerHTML='';
-  return;
- }
-
- root.innerHTML=`
-  <a class="connected-product-btn" href="t-ios.html" title="Open Traders-IOS directly">
-   <span class="connected-product-icon product-mark product-mark-tios" data-product-icon="trading-chart" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><use href="#product-icon-tios"/></svg></span>
+ root.hidden=!linkedProducts.length;
+ root.innerHTML=linkedProducts.map(({spec,link})=>`
+  <a class="connected-product-btn" data-product-id="${escapeHtml(spec.productId)}" href="${escapeHtml(spec.route)}" title="Open ${escapeHtml(spec.productName)} directly">
+   <span class="connected-product-icon product-mark product-mark-${escapeHtml(spec.productId)}" data-product-icon="${escapeHtml(spec.icon)}" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><use href="#product-icon-${escapeHtml(spec.productId)}"/></svg></span>
    <span class="connected-product-copy">
-    <b>Traders-IOS</b>
-    <small>${escapeHtml(tradingArea||'Trading')} · linked workspace</small>
+    <b>${escapeHtml(spec.productName)}</b>
+    <small>${escapeHtml(link.area)} · linked workspace</small>
    </span>
    <span class="connected-product-arrow">→</span>
   </a>
- `;
+ `).join('');
 }
 
 
@@ -1409,7 +1429,7 @@ function availableProductFocusSuggestions(){
  const installed=new Set(loadAddedHiosProducts());
  return Object.values(PRODUCT_FOCUS_CATALOG).filter(spec=>
   installed.has(spec.productId)&&
-  !focusAreas.some(area=>sameDomain(area,spec.area))
+  !productFocusLinkForProduct(spec.productId)
  );
 }
 
@@ -2386,8 +2406,14 @@ $('#monthProgressStrip').addEventListener('wheel',e=>{
 },{passive:false});
 window.addEventListener('storage',e=>{
  if([GOALS_KEY,...OLD_GOALS_KEYS].includes(e.key)){loadGoals();renderAll();return}
+ if(e.key===HIOS_PRODUCT_STORAGE_KEY){
+  renderProductFocusSuggestions();
+  renderConnectedProductShortcuts();
+  return;
+ }
  if([PRODUCT_GOAL_EVIDENCE_KEY,PRODUCT_FOCUS_LINKS_KEY,'hios_product_connection_status_v1',GIOS_PROGRESS_MODELS_KEY,GIOS_EVIDENCE_REQUESTS_KEY,TIOS_EVIDENCE_RESPONSES_KEY].includes(e.key)){
   productFocusLinks=loadProductFocusLinks();
+  renderProductFocusSuggestions();
   renderConnectedProductShortcuts();
   renderSelectedCategoryContext();
   renderProductEvidenceReceiver();
