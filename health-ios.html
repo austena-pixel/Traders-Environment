@@ -29,6 +29,19 @@
     .sidebar-bottom{margin-top:18px;padding-top:18px}
     @media(max-width:950px){.sidebar{flex-wrap:wrap}.hios-back{order:1;margin-top:0;margin-left:auto;padding:9px 12px}.sidebar .nav{order:2;width:100%}}
     @media print{.hios-back{display:none!important}}
+    .workspace-links{display:grid;gap:10px;margin-top:auto;min-width:0;flex-shrink:0}
+    .workspace-links .hios-back{margin-top:0}
+    .gios-direct-switch{display:grid;grid-template-columns:32px minmax(0,1fr) auto;align-items:center;gap:9px;padding:11px 12px;border:1px solid #4b4269;border-radius:12px;background:linear-gradient(135deg,#172135,#272139);color:#f4f1ff;text-decoration:none;transition:background .16s,border-color .16s,box-shadow .16s}
+    .gios-direct-switch:hover{background:linear-gradient(135deg,#1d2940,#312949);border-color:#a698e9;box-shadow:0 0 16px rgb(166 152 233/.06)}
+    .gios-direct-icon{width:32px;height:32px;display:grid;place-items:center;border:1px solid #5a4c7d;border-radius:10px;background:#25213d;color:#a698e9}
+    .gios-direct-icon .icon{width:20px;height:20px;stroke-width:1.8}
+    .gios-direct-copy{min-width:0}
+    .gios-direct-copy b{display:block;font-size:.8125rem;font-weight:650}
+    .gios-direct-copy small{display:block;margin-top:2px;color:#aaa4bd;font-size:.625rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .gios-direct-arrow{color:#a698e9;width:16px!important;height:16px!important}
+    @media(max-width:950px){.workspace-links{order:1;display:flex;align-items:stretch;gap:8px;margin-top:0;margin-left:auto}.workspace-links .hios-back{margin-left:0}.gios-direct-switch{padding:9px 10px}}
+    @media(max-width:710px){.workspace-links{order:3;display:grid;width:100%;margin-left:0;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)}.gios-direct-switch{grid-template-columns:30px minmax(0,1fr) auto;gap:7px;padding:9px}.gios-direct-icon{width:30px;height:30px}}
+    @media(max-width:710px){.workspace-links .hios-back{padding:9px 7px;gap:5px;font-size:.75rem;white-space:nowrap}.workspace-links .hios-back .icon{width:14px;height:14px}}
   </style>
 </head>
 <body>
@@ -58,7 +71,14 @@
         <a href="#history" data-view="history"><svg class="icon" aria-hidden="true"><use href="#i-history"/></svg>History</a>
         <a href="#targets" data-view="targets"><svg class="icon" aria-hidden="true"><use href="#i-target"/></svg>My targets</a>
       </nav>
-      <a class="hios-back" href="index.html" aria-label="Back to the H-IOS main dashboard"><svg class="icon" aria-hidden="true"><use href="#i-left"/></svg><span>Back to H-IOS</span></a>
+      <nav class="workspace-links" aria-label="H-IOS workspaces">
+        <a class="gios-direct-switch" id="giosDirectSwitch" href="g-ios.html" title="Open Goals-IOS directly" aria-label="Back to your goals in Goals-IOS">
+          <span class="gios-direct-icon"><svg class="icon" aria-hidden="true"><use href="#i-target"/></svg></span>
+          <span class="gios-direct-copy"><b>Goals-IOS</b><small>Back to Goals-IOS</small></span>
+          <svg class="icon gios-direct-arrow" aria-hidden="true"><use href="#i-right"/></svg>
+        </a>
+        <a class="hios-back" href="index.html" aria-label="Back to the H-IOS main dashboard"><svg class="icon" aria-hidden="true"><use href="#i-left"/></svg><span>Back to H-IOS</span></a>
+      </nav>
       <div class="sidebar-bottom"><div class="device-title"><svg class="icon" aria-hidden="true"><use href="#i-device"/></svg>On this device</div><p>Your entries stay in this browser. Use the same browser to return to them.</p></div>
     </aside>
     <main id="main" class="main" tabindex="-1">
