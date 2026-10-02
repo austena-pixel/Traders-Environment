@@ -21,6 +21,14 @@
     @media(max-width:360px){.main{padding:21px 13px}.sidebar{padding-left:14px;padding-right:14px}.metric{padding:16px;column-gap:13px}.metric-actions{gap:5px}.metric-actions .secondary{padding:8px}.metric-unit{font-size:.8125rem}.mood-option span{font-size:.6875rem}.checkin-bottom{flex-direction:column;align-items:flex-start}.checkin-bottom p{max-width:none}.nav a{font-size:.8125rem}}
     @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
     @media print{.sidebar,.date-picker,.metric-actions,.checkin-bottom button,.habit-manage,.text-button,.toast,.add-habit-form,.remove-habit{display:none!important}.shell{display:block}.main{padding:0}body{background:white;color:black}.panel{background:white;border-color:#bbb;break-inside:avoid}.muted,.metric-head,.metric-caption,.metric-unit,.field-label,.panel-head p,.footer,.week-summary p,.week-subtitle{color:#444}input,textarea,.mood-option span,.habit-item{color:black;background:white;border-color:#bbb}.save-status{display:none}}
+
+    /* Return to the H-IOS parent dashboard. */
+    .hios-back{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:auto;padding:12px 13px;border:1px solid #3a6656;border-radius:12px;background:#16372b;color:var(--green);font-size:.875rem;font-weight:600;line-height:1.5;text-decoration:none;flex-shrink:0}
+    .hios-back:hover{background:#204b3a;border-color:var(--green)}
+    .hios-back .icon{width:18px;height:18px}
+    .sidebar-bottom{margin-top:18px;padding-top:18px}
+    @media(max-width:950px){.sidebar{flex-wrap:wrap}.hios-back{order:1;margin-top:0;margin-left:auto;padding:9px 12px}.sidebar .nav{order:2;width:100%}}
+    @media print{.hios-back{display:none!important}}
   </style>
 </head>
 <body>
@@ -50,6 +58,7 @@
         <a href="#history" data-view="history"><svg class="icon" aria-hidden="true"><use href="#i-history"/></svg>History</a>
         <a href="#targets" data-view="targets"><svg class="icon" aria-hidden="true"><use href="#i-target"/></svg>My targets</a>
       </nav>
+      <a class="hios-back" href="index.html" aria-label="Back to the H-IOS main dashboard"><svg class="icon" aria-hidden="true"><use href="#i-left"/></svg><span>Back to H-IOS</span></a>
       <div class="sidebar-bottom"><div class="device-title"><svg class="icon" aria-hidden="true"><use href="#i-device"/></svg>On this device</div><p>Your entries stay in this browser. Use the same browser to return to them.</p></div>
     </aside>
     <main id="main" class="main" tabindex="-1">
