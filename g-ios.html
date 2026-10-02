@@ -5,6 +5,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>G·IOS — Goals Intelligence Operating System</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20x%3D%221%22%20y%3D%221%22%20width%3D%2262%22%20height%3D%2262%22%20rx%3D%2218%22%20fill%3D%22%2325213d%22%20stroke%3D%22%235a4c7d%22%2F%3E%3Csvg%20x%3D%2212%22%20y%3D%2212%22%20width%3D%2240%22%20height%3D%2240%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23a698e9%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%229%22%2F%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%225%22%2F%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%221%22%2F%3E%3C%2Fsvg%3E%3C%2Fsvg%3E">
 <style>
 :root{
   --bg:#060a10;--panel:#0d131d;--panel2:#111927;--panel3:#0a1018;--line:#1c2a3a;--line2:#26384d;
@@ -16,7 +17,7 @@ body{background:radial-gradient(circle at 78% 0%,rgba(90,167,255,.10),transparen
 button,input,select,textarea{font:inherit}button{cursor:pointer}
 .app{min-height:100vh;display:grid;grid-template-columns:238px minmax(0,1fr)}
 .sidebar{position:sticky;top:0;height:100vh;padding:20px 16px;border-right:1px solid #142131;background:linear-gradient(180deg,rgba(7,12,19,.97),rgba(5,9,14,.98))}
-.brand{display:flex;align-items:center;gap:11px;padding:4px 8px 22px}.logo{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-weight:900;font-size:18px;background:linear-gradient(135deg,var(--blue),var(--violet));box-shadow:0 0 28px rgba(90,167,255,.16)}
+.brand{display:flex;align-items:center;gap:11px;padding:4px 8px 22px}.logo{width:41px;height:41px;border-radius:13px;flex:0 0 auto}
 .brand h1{margin:0;font-size:17px}.brand small{color:#728095;font-size:9px}.nav{display:grid;gap:7px}.nav button,.family{width:100%;border:1px solid transparent;background:transparent;color:#8c9aad;text-align:left;border-radius:10px;padding:11px 12px;font-size:11px}.nav button.active{background:#101a27;color:#fff;border-color:#1f3146}.nav button:hover,.family:hover{background:#0d1621;color:#fff}.nav-note{position:absolute;left:16px;right:16px;bottom:18px;display:grid;gap:10px;padding-top:12px;border-top:1px solid #151f2b}.family{border-color:#1b2b3d;background:#08111a;color:#9cadc1;text-align:center}
 
 /* ===== DIRECT PRODUCT SWITCHER ===== */
@@ -35,7 +36,6 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .gios-nav-group.active.goals .gios-nav-group-toggle,.gios-nav-group.open.goals .gios-nav-group-toggle{border-color:rgba(90,167,255,.48)!important;background:rgba(90,167,255,.07)!important}
 .gios-nav-group.active.products .gios-nav-group-toggle,.gios-nav-group.open.products .gios-nav-group-toggle{border-color:rgba(139,92,246,.48)!important;background:rgba(139,92,246,.07)!important}
 .gios-nav-group-icon{width:27px;height:27px;border-radius:8px;display:grid;place-items:center;font-size:10px;font-weight:950}
-.gios-nav-group.goals .gios-nav-group-icon{color:#d8ebff;background:linear-gradient(135deg,#173a61,#244f7d)}
 .gios-nav-group.products .gios-nav-group-icon{color:#eee8ff;background:linear-gradient(135deg,#39295f,#5d3f86)}
 .gios-nav-group-copy{min-width:0}
 .gios-nav-group-copy b{display:block;font-size:10.5px}
@@ -92,12 +92,6 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
   display:grid;
   place-items:center;
   border-radius:10px;
-  font-size:9px;
-  font-weight:950;
-  letter-spacing:.02em;
-  color:#06101a;
-  background:linear-gradient(135deg,#8edbff,#9b86ff);
-  box-shadow:0 0 18px rgba(90,167,255,.20);
 }
 .connected-product-copy{min-width:0}
 .connected-product-copy b{
@@ -206,7 +200,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .product-focus-list{display:grid;gap:7px}
 .product-focus-suggestion{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:9px;align-items:center;padding:9px;border:1px solid #24394f;border-radius:10px;background:#0b1520;color:#e8f2ff;text-align:left}
 .product-focus-suggestion:hover{border-color:#5aa7ff;background:#0e1b29}
-.product-focus-suggestion .pfs-mark{width:32px;height:32px;display:grid;place-items:center;border-radius:9px;background:linear-gradient(135deg,#17416e,#422c79);font-weight:900;font-size:10px}
+.product-focus-suggestion .pfs-mark{width:32px;height:32px;border-radius:10px}
 .product-focus-suggestion b{display:block;font-size:9px}
 .product-focus-suggestion small{display:block;margin-top:3px;color:#778a9f;font-size:7.5px}
 .product-focus-suggestion em{font-style:normal;font-size:7px;color:#75e8be;border:1px solid rgba(52,211,153,.28);border-radius:999px;padding:4px 6px}
@@ -871,11 +865,29 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 }
 </style>
 
+<style id="hios-product-brand-icons">
+/* Product marks use the same symbols and accents as the H-IOS sidebar. */
+.product-mark{display:grid;place-items:center;flex-shrink:0;color:rgb(var(--product-accent));background:var(--product-icon-surface);border:1px solid var(--product-icon-border);box-shadow:inset 0 1px 0 rgb(255 255 255/.035),0 0 16px rgb(var(--product-accent)/.025)}
+.product-mark svg{display:block;width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.product-mark-gios{--product-accent:166 152 233;--product-icon-surface:#25213d;--product-icon-border:#5a4c7d}
+.product-mark-tios{--product-accent:131 181 244;--product-icon-surface:#192c40;--product-icon-border:#416589}
+.gios-nav-group-icon.product-mark svg{width:17px;height:17px}
+.connected-product-icon.product-mark svg{width:21px;height:21px}
+.product-mark-sios{--product-accent:121 194 214;--product-icon-surface:#19333c;--product-icon-border:#3b7180}
+.pfs-mark.product-mark svg{width:20px;height:20px}
+</style>
 </head>
 <body>
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="product-icon-gios" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+    <symbol id="product-icon-tios" viewBox="0 0 24 24"><path d="M4 4v16h16M7 15l4-4 4 3 5-7M16 7h4v4"/></symbol>
+  </defs>
+  <defs><symbol id="product-icon-sios" viewBox="0 0 24 24"><path d="M12 7c-2.8-2-6.1-2.5-9-1v14c2.9-1.5 6.2-1 9 1m0-14c2.8-2 6.1-2.5 9-1v14c-2.9-1.5-6.2-1-9 1V7"/></symbol></defs>
+</svg>
 <div class="app">
   <aside class="sidebar">
-    <div class="brand"><div class="logo">G</div><div><h1>G·IOS</h1><small>Goals Intelligence Operating System</small></div></div>
+    <div class="brand"><div class="logo product-mark product-mark-gios" data-product-icon="target" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><use href="#product-icon-gios"/></svg></div><div><h1>G·IOS</h1><small>Goals Intelligence Operating System</small></div></div>
 
     <nav class="nav gios-nav">
       <button class="gios-nav-btn active" type="button" data-page="overview">
@@ -885,7 +897,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 
       <div class="gios-nav-group goals open" data-gios-nav-group="goals">
         <button class="gios-nav-group-toggle" type="button" data-gios-nav-toggle="goals" aria-expanded="true">
-          <span class="gios-nav-group-icon">G</span>
+          <span class="gios-nav-group-icon product-mark product-mark-gios" data-product-icon="target" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><use href="#product-icon-gios"/></svg></span>
           <span class="gios-nav-group-copy"><b>Goals</b><small>Plan · progress · outcomes</small></span>
           <span class="gios-nav-chevron">⌄</span>
         </button>
@@ -1365,7 +1377,7 @@ function renderConnectedProductShortcuts(){
 
  root.innerHTML=`
   <a class="connected-product-btn" href="t-ios.html" title="Open Traders-IOS directly">
-   <span class="connected-product-icon">T·IOS</span>
+   <span class="connected-product-icon product-mark product-mark-tios" data-product-icon="trading-chart" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><use href="#product-icon-tios"/></svg></span>
    <span class="connected-product-copy">
     <b>Traders-IOS</b>
     <small>${escapeHtml(tradingArea||'Trading')} · linked workspace</small>
@@ -1411,7 +1423,7 @@ function renderProductFocusSuggestions(){
 
  root.innerHTML=suggestions.map(spec=>`
   <button type="button" class="product-focus-suggestion" data-product-focus="${escapeHtml(spec.productId)}">
-   <span class="pfs-mark">${escapeHtml(spec.mark)}</span>
+   <span class="pfs-mark product-mark product-mark-${escapeHtml(spec.productId)}" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><use href="#product-icon-${escapeHtml(spec.productId)}"/></svg></span>
    <span>
     <b>${escapeHtml(spec.area)} · ${escapeHtml(spec.productName)}</b>
     <small>${escapeHtml(spec.description)}</small>
