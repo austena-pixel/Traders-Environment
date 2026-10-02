@@ -2177,6 +2177,99 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 }
 </style>
 
+<style id="hios-product-presentation">
+/* One restrained product icon system for navigation, cards and the catalog. */
+.product-icon{
+  --product-accent:155 179 222;
+  width:28px;height:28px;border-radius:9px;
+  display:inline-grid;place-items:center;flex:0 0 auto;
+  font-size:12px;font-weight:850;line-height:1;
+  color:rgb(var(--product-accent));
+  background:linear-gradient(145deg,rgb(var(--product-accent)/.12),#111722);
+  border:1px solid rgb(var(--product-accent)/.24);
+  box-shadow:inset 0 1px 0 rgb(255 255 255/.035),0 0 14px rgb(var(--product-accent)/.035);
+}
+[data-product-id] .product-icon{--product-accent:inherit}
+.product-nav{gap:6px}
+.product-nav .product-nav-item{
+  gap:11px;min-height:48px;padding:9px 11px;
+  border:1px solid transparent;border-radius:12px;
+  color:#aeb7c7;font-size:12px;
+  transition:background .18s ease,border-color .18s ease,color .18s ease,box-shadow .18s ease;
+}
+.product-nav-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.product-nav-indicator{width:4px;height:4px;border-radius:50%;background:rgb(var(--product-accent)/.45);flex:0 0 auto}
+.product-nav .product-nav-item:hover{
+  color:#edf3ff;background:rgb(var(--product-accent)/.055);border-color:rgb(var(--product-accent)/.14);
+}
+.product-nav .product-nav-item.active,.product-nav .product-nav-item:active{
+  color:#f4f7ff;background:rgb(var(--product-accent)/.095);border-color:rgb(var(--product-accent)/.25);
+  box-shadow:inset 2px 0 0 rgb(var(--product-accent)/.7);
+}
+.product-nav-item:focus-visible,.connected-products .product-open:focus-visible,.connected-products-manage:focus-visible{
+  outline:2px solid #95b9f2;outline-offset:3px;
+}
+.connected-products{margin-top:16px;min-width:0;flex:0 0 auto;padding-bottom:6px}
+.connected-products-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.connected-products-heading{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.connected-products-heading h3{margin:0;color:#e4eaf5;font-size:13px;font-weight:750;letter-spacing:.01em}
+.connected-products-count{font-size:10px;color:#96a5bd;border:1px solid #263145;border-radius:7px;background:#0d131d;padding:3px 7px;white-space:nowrap}
+.connected-products-manage{border:1px solid #2c374b;border-radius:9px;background:#101620;color:#abc5ee;font-size:11px;padding:7px 10px;cursor:pointer;white-space:nowrap}
+.connected-products-manage:hover{background:#172132;border-color:#425477;color:#e1edff}
+.connected-products-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;min-width:0}
+.connected-products .product{
+  position:relative;min-width:0;padding:14px;border:1px solid #283142;border-radius:14px;
+  background:linear-gradient(150deg,rgb(var(--product-accent)/.045),transparent 58%),#0d121b;
+  box-shadow:inset 0 1px 0 rgb(255 255 255/.025);
+  cursor:default;transition:border-color .18s ease,background .18s ease,box-shadow .18s ease;
+}
+.connected-products .product:hover,.connected-products .product:focus-within{
+  transform:none;border-color:rgb(var(--product-accent)/.35);
+  box-shadow:inset 0 1px 0 rgb(255 255 255/.035),0 0 20px rgb(var(--product-accent)/.045);
+}
+.connected-products .product.active{border-color:rgb(var(--product-accent)/.5);background-color:#121a28}
+.product-card-head{display:flex;align-items:center;gap:10px;min-width:0}
+.product-card-head .product-icon{width:34px;height:34px;border-radius:10px;font-size:14px}
+.connected-products .product h4{font-size:12px;line-height:1.35;margin:0;min-width:0}
+.product-title-link{color:#e8eef9;text-decoration:none;outline:none}
+.product-title-link::after{content:'';position:absolute;inset:0;border-radius:14px;cursor:pointer}
+.product-title-link:focus-visible::after{outline:2px solid #95b9f2;outline-offset:3px}
+.product-core-label{display:block;margin-top:3px;color:#78869b;font-size:9px;font-weight:500}
+.connected-products .product p{margin:10px 0 12px;font-size:11px;line-height:1.55;color:#929fb3;min-height:34px}
+.product-card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.connected-products .product .status{display:inline-flex;align-items:center;gap:5px;margin:0;font-size:9px;color:#94b9a8}
+.connected-products .product .status::before{content:'';width:4px;height:4px;border-radius:50%;background:#79bfa4}
+.connected-products .product .status.planned{color:#97a0b3}
+.connected-products .product .status.planned::before{background:#7e8799}
+.connected-products .product-open{position:relative;z-index:1;display:inline-flex;align-items:center;gap:8px;border:1px solid #303e55;border-radius:8px;background:#172132;color:#c6d8f4;padding:6px 9px;font-size:10px;font-weight:650;cursor:pointer}
+.connected-products .product-open:hover{border-color:rgb(var(--product-accent)/.48);color:#f1f6ff;background:#1e2c42}
+.catalog-item .product-icon{width:38px;height:38px;border-radius:11px;font-size:14px}
+@media(min-width:951px){
+  /* Keep the existing calendar usable; the main area already scrolls. */
+  #appScreen .main > .home-layout{flex:1 0 360px;min-height:min-content}
+  #appScreen .main > .connected-products{flex:0 0 auto}
+}
+@media(min-width:951px) and (max-width:1180px){
+  .connected-products-grid{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(220px,1fr);overflow-x:auto;padding:2px 2px 8px;scrollbar-width:thin;scrollbar-color:#344359 transparent}
+}
+@media(max-width:950px){
+  .sidebar .nav{grid-template-columns:1fr;gap:10px}
+  .sidebar-add-product{width:auto;justify-self:start;min-width:164px}
+  .product-nav{display:flex;gap:7px;overflow-x:auto;margin-top:0;padding:2px 2px 5px;scrollbar-width:thin;scrollbar-color:#344359 transparent}
+  .product-nav .product-nav-item{width:auto;flex:0 0 auto;padding:8px 11px}
+  .product-nav-indicator{display:none}
+  .connected-products{margin-top:22px}
+  .connected-products-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:620px){
+  .connected-products-grid{grid-template-columns:1fr}
+  .connected-products .product p{min-height:0}
+}
+@media(prefers-reduced-motion:reduce){
+  .product-nav .product-nav-item,.connected-products .product{transition:none}
+}
+</style>
+
 </head>
 <body>
 
@@ -2577,6 +2670,16 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
           </div>
         </aside>
       </section>
+      <section class="connected-products" aria-labelledby="connectedProductsHeading">
+        <div class="connected-products-head">
+          <div class="connected-products-heading">
+            <h3 id="connectedProductsHeading">H-IOS Products</h3>
+            <span class="connected-products-count"><span id="connectedProductsCount">0</span> added</span>
+          </div>
+          <button class="connected-products-manage" type="button" onclick="openProductModal()">Manage products</button>
+        </div>
+        <div class="connected-products-grid" id="productsGrid"></div>
+      </section>
     </main>
   </div>
 </section>
@@ -2946,7 +3049,8 @@ const HIOS_PRODUCT_CATALOG = [
     id:'gios',
     name:'Goals-IOS',
     icon:'G',
-    description:'Dynamic goals, priorities, milestones, adaptive planning and cross-domain progress intelligence.',
+    accent:'166 152 233',
+    description:'Goal planning, progress tracking and structured execution.',
     url:'g-ios.html',
     availability:'Core · Included by default',
     core:true
@@ -2955,7 +3059,8 @@ const HIOS_PRODUCT_CATALOG = [
     id:'tios',
     name:'Traders-IOS',
     icon:'T',
-    description:'Trading performance, execution, psychology, edge tracking and phase-based development.',
+    accent:'131 181 244',
+    description:'Trading journal, execution tracking and performance evaluation.',
     url:'t-ios.html',
     availability:'Available'
   },
@@ -2963,7 +3068,8 @@ const HIOS_PRODUCT_CATALOG = [
     id:'healthios',
     name:'Health-IOS',
     icon:'H',
-    description:'Daily water, sleep, movement, mood check-ins and personal health habits.',
+    accent:'125 204 172',
+    description:'Health tracking, routines and wellbeing intelligence.',
     url:'health-ios.html',
     availability:'Available'
   },
@@ -2971,13 +3077,15 @@ const HIOS_PRODUCT_CATALOG = [
     id:'sios',
     name:'Students-IOS',
     icon:'S',
-    description:'Study planning, assessment tracking, learning progress and academic intelligence.',
+    accent:'121 194 214',
+    description:'Academic planning, study management and learning intelligence.',
     url:'',
     availability:'Planned'
   }
 ];
 
 let addedProductIds = loadAddedProducts();
+let selectedProductId = null;
 saveAddedProducts();
 
 function loadAddedProducts(){
@@ -3055,12 +3163,21 @@ function openProduct(id){
     return;
   }
 
+  selectedProductId = id;
+  document.querySelectorAll('#productSidebarNav [data-product-id], #productsGrid [data-product-id]').forEach(element => {
+    element.classList.toggle('active', element.dataset.productId === id);
+  });
+
   if(product.url){
     window.location.href = product.url;
     return;
   }
 
   showMessage(product.name, product.name + ' is added to H·IOS, but its dedicated product page has not been built yet.');
+}
+
+function renderProductIcon(product){
+  return `<span class="product-icon" aria-hidden="true">${product.icon}</span>`;
 }
 
 function renderProductManager(){
@@ -3071,48 +3188,43 @@ function renderProductManager(){
   const grid = document.getElementById('productsGrid');
   const catalog = document.getElementById('productCatalogList');
   const connectedCount = document.getElementById('connectedProductsCount');
+  const addedProducts = HIOS_PRODUCT_CATALOG.filter(product => isProductAdded(product.id));
+  if(!isProductAdded(selectedProductId)) selectedProductId = null;
 
   if(connectedCount){
-    connectedCount.textContent = addedProductIds.length;
+    connectedCount.textContent = addedProducts.length;
   }
 
   if(sidebar){
-    const addedProducts = HIOS_PRODUCT_CATALOG.filter(product => isProductAdded(product.id));
-
     sidebar.innerHTML = addedProducts.length
       ? addedProducts.map(product => `
-          <button type="button" onclick="openProduct('${product.id}')">
-            <span class="product-nav-icon">${product.icon}</span>
-            <span>${product.name}</span>
+          <button class="product-nav-item ${selectedProductId === product.id ? 'active' : ''}" type="button" data-product-id="${product.id}" style="--product-accent:${product.accent}" onclick="openProduct('${product.id}')">
+            ${renderProductIcon(product)}
+            <span class="product-nav-label">${product.name}</span>
+            <span class="product-nav-indicator" aria-hidden="true"></span>
           </button>
         `).join('')
       : `<div class="product-nav-empty">No products added yet.<br>Use <b>Add Product</b> to build your workspace.</div>`;
   }
 
   if(grid){
-    grid.innerHTML = HIOS_PRODUCT_CATALOG.map(product => {
+    grid.innerHTML = addedProducts.map(product => {
       const core = isCoreProduct(product.id);
-      const added = isProductAdded(product.id);
       return `
-        <div class="product ${core ? 'core-product' : ''}">
-          <div class="picon">${product.icon}</div>
-          <h4>${product.name}</h4>
-          <p>${product.description}</p>
-          <span class="status ${added ? 'added' : 'not-added'}">
-            ${core ? 'Core · Included by default' : (added ? 'Added to H·IOS' : product.availability)}
-          </span>
-
-          <div class="product-actions">
-            ${
-              core
-                ? `<button class="product-action primary-action" type="button" onclick="openProduct('${product.id}')">Open</button>`
-                : added
-                  ? `<button class="product-action primary-action" type="button" onclick="openProduct('${product.id}')">Open</button>
-                     <button class="product-action remove-action" type="button" onclick="removeProduct('${product.id}')">Remove</button>`
-                  : `<button class="product-action primary-action" type="button" onclick="addProduct('${product.id}')">Add Product</button>`
-            }
+        <article class="product ${core ? 'core-product' : ''} ${selectedProductId === product.id ? 'active' : ''}" data-product-id="${product.id}" style="--product-accent:${product.accent}">
+          <div class="product-card-head">
+            ${renderProductIcon(product)}
+            <h4>
+              <a class="product-title-link" href="${product.url || '#'}" onclick="event.preventDefault();openProduct('${product.id}')" aria-label="Open ${product.name}">${product.name}</a>
+              ${core ? '<span class="product-core-label">Core system</span>' : ''}
+            </h4>
           </div>
-        </div>
+          <p>${product.description}</p>
+          <div class="product-card-foot">
+            <span class="status ${product.url ? 'added' : 'planned'}">${product.url ? 'Connected' : 'Added · Planned'}</span>
+            <button class="product-open" type="button" onclick="openProduct('${product.id}')" aria-label="Open ${product.name}">Open <span aria-hidden="true">↗</span></button>
+          </div>
+        </article>
       `;
     }).join('');
   }
@@ -3124,8 +3236,8 @@ function renderProductManager(){
       .map(product => {
         const added = isProductAdded(product.id);
         return `
-          <div class="catalog-item">
-            <div class="catalog-icon">${product.icon}</div>
+          <div class="catalog-item" data-product-id="${product.id}" style="--product-accent:${product.accent}">
+            ${renderProductIcon(product)}
             <div>
               <h4>${product.name}</h4>
               <p>${product.description}</p>
@@ -3162,6 +3274,14 @@ document.addEventListener('keydown', event => {
 });
 
 renderProductManager();
+
+// Reflect Add Product changes from another H-IOS tab in both product views.
+window.addEventListener('storage', event => {
+  if(event.key === HIOS_PRODUCT_STORAGE_KEY || event.key === null){
+    addedProductIds = loadAddedProducts();
+    renderProductManager();
+  }
+});
 
 /* =========================================================
    H·IOS HOME INTELLIGENCE + Goals-IOS CALENDAR BRIDGE
