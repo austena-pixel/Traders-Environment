@@ -1918,6 +1918,85 @@ input:focus,select:focus,textarea:focus{
   .execution-filters{grid-template-columns:1fr}
 }
 
+/* ===== EXECUTION DESKTOP WORKSPACE =====
+   Keep the page itself fixed. Only the Trades list (A)
+   and the Execution review panel (B) scroll independently. */
+@media(min-width:861px){
+  body.execution-workspace{
+    height:100vh;
+    overflow:hidden;
+  }
+
+  body.execution-workspace .shell{
+    height:100vh;
+    min-height:0;
+    overflow:hidden;
+  }
+
+  body.execution-workspace .main{
+    height:100vh;
+    min-height:0;
+    overflow:hidden;
+  }
+
+  body.execution-workspace #page-execution.active{
+    display:flex;
+    flex-direction:column;
+    height:calc(100vh - 36px);
+    min-height:0;
+    overflow:hidden;
+  }
+
+  body.execution-workspace #page-execution > .page-head,
+  body.execution-workspace #page-execution > .execution-summary{
+    flex:0 0 auto;
+  }
+
+  body.execution-workspace #page-execution .execution-layout{
+    flex:1 1 auto;
+    min-height:0;
+    overflow:hidden;
+    grid-template-columns:minmax(290px,330px) minmax(0,1fr);
+  }
+
+  body.execution-workspace #page-execution .execution-browser{
+    height:100%;
+    min-height:0;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+
+  body.execution-workspace #page-execution .execution-browser-head,
+  body.execution-workspace #page-execution .execution-filters,
+  body.execution-workspace #page-execution .execution-help{
+    flex:0 0 auto;
+  }
+
+  body.execution-workspace #page-execution .execution-trade-list{
+    flex:1 1 auto;
+    min-height:0;
+    max-height:none;
+    overflow-x:hidden;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    scrollbar-gutter:stable;
+  }
+
+  body.execution-workspace #page-execution .execution-editor{
+    height:100%;
+    min-height:0;
+    overflow-x:hidden;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    scrollbar-gutter:stable;
+  }
+
+  body.execution-workspace #page-execution .execution-empty{
+    min-height:100%;
+  }
+}
+
 
 /* =========================================================
    ACCOUNT SWITCHER + DERIV MT5 CONNECTIONS
@@ -6396,6 +6475,7 @@ $$('[data-nav-group-toggle]').forEach(toggle=>{
  });
 });
 initializeTiosNavGroups();
+document.body.classList.remove('execution-workspace');
 
 function navigate(page){
   $$('.nav-btn').forEach(btn=>{
@@ -6403,9 +6483,16 @@ function navigate(page){
   });
   syncTiosNavGroups(page);
 
-  $$('.page').forEach(p=>{
+  $('.page').forEach(p=>{
     p.classList.toggle('active', p.id===`page-${page}`);
   });
+
+  const executionWorkspace=page==='execution';
+  document.body.classList.toggle('execution-workspace',executionWorkspace);
+  if(executionWorkspace){
+    window.scrollTo(0,0);
+  }
+
 if(page==='journal'){
     journalPage=1;
     renderJournal();
