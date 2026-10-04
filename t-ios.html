@@ -383,7 +383,7 @@ input:focus,select:focus,textarea:focus{
   min-height:100vh;
   display:grid;
   grid-template-columns:var(--sidebar) minmax(0,1fr);
-  transition:grid-template-columns .2s ease;
+  transition:grid-template-columns .34s cubic-bezier(.22,.8,.22,1);
 }
 .sidebar{
   position:sticky;
@@ -396,7 +396,10 @@ input:focus,select:focus,textarea:focus{
   display:flex;
   flex-direction:column;
   z-index:40;
-  transition:transform .2s ease,opacity .2s ease;
+  transition:
+    transform .34s cubic-bezier(.22,.8,.22,1),
+    opacity .22s ease;
+  will-change:transform;
 }
 .sidebar-collapse-toggle,
 .sidebar-reopen-toggle{
@@ -442,8 +445,8 @@ input:focus,select:focus,textarea:focus{
 }
 .sidebar-collapse-toggle{
   position:absolute;
-  top:50%;
-  right:-22px;
+  top:68%;
+  right:-15px;
   z-index:45;
   border-radius:18px;
   transform:translateY(-50%);
@@ -454,13 +457,16 @@ input:focus,select:focus,textarea:focus{
 .sidebar-collapse-toggle:active{
   transform:translateY(-50%) translateX(3px) scale(.90);
 }
+.sidebar-collapse-toggle.sidebar-toggle-pulse{
+  animation:tiosSidebarToggleClose .30s cubic-bezier(.22,.8,.22,1);
+}
 .sidebar-reopen-toggle{
   display:none;
   position:fixed;
-  left:-2px;
-  top:50%;
+  left:-27px;
+  top:68%;
   z-index:60;
-  border-radius:0 18px 18px 0;
+  border-radius:18px;
   transform:translateY(-50%);
 }
 .sidebar-reopen-toggle:hover{
@@ -469,12 +475,25 @@ input:focus,select:focus,textarea:focus{
 .sidebar-reopen-toggle:active{
   transform:translateY(-50%) translateX(3px) scale(.90);
 }
+.sidebar-reopen-toggle.sidebar-toggle-pulse{
+  animation:tiosSidebarToggleOpen .30s cubic-bezier(.22,.8,.22,1);
+}
+@keyframes tiosSidebarToggleClose{
+  0%{transform:translateY(-50%) translateX(0) scale(1)}
+  45%{transform:translateY(-50%) translateX(-8px) scale(.88)}
+  100%{transform:translateY(-50%) translateX(0) scale(1)}
+}
+@keyframes tiosSidebarToggleOpen{
+  0%{transform:translateY(-50%) translateX(0) scale(1)}
+  45%{transform:translateY(-50%) translateX(10px) scale(.88)}
+  100%{transform:translateY(-50%) translateX(0) scale(1)}
+}
 @media(min-width:861px){
   .shell.sidebar-collapsed{
     grid-template-columns:0 minmax(0,1fr);
   }
   .shell.sidebar-collapsed .sidebar{
-    transform:translateX(-100%);
+    transform:translateX(calc(-100% - 18px));
     opacity:0;
     pointer-events:none;
   }
@@ -6449,13 +6468,33 @@ function initializeTiosDesktopSidebar(){
   );
 }
 
+function animateTiosSidebarToggle(button,callback){
+  if(!button){
+    callback();
+    return;
+  }
+  button.classList.remove('sidebar-toggle-pulse');
+  void button.offsetWidth;
+  button.classList.add('sidebar-toggle-pulse');
+  window.setTimeout(()=>{
+    callback();
+    button.classList.remove('sidebar-toggle-pulse');
+  },120);
+}
+
 $('#desktopSidebarCollapseBtn')?.addEventListener(
   'click',
-  ()=>setTiosDesktopSidebarCollapsed(true)
+  event=>animateTiosSidebarToggle(
+    event.currentTarget,
+    ()=>setTiosDesktopSidebarCollapsed(true)
+  )
 );
 $('#desktopSidebarReopenBtn')?.addEventListener(
   'click',
-  ()=>setTiosDesktopSidebarCollapsed(false)
+  event=>animateTiosSidebarToggle(
+    event.currentTarget,
+    ()=>setTiosDesktopSidebarCollapsed(false)
+  )
 );
 
 initializeTiosDesktopSidebar();
