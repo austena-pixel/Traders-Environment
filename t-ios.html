@@ -1938,6 +1938,20 @@ input:focus,select:focus,textarea:focus{
   font-size:11px;
 }
 .execution-structure-actions .btn{padding:8px 10px;font-size:10px}
+.execution-journal-library-label{
+  display:inline-flex;
+  align-items:center;
+  height:32px;
+  padding:0 9px;
+  border:1px solid rgba(105,168,255,.26);
+  border-radius:999px;
+  background:rgba(105,168,255,.07);
+  color:#9fc9f7;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.04em;
+  white-space:nowrap;
+}
 .execution-reflection-fields{display:grid;gap:9px}
 .execution-reflection-text{
   border:1px solid #1e2938;
@@ -4643,6 +4657,7 @@ textarea{resize:vertical;min-height:90px}
                 <small id="executionStructureMeta">Create your own journal, or add the T-IOS recommended journal when you want it.</small>
               </div>
               <div class="execution-structure-actions" id="executionStructureActions">
+                <span class="execution-journal-library-label" id="executionJournalLibraryLabel">My Journals</span>
                 <select id="executionStructureSelect" aria-label="Execution journal"></select>
                 <button class="btn" type="button" id="executionUseRecommendedBtn">Use Recommended</button>
                 <button class="btn" type="button" id="executionNewStructureBtn">+ New Journal</button>
@@ -7925,8 +7940,14 @@ function renderExecutionStructureControls(review){
   const recommendedBtn=$('#executionUseRecommendedBtn');
   const newBtn=$('#executionNewStructureBtn');
   const historicalBtn=$('#executionSaveHistoricalStructureBtn');
+  const libraryLabel=$('#executionJournalLibraryLabel');
+  const active=store.structures.find(item=>item.id===store.activeId)||null;
 
-  select.innerHTML='<option value="">Choose structure...</option>';
+  if(libraryLabel){
+    libraryLabel.textContent='My Journals • '+store.structures.length;
+  }
+
+  select.innerHTML='<option value="">Choose journal...</option>';
   store.structures.forEach(structure=>{
     const option=document.createElement('option');
     option.value=structure.id;
@@ -7934,15 +7955,22 @@ function renderExecutionStructureControls(review){
     select.appendChild(option);
   });
 
+  // The saved journal library is page-level and remains visible even when
+  // the selected trade is already reviewed.
+  select.hidden=false;
+  select.value=active?active.id:'';
+  recommendedBtn.hidden=false;
+  newBtn.hidden=false;
+  editBtn.hidden=!active;
+  deleteBtn.hidden=!active;
+
   if(review){
     const structure=executionReflectionStructureForReview(review);
     $('#executionStructureName').textContent=structure?structure.name:'Historical reflection';
-    $('#executionStructureMeta').textContent=(structure?executionStructureSummary(structure):'Historical review')+' • this saved review is locked, but you can create another journal for future reviews';
-    select.hidden=true;
-    editBtn.hidden=true;
-    deleteBtn.hidden=true;
-    recommendedBtn.hidden=false;
-    newBtn.hidden=false;
+    $('#executionStructureMeta').textContent=
+      (structure?executionStructureSummary(structure):'Historical review')+
+      ' • this trade keeps its original journal. My Journals above controls which journal will be used for future/unreviewed trades.';
+
     const alreadySaved=structure?savedExecutionStructureMatching(structure.items):null;
     historicalBtn.hidden=!structure||Boolean(alreadySaved);
     actions.classList.add('historical');
@@ -7950,17 +7978,10 @@ function renderExecutionStructureControls(review){
   }
 
   actions.classList.remove('historical');
-  select.hidden=false;
-  recommendedBtn.hidden=false;
-  newBtn.hidden=false;
-  const active=store.structures.find(item=>item.id===store.activeId)||null;
-  select.value=active?active.id:'';
-  editBtn.hidden=!active;
-  deleteBtn.hidden=!active;
   historicalBtn.hidden=true;
   $('#executionStructureName').textContent=active?active.name:'No journal selected';
   $('#executionStructureMeta').textContent=active
-    ? executionStructureSummary(active)
+    ? executionStructureSummary(active)+' • active for this unreviewed trade'
     : 'Create your own execution journal, or add the recommended journal when you want it.';
 }
 
@@ -8227,7 +8248,7 @@ function saveExecutionStructureBuilder(){
   saveExecutionStructureStore(store);
   closeExecutionStructureBuilder();
   renderSelectedExecutionTrade();
-  showStatus('Execution journal saved • select an unreviewed trade to use it');
+  showStatus('Execution journal saved • it is now visible under My Journals');
 }
 
 function saveHistoricalExecutionStructure(){
@@ -8600,7 +8621,13 @@ async function deleteExecutionReview(){
 
 $('#executionStructureSelect').addEventListener('change',event=>{
   setActiveExecutionStructure(event.target.value);
+  const selectedReview=executionReviewForTrade(selectedExecutionTradeId);
   renderSelectedExecutionTrade();
+  showStatus(
+    selectedReview
+      ? 'Active journal changed for future/unreviewed trades'
+      : 'Execution journal selected'
+  );
 });
 
 $('#executionUseRecommendedBtn').addEventListener('click',()=>{
