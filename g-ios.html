@@ -1305,14 +1305,38 @@ function publishGoalEvidenceRequest(area,model){
  const link=productLinkForArea(area);
  const phase=activeProgressPhase(model);
  if(!link||!phase)return null;
+ const originalMetrics=[...(phase.evidence||[])];
+ const metrics=link.productId==='tios'
+  ? [...new Set(originalMetrics.filter(metric=>typeof metric==='string'&&metric.trim()))]
+  : originalMetrics;
+ if(link.productId==='tios'&&!metrics.length)return null;
  const request={
   requestId:'req_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
   schema:'hios.goal-evidence-request.v1',source:'goals-ios',targetProductId:link.productId,
   area,modelName:model.name||area+' Progress Model',phaseId:phase.id,phaseName:phase.title,
-  metrics:[...(phase.evidence||[])],
-  metricGroups:groupedEvidenceIds(link.productId,phase.evidence||[]),
+  metrics,
+  metricGroups:groupedEvidenceIds(link.productId,metrics),
   requestedAt:new Date().toISOString(),status:'requested'
  };
+
+ // Stage 1C migrates only the real Traders-IOS evidence request.
+ if(link.productId==='tios'){
+  const routed=goalsBridge.emit(
+   'evidence.requested',
+   {request},
+   {targetProductId:link.productId,area,phaseId:phase.id}
+  );
+  if(!routed?.ok){
+   console.warn('Goals-IOS evidence request was not routed by H-IOS:',routed?.errors||[]);
+   return null;
+  }
+  request.status='routed';
+  request.hiosSignalId=routed.signal.signalId;
+  request.hiosReceivedAt=routed.signal.timestamp;
+  request.routedAt=routed.signal.timestamp;
+  request.router='hios-communication-centre';
+ }
+
  let all={};try{all=JSON.parse(localStorage.getItem(GIOS_EVIDENCE_REQUESTS_KEY)||'{}')||{}}catch(e){}
  all[link.productId]=request;
  localStorage.setItem(GIOS_EVIDENCE_REQUESTS_KEY,JSON.stringify(all));

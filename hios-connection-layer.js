@@ -27,7 +27,7 @@
     'calendar.item.created','calendar.item.updated','calendar.item.deleted',
     'task.calendar.remove.requested','goal.calendar.remove.requested',
     'task.delete.requested','goal.delete.requested',
-    'evidence.observed'
+    'evidence.observed','evidence.requested'
   ]);
   const sourceSet=new Set(SOURCES);
   const typeSet=new Set(TYPES);
@@ -94,7 +94,8 @@
       'goal.created','goal.updated','goal.completed','goal.deleted',
       'goal.progress.changed','goal.deadline.changed',
       'task.created','task.updated','task.completed','task.deleted',
-      'goals.snapshot.updated','goals.state.synchronised'
+      'goals.snapshot.updated','goals.state.synchronised',
+      'evidence.requested'
     ]),
     'h-ios':Object.freeze([
       'calendar.item.created','calendar.item.updated','calendar.item.deleted',
@@ -164,11 +165,15 @@
     return state&&typeof state==='object'&&!Array.isArray(state)?state:{};
   }
 
-  function isEnabled(source){
-    const productId=sourceProductIds[source];
-    if(!productId)return true;
+  function isProductEnabled(productId){
+    if(productId==='gios')return true;
     const products=contracts.safeParse(localStorage.getItem(contracts.KEYS.products),[]);
     return Array.isArray(products)&&products.includes(productId);
+  }
+
+  function isEnabled(source){
+    const productId=sourceProductIds[source];
+    return productId?isProductEnabled(productId):true;
   }
 
   function touch(source,status='connected'){
@@ -178,7 +183,7 @@
     return state[source];
   }
 
-  modules.connectionState=Object.freeze({read,touch,isEnabled});
+  modules.connectionState=Object.freeze({read,touch,isEnabled,isProductEnabled});
 })(window);
 
 /* H·IOS Communication Centre — in-page, cross-tab and storage transport. */
@@ -306,6 +311,26 @@
         errors.push('T-IOS evidence source does not match sourceProductId.');
       }
     }
+    if(validation.valid&&signal.type==='evidence.requested'){
+      const request=signal.payload?.request;
+      const requestIsObject=request&&typeof request==='object'&&!Array.isArray(request);
+      if(!requestIsObject){
+        errors.push('Evidence request must be an object.');
+      }else{
+        const metrics=Array.isArray(request.metrics)?request.metrics:[];
+        if(request.schema!=='hios.goal-evidence-request.v1')errors.push('Unsupported evidence request schema.');
+        if(request.source!=='goals-ios'||request.source!==signal.source)errors.push('Evidence request source must be Goals-IOS.');
+        if(typeof request.requestId!=='string'||!request.requestId.trim())errors.push('Evidence requestId is required.');
+        if(typeof request.targetProductId!=='string'||!request.targetProductId.trim())errors.push('Evidence request targetProductId is required.');
+        if(!metrics.length||metrics.some(metric=>typeof metric!=='string'||!metric.trim()))errors.push('Evidence request must contain selected metric names.');
+        if(new Set(metrics).size!==metrics.length)errors.push('Evidence request metrics must be unique.');
+        if(!request.requestedAt||Number.isNaN(Date.parse(request.requestedAt)))errors.push('Evidence request requestedAt must be a valid timestamp.');
+        if(signal.meta?.targetProductId&&signal.meta.targetProductId!==request.targetProductId)errors.push('Evidence request target does not match routing metadata.');
+        if(request.targetProductId&&!connectionState.isProductEnabled(request.targetProductId)){
+          errors.push(`Target product ${request.targetProductId} is disconnected from H-IOS.`);
+        }
+      }
+    }
     if(errors.length){
       log.append(signal,'rejected',errors);
       console.warn('H-IOS rejected a signal:',errors,signal);
@@ -384,7 +409,7 @@
       readGoals,
       readSnapshot,
       getPendingRequests:router.getPendingRequests,
-      acknowledgeRequest:source==='goals-ios'?router.acknowledgeRequest:undefined,
+      acknowledgeRequest:(source==='goals-ios'||source==='h-ios')?router.acknowledgeRequest:undefined,
       writeGoals:source==='goals-ios'?writeGoals:undefined,
       publishSnapshot:source==='goals-ios'?publishSnapshot:undefined,
       getConnectionState:connectionState.read,

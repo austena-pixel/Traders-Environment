@@ -4839,7 +4839,14 @@ function currentTiosEvidenceRequest(){
   const all=readHiosJson(GIOS_EVIDENCE_REQUESTS_KEY,{});
   const request=all?.tios||null;
   if(!request||request.schema!=='hios.goal-evidence-request.v1')return null;
-  if(request.source!=='goals-ios'||request.targetProductId!=='tios'||!Array.isArray(request.metrics))return null;
+  if(
+    request.source!=='goals-ios' ||
+    request.targetProductId!=='tios' ||
+    !Array.isArray(request.metrics) ||
+    !request.metrics.length ||
+    request.metrics.some(metric=>typeof metric!=='string'||!metric.trim()) ||
+    new Set(request.metrics).size!==request.metrics.length
+  )return null;
   return request;
 }
 function roundEvidence(value,digits=2){const n=Number(value);if(!Number.isFinite(n))return null;const f=10**digits;return Math.round(n*f)/f}

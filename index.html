@@ -2788,7 +2788,17 @@ const HIOS_STRUCTURED_EVIDENCE_LIMIT=500;
 
 
 function verifyGoalEvidenceRequest(request){
-  return !!(request && request.schema==='hios.goal-evidence-request.v1' && request.requestId && request.source==='goals-ios' && request.targetProductId && Array.isArray(request.metrics) && request.requestedAt);
+  return !!(
+    request &&
+    request.schema==='hios.goal-evidence-request.v1' &&
+    typeof request.requestId==='string' && request.requestId.trim() &&
+    request.source==='goals-ios' &&
+    typeof request.targetProductId==='string' && request.targetProductId.trim() &&
+    Array.isArray(request.metrics) && request.metrics.length &&
+    request.metrics.every(metric=>typeof metric==='string'&&metric.trim()) &&
+    new Set(request.metrics).size===request.metrics.length &&
+    request.requestedAt && !Number.isNaN(Date.parse(request.requestedAt))
+  );
 }
 function receiveGoalEvidenceRequests(){
   const requests=readHiosEcosystemJson(GIOS_EVIDENCE_REQUESTS_KEY,{});
@@ -2797,6 +2807,7 @@ function receiveGoalEvidenceRequests(){
   let changed=false,received=0;
   Object.entries(requests||{}).forEach(([productId,request])=>{
     if(!verifyGoalEvidenceRequest(request)||request.targetProductId!==productId)return;
+    if(productId==='tios'&&!isProductAdded('tios'))return;
     if(!receipts[request.requestId]){
       receipts[request.requestId]={requestId:request.requestId,targetProductId:productId,area:request.area||null,phaseId:request.phaseId||null,phaseName:request.phaseName||null,metrics:[...request.metrics],receivedAt:new Date().toISOString(),verified:true};
       received++;
@@ -2812,6 +2823,43 @@ function receiveGoalEvidenceRequests(){
   if(changed)writeHiosEcosystemJson(GIOS_EVIDENCE_REQUESTS_KEY,requests);
   if(received||changed)window.dispatchEvent(new CustomEvent('hios:goal-evidence-routed',{detail:{received,changed}}));
   return {received,changed};
+}
+
+function receiveGoalEvidenceRequestSignal(signal){
+  const request=signal?.payload?.request;
+  if(
+    signal?.source!=='goals-ios' ||
+    signal?.type!=='evidence.requested' ||
+    request?.targetProductId!=='tios' ||
+    !verifyGoalEvidenceRequest(request) ||
+    !isProductAdded('tios')
+  ){
+    return {received:0,changed:false};
+  }
+
+  const requests=readHiosEcosystemJson(GIOS_EVIDENCE_REQUESTS_KEY,{});
+  const existing=requests.tios;
+  if(!existing||existing.requestId!==request.requestId){
+    requests.tios={
+      ...request,
+      status:'routed',
+      hiosSignalId:signal.signalId,
+      hiosReceivedAt:signal.timestamp||new Date().toISOString(),
+      routedAt:signal.timestamp||new Date().toISOString(),
+      router:'hios-communication-centre'
+    };
+    writeHiosEcosystemJson(GIOS_EVIDENCE_REQUESTS_KEY,requests);
+  }
+
+  const result=receiveGoalEvidenceRequests();
+  if(hiosBridge?.acknowledgeRequest){
+    hiosBridge.acknowledgeRequest(signal.signalId,{
+      requestId:request.requestId,
+      targetProductId:'tios',
+      status:'routed'
+    });
+  }
+  return result;
 }
 function hiosGoalEvidenceDiagnostic(productId='tios'){
   receiveGoalEvidenceRequests();
@@ -3235,6 +3283,13 @@ hiosBridge.subscribe(signal=>{
   const evidence=signal?.payload?.evidence;
   if(evidence)receiveHiosStructuredEvidence([evidence]);
 },{source:'t-ios',types:['evidence.observed']});
+hiosBridge.subscribe(receiveGoalEvidenceRequestSignal,{
+  source:'goals-ios',
+  types:['evidence.requested']
+});
+hiosBridge.getPendingRequests()
+  .filter(signal=>signal?.source==='goals-ios'&&signal?.type==='evidence.requested')
+  .forEach(receiveGoalEvidenceRequestSignal);
 
 function pendingGoalRequests(){
   return hiosBridge.getPendingRequests().filter(request=>

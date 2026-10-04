@@ -7,6 +7,7 @@ const contract = require('../core/evidence-contract.js');
 const root = path.join(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const userId = '00000000-0000-4000-8000-000000000001';
+const tiosSlice = (source, start, end) => source.slice(source.indexOf(start), source.indexOf(end, source.indexOf(start)));
 const example = () => ({
   schema: contract.SCHEMA,
   id: 'test-evidence-1', sourceProductId: 'tios', domain: 'trading', userId,
@@ -163,5 +164,84 @@ test('Stage 1B routes one T-IOS activity through the shared connector and H-IOS 
   assert.equal(run('rejected'), null);
   assert.equal(run("readHiosJson('test-bus',[]).length"), 1);
   assert.equal(run("JSON.parse(localStorage.getItem('hios_communication_log_v1')).at(-1).status"), 'rejected');
+  assert.match(run("JSON.parse(localStorage.getItem('hios_communication_log_v1')).at(-1).errors.join(' ')"), /disconnected/);
+});
+
+
+test('Stage 1C routes only selected G-IOS evidence metrics through H-IOS to T-IOS', () => {
+  const { run } = browser();
+  run(read('hios-connection-layer.js'));
+  run(`localStorage.setItem('hios_added_products_v1', JSON.stringify(['gios','tios']));
+    const GIOS_EVIDENCE_REQUESTS_KEY='test-requests';
+    const TIOS_EVIDENCE_RESPONSES_KEY='test-responses';
+    const PRODUCT_GOAL_EVIDENCE_KEY='test-goal-evidence';
+    const HIOS_PRODUCT_STATUS_KEY='test-status';
+    const HIOS_EVIDENCE_REQUEST_RECEIPTS_KEY='test-request-receipts';
+    const readHiosJson=(key,fallback)=>JSON.parse(localStorage.getItem(key)||'null')??fallback;
+    const writeHiosJson=(key,value)=>localStorage.setItem(key,JSON.stringify(value));
+    const readHiosEcosystemJson=readHiosJson; const writeHiosEcosystemJson=writeHiosJson;
+    const goalsBridge=HIOSConnectionLayer.connect('goals-ios');
+    const productLinkForArea=()=>({productId:'tios'});
+    const activeProgressPhase=model=>model.phases[0];
+    const groupedEvidenceIds=(productId,ids)=>({technical:ids.filter(id=>id==='playbook_adherence'),psychological:ids.filter(id=>id==='discipline_score'),general:[]});`);
+
+  const gios=read('g-ios.html');
+  run(gios.slice(gios.indexOf('function publishGoalEvidenceRequest('), gios.indexOf('function currentEvidenceRequest(')));
+  run(`const request = publishGoalEvidenceRequest('Trading',{
+    name:'Trading Progress Model',
+    phases:[{id:'phase-1',title:'Execution Quality',evidence:['playbook_adherence','discipline_score','playbook_adherence']}]
+  });`);
+
+  assert.deepEqual([...run('request.metrics')], ['playbook_adherence','discipline_score']);
+  assert.equal(run('request.status'), 'routed');
+  assert.equal(run('request.router'), 'hios-communication-centre');
+  assert.equal(run("JSON.parse(localStorage.getItem('hios_communication_last_signal_v1')).source"), 'goals-ios');
+  assert.equal(run("JSON.parse(localStorage.getItem('hios_communication_last_signal_v1')).type"), 'evidence.requested');
+  assert.deepEqual([...run("JSON.parse(localStorage.getItem('hios_communication_last_signal_v1')).payload.request.metrics")], ['playbook_adherence','discipline_score']);
+  assert.equal(run("JSON.parse(localStorage.getItem('test-requests')).tios.hiosSignalId === request.hiosSignalId"), true);
+
+  run(`const isProductAdded=id=>JSON.parse(localStorage.getItem('hios_added_products_v1')||'[]').includes(id);
+    const hiosBridge=HIOSConnectionLayer.connect('h-ios');`);
+  const index=read('index.html');
+  run(index.slice(index.indexOf('function verifyGoalEvidenceRequest('), index.indexOf('function hiosGoalEvidenceDiagnostic(')));
+  run(`const routedSignal=JSON.parse(localStorage.getItem('hios_communication_last_signal_v1'));
+    receiveGoalEvidenceRequestSignal(routedSignal);`);
+  assert.equal(run("JSON.parse(localStorage.getItem('test-request-receipts'))[request.requestId].verified"), true);
+  assert.equal(run("JSON.parse(localStorage.getItem('test-requests')).tios.status"), 'routed');
+  assert.equal(run("hiosBridge.getPendingRequests().some(row=>row.signalId===routedSignal.signalId)"), false);
+
+  run(`const currentUser={id:'00000000-0000-4000-8000-000000000001'};
+    const publishedMetrics=[];
+    const tiosRequestedEvidenceMetric=metric=>({available:true,value:metric==='playbook_adherence'?80:90,unit:'%'});
+    const latestPublishedGoalEvidence=()=>null;
+    const sameGoalEvidenceSnapshot=()=>false;
+    const publishTiosSignal=(signal,metric)=>{publishedMetrics.push(metric);return{}};
+    const tiosEvidenceFamily=metric=>metric==='discipline_score'?'psychological':'technical';
+    const setTiosConnectionStatus=()=>{};`);
+  run(tiosSlice(read('t-ios.html'),'function currentTiosEvidenceRequest()','function roundEvidence('));
+  run(tiosSlice(read('t-ios.html'),"function respondToGoalEvidenceRequest(reason='refresh')",'window.TIOSGoalEvidenceDiagnostic'));
+  run("respondToGoalEvidenceRequest('stage_1c_test')");
+  assert.deepEqual([...run('publishedMetrics')], ['playbook_adherence','discipline_score']);
+  assert.deepEqual([...run("JSON.parse(localStorage.getItem('test-responses')).tios.requestedMetrics")], ['playbook_adherence','discipline_score']);
+});
+
+test('Stage 1C does not create a T-IOS request with no selected metrics or a disconnected target', () => {
+  const { run } = browser();
+  run(read('hios-connection-layer.js'));
+  run(`const GIOS_EVIDENCE_REQUESTS_KEY='test-requests';
+    const goalsBridge=HIOSConnectionLayer.connect('goals-ios');
+    const productLinkForArea=()=>({productId:'tios'});
+    const activeProgressPhase=model=>model.phases[0];
+    const groupedEvidenceIds=(productId,ids)=>({technical:ids,psychological:[],general:[]});`);
+  const gios=read('g-ios.html');
+  run(gios.slice(gios.indexOf('function publishGoalEvidenceRequest('), gios.indexOf('function currentEvidenceRequest(')));
+
+  run("localStorage.setItem('hios_added_products_v1', JSON.stringify(['gios','tios']))");
+  assert.equal(run("publishGoalEvidenceRequest('Trading',{phases:[{id:'p1',title:'P1',evidence:[]}]})"), null);
+  assert.equal(run("localStorage.getItem('test-requests')"), null);
+
+  run("localStorage.setItem('hios_added_products_v1', JSON.stringify(['gios']))");
+  assert.equal(run("publishGoalEvidenceRequest('Trading',{phases:[{id:'p2',title:'P2',evidence:['playbook_adherence']}]})"), null);
+  assert.equal(run("localStorage.getItem('test-requests')"), null);
   assert.match(run("JSON.parse(localStorage.getItem('hios_communication_log_v1')).at(-1).errors.join(' ')"), /disconnected/);
 });
