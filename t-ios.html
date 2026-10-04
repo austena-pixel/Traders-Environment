@@ -403,16 +403,16 @@ input:focus,select:focus,textarea:focus{
 }
 .sidebar-collapse-toggle,
 .sidebar-reopen-toggle{
-  border:1px solid rgba(105,168,255,.55);
+  border:1px solid rgba(105,168,255,.58);
   background:
-    radial-gradient(circle at 35% 30%,rgba(105,168,255,.28),transparent 48%),
-    linear-gradient(180deg,#15263a,#0d1825);
-  color:#a9d2ff;
-  width:42px;
-  height:62px;
+    radial-gradient(circle at 35% 28%,rgba(105,168,255,.30),transparent 50%),
+    linear-gradient(180deg,#15273b,#0c1724);
+  color:#afd7ff;
+  width:40px;
+  height:48px;
   display:grid;
   place-items:center;
-  font-size:25px;
+  font-size:23px;
   font-weight:900;
   line-height:1;
   box-shadow:
@@ -445,17 +445,17 @@ input:focus,select:focus,textarea:focus{
 }
 .sidebar-collapse-toggle{
   position:absolute;
-  top:68%;
-  right:-15px;
+  top:66px;
+  right:-14px;
   z-index:45;
-  border-radius:18px;
-  transform:translateY(-50%);
+  border-radius:14px;
+  transform:none;
 }
 .sidebar-collapse-toggle:hover{
-  transform:translateY(-50%) translateX(3px);
+  transform:translateX(3px);
 }
 .sidebar-collapse-toggle:active{
-  transform:translateY(-50%) translateX(3px) scale(.90);
+  transform:translateX(3px) scale(.90);
 }
 .sidebar-collapse-toggle.sidebar-toggle-pulse{
   animation:tiosSidebarToggleClose .30s cubic-bezier(.22,.8,.22,1);
@@ -463,30 +463,30 @@ input:focus,select:focus,textarea:focus{
 .sidebar-reopen-toggle{
   display:none;
   position:fixed;
-  left:-27px;
-  top:68%;
+  left:12px;
+  top:66px;
   z-index:60;
-  border-radius:18px;
-  transform:translateY(-50%);
+  border-radius:14px;
+  transform:none;
 }
 .sidebar-reopen-toggle:hover{
-  transform:translateY(-50%) translateX(3px);
+  transform:translateX(3px);
 }
 .sidebar-reopen-toggle:active{
-  transform:translateY(-50%) translateX(3px) scale(.90);
+  transform:translateX(3px) scale(.90);
 }
 .sidebar-reopen-toggle.sidebar-toggle-pulse{
   animation:tiosSidebarToggleOpen .30s cubic-bezier(.22,.8,.22,1);
 }
 @keyframes tiosSidebarToggleClose{
-  0%{transform:translateY(-50%) translateX(0) scale(1)}
-  45%{transform:translateY(-50%) translateX(-8px) scale(.88)}
-  100%{transform:translateY(-50%) translateX(0) scale(1)}
+  0%{transform:translateX(0) scale(1)}
+  45%{transform:translateX(-7px) scale(.88)}
+  100%{transform:translateX(0) scale(1)}
 }
 @keyframes tiosSidebarToggleOpen{
-  0%{transform:translateY(-50%) translateX(0) scale(1)}
-  45%{transform:translateY(-50%) translateX(10px) scale(.88)}
-  100%{transform:translateY(-50%) translateX(0) scale(1)}
+  0%{transform:translateX(0) scale(1)}
+  45%{transform:translateX(8px) scale(.88)}
+  100%{transform:translateX(0) scale(1)}
 }
 @media(min-width:861px){
   .shell.sidebar-collapsed{
@@ -501,7 +501,7 @@ input:focus,select:focus,textarea:focus{
     display:grid;
   }
   .shell.sidebar-collapsed .page-head{
-    padding-left:44px;
+    padding-left:58px;
   }
 }
 @media(max-width:860px){
@@ -514,7 +514,7 @@ input:focus,select:focus,textarea:focus{
   display:flex;
   gap:11px;
   align-items:center;
-  padding:4px 7px 18px;
+  padding:4px 30px 18px 7px;
   border-bottom:1px solid #151d28;
 }
 .side-logo{
