@@ -400,37 +400,74 @@ input:focus,select:focus,textarea:focus{
 }
 .sidebar-collapse-toggle,
 .sidebar-reopen-toggle{
-  border:1px solid #2a3b51;
-  background:#0f1823;
-  color:#cbd8e8;
-  width:34px;
-  height:34px;
-  border-radius:10px;
+  border:1px solid rgba(105,168,255,.55);
+  background:
+    radial-gradient(circle at 35% 30%,rgba(105,168,255,.28),transparent 48%),
+    linear-gradient(180deg,#15263a,#0d1825);
+  color:#a9d2ff;
+  width:42px;
+  height:62px;
   display:grid;
   place-items:center;
-  font-size:20px;
+  font-size:25px;
+  font-weight:900;
   line-height:1;
-  box-shadow:0 8px 24px rgba(0,0,0,.24);
-  transition:.16s ease;
+  box-shadow:
+    0 12px 30px rgba(0,0,0,.38),
+    0 0 0 1px rgba(105,168,255,.06) inset,
+    0 0 18px rgba(105,168,255,.10);
+  transition:
+    transform .18s cubic-bezier(.2,.8,.2,1),
+    background .18s ease,
+    border-color .18s ease,
+    color .18s ease,
+    box-shadow .18s ease;
 }
 .sidebar-collapse-toggle:hover,
 .sidebar-reopen-toggle:hover{
   color:#fff;
-  border-color:#4a6382;
-  background:#142131;
+  border-color:#78b8ff;
+  background:
+    radial-gradient(circle at 35% 30%,rgba(105,168,255,.42),transparent 50%),
+    linear-gradient(180deg,#1a314a,#102033);
+  box-shadow:
+    0 14px 32px rgba(0,0,0,.42),
+    0 0 22px rgba(105,168,255,.18);
+}
+.sidebar-collapse-toggle:active,
+.sidebar-reopen-toggle:active{
+  box-shadow:
+    0 6px 16px rgba(0,0,0,.34),
+    0 0 14px rgba(105,168,255,.15);
 }
 .sidebar-collapse-toggle{
   position:absolute;
-  top:15px;
-  right:10px;
-  z-index:2;
+  top:50%;
+  right:-22px;
+  z-index:45;
+  border-radius:18px;
+  transform:translateY(-50%);
+}
+.sidebar-collapse-toggle:hover{
+  transform:translateY(-50%) translateX(3px);
+}
+.sidebar-collapse-toggle:active{
+  transform:translateY(-50%) translateX(3px) scale(.90);
 }
 .sidebar-reopen-toggle{
   display:none;
   position:fixed;
-  left:12px;
-  top:18px;
+  left:-2px;
+  top:50%;
   z-index:60;
+  border-radius:0 18px 18px 0;
+  transform:translateY(-50%);
+}
+.sidebar-reopen-toggle:hover{
+  transform:translateY(-50%) translateX(3px);
+}
+.sidebar-reopen-toggle:active{
+  transform:translateY(-50%) translateX(3px) scale(.90);
 }
 @media(min-width:861px){
   .shell.sidebar-collapsed{
@@ -458,7 +495,7 @@ input:focus,select:focus,textarea:focus{
   display:flex;
   gap:11px;
   align-items:center;
-  padding:4px 42px 18px 7px;
+  padding:4px 7px 18px;
   border-bottom:1px solid #151d28;
 }
 .side-logo{
@@ -6396,8 +6433,14 @@ function setTiosDesktopSidebarCollapsed(collapsed){
 
   const collapseBtn=$('#desktopSidebarCollapseBtn');
   const reopenBtn=$('#desktopSidebarReopenBtn');
-  if(collapseBtn)collapseBtn.setAttribute('aria-expanded',collapsed?'false':'true');
-  if(reopenBtn)reopenBtn.setAttribute('aria-expanded',collapsed?'false':'true');
+  if(collapseBtn){
+    collapseBtn.setAttribute('aria-expanded',collapsed?'false':'true');
+    collapseBtn.setAttribute('aria-pressed',collapsed?'true':'false');
+  }
+  if(reopenBtn){
+    reopenBtn.setAttribute('aria-expanded',collapsed?'false':'true');
+    reopenBtn.setAttribute('aria-pressed',collapsed?'true':'false');
+  }
 }
 
 function initializeTiosDesktopSidebar(){
