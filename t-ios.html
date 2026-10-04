@@ -6483,7 +6483,7 @@ function navigate(page){
   });
   syncTiosNavGroups(page);
 
-  $('.page').forEach(p=>{
+  $$('.page').forEach(p=>{
     p.classList.toggle('active', p.id===`page-${page}`);
   });
 
