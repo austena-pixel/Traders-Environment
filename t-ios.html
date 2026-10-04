@@ -4859,12 +4859,34 @@ function tiosMaxDrawdownEvidence(){
 function tiosRequestedEvidenceMetric(metric){
   const executionKeys=typeof EXECUTION_CRITERIA!=='undefined'?EXECUTION_CRITERIA.map(item=>item.key):[];
   if(metric==='execution_adherence'){
-    const stats=executionCriterionStats(executionKeys);if(stats.pct===null)return{available:false,reason:'No reviewed execution evidence yet.'};
-    return{available:true,value:roundEvidence(stats.pct,1),unit:'%',sampleSize:stats.reviewedTrades,details:{checks:stats.total,complied:stats.complied}};
+    const model=buildExecutionIntelligenceModel();
+    if(!model.sample.totalChecks)return{available:false,reason:'No reviewed execution evidence yet.'};
+    return{
+      available:true,
+      value:model.execution.adherencePct,
+      unit:'%',
+      sampleSize:model.sample.reviewedTrades,
+      details:{
+        checks:model.sample.totalChecks,
+        complied:model.sample.compliedChecks,
+        modelSchema:model.schema
+      }
+    };
   }
   if(metric==='execution_errors'){
-    const stats=executionCriterionStats(executionKeys);if(!stats.total)return{available:false,reason:'No reviewed execution evidence yet.'};
-    return{available:true,value:Math.max(0,stats.total-stats.complied),unit:'errors',sampleSize:stats.reviewedTrades,details:{checks:stats.total}};
+    const model=buildExecutionIntelligenceModel();
+    if(!model.sample.totalChecks)return{available:false,reason:'No reviewed execution evidence yet.'};
+    return{
+      available:true,
+      value:model.sample.missedChecks,
+      unit:'errors',
+      sampleSize:model.sample.reviewedTrades,
+      details:{
+        checks:model.sample.totalChecks,
+        tradesWithErrors:model.sample.tradesWithErrors,
+        modelSchema:model.schema
+      }
+    };
   }
   if(metric==='identity_expression'){
     const values=(Array.isArray(psychologySessions)?psychologySessions:[]).map(session=>identityPercentForSession(session.id)).filter(value=>value!==null&&Number.isFinite(Number(value)));
@@ -10443,34 +10465,158 @@ function shortExecutionCriterionLabel(key){
   return labels[key] || key;
 }
 
-function intelligenceBehaviourPattern(){
+const TIOS_EXECUTION_INTELLIGENCE_SCHEMA='tios.execution-intelligence.v1';
+
+function buildExecutionIntelligenceModel(){
   const activeReviews=activeExecutionReviews();
-  if(!activeReviews.length){
+  const activeReviewIds=new Set(activeReviews.map(review=>review.id));
+  const tradeIdByReviewId=new Map(activeReviews.map(review=>[review.id,review.trade_id]));
+
+  const criteria=EXECUTION_CRITERIA.map(item=>{
+    const rows=executionChecks.filter(row=>
+      activeReviewIds.has(row.review_id) &&
+      row.criterion_key===item.key
+    );
+    const failedRows=rows.filter(row=>!Boolean(row.complied));
+    const complied=rows.length-failedRows.length;
+    const affectedTradeIds=[...new Set(
+      failedRows
+        .map(row=>tradeIdByReviewId.get(row.review_id))
+        .filter(Boolean)
+    )];
+
+    return {
+      key:item.key,
+      label:shortExecutionCriterionLabel(item.key),
+      checks:rows.length,
+      complied,
+      misses:failedRows.length,
+      adherencePct:rows.length
+        ? roundEvidence(complied/rows.length*100,1)
+        : null,
+      affectedTrades:affectedTradeIds.length,
+      affectedTradeIds
+    };
+  });
+
+  const totalChecks=criteria.reduce((sum,item)=>sum+item.checks,0);
+  const compliedChecks=criteria.reduce((sum,item)=>sum+item.complied,0);
+  const missedChecks=criteria.reduce((sum,item)=>sum+item.misses,0);
+
+  const scores=activeReviews
+    .map(review=>executionScoreForTrade(review.trade_id))
+    .filter(value=>value!==null&&Number.isFinite(Number(value)))
+    .map(Number);
+
+  const failedReviewIds=new Set(
+    executionChecks
+      .filter(row=>activeReviewIds.has(row.review_id)&&!Boolean(row.complied))
+      .map(row=>row.review_id)
+  );
+
+  const withEvidence=criteria.filter(item=>item.checks>0);
+  const strongestAdherence=withEvidence.length
+    ? Math.max(...withEvidence.map(item=>Number(item.adherencePct)))
+    : null;
+  const highestMisses=withEvidence.length
+    ? Math.max(...withEvidence.map(item=>item.misses))
+    : 0;
+
+  const currentStrongestCriteria=strongestAdherence===null
+    ? []
+    : withEvidence
+      .filter(item=>Number(item.adherencePct)===strongestAdherence)
+      .map(item=>({
+        key:item.key,
+        label:item.label,
+        adherencePct:item.adherencePct,
+        misses:item.misses,
+        checks:item.checks
+      }));
+
+  const currentWeakestCriteria=highestMisses<=0
+    ? []
+    : withEvidence
+      .filter(item=>item.misses===highestMisses)
+      .sort((a,b)=>
+        Number(a.adherencePct??100)-Number(b.adherencePct??100) ||
+        EXECUTION_CRITERIA.findIndex(row=>row.key===a.key)-EXECUTION_CRITERIA.findIndex(row=>row.key===b.key)
+      )
+      .map(item=>({
+        key:item.key,
+        label:item.label,
+        adherencePct:item.adherencePct,
+        misses:item.misses,
+        checks:item.checks,
+        affectedTrades:item.affectedTrades
+      }));
+
+  const reviewedTrades=activeReviews.length;
+  const totalTrades=trades.length;
+
+  return {
+    schema:TIOS_EXECUTION_INTELLIGENCE_SCHEMA,
+    productId:'tios',
+    domain:'trading',
+    generatedAt:new Date().toISOString(),
+    scope:{
+      accountId:tradingAccount?.id||null
+    },
+    maturity:{
+      state:reviewedTrades===0?'needs-evidence':reviewedTrades<3?'building':'active',
+      reviewedTrades,
+      minimumForInitialPattern:3
+    },
+    sample:{
+      reviewedTrades,
+      totalTrades,
+      coveragePct:totalTrades
+        ? roundEvidence(reviewedTrades/totalTrades*100,1)
+        : null,
+      totalChecks,
+      compliedChecks,
+      missedChecks,
+      tradesWithErrors:failedReviewIds.size,
+      aPlusExecutions:activeReviews.filter(review=>executionRatingForTrade(review.trade_id)==='A+').length
+    },
+    execution:{
+      averageScorePct:scores.length?roundEvidence(averageFinite(scores),1):null,
+      adherencePct:totalChecks?roundEvidence(compliedChecks/totalChecks*100,1):null,
+      errorRatePct:totalChecks?roundEvidence(missedChecks/totalChecks*100,1):null
+    },
+    criteria,
+    currentStrongestCriteria,
+    currentWeakestCriteria,
+    evidence:{
+      reviewIds:activeReviews.map(review=>review.id),
+      tradeIds:[...new Set(activeReviews.map(review=>review.trade_id).filter(Boolean))]
+    }
+  };
+}
+
+window.TIOSExecutionIntelligenceDiagnostic=function(){
+  return JSON.parse(JSON.stringify(buildExecutionIntelligenceModel()));
+};
+
+function intelligenceBehaviourPattern(){
+  const model=buildExecutionIntelligenceModel();
+  if(!model.sample.reviewedTrades){
     return {reviewed:0,top:null};
   }
 
-  const reviewIds=new Set(activeReviews.map(r=>r.id));
-  const counts=new Map(EXECUTION_CRITERIA.map(item=>[item.key,0]));
-
-  executionChecks.forEach(row=>{
-    if(!reviewIds.has(row.review_id)) return;
-    if(!counts.has(row.criterion_key)) return;
-    if(!Boolean(row.complied)){
-      counts.set(row.criterion_key,(counts.get(row.criterion_key)||0)+1);
-    }
-  });
-
-  const sorted=[...counts.entries()]
-    .map(([key,count])=>({
-      key,
-      count,
-      rate:activeReviews.length ? count/activeReviews.length*100 : 0
-    }))
-    .sort((a,b)=>b.count-a.count);
+  const top=model.currentWeakestCriteria[0] ||
+    model.criteria.find(item=>item.checks>0) ||
+    null;
 
   return {
-    reviewed:activeReviews.length,
-    top:sorted.length ? sorted[0] : null
+    reviewed:model.sample.reviewedTrades,
+    top:top?{
+      key:top.key,
+      count:top.misses,
+      rate:model.sample.reviewedTrades
+        ? top.affectedTrades/model.sample.reviewedTrades*100
+        : 0
+    }:null
   };
 }
 
@@ -10527,8 +10673,9 @@ function psychologyExecutionGroups(){
 
 function renderIntelligence(){
   const data=intelligenceProcessAverage();
+  const executionIntelligence=buildExecutionIntelligenceModel();
 
-  const executionReviewed=data.executionScores.length;
+  const executionReviewed=executionIntelligence.sample.reviewedTrades;
   const edgeReviewed=data.edgeScores.length;
   const psychCount=psychologySessions.length;
   const processEvidenceCount=executionReviewed+edgeReviewed+psychCount;
@@ -10552,7 +10699,9 @@ function renderIntelligence(){
 
   /* Specialized Intelligence — Execution */
   $('#intelExecutionScore').textContent=
-    data.avgExecution===null ? '—' : data.avgExecution.toFixed(1)+'%';
+    executionIntelligence.execution.averageScorePct===null
+      ? '—'
+      : executionIntelligence.execution.averageScorePct.toFixed(1)+'%';
   $('#intelExecutionEvidence').textContent=
     `${executionReviewed} reviewed trade${executionReviewed===1?'':'s'}`;
   $('#intelExecutionCoverage').textContent=`${executionReviewed} / ${trades.length}`;
@@ -10566,7 +10715,7 @@ function renderIntelligence(){
     $('#intelExecutionNote').textContent='Initial execution evidence exists, but more reviewed trades are needed before T·IOS treats the score as a useful pattern.';
   }else{
     setIntelligenceState('#intelExecutionState','Active','active');
-    const highCount=data.executionScores.filter(v=>v>=90).length;
+    const highCount=executionIntelligence.sample.aPlusExecutions;
     $('#intelExecutionNote').textContent=`Execution Intelligence is active. ${highCount} of ${executionReviewed} reviewed trades currently meet the 90%+ execution threshold.`;
   }
 
