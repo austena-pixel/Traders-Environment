@@ -4265,6 +4265,11 @@ textarea{resize:vertical;min-height:90px}
               This page measures your behaviour after the decision to trade, not the financial result.
             </div>
 
+            <div class="execution-principle">
+              <strong>Reflection structure:</strong> T-IOS Recommended Execution Reflection · v1.<br>
+              This is a recommended starting structure, not a permanent T-IOS checklist. Users will be able to create their own reflection structures; intelligence will compare only reviews built from comparable structures.
+            </div>
+
             <div class="execution-check">
               <div class="execution-check-main">
                 <input type="checkbox" class="execution-check-input" data-execution-key="entry_timing">
@@ -4354,8 +4359,8 @@ textarea{resize:vertical;min-height:90px}
             </div>
 
             <div class="execution-help">
-              <strong>Rating logic:</strong> 6/6 = A+; 5/6 = A; 4/6 or less = B.
-              The website also saves the percentage as the trade's execution score.
+              <strong>Recommended-template rating:</strong> all checks met = A+; one missed check = A; two or more missed checks = B.
+              The percentage is calculated within the reflection structure used for that review, so future custom structures are not forced into this six-check format.
             </div>
 
             <div class="execution-actions">
@@ -4869,7 +4874,9 @@ function tiosRequestedEvidenceMetric(metric){
       details:{
         checks:model.sample.totalChecks,
         complied:model.sample.compliedChecks,
-        modelSchema:model.schema
+        modelSchema:model.schema,
+        reflectionTemplateId:model.reflectionStructure?.current?.templateId||null,
+        reflectionFingerprint:model.reflectionStructure?.current?.fingerprint||null
       }
     };
   }
@@ -4884,7 +4891,9 @@ function tiosRequestedEvidenceMetric(metric){
       details:{
         checks:model.sample.totalChecks,
         tradesWithErrors:model.sample.tradesWithErrors,
-        modelSchema:model.schema
+        modelSchema:model.schema,
+        reflectionTemplateId:model.reflectionStructure?.current?.templateId||null,
+        reflectionFingerprint:model.reflectionStructure?.current?.fingerprint||null
       }
     };
   }
@@ -7166,38 +7175,104 @@ $('#nextMonth').addEventListener('click',()=>{
    EXECUTION QUALITY SYSTEM
 ========================= */
 
-const EXECUTION_CRITERIA = [
-  {
-    key:'entry_timing',
-    label:'Entry timing matched the selected valid entry moment and trigger.',
-    sort:1
-  },
-  {
-    key:'entry_accuracy',
-    label:'The actual entry/order execution matched the intended trade.',
-    sort:2
-  },
-  {
-    key:'stop_placement',
-    label:'The initial stop loss was placed according to the plan.',
-    sort:3
-  },
-  {
-    key:'risk_sizing',
-    label:'Position size and risk stayed within the predefined limit.',
-    sort:4
-  },
-  {
-    key:'trade_management',
-    label:'In-trade management followed the intended process.',
-    sort:5
-  },
-  {
-    key:'exit_execution',
-    label:'The applicable exit rule was executed correctly.',
-    sort:6
+const EXECUTION_REFLECTION_TEMPLATE_SCHEMA='tios.execution-reflection-template.v1';
+
+const EXECUTION_RECOMMENDED_TEMPLATE=Object.freeze({
+  schema:EXECUTION_REFLECTION_TEMPLATE_SCHEMA,
+  id:'tios-recommended-execution',
+  name:'T-IOS Recommended Execution Reflection',
+  version:1,
+  source:'recommended',
+  criteria:Object.freeze([
+    {key:'entry_timing',label:'Entry timing matched the selected valid entry moment and trigger.',sort:1},
+    {key:'entry_accuracy',label:'The actual entry/order execution matched the intended trade.',sort:2},
+    {key:'stop_placement',label:'The initial stop loss was placed according to the plan.',sort:3},
+    {key:'risk_sizing',label:'Position size and risk stayed within the predefined limit.',sort:4},
+    {key:'trade_management',label:'In-trade management followed the intended process.',sort:5},
+    {key:'exit_execution',label:'The applicable exit rule was executed correctly.',sort:6}
+  ])
+});
+
+/* Compatibility alias: the current editor renders the recommended template.
+   Future custom templates can replace the active criteria without making these
+   six checks permanent rules for every T-IOS user. */
+const EXECUTION_CRITERIA=EXECUTION_RECOMMENDED_TEMPLATE.criteria;
+
+function executionReflectionSignature(criteria){
+  return (Array.isArray(criteria)?criteria:[])
+    .map((item,index)=>({
+      key:String(item?.key||'').trim(),
+      label:String(item?.label||'').trim(),
+      sort:Number.isFinite(Number(item?.sort))?Number(item.sort):index+1
+    }))
+    .filter(item=>item.key)
+    .sort((a,b)=>a.sort-b.sort||a.key.localeCompare(b.key))
+    .map(item=>`${item.sort}:${item.key}:${item.label}`)
+    .join('|');
+}
+
+function executionReflectionFingerprint(signature){
+  let hash=2166136261;
+  const value=String(signature||'');
+  for(let i=0;i<value.length;i++){
+    hash^=value.charCodeAt(i);
+    hash=Math.imul(hash,16777619);
   }
-];
+  return (hash>>>0).toString(16).padStart(8,'0');
+}
+
+const EXECUTION_RECOMMENDED_TEMPLATE_SIGNATURE=executionReflectionSignature(
+  EXECUTION_RECOMMENDED_TEMPLATE.criteria
+);
+
+function executionReflectionStructureForReview(review){
+  if(!review)return null;
+  const rows=executionChecksForReview(review.id)
+    .slice()
+    .sort((a,b)=>
+      Number(a.sort_order||0)-Number(b.sort_order||0) ||
+      String(a.criterion_key||'').localeCompare(String(b.criterion_key||''))
+    );
+  if(!rows.length)return null;
+
+  const criteria=rows.map((row,index)=>({
+    key:String(row.criterion_key||'').trim(),
+    label:String(row.criterion_label||row.criterion_key||'').trim(),
+    sort:Number.isFinite(Number(row.sort_order))?Number(row.sort_order):index+1
+  })).filter(item=>item.key);
+
+  const signature=executionReflectionSignature(criteria);
+  const isRecommended=signature===EXECUTION_RECOMMENDED_TEMPLATE_SIGNATURE;
+
+  return {
+    schema:EXECUTION_REFLECTION_TEMPLATE_SCHEMA,
+    templateId:isRecommended
+      ? EXECUTION_RECOMMENDED_TEMPLATE.id
+      : `user-reflection-${executionReflectionFingerprint(signature)}`,
+    name:isRecommended
+      ? EXECUTION_RECOMMENDED_TEMPLATE.name
+      : 'User-defined / legacy execution reflection',
+    version:isRecommended?EXECUTION_RECOMMENDED_TEMPLATE.version:null,
+    source:isRecommended?'recommended':'user-or-legacy',
+    signature,
+    fingerprint:executionReflectionFingerprint(signature),
+    criteria
+  };
+}
+
+function latestExecutionReflectionStructure(reviews=activeExecutionReviews()){
+  const ordered=orderedExecutionReviews(reviews);
+  return ordered.length
+    ? executionReflectionStructureForReview(ordered[ordered.length-1])
+    : null;
+}
+
+function executionReviewsForStructure(structure,reviews=activeExecutionReviews()){
+  if(!structure?.signature)return [];
+  return reviews.filter(review=>
+    executionReflectionStructureForReview(review)?.signature===structure.signature
+  );
+}
 
 function executionReviewForTrade(tradeId){
   return executionReviews.find(r=>r.trade_id===tradeId) || null;
@@ -7209,34 +7284,25 @@ function executionChecksForReview(reviewId){
 
 function executionScoreForTrade(tradeId){
   const review=executionReviewForTrade(tradeId);
-  if(!review) return null;
+  if(!review)return null;
 
   const rows=executionChecksForReview(review.id);
-  const map={};
+  if(!rows.length)return null;
 
-  rows.forEach(row=>{
-    map[row.criterion_key]=Boolean(row.complied);
-  });
-
-  const passed=EXECUTION_CRITERIA.reduce(
-    (sum,item)=>sum+(map[item.key]?1:0),
-    0
-  );
-
-  return passed/EXECUTION_CRITERIA.length*100;
+  const passed=rows.filter(row=>Boolean(row.complied)).length;
+  return passed/rows.length*100;
 }
 
 function executionRatingForTrade(tradeId){
-  const score=executionScoreForTrade(tradeId);
+  const review=executionReviewForTrade(tradeId);
+  if(!review)return null;
 
-  if(score===null) return null;
+  const rows=executionChecksForReview(review.id);
+  if(!rows.length)return null;
 
-  const passed=Math.round(
-    score/100*EXECUTION_CRITERIA.length
-  );
-
-  if(passed===6) return 'A+';
-  if(passed===5) return 'A';
+  const missed=rows.filter(row=>!Boolean(row.complied)).length;
+  if(missed===0)return 'A+';
+  if(missed===1)return 'A';
   return 'B';
 }
 
@@ -7269,11 +7335,12 @@ function currentExecutionScore(){
 }
 
 function currentExecutionRating(){
-  const checks=$$('.execution-check-input');
-  const passed=checks.filter(x=>x.checked).length;
+  const checks=$('.execution-check-input');
+  if(!checks.length)return '—';
+  const missed=checks.filter(x=>!x.checked).length;
 
-  if(passed===6) return 'A+';
-  if(passed===5) return 'A';
+  if(missed===0)return 'A+';
+  if(missed===1)return 'A';
   return 'B';
 }
 
@@ -10480,8 +10547,8 @@ function executionReviewChronology(review){
   };
 }
 
-function orderedExecutionReviews(){
-  return activeExecutionReviews().slice().sort((a,b)=>{
+function orderedExecutionReviews(reviews=activeExecutionReviews()){
+  return reviews.slice().sort((a,b)=>{
     const aa=executionReviewChronology(a);
     const bb=executionReviewChronology(b);
     return aa.primary.localeCompare(bb.primary) ||
@@ -10495,6 +10562,8 @@ function executionWindowSummary(reviews){
   const reviewIds=new Set(reviews.map(review=>review.id));
   const tradeIds=[...new Set(reviews.map(review=>review.trade_id).filter(Boolean))];
   const rows=executionChecks.filter(row=>reviewIds.has(row.review_id));
+  const structure=reviews.length?executionReflectionStructureForReview(reviews[0]):null;
+  const criteriaDefinition=structure?.criteria||[];
   const complied=rows.filter(row=>Boolean(row.complied)).length;
   const missed=rows.length-complied;
   const failedReviewIds=new Set(rows.filter(row=>!Boolean(row.complied)).map(row=>row.review_id));
@@ -10503,7 +10572,7 @@ function executionWindowSummary(reviews){
     .filter(value=>value!==null&&Number.isFinite(Number(value)))
     .map(Number);
 
-  const criteria=EXECUTION_CRITERIA.map(item=>{
+  const criteria=criteriaDefinition.map(item=>{
     const criterionRows=rows.filter(row=>row.criterion_key===item.key);
     const criterionComplied=criterionRows.filter(row=>Boolean(row.complied)).length;
     const criterionMisses=criterionRows.length-criterionComplied;
@@ -10529,6 +10598,7 @@ function executionWindowSummary(reviews){
     averageScorePct:scores.length?roundEvidence(averageFinite(scores),1):null,
     adherencePct:rows.length?roundEvidence(complied/rows.length*100,1):null,
     errorRatePct:rows.length?roundEvidence(missed/rows.length*100,1):null,
+    reflectionStructure:structure,
     criteria,
     reviewIds:reviews.map(review=>review.id),
     tradeIds
@@ -10543,14 +10613,27 @@ function executionTrendState(deltaPctPoints){
 }
 
 function buildExecutionTrend(){
-  const ordered=orderedExecutionReviews();
+  const allOrdered=orderedExecutionReviews();
+  const currentStructure=allOrdered.length
+    ? executionReflectionStructureForReview(allOrdered[allOrdered.length-1])
+    : null;
+  const ordered=currentStructure
+    ? orderedExecutionReviews(executionReviewsForStructure(currentStructure,allOrdered))
+    : [];
+
   if(ordered.length<TIOS_EXECUTION_TREND_MIN_REVIEWS){
     return {
       state:'insufficient-evidence',
+      reason:allOrdered.length>=TIOS_EXECUTION_TREND_MIN_REVIEWS && ordered.length<TIOS_EXECUTION_TREND_MIN_REVIEWS
+        ? 'reflection-structure-changed'
+        : 'not-enough-comparable-reviews',
       method:'recent-vs-previous-reviewed-trades',
       windowSize:TIOS_EXECUTION_TREND_WINDOW,
       minimumComparableReviews:TIOS_EXECUTION_TREND_MIN_REVIEWS,
-      availableReviewedTrades:ordered.length,
+      availableReviewedTrades:allOrdered.length,
+      comparableReviewedTrades:ordered.length,
+      excludedIncompatibleReviews:Math.max(0,allOrdered.length-ordered.length),
+      reflectionStructure:currentStructure,
       thresholdPctPoints:TIOS_EXECUTION_TREND_THRESHOLD_PCT_POINTS,
       recent:null,
       previous:null,
@@ -10571,7 +10654,7 @@ function buildExecutionTrend(){
     Number.isFinite(Number(previous.adherencePct))
   ) ? roundEvidence(Number(recent.adherencePct)-Number(previous.adherencePct),1) : null;
 
-  const criteria=EXECUTION_CRITERIA.map(item=>{
+  const criteria=(currentStructure?.criteria||[]).map(item=>{
     const recentCriterion=recent.criteria.find(row=>row.key===item.key)||null;
     const previousCriterion=previous.criteria.find(row=>row.key===item.key)||null;
     const delta=(
@@ -10596,10 +10679,14 @@ function buildExecutionTrend(){
 
   return {
     state:executionTrendState(adherenceDelta),
+    reason:'comparable-reflection-structure',
     method:'recent-vs-previous-reviewed-trades',
     windowSize:TIOS_EXECUTION_TREND_WINDOW,
     minimumComparableReviews:TIOS_EXECUTION_TREND_MIN_REVIEWS,
-    availableReviewedTrades:ordered.length,
+    availableReviewedTrades:allOrdered.length,
+    comparableReviewedTrades:ordered.length,
+    excludedIncompatibleReviews:Math.max(0,allOrdered.length-ordered.length),
+    reflectionStructure:currentStructure,
     thresholdPctPoints:TIOS_EXECUTION_TREND_THRESHOLD_PCT_POINTS,
     recent,
     previous,
@@ -10624,11 +10711,16 @@ function buildExecutionTrend(){
 }
 
 function buildExecutionIntelligenceModel(){
-  const activeReviews=activeExecutionReviews();
+  const allActiveReviews=activeExecutionReviews();
+  const currentStructure=latestExecutionReflectionStructure(allActiveReviews);
+  const activeReviews=currentStructure
+    ? executionReviewsForStructure(currentStructure,allActiveReviews)
+    : [];
   const activeReviewIds=new Set(activeReviews.map(review=>review.id));
   const tradeIdByReviewId=new Map(activeReviews.map(review=>[review.id,review.trade_id]));
+  const criteriaDefinition=currentStructure?.criteria||[];
 
-  const criteria=EXECUTION_CRITERIA.map(item=>{
+  const criteria=criteriaDefinition.map(item=>{
     const rows=executionChecks.filter(row=>
       activeReviewIds.has(row.review_id) &&
       row.criterion_key===item.key
@@ -10696,7 +10788,7 @@ function buildExecutionIntelligenceModel(){
       .filter(item=>item.misses===highestMisses)
       .sort((a,b)=>
         Number(a.adherencePct??100)-Number(b.adherencePct??100) ||
-        EXECUTION_CRITERIA.findIndex(row=>row.key===a.key)-EXECUTION_CRITERIA.findIndex(row=>row.key===b.key)
+        criteriaDefinition.findIndex(row=>row.key===a.key)-criteriaDefinition.findIndex(row=>row.key===b.key)
       )
       .map(item=>({
         key:item.key,
@@ -10723,8 +10815,15 @@ function buildExecutionIntelligenceModel(){
       reviewedTrades,
       minimumForInitialPattern:3
     },
+    reflectionStructure:{
+      current:currentStructure,
+      totalReviewedTrades:allActiveReviews.length,
+      comparableReviewedTrades:reviewedTrades,
+      excludedIncompatibleReviews:Math.max(0,allActiveReviews.length-reviewedTrades)
+    },
     sample:{
       reviewedTrades,
+      totalReviewedTrades:allActiveReviews.length,
       totalTrades,
       coveragePct:totalTrades
         ? roundEvidence(reviewedTrades/totalTrades*100,1)
