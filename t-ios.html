@@ -383,10 +383,12 @@ input:focus,select:focus,textarea:focus{
   min-height:100vh;
   display:grid;
   grid-template-columns:var(--sidebar) minmax(0,1fr);
+  transition:grid-template-columns .2s ease;
 }
 .sidebar{
   position:sticky;
   top:0;
+  width:var(--sidebar);
   height:100vh;
   border-right:1px solid var(--line);
   background:#080c11;
@@ -394,12 +396,69 @@ input:focus,select:focus,textarea:focus{
   display:flex;
   flex-direction:column;
   z-index:40;
+  transition:transform .2s ease,opacity .2s ease;
+}
+.sidebar-collapse-toggle,
+.sidebar-reopen-toggle{
+  border:1px solid #2a3b51;
+  background:#0f1823;
+  color:#cbd8e8;
+  width:34px;
+  height:34px;
+  border-radius:10px;
+  display:grid;
+  place-items:center;
+  font-size:20px;
+  line-height:1;
+  box-shadow:0 8px 24px rgba(0,0,0,.24);
+  transition:.16s ease;
+}
+.sidebar-collapse-toggle:hover,
+.sidebar-reopen-toggle:hover{
+  color:#fff;
+  border-color:#4a6382;
+  background:#142131;
+}
+.sidebar-collapse-toggle{
+  position:absolute;
+  top:15px;
+  right:10px;
+  z-index:2;
+}
+.sidebar-reopen-toggle{
+  display:none;
+  position:fixed;
+  left:12px;
+  top:18px;
+  z-index:60;
+}
+@media(min-width:861px){
+  .shell.sidebar-collapsed{
+    grid-template-columns:0 minmax(0,1fr);
+  }
+  .shell.sidebar-collapsed .sidebar{
+    transform:translateX(-100%);
+    opacity:0;
+    pointer-events:none;
+  }
+  .shell.sidebar-collapsed .sidebar-reopen-toggle{
+    display:grid;
+  }
+  .shell.sidebar-collapsed .page-head{
+    padding-left:44px;
+  }
+}
+@media(max-width:860px){
+  .sidebar-collapse-toggle,
+  .sidebar-reopen-toggle{
+    display:none!important;
+  }
 }
 .side-brand{
   display:flex;
   gap:11px;
   align-items:center;
-  padding:4px 7px 18px;
+  padding:4px 42px 18px 7px;
   border-bottom:1px solid #151d28;
 }
 .side-logo{
@@ -518,8 +577,8 @@ input:focus,select:focus,textarea:focus{
   width:32px;height:32px;border-radius:10px;
 }
 .gios-direct-copy{min-width:0}
-.gios-direct-copy b{display:block;font-size:10px}
-.gios-direct-copy small{display:block;margin-top:2px;color:#c0b8d5;font-size:7.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gios-direct-copy b{display:block;font-size:11px}
+.gios-direct-copy small{display:block;margin-top:2px;color:#c0b8d5;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gios-direct-arrow{color:#b9a7ff;font-size:15px;font-weight:900}
 
 .sidebar-footer{
@@ -1622,12 +1681,12 @@ input:focus,select:focus,textarea:focus{
   align-items:center;
 }
 .execution-card-top strong{
-  font-size:12px;
+  font-size:13px;
 }
 .execution-card-bottom{
   margin-top:7px;
   color:var(--muted);
-  font-size:10px;
+  font-size:11px;
 }
 .execution-editor{
   padding:16px;
@@ -1656,12 +1715,12 @@ input:focus,select:focus,textarea:focus{
 }
 .execution-trade-header h3{
   margin:0;
-  font-size:16px;
+  font-size:18px;
 }
 .execution-trade-header p{
   margin:4px 0 0;
   color:var(--muted);
-  font-size:11px;
+  font-size:12px;
 }
 .execution-trade-kpis{
   display:flex;
@@ -1673,8 +1732,8 @@ input:focus,select:focus,textarea:focus{
   border:1px solid #263348;
   background:#0e1620;
   border-radius:9px;
-  padding:6px 8px;
-  font-size:10px;
+  padding:7px 9px;
+  font-size:11px;
 }
 .execution-score-board{
   display:grid;
@@ -1690,20 +1749,20 @@ input:focus,select:focus,textarea:focus{
 }
 .execution-score-card span{
   color:var(--muted);
-  font-size:10px;
+  font-size:12px;
 }
 .execution-score-card strong{
   display:block;
   margin-top:4px;
-  font-size:22px;
+  font-size:25px;
 }
 .execution-principle{
   border:1px solid #26364b;
   background:#0d1723;
   border-radius:12px;
-  padding:11px;
-  color:#a9b7c8;
-  font-size:10px;
+  padding:12px;
+  color:#b5c1d0;
+  font-size:12px;
   line-height:1.55;
   margin-bottom:14px;
 }
@@ -1731,20 +1790,20 @@ input:focus,select:focus,textarea:focus{
 }
 .execution-check-copy strong{
   display:block;
-  font-size:11px;
+  font-size:13px;
   line-height:1.45;
 }
 .execution-check-copy span{
   display:block;
-  margin-top:3px;
-  color:var(--muted);
-  font-size:9px;
-  line-height:1.45;
+  margin-top:4px;
+  color:#98a7ba;
+  font-size:11px;
+  line-height:1.5;
 }
 .execution-check-comment{
-  margin-top:8px;
-  padding:7px 8px;
-  font-size:10px;
+  margin-top:9px;
+  padding:9px 10px;
+  font-size:12px;
 }
 .execution-review-grid{
   display:grid;
@@ -1769,9 +1828,9 @@ input:focus,select:focus,textarea:focus{
   border:1px solid #26364b;
   background:#0d1723;
   border-radius:12px;
-  padding:11px;
-  color:#a9b7c8;
-  font-size:10px;
+  padding:12px;
+  color:#b5c1d0;
+  font-size:12px;
   line-height:1.55;
 }
 .execution-help strong{color:#fff}
@@ -1807,21 +1866,21 @@ input:focus,select:focus,textarea:focus{
 }
 .account-switcher label{
   display:block;
-  color:#74869b;
-  font-size:8px;
+  color:#8293a8;
+  font-size:9px;
   text-transform:uppercase;
   letter-spacing:.6px;
   margin-bottom:5px;
 }
 .account-switcher select{
   width:100%;
-  font-size:9px;
+  font-size:11px;
   padding:7px 8px;
 }
 .account-switcher-status{
   margin-top:5px;
-  color:#7e90a6;
-  font-size:8px;
+  color:#899bb0;
+  font-size:9px;
 }
 .settings-connection-grid{
   display:grid;
@@ -2566,12 +2625,8 @@ textarea{resize:vertical;min-height:90px}
 
 
 
-/* Desktop default density — visually matches one Chrome zoom-out step (90%). */
-@media (min-width: 1000px){
-  body{
-    zoom:0.90;
-  }
-}
+/* Desktop readability: keep the browser at its natural 100% scale.
+   The sidebar can now collapse when more horizontal workspace is needed. */
 
 
 /* ===== SIDEBAR INFORMATION FAMILIES ===== */
@@ -2585,11 +2640,11 @@ textarea{resize:vertical;min-height:90px}
 .nav-group.active.psychological .nav-group-toggle,.nav-group.open.psychological .nav-group-toggle{border-color:rgba(167,139,250,.48);background:rgba(167,139,250,.07)}
 .nav-group-icon{width:27px;height:27px;border-radius:8px;display:grid;place-items:center;font-size:10px;font-weight:950}
 .nav-group.psychological .nav-group-icon{color:#eee8ff;background:linear-gradient(135deg,#39295f,#5d3f86)}
-.nav-group-copy{min-width:0}.nav-group-copy b{display:block;font-size:10.5px}.nav-group-copy small{display:block;margin-top:2px;color:#718095;font-size:7.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-group-copy{min-width:0}.nav-group-copy b{display:block;font-size:12px}.nav-group-copy small{display:block;margin-top:2px;color:#8292a8;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nav-group-chevron{color:#74849a;font-size:13px;transition:transform .16s ease}.nav-group.open .nav-group-chevron{transform:rotate(180deg)}
 .nav-submenu{display:none;gap:3px;margin:1px 0 3px 13px;padding:3px 0 3px 9px;border-left:1px solid #1e2d3f}
 .nav-group.open .nav-submenu{display:grid}
-.nav-submenu .nav-btn{padding:8px 9px;font-size:10.5px;border-radius:9px}
+.nav-submenu .nav-btn{padding:9px;font-size:12px;border-radius:9px}
 .nav-submenu .nav-icon{font-size:12px;width:18px}
 
 
@@ -3194,6 +3249,7 @@ textarea{resize:vertical;min-height:90px}
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
   <aside class="sidebar" id="sidebar">
+    <button class="sidebar-collapse-toggle" id="desktopSidebarCollapseBtn" type="button" aria-label="Collapse sidebar" title="Collapse sidebar">‹</button>
     <div class="side-brand">
       <div class="side-logo product-mark product-mark-tios" data-product-icon="trading-chart" title="Trader Intelligence Operating System" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><use href="#product-icon-tios"/></svg></div>
       <div>
@@ -3253,6 +3309,8 @@ textarea{resize:vertical;min-height:90px}
       <a class="hios-back-link" href="index.html?view=home" title="Return to H·IOS family">← H·IOS Family</a>
 </div>
   </aside>
+
+  <button class="sidebar-reopen-toggle" id="desktopSidebarReopenBtn" type="button" aria-label="Open sidebar" title="Open sidebar">›</button>
 
   <main class="main">
 
@@ -6326,6 +6384,38 @@ function closeSidebarMobile(){
 
 $('#mobileMenuBtn').addEventListener('click',openSidebarMobile);
 $('#sidebarOverlay').addEventListener('click',closeSidebarMobile);
+
+const TIOS_DESKTOP_SIDEBAR_KEY='tios_desktop_sidebar_collapsed_v1';
+
+function setTiosDesktopSidebarCollapsed(collapsed){
+  const shell=$('#appShell');
+  if(!shell)return;
+
+  shell.classList.toggle('sidebar-collapsed',Boolean(collapsed));
+  localStorage.setItem(TIOS_DESKTOP_SIDEBAR_KEY,collapsed?'1':'0');
+
+  const collapseBtn=$('#desktopSidebarCollapseBtn');
+  const reopenBtn=$('#desktopSidebarReopenBtn');
+  if(collapseBtn)collapseBtn.setAttribute('aria-expanded',collapsed?'false':'true');
+  if(reopenBtn)reopenBtn.setAttribute('aria-expanded',collapsed?'false':'true');
+}
+
+function initializeTiosDesktopSidebar(){
+  setTiosDesktopSidebarCollapsed(
+    localStorage.getItem(TIOS_DESKTOP_SIDEBAR_KEY)==='1'
+  );
+}
+
+$('#desktopSidebarCollapseBtn')?.addEventListener(
+  'click',
+  ()=>setTiosDesktopSidebarCollapsed(true)
+);
+$('#desktopSidebarReopenBtn')?.addEventListener(
+  'click',
+  ()=>setTiosDesktopSidebarCollapsed(false)
+);
+
+initializeTiosDesktopSidebar();
 
 /* =========================
    DASHBOARD CALCULATIONS
