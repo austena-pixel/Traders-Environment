@@ -445,7 +445,7 @@ input:focus,select:focus,textarea:focus{
 }
 .sidebar-collapse-toggle{
   position:absolute;
-  top:66px;
+  top:22px;
   right:-14px;
   z-index:45;
   border-radius:14px;
@@ -463,9 +463,9 @@ input:focus,select:focus,textarea:focus{
 .sidebar-reopen-toggle{
   display:none;
   position:fixed;
-  left:12px;
-  top:66px;
-  z-index:60;
+  left:8px;
+  top:22px;
+  z-index:65;
   border-radius:14px;
   transform:none;
 }
@@ -490,7 +490,7 @@ input:focus,select:focus,textarea:focus{
 }
 @media(min-width:861px){
   .shell.sidebar-collapsed{
-    grid-template-columns:0 minmax(0,1fr);
+    grid-template-columns:56px minmax(0,1fr);
   }
   .shell.sidebar-collapsed .sidebar{
     transform:translateX(calc(-100% - 18px));
@@ -500,8 +500,17 @@ input:focus,select:focus,textarea:focus{
   .shell.sidebar-collapsed .sidebar-reopen-toggle{
     display:grid;
   }
-  .shell.sidebar-collapsed .page-head{
-    padding-left:58px;
+  .shell.sidebar-collapsed::before{
+    content:'';
+    position:fixed;
+    left:0;
+    top:0;
+    width:56px;
+    height:100vh;
+    border-right:1px solid rgba(42,59,81,.55);
+    background:linear-gradient(180deg,rgba(8,12,17,.98),rgba(8,12,17,.92));
+    z-index:50;
+    pointer-events:none;
   }
 }
 @media(max-width:860px){
@@ -514,7 +523,7 @@ input:focus,select:focus,textarea:focus{
   display:flex;
   gap:11px;
   align-items:center;
-  padding:4px 30px 18px 7px;
+  padding:4px 38px 18px 7px;
   border-bottom:1px solid #151d28;
 }
 .side-logo{
