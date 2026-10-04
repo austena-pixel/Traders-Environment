@@ -1899,6 +1899,163 @@ input:focus,select:focus,textarea:focus{
   line-height:1.55;
 }
 .execution-help strong{color:#fff}
+.execution-structure-bar{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  padding:13px;
+  margin-bottom:12px;
+  border:1px solid #26364b;
+  border-radius:13px;
+  background:linear-gradient(135deg,rgba(55,112,174,.10),rgba(19,29,42,.75));
+}
+.execution-structure-copy{min-width:0;display:grid;gap:3px}
+.execution-structure-copy .kicker{
+  color:#83bcff;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.execution-structure-copy strong{font-size:14px}
+.execution-structure-copy small{color:#93a3b8;font-size:10px;line-height:1.45}
+.execution-structure-actions{
+  display:flex;
+  gap:7px;
+  align-items:center;
+  justify-content:flex-end;
+  flex-wrap:wrap;
+}
+.execution-structure-actions select{
+  min-width:210px;
+  max-width:320px;
+  border:1px solid #2a3a50;
+  background:#09111b;
+  color:#edf4ff;
+  border-radius:9px;
+  padding:8px 10px;
+  font-size:11px;
+}
+.execution-structure-actions .btn{padding:8px 10px;font-size:10px}
+.execution-reflection-fields{display:grid;gap:9px}
+.execution-reflection-text{
+  border:1px solid #1e2938;
+  background:#0b1119;
+  border-radius:12px;
+  padding:11px;
+}
+.execution-reflection-text label{
+  display:block;
+  font-size:13px;
+  font-weight:850;
+  margin-bottom:4px;
+}
+.execution-reflection-text small{
+  display:block;
+  color:#98a7ba;
+  font-size:10px;
+  line-height:1.5;
+  margin-bottom:8px;
+}
+.execution-reflection-text textarea{
+  width:100%;
+  min-height:92px;
+  font-size:12px;
+}
+.execution-structure-empty{
+  border:1px dashed #31445e;
+  border-radius:13px;
+  padding:24px 18px;
+  text-align:center;
+  background:rgba(11,17,25,.72);
+  margin-bottom:12px;
+}
+.execution-structure-empty strong{display:block;font-size:15px;margin-bottom:5px}
+.execution-structure-empty span{color:#91a1b6;font-size:11px;line-height:1.55}
+.execution-legacy-note{
+  border:1px solid rgba(245,184,75,.28);
+  background:rgba(245,184,75,.045);
+  border-radius:12px;
+  padding:11px;
+  margin-top:12px;
+}
+.execution-legacy-note>strong{font-size:11px;color:#ffd98d}
+.execution-legacy-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px}
+.execution-legacy-grid .field.full{grid-column:1/-1}
+.execution-legacy-grid textarea{min-height:82px}
+.execution-structure-builder-card{width:min(860px,96vw)}
+.execution-structure-builder-body{padding:16px 18px 18px}
+.execution-structure-builder-top{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:10px;
+  align-items:end;
+  margin-bottom:12px;
+}
+.execution-structure-builder-top label{display:grid;gap:6px;font-size:10px;color:#8fa0b6}
+.execution-structure-builder-top input{font-size:13px}
+.execution-builder-add-actions{display:flex;gap:7px;flex-wrap:wrap}
+.execution-builder-items{display:grid;gap:9px}
+.execution-builder-item{
+  border:1px solid #243348;
+  background:#0a111a;
+  border-radius:12px;
+  padding:11px;
+}
+.execution-builder-item-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:9px;
+}
+.execution-builder-type{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  border:1px solid #32465f;
+  border-radius:999px;
+  padding:4px 7px;
+  color:#a9c8ec;
+  font-size:9px;
+  font-weight:850;
+}
+.execution-builder-item-actions{display:flex;gap:5px}
+.execution-builder-item-actions button{
+  width:30px;height:28px;border-radius:8px;border:1px solid #2a394d;
+  background:#101824;color:#c9d7e8;
+}
+.execution-builder-fields{display:grid;gap:7px}
+.execution-builder-fields input,.execution-builder-fields textarea{font-size:11px}
+.execution-builder-fields textarea{min-height:58px}
+.execution-builder-empty{
+  border:1px dashed #2b3c53;
+  border-radius:12px;
+  padding:22px;
+  text-align:center;
+  color:#8798ae;
+  font-size:11px;
+}
+.execution-builder-foot{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-top:14px;
+  padding-top:13px;
+  border-top:1px solid #1b2736;
+}
+.execution-builder-foot small{color:#8394aa;max-width:520px;line-height:1.5}
+@media(max-width:760px){
+  .execution-structure-bar{flex-direction:column}
+  .execution-structure-actions{justify-content:flex-start}
+  .execution-structure-actions select{min-width:0;width:100%}
+  .execution-legacy-grid{grid-template-columns:1fr}
+  .execution-legacy-grid .field.full{grid-column:auto}
+  .execution-structure-builder-top{grid-template-columns:1fr}
+}
+
 @media(max-width:1150px){
   .execution-layout{grid-template-columns:1fr}
   .execution-trade-list{
@@ -4467,102 +4624,31 @@ textarea{resize:vertical;min-height:90px}
               This page measures your behaviour after the decision to trade, not the financial result.
             </div>
 
-            <div class="execution-principle">
-              <strong>Reflection structure:</strong> T-IOS Recommended Execution Reflection · v1.<br>
-              This is a recommended starting structure, not a permanent T-IOS checklist. Users will be able to create their own reflection structures; intelligence will compare only reviews built from comparable structures.
-            </div>
-
-            <div class="execution-check">
-              <div class="execution-check-main">
-                <input type="checkbox" class="execution-check-input" data-execution-key="entry_timing">
-                <div class="execution-check-copy">
-                  <strong>Entry timing matched the selected valid entry moment and trigger.</strong>
-                  <span>The entry may be at breakout, the 1st post-breakout moment, or the 2nd post-breakout moment; avoid anticipation, chasing, or execution outside the valid trigger.</span>
-                </div>
+            <div class="execution-structure-bar">
+              <div class="execution-structure-copy">
+                <span class="kicker">Reflection structure</span>
+                <strong id="executionStructureName">No structure selected</strong>
+                <small id="executionStructureMeta">Create a structure, or add the T-IOS recommended structure when you want it.</small>
               </div>
-              <input class="execution-check-comment" data-execution-comment="entry_timing" type="text" placeholder="Optional comment">
-            </div>
-
-            <div class="execution-check">
-              <div class="execution-check-main">
-                <input type="checkbox" class="execution-check-input" data-execution-key="entry_accuracy">
-                <div class="execution-check-copy">
-                  <strong>The actual entry/order execution matched the intended trade.</strong>
-                  <span>No accidental order behaviour or avoidable deviation from the planned entry process.</span>
-                </div>
-              </div>
-              <input class="execution-check-comment" data-execution-comment="entry_accuracy" type="text" placeholder="Optional comment">
-            </div>
-
-            <div class="execution-check">
-              <div class="execution-check-main">
-                <input type="checkbox" class="execution-check-input" data-execution-key="stop_placement">
-                <div class="execution-check-copy">
-                  <strong>The initial stop loss was placed according to the plan.</strong>
-                  <span>The stop location was technically justified and was not widened to avoid taking a loss.</span>
-                </div>
-              </div>
-              <input class="execution-check-comment" data-execution-comment="stop_placement" type="text" placeholder="Optional comment">
-            </div>
-
-            <div class="execution-check">
-              <div class="execution-check-main">
-                <input type="checkbox" class="execution-check-input" data-execution-key="risk_sizing">
-                <div class="execution-check-copy">
-                  <strong>Position size and risk stayed within the predefined limit.</strong>
-                  <span>No oversizing or unplanned increase in financial exposure.</span>
-                </div>
-              </div>
-              <input class="execution-check-comment" data-execution-comment="risk_sizing" type="text" placeholder="Optional comment">
-            </div>
-
-            <div class="execution-check">
-              <div class="execution-check-main">
-                <input type="checkbox" class="execution-check-input" data-execution-key="trade_management">
-                <div class="execution-check-copy">
-                  <strong>In-trade management followed the intended process.</strong>
-                  <span>Stop shifts, holding decisions and other adjustments were rule-based rather than impulsive.</span>
-                </div>
-              </div>
-              <input class="execution-check-comment" data-execution-comment="trade_management" type="text" placeholder="Optional comment">
-            </div>
-
-            <div class="execution-check">
-              <div class="execution-check-main">
-                <input type="checkbox" class="execution-check-input" data-execution-key="exit_execution">
-                <div class="execution-check-copy">
-                  <strong>The applicable exit rule was executed correctly.</strong>
-                  <span>The actual exit corresponded with the selected rule in your Edge / Playbook review.</span>
-                </div>
-              </div>
-              <input class="execution-check-comment" data-execution-comment="exit_execution" type="text" placeholder="Optional comment">
-            </div>
-
-            <div class="execution-review-grid">
-              <div class="field">
-                <label>What Went Well</label>
-                <textarea id="executionWentWell" placeholder="Which execution behaviours should be reinforced?"></textarea>
-              </div>
-
-              <div class="field">
-                <label>Execution Errors</label>
-                <textarea id="executionErrors" placeholder="What did I actually do incorrectly, if anything?"></textarea>
-              </div>
-
-              <div class="field full">
-                <label>Next Adjustment</label>
-                <textarea id="executionAdjustment" placeholder="What specific execution behaviour will I adjust on the next opportunity?"></textarea>
-              </div>
-
-              <div class="field full">
-                <label>Additional Notes</label>
-                <textarea id="executionNotes" placeholder="Optional observations"></textarea>
+              <div class="execution-structure-actions" id="executionStructureActions">
+                <select id="executionStructureSelect" aria-label="Execution reflection structure"></select>
+                <button class="btn" type="button" id="executionUseRecommendedBtn">Use Recommended</button>
+                <button class="btn" type="button" id="executionNewStructureBtn">+ New Structure</button>
+                <button class="btn" type="button" id="executionEditStructureBtn">Edit</button>
+                <button class="btn danger" type="button" id="executionDeleteStructureBtn">Delete</button>
+                <button class="btn" type="button" id="executionSaveHistoricalStructureBtn" hidden>Save This Structure</button>
               </div>
             </div>
 
-            <div class="execution-help">
-              <strong>Recommended-template rating:</strong> all checks met = A+; one missed check = A; two or more missed checks = B.
-              The percentage is calculated within the reflection structure used for that review, so future custom structures are not forced into this six-check format.
+            <div class="execution-structure-empty" id="executionStructureEmpty">
+              <strong>Build your own execution reflection.</strong>
+              <span>You can mix checklist items with written reflection prompts, save multiple structures, and choose the one that fits the way you trade.</span>
+            </div>
+
+            <div class="execution-reflection-fields" id="executionReflectionFields"></div>
+
+            <div class="execution-help" id="executionScoringHelp">
+              Checklist items contribute to the execution score. Written reflection prompts are qualitative and do not change the numeric score.
             </div>
 
             <div class="execution-actions">
@@ -4716,6 +4802,38 @@ textarea{resize:vertical;min-height:90px}
     </section>
 
   </main>
+</div>
+
+<!-- EXECUTION REFLECTION STRUCTURE BUILDER -->
+<div class="modal" id="executionStructureModal">
+  <div class="modal-card execution-structure-builder-card">
+    <div class="modal-head">
+      <div>
+        <h2 id="executionStructureModalTitle">Create Reflection Structure</h2>
+      </div>
+      <button class="close" id="executionStructureModalClose" type="button">×</button>
+    </div>
+    <div class="execution-structure-builder-body">
+      <div class="execution-structure-builder-top">
+        <label>
+          Structure name
+          <input id="executionStructureNameInput" type="text" maxlength="80" placeholder="e.g. My Execution Review">
+        </label>
+        <div class="execution-builder-add-actions">
+          <button class="btn" type="button" id="executionAddChecklistItemBtn">+ Checklist Item</button>
+          <button class="btn" type="button" id="executionAddReflectionPromptBtn">+ Reflection Sentence</button>
+        </div>
+      </div>
+      <div class="execution-builder-items" id="executionStructureBuilderItems"></div>
+      <div class="execution-builder-foot">
+        <small>Build any mix you want. Checklist items are measurable; reflection sentences capture written context without affecting the score.</small>
+        <div class="execution-builder-add-actions">
+          <button class="btn" type="button" id="executionStructureCancelBtn">Cancel</button>
+          <button class="btn primary" type="button" id="executionStructureSaveBtn">Save Structure</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- TRADE MODAL -->
@@ -4908,6 +5026,8 @@ let equityChartInstance = null;
 let executionReviews = [];
 let executionChecks = [];
 let selectedExecutionTradeId = null;
+let executionStructureBuilderDraft = null;
+let executionStructureBuilderEditingId = null;
 
 
 let viewDate = new Date();
@@ -7443,7 +7563,9 @@ $('#nextMonth').addEventListener('click',()=>{
    EXECUTION QUALITY SYSTEM
 ========================= */
 
-const EXECUTION_REFLECTION_TEMPLATE_SCHEMA='tios.execution-reflection-template.v1';
+const EXECUTION_REFLECTION_TEMPLATE_SCHEMA='tios.execution-reflection-template.v2';
+const EXECUTION_STRUCTURE_STORE_SCHEMA='tios.execution-structure-store.v1';
+const EXECUTION_STRUCTURE_STORAGE_PREFIX='tios_execution_structures_v1';
 
 const EXECUTION_RECOMMENDED_TEMPLATE=Object.freeze({
   schema:EXECUTION_REFLECTION_TEMPLATE_SCHEMA,
@@ -7452,30 +7574,51 @@ const EXECUTION_RECOMMENDED_TEMPLATE=Object.freeze({
   version:1,
   source:'recommended',
   criteria:Object.freeze([
-    {key:'entry_timing',label:'Entry timing matched the selected valid entry moment and trigger.',sort:1},
-    {key:'entry_accuracy',label:'The actual entry/order execution matched the intended trade.',sort:2},
-    {key:'stop_placement',label:'The initial stop loss was placed according to the plan.',sort:3},
-    {key:'risk_sizing',label:'Position size and risk stayed within the predefined limit.',sort:4},
-    {key:'trade_management',label:'In-trade management followed the intended process.',sort:5},
-    {key:'exit_execution',label:'The applicable exit rule was executed correctly.',sort:6}
+    {key:'entry_timing',type:'check',label:'Entry timing matched the selected valid entry moment and trigger.',sort:1},
+    {key:'entry_accuracy',type:'check',label:'The actual entry/order execution matched the intended trade.',sort:2},
+    {key:'stop_placement',type:'check',label:'The initial stop loss was placed according to the plan.',sort:3},
+    {key:'risk_sizing',type:'check',label:'Position size and risk stayed within the predefined limit.',sort:4},
+    {key:'trade_management',type:'check',label:'In-trade management followed the intended process.',sort:5},
+    {key:'exit_execution',type:'check',label:'The applicable exit rule was executed correctly.',sort:6}
   ])
 });
 
-/* Compatibility alias: the current editor renders the recommended template.
-   Future custom templates can replace the active criteria without making these
-   six checks permanent rules for every T-IOS user. */
+/* Compatibility alias for existing Stage 1 evidence names.
+   The active UI no longer renders this list automatically. */
 const EXECUTION_CRITERIA=EXECUTION_RECOMMENDED_TEMPLATE.criteria;
 
-function executionReflectionSignature(criteria){
-  return (Array.isArray(criteria)?criteria:[])
+const EXECUTION_RECOMMENDED_BLUEPRINT=Object.freeze({
+  name:'T-IOS Recommended Execution Reflection',
+  source:'recommended-copy',
+  items:Object.freeze([
+    {key:'check__entry_timing',type:'check',label:'Entry timing matched the selected valid entry moment and trigger.',guidance:'Use the entry moment and trigger defined by your own Edge / Playbook.',sort:1},
+    {key:'check__entry_accuracy',type:'check',label:'The actual entry/order execution matched the intended trade.',guidance:'Record whether the order itself matched the intended trade.',sort:2},
+    {key:'check__stop_placement',type:'check',label:'The initial stop loss was placed according to the plan.',guidance:'The stop should follow the plan rather than being widened to avoid a loss.',sort:3},
+    {key:'check__risk_sizing',type:'check',label:'Position size and risk stayed within the predefined limit.',guidance:'No unplanned increase in financial exposure.',sort:4},
+    {key:'check__trade_management',type:'check',label:'In-trade management followed the intended process.',guidance:'Management decisions should follow your rules rather than impulse.',sort:5},
+    {key:'check__exit_execution',type:'check',label:'The applicable exit rule was executed correctly.',guidance:'Compare the actual exit with the selected rule in your Edge / Playbook.',sort:6},
+    {key:'text__what_went_well',type:'text',label:'What Went Well',guidance:'Which execution behaviours should be reinforced?',placeholder:'Write your reflection...',sort:7},
+    {key:'text__execution_errors',type:'text',label:'Execution Errors',guidance:'What did I actually do incorrectly, if anything?',placeholder:'Write your reflection...',sort:8},
+    {key:'text__next_adjustment',type:'text',label:'Next Adjustment',guidance:'What specific execution behaviour will I adjust on the next opportunity?',placeholder:'Write your reflection...',sort:9},
+    {key:'text__additional_notes',type:'text',label:'Additional Notes',guidance:'Optional observations.',placeholder:'Write your reflection...',sort:10}
+  ])
+});
+
+function executionItemTypeFromKey(key){
+  return String(key||'').startsWith('text__')?'text':'check';
+}
+
+function executionReflectionSignature(items){
+  return (Array.isArray(items)?items:[])
     .map((item,index)=>({
-      key:String(item?.key||'').trim(),
-      label:String(item?.label||'').trim(),
-      sort:Number.isFinite(Number(item?.sort))?Number(item.sort):index+1
+      key:String(item&&item.key||'').trim(),
+      type:item&&item.type==='text'?'text':executionItemTypeFromKey(item&&item.key),
+      label:String(item&&item.label||'').trim(),
+      sort:Number.isFinite(Number(item&&item.sort))?Number(item.sort):index+1
     }))
     .filter(item=>item.key)
     .sort((a,b)=>a.sort-b.sort||a.key.localeCompare(b.key))
-    .map(item=>`${item.sort}:${item.key}:${item.label}`)
+    .map(item=>item.sort+':'+item.type+':'+item.key+':'+item.label)
     .join('|');
 }
 
@@ -7493,37 +7636,166 @@ const EXECUTION_RECOMMENDED_TEMPLATE_SIGNATURE=executionReflectionSignature(
   EXECUTION_RECOMMENDED_TEMPLATE.criteria
 );
 
+function executionStructureStorageKey(){
+  const userId=currentUser&&currentUser.id?currentUser.id:'anonymous';
+  const accountId=tradingAccount&&tradingAccount.id?tradingAccount.id:'no-account';
+  return EXECUTION_STRUCTURE_STORAGE_PREFIX+':'+userId+':'+accountId;
+}
+
+function newExecutionStructureId(prefix){
+  const base=prefix||'structure';
+  if(window.crypto&&typeof window.crypto.randomUUID==='function'){
+    return base+'_'+window.crypto.randomUUID();
+  }
+  return base+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,9);
+}
+
+function normalizeExecutionStructureItem(item,index){
+  const type=item&&item.type==='text'?'text':'check';
+  let key=String(item&&item.key||'').trim();
+  if(!key){
+    key=(type==='text'?'text__':'check__')+newExecutionStructureId('item').replace(/[^a-zA-Z0-9_]/g,'_');
+  }
+  if(type==='text'&&!key.startsWith('text__'))key='text__'+key.replace(/^check__/,'');
+  if(type==='check'&&key.startsWith('text__'))key='check__'+key.slice(6);
+  return {
+    key,
+    type,
+    label:String(item&&item.label||'').trim(),
+    guidance:String(item&&item.guidance||'').trim(),
+    placeholder:String(item&&item.placeholder||'').trim(),
+    sort:index+1
+  };
+}
+
+function normalizeExecutionStructure(structure){
+  const items=(Array.isArray(structure&&structure.items)?structure.items:[])
+    .map(normalizeExecutionStructureItem)
+    .filter(item=>item.label);
+  return {
+    id:String(structure&&structure.id||newExecutionStructureId('structure')),
+    name:String(structure&&structure.name||'Untitled Reflection').trim()||'Untitled Reflection',
+    version:Math.max(1,Number(structure&&structure.version)||1),
+    source:String(structure&&structure.source||'user'),
+    createdAt:structure&&structure.createdAt||new Date().toISOString(),
+    updatedAt:new Date().toISOString(),
+    items
+  };
+}
+
+function loadExecutionStructureStore(){
+  let parsed=null;
+  try{
+    parsed=JSON.parse(localStorage.getItem(executionStructureStorageKey())||'null');
+  }catch(_error){}
+  if(!parsed||!Array.isArray(parsed.structures)){
+    return {schema:EXECUTION_STRUCTURE_STORE_SCHEMA,activeId:null,structures:[]};
+  }
+  const structures=parsed.structures.map(normalizeExecutionStructure);
+  const activeId=structures.some(item=>item.id===parsed.activeId)?parsed.activeId:null;
+  return {schema:EXECUTION_STRUCTURE_STORE_SCHEMA,activeId,structures};
+}
+
+function saveExecutionStructureStore(store){
+  const safe={
+    schema:EXECUTION_STRUCTURE_STORE_SCHEMA,
+    activeId:store&&store.activeId||null,
+    structures:Array.isArray(store&&store.structures)
+      ? store.structures.map(normalizeExecutionStructure)
+      : []
+  };
+  localStorage.setItem(executionStructureStorageKey(),JSON.stringify(safe));
+  return safe;
+}
+
+function executionStructures(){
+  return loadExecutionStructureStore().structures;
+}
+
+function activeExecutionStructure(){
+  const store=loadExecutionStructureStore();
+  return store.structures.find(item=>item.id===store.activeId)||null;
+}
+
+function setActiveExecutionStructure(structureId){
+  const store=loadExecutionStructureStore();
+  store.activeId=store.structures.some(item=>item.id===structureId)?structureId:null;
+  saveExecutionStructureStore(store);
+}
+
+function savedExecutionStructureMatching(items){
+  const signature=executionReflectionSignature(items);
+  return executionStructures().find(item=>executionReflectionSignature(item.items)===signature)||null;
+}
+
+function addRecommendedExecutionStructure(){
+  const existing=savedExecutionStructureMatching(EXECUTION_RECOMMENDED_BLUEPRINT.items);
+  if(existing){
+    setActiveExecutionStructure(existing.id);
+    return existing;
+  }
+  const store=loadExecutionStructureStore();
+  const structure=normalizeExecutionStructure({
+    id:newExecutionStructureId('recommended'),
+    name:EXECUTION_RECOMMENDED_BLUEPRINT.name,
+    version:1,
+    source:EXECUTION_RECOMMENDED_BLUEPRINT.source,
+    items:EXECUTION_RECOMMENDED_BLUEPRINT.items.map(item=>Object.assign({},item))
+  });
+  store.structures.push(structure);
+  store.activeId=structure.id;
+  saveExecutionStructureStore(store);
+  return structure;
+}
+
+function executionReviewForTrade(tradeId){
+  return executionReviews.find(r=>r.trade_id===tradeId)||null;
+}
+
+function executionChecksForReview(reviewId){
+  return executionChecks.filter(c=>c.review_id===reviewId);
+}
+
+function executionChecklistRowsForReview(reviewId){
+  return executionChecksForReview(reviewId).filter(row=>executionItemTypeFromKey(row.criterion_key)==='check');
+}
+
 function executionReflectionStructureForReview(review){
   if(!review)return null;
   const rows=executionChecksForReview(review.id)
     .slice()
     .sort((a,b)=>
-      Number(a.sort_order||0)-Number(b.sort_order||0) ||
+      Number(a.sort_order||0)-Number(b.sort_order||0)||
       String(a.criterion_key||'').localeCompare(String(b.criterion_key||''))
     );
   if(!rows.length)return null;
 
-  const criteria=rows.map((row,index)=>({
+  const rawItems=rows.map((row,index)=>({
     key:String(row.criterion_key||'').trim(),
+    type:executionItemTypeFromKey(row.criterion_key),
     label:String(row.criterion_label||row.criterion_key||'').trim(),
+    guidance:'',
+    placeholder:'',
     sort:Number.isFinite(Number(row.sort_order))?Number(row.sort_order):index+1
   })).filter(item=>item.key);
 
-  const signature=executionReflectionSignature(criteria);
-  const isRecommended=signature===EXECUTION_RECOMMENDED_TEMPLATE_SIGNATURE;
+  const savedMatch=savedExecutionStructureMatching(rawItems);
+  const items=savedMatch
+    ? savedMatch.items.map(item=>Object.assign({},item))
+    : rawItems;
+  const signature=executionReflectionSignature(rawItems);
+  const isLegacyRecommended=signature===EXECUTION_RECOMMENDED_TEMPLATE_SIGNATURE;
+  const criteria=items.filter(item=>item.type==='check');
 
   return {
     schema:EXECUTION_REFLECTION_TEMPLATE_SCHEMA,
-    templateId:isRecommended
-      ? EXECUTION_RECOMMENDED_TEMPLATE.id
-      : `user-reflection-${executionReflectionFingerprint(signature)}`,
-    name:isRecommended
-      ? EXECUTION_RECOMMENDED_TEMPLATE.name
-      : 'User-defined / legacy execution reflection',
-    version:isRecommended?EXECUTION_RECOMMENDED_TEMPLATE.version:null,
-    source:isRecommended?'recommended':'user-or-legacy',
+    templateId:savedMatch?savedMatch.id:(isLegacyRecommended?EXECUTION_RECOMMENDED_TEMPLATE.id:'review-reflection-'+executionReflectionFingerprint(signature)),
+    name:savedMatch?savedMatch.name:(isLegacyRecommended?EXECUTION_RECOMMENDED_TEMPLATE.name:'Historical execution reflection'),
+    version:savedMatch?savedMatch.version:(isLegacyRecommended?EXECUTION_RECOMMENDED_TEMPLATE.version:null),
+    source:savedMatch?'user':(isLegacyRecommended?'recommended-legacy':'historical'),
     signature,
     fingerprint:executionReflectionFingerprint(signature),
+    items,
     criteria
   };
 }
@@ -7536,27 +7808,18 @@ function latestExecutionReflectionStructure(reviews=activeExecutionReviews()){
 }
 
 function executionReviewsForStructure(structure,reviews=activeExecutionReviews()){
-  if(!structure?.signature)return [];
-  return reviews.filter(review=>
-    executionReflectionStructureForReview(review)?.signature===structure.signature
-  );
-}
-
-function executionReviewForTrade(tradeId){
-  return executionReviews.find(r=>r.trade_id===tradeId) || null;
-}
-
-function executionChecksForReview(reviewId){
-  return executionChecks.filter(c=>c.review_id===reviewId);
+  if(!structure||!structure.signature)return [];
+  return reviews.filter(review=>{
+    const reviewStructure=executionReflectionStructureForReview(review);
+    return reviewStructure&&reviewStructure.signature===structure.signature;
+  });
 }
 
 function executionScoreForTrade(tradeId){
   const review=executionReviewForTrade(tradeId);
   if(!review)return null;
-
-  const rows=executionChecksForReview(review.id);
+  const rows=executionChecklistRowsForReview(review.id);
   if(!rows.length)return null;
-
   const passed=rows.filter(row=>Boolean(row.complied)).length;
   return passed/rows.length*100;
 }
@@ -7564,10 +7827,8 @@ function executionScoreForTrade(tradeId){
 function executionRatingForTrade(tradeId){
   const review=executionReviewForTrade(tradeId);
   if(!review)return null;
-
-  const rows=executionChecksForReview(review.id);
+  const rows=executionChecklistRowsForReview(review.id);
   if(!rows.length)return null;
-
   const missed=rows.filter(row=>!Boolean(row.complied)).length;
   if(missed===0)return 'A+';
   if(missed===1)return 'A';
@@ -7575,38 +7836,34 @@ function executionRatingForTrade(tradeId){
 }
 
 function journalExecutionBadge(tradeId,fallbackScore){
+  const review=executionReviewForTrade(tradeId);
   const rating=executionRatingForTrade(tradeId);
   const score=executionScoreForTrade(tradeId);
 
-  if(rating && score!==null){
-    return `<span class="grade-badge ${edgeGradeClass(rating)}" title="${score.toFixed(1)}%">${rating}</span>`;
+  if(review&&rating&&score!==null){
+    return '<span class="grade-badge '+edgeGradeClass(rating)+'" title="'+score.toFixed(1)+'%">'+rating+'</span>';
   }
-
-  if(fallbackScore==null || fallbackScore===''){
+  if(review&&!rating){
+    return '<span class="grade-badge grade-none" title="Qualitative execution reflection">R</span>';
+  }
+  if(fallbackScore==null||fallbackScore===''){
     return '<span class="grade-badge grade-none">—</span>';
   }
-
   const numeric=Number(fallbackScore)||0;
-
-  return `<span class="grade-badge grade-none" title="Legacy execution score">${numeric.toFixed(1)}/10</span>`;
+  return '<span class="grade-badge grade-none" title="Legacy execution score">'+numeric.toFixed(1)+'/10</span>';
 }
 
 function currentExecutionScore(){
   const checks=$$('.execution-check-input');
-
-  if(!checks.length){
-    return 0;
-  }
-
-  const passed=checks.filter(x=>x.checked).length;
+  if(!checks.length)return null;
+  const passed=checks.filter(input=>input.checked).length;
   return passed/checks.length*100;
 }
 
 function currentExecutionRating(){
-  const checks=$('.execution-check-input');
-  if(!checks.length)return '—';
-  const missed=checks.filter(x=>!x.checked).length;
-
+  const checks=$$('.execution-check-input');
+  if(!checks.length)return null;
+  const missed=checks.filter(input=>!input.checked).length;
   if(missed===0)return 'A+';
   if(missed===1)return 'A';
   return 'B';
@@ -7615,105 +7872,385 @@ function currentExecutionRating(){
 function updateExecutionLiveScore(){
   const score=currentExecutionScore();
   const rating=currentExecutionRating();
-
-  $('#executionLiveScore').textContent=score.toFixed(1)+'%';
-  $('#executionLiveRating').textContent=rating;
+  $('#executionLiveScore').textContent=score===null?'—':score.toFixed(1)+'%';
+  $('#executionLiveRating').textContent=rating||'Reflection only';
 
   const header=$('#executionHeaderGrade');
   const review=executionReviewForTrade(selectedExecutionTradeId);
-
-  header.textContent=review ? rating : 'Unreviewed';
-  header.className='grade-badge '+(
-    review ? edgeGradeClass(rating) : 'grade-none'
-  );
+  if(review){
+    header.textContent=rating||'Reflection';
+    header.className='grade-badge '+(rating?edgeGradeClass(rating):'grade-none');
+  }else{
+    header.textContent='Unreviewed';
+    header.className='grade-badge grade-none';
+  }
 }
 
-$$('.execution-check-input').forEach(input=>{
-  input.addEventListener('change',updateExecutionLiveScore);
-});
+function legacyExecutionReflectionFields(review){
+  if(!review)return [];
+  return [
+    {field:'what_went_well',label:'What Went Well',value:review.what_went_well||''},
+    {field:'execution_errors',label:'Execution Errors',value:review.execution_errors||''},
+    {field:'next_adjustment',label:'Next Adjustment',value:review.next_adjustment||''},
+    {field:'notes',label:'Additional Notes',value:review.notes||''}
+  ].filter(item=>item.value);
+}
+
+function executionStructureSummary(structure){
+  if(!structure)return 'No structure selected';
+  const items=structure.items||[];
+  const checks=items.filter(item=>item.type==='check').length;
+  const texts=items.filter(item=>item.type==='text').length;
+  return checks+' checklist item'+(checks===1?'':'s')+' • '+texts+' reflection prompt'+(texts===1?'':'s');
+}
+
+function renderExecutionStructureControls(review){
+  const select=$('#executionStructureSelect');
+  const store=loadExecutionStructureStore();
+  const actions=$('#executionStructureActions');
+  const editBtn=$('#executionEditStructureBtn');
+  const deleteBtn=$('#executionDeleteStructureBtn');
+  const recommendedBtn=$('#executionUseRecommendedBtn');
+  const newBtn=$('#executionNewStructureBtn');
+  const historicalBtn=$('#executionSaveHistoricalStructureBtn');
+
+  select.innerHTML='<option value="">Choose structure...</option>';
+  store.structures.forEach(structure=>{
+    const option=document.createElement('option');
+    option.value=structure.id;
+    option.textContent=structure.name;
+    select.appendChild(option);
+  });
+
+  if(review){
+    const structure=executionReflectionStructureForReview(review);
+    $('#executionStructureName').textContent=structure?structure.name:'Historical reflection';
+    $('#executionStructureMeta').textContent=(structure?executionStructureSummary(structure):'Historical review')+' • locked to this saved review';
+    select.hidden=true;
+    editBtn.hidden=true;
+    deleteBtn.hidden=true;
+    recommendedBtn.hidden=true;
+    newBtn.hidden=true;
+    const alreadySaved=structure?savedExecutionStructureMatching(structure.items):null;
+    historicalBtn.hidden=!structure||Boolean(alreadySaved);
+    actions.classList.add('historical');
+    return;
+  }
+
+  actions.classList.remove('historical');
+  select.hidden=false;
+  recommendedBtn.hidden=false;
+  newBtn.hidden=false;
+  const active=store.structures.find(item=>item.id===store.activeId)||null;
+  select.value=active?active.id:'';
+  editBtn.hidden=!active;
+  deleteBtn.hidden=!active;
+  historicalBtn.hidden=true;
+  $('#executionStructureName').textContent=active?active.name:'No structure selected';
+  $('#executionStructureMeta').textContent=active
+    ? executionStructureSummary(active)
+    : 'Create your own structure, or add the recommended structure when you want it.';
+}
+
+function renderLegacyExecutionReflections(review,container){
+  const fields=legacyExecutionReflectionFields(review);
+  if(!fields.length)return;
+  const wrap=document.createElement('div');
+  wrap.className='execution-legacy-note';
+  wrap.innerHTML='<strong>Legacy reflection notes from this historical review</strong><div class="execution-legacy-grid"></div>';
+  const grid=wrap.querySelector('.execution-legacy-grid');
+  fields.forEach((item,index)=>{
+    const field=document.createElement('div');
+    field.className='field'+(index>=2?' full':'');
+    const label=document.createElement('label');
+    label.textContent=item.label;
+    const textarea=document.createElement('textarea');
+    textarea.value=item.value;
+    textarea.dataset.executionLegacyField=item.field;
+    field.appendChild(label);
+    field.appendChild(textarea);
+    grid.appendChild(field);
+  });
+  container.appendChild(wrap);
+}
+
+function renderExecutionReflectionFields(review){
+  const container=$('#executionReflectionFields');
+  const empty=$('#executionStructureEmpty');
+  container.innerHTML='';
+
+  const structure=review
+    ? executionReflectionStructureForReview(review)
+    : activeExecutionStructure();
+
+  renderExecutionStructureControls(review);
+
+  if(!structure||!structure.items||!structure.items.length){
+    empty.classList.remove('hidden');
+    updateExecutionLiveScore();
+    return;
+  }
+
+  empty.classList.add('hidden');
+  const responseMap={};
+  if(review){
+    executionChecksForReview(review.id).forEach(row=>{
+      responseMap[row.criterion_key]=row;
+    });
+  }
+
+  structure.items
+    .slice()
+    .sort((a,b)=>Number(a.sort||0)-Number(b.sort||0))
+    .forEach(item=>{
+      const row=responseMap[item.key]||null;
+      if(item.type==='text'){
+        const block=document.createElement('div');
+        block.className='execution-reflection-text';
+        const label=document.createElement('label');
+        label.textContent=item.label;
+        block.appendChild(label);
+        if(item.guidance){
+          const guidance=document.createElement('small');
+          guidance.textContent=item.guidance;
+          block.appendChild(guidance);
+        }
+        const textarea=document.createElement('textarea');
+        textarea.dataset.executionTextKey=item.key;
+        textarea.placeholder=item.placeholder||'Write your reflection...';
+        textarea.value=row&&row.comment?row.comment:'';
+        block.appendChild(textarea);
+        container.appendChild(block);
+        return;
+      }
+
+      const block=document.createElement('div');
+      block.className='execution-check';
+      const main=document.createElement('div');
+      main.className='execution-check-main';
+      const checkbox=document.createElement('input');
+      checkbox.type='checkbox';
+      checkbox.className='execution-check-input';
+      checkbox.dataset.executionKey=item.key;
+      checkbox.checked=Boolean(row&&row.complied);
+      checkbox.addEventListener('change',updateExecutionLiveScore);
+      const copy=document.createElement('div');
+      copy.className='execution-check-copy';
+      const strong=document.createElement('strong');
+      strong.textContent=item.label;
+      copy.appendChild(strong);
+      if(item.guidance){
+        const span=document.createElement('span');
+        span.textContent=item.guidance;
+        copy.appendChild(span);
+      }
+      main.appendChild(checkbox);
+      main.appendChild(copy);
+      const comment=document.createElement('input');
+      comment.className='execution-check-comment';
+      comment.dataset.executionComment=item.key;
+      comment.type='text';
+      comment.placeholder='Optional comment';
+      comment.value=row&&row.comment?row.comment:'';
+      block.appendChild(main);
+      block.appendChild(comment);
+      container.appendChild(block);
+    });
+
+  renderLegacyExecutionReflections(review,container);
+  updateExecutionLiveScore();
+}
 
 function clearExecutionEditor(){
-  $$('.execution-check-input').forEach(input=>{
-    input.checked=false;
-  });
-
-  $$('[data-execution-comment]').forEach(input=>{
-    input.value='';
-  });
-
-  $('#executionWentWell').value='';
-  $('#executionErrors').value='';
-  $('#executionAdjustment').value='';
-  $('#executionNotes').value='';
-
+  $('#executionReflectionFields').innerHTML='';
+  $('#executionStructureEmpty').classList.remove('hidden');
   updateExecutionLiveScore();
 }
 
 function loadExecutionReviewIntoEditor(trade){
   selectedExecutionTradeId=trade.id;
-
   const review=executionReviewForTrade(trade.id);
 
   $('#executionEmptyState').classList.add('hidden');
   $('#executionEditorContent').classList.remove('hidden');
-
-  $('#executionSelectedTitle').textContent=
-    `${trade.instrument || '—'} • ${trade.direction || '—'}`;
-
-  $('#executionSelectedSubtitle').textContent=
-    `${formatDate(trade.trade_date)} • Trade ID ${String(trade.id).slice(0,8)}`;
-
-  $('#executionSelectedPnl').textContent=
-    `P&L: ${signedMoney(Number(trade.pnl)||0)}`;
+  $('#executionSelectedTitle').textContent=(trade.instrument||'—')+' • '+(trade.direction||'—');
+  $('#executionSelectedSubtitle').textContent=formatDate(trade.trade_date)+' • Trade ID '+String(trade.id).slice(0,8);
+  $('#executionSelectedPnl').textContent='P&L: '+signedMoney(Number(trade.pnl)||0);
 
   const tradeReturn=tradeReturnPct(trade);
-
-  $('#executionSelectedReturn').textContent=
-    `Return: ${formatReturnPct(tradeReturn)}`;
+  $('#executionSelectedReturn').textContent='Return: '+formatReturnPct(tradeReturn);
 
   const edgeRating=edgeRatingForTrade(trade.id);
   const edgeScore=edgeScoreForTrade(trade.id);
-
-  $('#executionSelectedEdge').textContent=
-    edgeRating && edgeScore!==null
-      ? `Edge: ${edgeRating} • ${edgeScore.toFixed(1)}%`
-      : 'Edge: Unreviewed';
+  $('#executionSelectedEdge').textContent=edgeRating&&edgeScore!==null
+    ? 'Edge: '+edgeRating+' • '+edgeScore.toFixed(1)+'%'
+    : 'Edge: Unreviewed';
 
   clearExecutionEditor();
+  renderExecutionReflectionFields(review);
+  renderExecutionTradeList();
+}
 
-  if(review){
-    const map={};
+function closeExecutionStructureBuilder(){
+  $('#executionStructureModal').classList.remove('open');
+  executionStructureBuilderDraft=null;
+  executionStructureBuilderEditingId=null;
+}
 
-    executionChecksForReview(review.id).forEach(row=>{
-      map[row.criterion_key]=row;
-    });
-
-    $$('.execution-check-input').forEach(input=>{
-      input.checked=Boolean(
-        map[input.dataset.executionKey]?.complied
-      );
-    });
-
-    $$('[data-execution-comment]').forEach(input=>{
-      const row=map[input.dataset.executionComment];
-      input.value=row?.comment || '';
-    });
-
-    $('#executionWentWell').value=
-      review.what_went_well || '';
-
-    $('#executionErrors').value=
-      review.execution_errors || '';
-
-    $('#executionAdjustment').value=
-      review.next_adjustment || '';
-
-    $('#executionNotes').value=
-      review.notes || '';
+function renderExecutionStructureBuilderItems(){
+  const container=$('#executionStructureBuilderItems');
+  container.innerHTML='';
+  const draft=executionStructureBuilderDraft;
+  if(!draft||!draft.items.length){
+    container.innerHTML='<div class="execution-builder-empty">Add a checklist item, a reflection sentence, or both.</div>';
+    return;
   }
 
-  updateExecutionLiveScore();
-  renderExecutionTradeList();
+  draft.items.forEach((item,index)=>{
+    const row=document.createElement('div');
+    row.className='execution-builder-item';
+    row.dataset.builderIndex=String(index);
+
+    const head=document.createElement('div');
+    head.className='execution-builder-item-head';
+    const type=document.createElement('span');
+    type.className='execution-builder-type';
+    type.textContent=item.type==='text'?'Reflection sentence':'Checklist item';
+    const actions=document.createElement('div');
+    actions.className='execution-builder-item-actions';
+    actions.innerHTML='<button type="button" data-builder-action="up" title="Move up">↑</button><button type="button" data-builder-action="down" title="Move down">↓</button><button type="button" data-builder-action="delete" title="Delete">×</button>';
+    head.appendChild(type);
+    head.appendChild(actions);
+
+    const fields=document.createElement('div');
+    fields.className='execution-builder-fields';
+    const label=document.createElement('input');
+    label.type='text';
+    label.value=item.label||'';
+    label.placeholder=item.type==='text'?'Reflection sentence / prompt':'Checklist statement';
+    label.dataset.builderField='label';
+    const guidance=document.createElement('textarea');
+    guidance.value=item.guidance||'';
+    guidance.placeholder=item.type==='text'?'Optional guidance for the reflection':'Optional explanation / condition';
+    guidance.dataset.builderField='guidance';
+    fields.appendChild(label);
+    fields.appendChild(guidance);
+
+    row.appendChild(head);
+    row.appendChild(fields);
+    container.appendChild(row);
+  });
+}
+
+function openExecutionStructureBuilder(structure){
+  executionStructureBuilderEditingId=structure&&structure.id?structure.id:null;
+  executionStructureBuilderDraft=structure
+    ? JSON.parse(JSON.stringify(structure))
+    : {
+        id:newExecutionStructureId('structure'),
+        name:'',
+        version:1,
+        source:'user',
+        createdAt:new Date().toISOString(),
+        items:[]
+      };
+
+  $('#executionStructureModalTitle').textContent=structure?'Edit Reflection Structure':'Create Reflection Structure';
+  $('#executionStructureNameInput').value=executionStructureBuilderDraft.name||'';
+  renderExecutionStructureBuilderItems();
+  $('#executionStructureModal').classList.add('open');
+}
+
+function addExecutionBuilderItem(type){
+  if(!executionStructureBuilderDraft)return;
+  const itemType=type==='text'?'text':'check';
+  executionStructureBuilderDraft.items.push({
+    key:(itemType==='text'?'text__':'check__')+newExecutionStructureId('item').replace(/[^a-zA-Z0-9_]/g,'_'),
+    type:itemType,
+    label:'',
+    guidance:'',
+    placeholder:itemType==='text'?'Write your reflection...':'',
+    sort:executionStructureBuilderDraft.items.length+1
+  });
+  renderExecutionStructureBuilderItems();
+  const inputs=$$('#executionStructureBuilderItems [data-builder-field="label"]');
+  if(inputs.length)inputs[inputs.length-1].focus();
+}
+
+function saveExecutionStructureBuilder(){
+  if(!executionStructureBuilderDraft)return;
+  const name=$('#executionStructureNameInput').value.trim();
+  if(!name){
+    alert('Give this reflection structure a name.');
+    return;
+  }
+
+  const items=executionStructureBuilderDraft.items
+    .map((item,index)=>normalizeExecutionStructureItem(item,index))
+    .filter(item=>item.label);
+
+  if(!items.length){
+    alert('Add at least one checklist item or reflection sentence.');
+    return;
+  }
+
+  const store=loadExecutionStructureStore();
+  const previous=executionStructureBuilderEditingId
+    ? store.structures.find(item=>item.id===executionStructureBuilderEditingId)
+    : null;
+
+  const structure=normalizeExecutionStructure({
+    id:executionStructureBuilderDraft.id,
+    name,
+    version:previous?previous.version+1:1,
+    source:executionStructureBuilderDraft.source||'user',
+    createdAt:previous?previous.createdAt:executionStructureBuilderDraft.createdAt,
+    items
+  });
+
+  const index=store.structures.findIndex(item=>item.id===structure.id);
+  if(index>=0)store.structures[index]=structure;
+  else store.structures.push(structure);
+  store.activeId=structure.id;
+  saveExecutionStructureStore(store);
+  closeExecutionStructureBuilder();
+  renderSelectedExecutionTrade();
+  showStatus('Reflection structure saved');
+}
+
+function saveHistoricalExecutionStructure(){
+  const review=executionReviewForTrade(selectedExecutionTradeId);
+  const structure=executionReflectionStructureForReview(review);
+  if(!structure)return;
+
+  const existing=savedExecutionStructureMatching(structure.items);
+  if(existing){
+    setActiveExecutionStructure(existing.id);
+    showStatus('This structure is already saved');
+    return;
+  }
+
+  const trade=trades.find(item=>item.id===selectedExecutionTradeId);
+  openExecutionStructureBuilder({
+    id:newExecutionStructureId('structure'),
+    name:'Saved review structure'+(trade&&trade.trade_date?' • '+trade.trade_date:''),
+    version:1,
+    source:'historical-copy',
+    createdAt:new Date().toISOString(),
+    items:structure.items.map(item=>Object.assign({},item))
+  });
+}
+
+function deleteActiveExecutionStructure(){
+  const store=loadExecutionStructureStore();
+  const active=store.structures.find(item=>item.id===store.activeId);
+  if(!active)return;
+  if(!confirm('Delete the saved reflection structure "'+active.name+'"? Historical reviews will not be deleted.'))return;
+  store.structures=store.structures.filter(item=>item.id!==active.id);
+  store.activeId=store.structures.length?store.structures[0].id:null;
+  saveExecutionStructureStore(store);
+  renderSelectedExecutionTrade();
+  showStatus('Reflection structure deleted');
 }
 
 function filteredExecutionTrades(){
@@ -7788,12 +8325,10 @@ function renderExecutionTradeList(){
   const list=$('#executionTradeList');
   const source=filteredExecutionTrades();
 
-  $('#executionTradeCount').textContent=
-    source.length===1 ? '1 trade' : `${source.length} trades`;
+  $('#executionTradeCount').textContent=source.length===1?'1 trade':source.length+' trades';
 
   if(!source.length){
-    list.innerHTML=
-      '<div class="empty-state">No trades match the current Execution filters.</div>';
+    list.innerHTML='<div class="empty-state">No trades match the current Execution filters.</div>';
     return;
   }
 
@@ -7804,43 +8339,26 @@ function renderExecutionTradeList(){
     const rating=executionRatingForTrade(trade.id);
     const score=executionScoreForTrade(trade.id);
     const pnl=Number(trade.pnl)||0;
-
     const card=document.createElement('div');
 
-    card.className=
-      'execution-trade-card'+(
-        trade.id===selectedExecutionTradeId
-          ? ' active'
-          : ''
-      );
+    card.className='execution-trade-card'+(trade.id===selectedExecutionTradeId?' active':'');
 
-    const ratingHtml=review
-      ? `<span class="grade-badge ${edgeGradeClass(rating)}">${rating}</span>`
-      : '<span class="edge-unreviewed">Unreviewed</span>';
+    const ratingHtml=!review
+      ? '<span class="edge-unreviewed">Unreviewed</span>'
+      : rating
+        ? '<span class="grade-badge '+edgeGradeClass(rating)+'">'+rating+'</span>'
+        : '<span class="grade-badge grade-none">Reflection</span>';
 
-    card.innerHTML=`
-      <div class="execution-card-top">
-        <strong>${escapeHtml(trade.instrument||'—')} • ${escapeHtml(trade.direction||'—')}</strong>
-        ${ratingHtml}
-      </div>
+    card.innerHTML=
+      '<div class="execution-card-top"><strong>'+
+      escapeHtml(trade.instrument||'—')+' • '+escapeHtml(trade.direction||'—')+
+      '</strong>'+ratingHtml+'</div>'+
+      '<div class="execution-card-bottom"><span>'+formatDate(trade.trade_date)+'</span><span class="'+pnlClass(pnl)+'">'+signedMoney(pnl)+'</span></div>'+
+      (review
+        ? '<div class="execution-card-bottom"><span>'+(score===null?'Reflection':'Execution score')+'</span><span>'+(score===null?'Saved':score.toFixed(1)+'%')+'</span></div>'
+        : '');
 
-      <div class="execution-card-bottom">
-        <span>${formatDate(trade.trade_date)}</span>
-        <span class="${pnlClass(pnl)}">${signedMoney(pnl)}</span>
-      </div>
-
-      ${review ? `
-        <div class="execution-card-bottom">
-          <span>Execution score</span>
-          <span>${score.toFixed(1)}%</span>
-        </div>
-      ` : ''}
-    `;
-
-    card.addEventListener('click',()=>{
-      loadExecutionReviewIntoEditor(trade);
-    });
-
+    card.addEventListener('click',()=>loadExecutionReviewIntoEditor(trade));
     list.appendChild(card);
   });
 }
@@ -7877,35 +8395,36 @@ async function saveExecutionReview(){
     return;
   }
 
-  const trade=trades.find(
-    t=>t.id===selectedExecutionTradeId
-  );
-
+  const trade=trades.find(item=>item.id===selectedExecutionTradeId);
   if(!trade){
     alert('The selected trade could not be found.');
+    return;
+  }
+
+  let review=executionReviewForTrade(trade.id);
+  const structure=review
+    ? executionReflectionStructureForReview(review)
+    : activeExecutionStructure();
+
+  if(!structure||!structure.items||!structure.items.length){
+    alert('Choose or create a reflection structure before saving this review.');
     return;
   }
 
   const reviewPayload={
     user_id:currentUser.id,
     trade_id:trade.id,
-    what_went_well:
-      $('#executionWentWell').value.trim() || null,
-    execution_errors:
-      $('#executionErrors').value.trim() || null,
-    next_adjustment:
-      $('#executionAdjustment').value.trim() || null,
-    notes:
-      $('#executionNotes').value.trim() || null,
     updated_at:new Date().toISOString()
   };
+
+  $$('[data-execution-legacy-field]').forEach(field=>{
+    reviewPayload[field.dataset.executionLegacyField]=field.value.trim()||null;
+  });
 
   $('#executionSaveReviewBtn').disabled=true;
   $('#executionSaveTopBtn').disabled=true;
 
-  let review=executionReviewForTrade(trade.id);
   let reviewResult;
-
   if(review){
     reviewResult=await db
       .from('trade_execution_reviews')
@@ -7931,39 +8450,53 @@ async function saveExecutionReview(){
 
   review=reviewResult.data;
 
-  const checksPayload=EXECUTION_CRITERIA.map(item=>({
-    review_id:review.id,
-    user_id:currentUser.id,
-    criterion_key:item.key,
-    criterion_label:item.label,
-    complied:
-      $(`[data-execution-key="${item.key}"]`).checked,
-    comment:
-      $(`[data-execution-comment="${item.key}"]`).value.trim() || null,
-    sort_order:item.sort
-  }));
+  const rows=structure.items
+    .slice()
+    .sort((a,b)=>Number(a.sort||0)-Number(b.sort||0))
+    .map((item,index)=>{
+      if(item.type==='text'){
+        const input=$('[data-execution-text-key="'+item.key+'"]');
+        return {
+          review_id:review.id,
+          user_id:currentUser.id,
+          criterion_key:item.key,
+          criterion_label:item.label,
+          complied:true,
+          comment:input&&input.value.trim()?input.value.trim():null,
+          sort_order:index+1
+        };
+      }
+      const checkbox=$('[data-execution-key="'+item.key+'"]');
+      const comment=$('[data-execution-comment="'+item.key+'"]');
+      return {
+        review_id:review.id,
+        user_id:currentUser.id,
+        criterion_key:item.key,
+        criterion_label:item.label,
+        complied:Boolean(checkbox&&checkbox.checked),
+        comment:comment&&comment.value.trim()?comment.value.trim():null,
+        sort_order:index+1
+      };
+    });
 
-  const {error:checksError}=await db
-    .from('trade_execution_checks')
-    .upsert(
-      checksPayload,
-      {onConflict:'review_id,criterion_key'}
-    );
+  if(rows.length){
+    const checksResult=await db
+      .from('trade_execution_checks')
+      .upsert(rows,{onConflict:'review_id,criterion_key'});
 
-  if(checksError){
-    $('#executionSaveReviewBtn').disabled=false;
-    $('#executionSaveTopBtn').disabled=false;
-    alert(checksError.message);
-    return;
+    if(checksResult.error){
+      $('#executionSaveReviewBtn').disabled=false;
+      $('#executionSaveTopBtn').disabled=false;
+      alert(checksResult.error.message);
+      return;
+    }
   }
 
   const scorePct=currentExecutionScore();
-  const scoreOutOf10=scorePct/10;
-
-  const {error:tradeUpdateError}=await db
+  const tradeUpdateResult=await db
     .from('trades')
     .update({
-      execution_score:Number(scoreOutOf10.toFixed(2)),
+      execution_score:scorePct===null?null:Number((scorePct/10).toFixed(2)),
       updated_at:new Date().toISOString()
     })
     .eq('id',trade.id)
@@ -7972,8 +8505,8 @@ async function saveExecutionReview(){
   $('#executionSaveReviewBtn').disabled=false;
   $('#executionSaveTopBtn').disabled=false;
 
-  if(tradeUpdateError){
-    alert(tradeUpdateError.message);
+  if(tradeUpdateResult.error){
+    alert(tradeUpdateResult.error.message);
     return;
   }
 
@@ -7982,13 +8515,17 @@ async function saveExecutionReview(){
 
   renderExecution();
   renderDashboard();
-  if($('#page-intelligence')) renderIntelligence();
+  if($('#page-intelligence'))renderIntelligence();
   renderJournal();
   renderStatistics();
   respondToGoalEvidenceRequest('execution_review_saved');
 
+  const savedRating=executionRatingForTrade(trade.id);
+  const savedScore=executionScoreForTrade(trade.id);
   showStatus(
-    `Execution saved • ${executionRatingForTrade(trade.id)} • ${executionScoreForTrade(trade.id).toFixed(1)}%`
+    savedScore===null
+      ? 'Execution reflection saved'
+      : 'Execution saved • '+savedRating+' • '+savedScore.toFixed(1)+'%'
   );
 }
 
@@ -8048,6 +8585,74 @@ async function deleteExecutionReview(){
 
   showStatus('Execution review deleted');
 }
+
+$('#executionStructureSelect').addEventListener('change',event=>{
+  setActiveExecutionStructure(event.target.value);
+  renderSelectedExecutionTrade();
+});
+
+$('#executionUseRecommendedBtn').addEventListener('click',()=>{
+  addRecommendedExecutionStructure();
+  renderSelectedExecutionTrade();
+  showStatus('Recommended reflection structure added');
+});
+
+$('#executionNewStructureBtn').addEventListener('click',()=>{
+  openExecutionStructureBuilder(null);
+});
+
+$('#executionEditStructureBtn').addEventListener('click',()=>{
+  const active=activeExecutionStructure();
+  if(active)openExecutionStructureBuilder(active);
+});
+
+$('#executionDeleteStructureBtn').addEventListener('click',deleteActiveExecutionStructure);
+$('#executionSaveHistoricalStructureBtn').addEventListener('click',saveHistoricalExecutionStructure);
+
+$('#executionStructureModalClose').addEventListener('click',closeExecutionStructureBuilder);
+$('#executionStructureCancelBtn').addEventListener('click',closeExecutionStructureBuilder);
+$('#executionAddChecklistItemBtn').addEventListener('click',()=>addExecutionBuilderItem('check'));
+$('#executionAddReflectionPromptBtn').addEventListener('click',()=>addExecutionBuilderItem('text'));
+$('#executionStructureSaveBtn').addEventListener('click',saveExecutionStructureBuilder);
+
+$('#executionStructureNameInput').addEventListener('input',event=>{
+  if(executionStructureBuilderDraft)executionStructureBuilderDraft.name=event.target.value;
+});
+
+$('#executionStructureBuilderItems').addEventListener('input',event=>{
+  const row=event.target.closest('[data-builder-index]');
+  if(!row||!executionStructureBuilderDraft)return;
+  const index=Number(row.dataset.builderIndex);
+  const item=executionStructureBuilderDraft.items[index];
+  if(!item)return;
+  const field=event.target.dataset.builderField;
+  if(field==='label'||field==='guidance')item[field]=event.target.value;
+});
+
+$('#executionStructureBuilderItems').addEventListener('click',event=>{
+  const button=event.target.closest('[data-builder-action]');
+  if(!button||!executionStructureBuilderDraft)return;
+  const row=button.closest('[data-builder-index]');
+  if(!row)return;
+  const index=Number(row.dataset.builderIndex);
+  const action=button.dataset.builderAction;
+
+  if(action==='delete'){
+    executionStructureBuilderDraft.items.splice(index,1);
+  }else if(action==='up'&&index>0){
+    const item=executionStructureBuilderDraft.items.splice(index,1)[0];
+    executionStructureBuilderDraft.items.splice(index-1,0,item);
+  }else if(action==='down'&&index<executionStructureBuilderDraft.items.length-1){
+    const item=executionStructureBuilderDraft.items.splice(index,1)[0];
+    executionStructureBuilderDraft.items.splice(index+1,0,item);
+  }
+  executionStructureBuilderDraft.items.forEach((item,itemIndex)=>item.sort=itemIndex+1);
+  renderExecutionStructureBuilderItems();
+});
+
+$('#executionStructureModal').addEventListener('click',event=>{
+  if(event.target.id==='executionStructureModal')closeExecutionStructureBuilder();
+});
 
 $('#executionSearch').addEventListener(
   'input',
@@ -10829,7 +11434,10 @@ function orderedExecutionReviews(reviews=activeExecutionReviews()){
 function executionWindowSummary(reviews){
   const reviewIds=new Set(reviews.map(review=>review.id));
   const tradeIds=[...new Set(reviews.map(review=>review.trade_id).filter(Boolean))];
-  const rows=executionChecks.filter(row=>reviewIds.has(row.review_id));
+  const rows=executionChecks.filter(row=>
+    reviewIds.has(row.review_id)&&
+    executionItemTypeFromKey(row.criterion_key)==='check'
+  );
   const structure=reviews.length?executionReflectionStructureForReview(reviews[0]):null;
   const criteriaDefinition=structure?.criteria||[];
   const complied=rows.filter(row=>Boolean(row.complied)).length;
@@ -10846,7 +11454,7 @@ function executionWindowSummary(reviews){
     const criterionMisses=criterionRows.length-criterionComplied;
     return {
       key:item.key,
-      label:shortExecutionCriterionLabel(item.key),
+      label:item.label||shortExecutionCriterionLabel(item.key),
       checks:criterionRows.length,
       complied:criterionComplied,
       misses:criterionMisses,
@@ -10931,7 +11539,7 @@ function buildExecutionTrend(){
     ) ? roundEvidence(Number(recentCriterion.adherencePct)-Number(previousCriterion.adherencePct),1) : null;
     return {
       key:item.key,
-      label:shortExecutionCriterionLabel(item.key),
+      label:item.label||shortExecutionCriterionLabel(item.key),
       state:executionTrendState(delta),
       deltaAdherencePctPoints:delta,
       recentAdherencePct:recentCriterion?.adherencePct??null,
@@ -11003,7 +11611,7 @@ function buildExecutionIntelligenceModel(){
 
     return {
       key:item.key,
-      label:shortExecutionCriterionLabel(item.key),
+      label:item.label||shortExecutionCriterionLabel(item.key),
       checks:rows.length,
       complied,
       misses:failedRows.length,
@@ -11026,7 +11634,11 @@ function buildExecutionIntelligenceModel(){
 
   const failedReviewIds=new Set(
     executionChecks
-      .filter(row=>activeReviewIds.has(row.review_id)&&!Boolean(row.complied))
+      .filter(row=>
+        activeReviewIds.has(row.review_id)&&
+        executionItemTypeFromKey(row.criterion_key)==='check'&&
+        !Boolean(row.complied)
+      )
       .map(row=>row.review_id)
   );
 
@@ -11079,7 +11691,7 @@ function buildExecutionIntelligenceModel(){
       accountId:tradingAccount?.id||null
     },
     maturity:{
-      state:reviewedTrades===0?'needs-evidence':reviewedTrades<3?'building':'active',
+      state:totalChecks===0?'needs-evidence':reviewedTrades<3?'building':'active',
       reviewedTrades,
       minimumForInitialPattern:3
     },
