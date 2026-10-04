@@ -1984,7 +1984,18 @@ input:focus,select:focus,textarea:focus{
 .execution-legacy-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px}
 .execution-legacy-grid .field.full{grid-column:1/-1}
 .execution-legacy-grid textarea{min-height:82px}
-.execution-structure-builder-card{width:min(860px,96vw)}
+.execution-structure-builder-card{
+  width:min(860px,96vw);
+  position:relative;
+  z-index:1;
+}
+#executionStructureModal{
+  z-index:220;
+  overflow:auto;
+}
+body.execution-workspace #executionStructureModal.open{
+  display:flex;
+}
 .execution-structure-builder-body{padding:16px 18px 18px}
 .execution-structure-builder-top{
   display:grid;
@@ -4528,6 +4539,7 @@ textarea{resize:vertical;min-height:90px}
           <p>Measure how accurately you carried out a trade after the opportunity had already been identified.</p>
         </div>
         <div class="top-actions">
+          <button class="btn" id="executionNewJournalTopBtn">+ New Journal</button>
           <button class="btn" id="executionRefreshBtn">Refresh</button>
           <button class="btn primary" id="executionSaveTopBtn">Save Review</button>
         </div>
@@ -4626,14 +4638,14 @@ textarea{resize:vertical;min-height:90px}
 
             <div class="execution-structure-bar">
               <div class="execution-structure-copy">
-                <span class="kicker">Reflection structure</span>
-                <strong id="executionStructureName">No structure selected</strong>
-                <small id="executionStructureMeta">Create a structure, or add the T-IOS recommended structure when you want it.</small>
+                <span class="kicker">Execution journal</span>
+                <strong id="executionStructureName">No journal selected</strong>
+                <small id="executionStructureMeta">Create your own journal, or add the T-IOS recommended journal when you want it.</small>
               </div>
               <div class="execution-structure-actions" id="executionStructureActions">
-                <select id="executionStructureSelect" aria-label="Execution reflection structure"></select>
+                <select id="executionStructureSelect" aria-label="Execution journal"></select>
                 <button class="btn" type="button" id="executionUseRecommendedBtn">Use Recommended</button>
-                <button class="btn" type="button" id="executionNewStructureBtn">+ New Structure</button>
+                <button class="btn" type="button" id="executionNewStructureBtn">+ New Journal</button>
                 <button class="btn" type="button" id="executionEditStructureBtn">Edit</button>
                 <button class="btn danger" type="button" id="executionDeleteStructureBtn">Delete</button>
                 <button class="btn" type="button" id="executionSaveHistoricalStructureBtn" hidden>Save This Structure</button>
@@ -4641,8 +4653,8 @@ textarea{resize:vertical;min-height:90px}
             </div>
 
             <div class="execution-structure-empty" id="executionStructureEmpty">
-              <strong>Build your own execution reflection.</strong>
-              <span>You can mix checklist items with written reflection prompts, save multiple structures, and choose the one that fits the way you trade.</span>
+              <strong>Build your own execution journal.</strong>
+              <span>Mix checklist items with written reflection prompts, save multiple journals, and choose the one that fits the way you trade.</span>
             </div>
 
             <div class="execution-reflection-fields" id="executionReflectionFields"></div>
@@ -4809,15 +4821,15 @@ textarea{resize:vertical;min-height:90px}
   <div class="modal-card execution-structure-builder-card">
     <div class="modal-head">
       <div>
-        <h2 id="executionStructureModalTitle">Create Reflection Structure</h2>
+        <h2 id="executionStructureModalTitle">Create Execution Journal</h2>
       </div>
       <button class="close" id="executionStructureModalClose" type="button">×</button>
     </div>
     <div class="execution-structure-builder-body">
       <div class="execution-structure-builder-top">
         <label>
-          Structure name
-          <input id="executionStructureNameInput" type="text" maxlength="80" placeholder="e.g. My Execution Review">
+          Journal name
+          <input id="executionStructureNameInput" type="text" maxlength="80" placeholder="e.g. My Execution Journal">
         </label>
         <div class="execution-builder-add-actions">
           <button class="btn" type="button" id="executionAddChecklistItemBtn">+ Checklist Item</button>
@@ -4829,7 +4841,7 @@ textarea{resize:vertical;min-height:90px}
         <small>Build any mix you want. Checklist items are measurable; reflection sentences capture written context without affecting the score.</small>
         <div class="execution-builder-add-actions">
           <button class="btn" type="button" id="executionStructureCancelBtn">Cancel</button>
-          <button class="btn primary" type="button" id="executionStructureSaveBtn">Save Structure</button>
+          <button class="btn primary" type="button" id="executionStructureSaveBtn">Save Journal</button>
         </div>
       </div>
     </div>
@@ -7925,12 +7937,12 @@ function renderExecutionStructureControls(review){
   if(review){
     const structure=executionReflectionStructureForReview(review);
     $('#executionStructureName').textContent=structure?structure.name:'Historical reflection';
-    $('#executionStructureMeta').textContent=(structure?executionStructureSummary(structure):'Historical review')+' • locked to this saved review';
+    $('#executionStructureMeta').textContent=(structure?executionStructureSummary(structure):'Historical review')+' • this saved review is locked, but you can create another journal for future reviews';
     select.hidden=true;
     editBtn.hidden=true;
     deleteBtn.hidden=true;
-    recommendedBtn.hidden=true;
-    newBtn.hidden=true;
+    recommendedBtn.hidden=false;
+    newBtn.hidden=false;
     const alreadySaved=structure?savedExecutionStructureMatching(structure.items):null;
     historicalBtn.hidden=!structure||Boolean(alreadySaved);
     actions.classList.add('historical');
@@ -7946,10 +7958,10 @@ function renderExecutionStructureControls(review){
   editBtn.hidden=!active;
   deleteBtn.hidden=!active;
   historicalBtn.hidden=true;
-  $('#executionStructureName').textContent=active?active.name:'No structure selected';
+  $('#executionStructureName').textContent=active?active.name:'No journal selected';
   $('#executionStructureMeta').textContent=active
     ? executionStructureSummary(active)
-    : 'Create your own structure, or add the recommended structure when you want it.';
+    : 'Create your own execution journal, or add the recommended journal when you want it.';
 }
 
 function renderLegacyExecutionReflections(review,container){
@@ -8155,7 +8167,7 @@ function openExecutionStructureBuilder(structure){
         items:[]
       };
 
-  $('#executionStructureModalTitle').textContent=structure?'Edit Reflection Structure':'Create Reflection Structure';
+  $('#executionStructureModalTitle').textContent=structure?'Edit Execution Journal':'Create Execution Journal';
   $('#executionStructureNameInput').value=executionStructureBuilderDraft.name||'';
   renderExecutionStructureBuilderItems();
   $('#executionStructureModal').classList.add('open');
@@ -8181,7 +8193,7 @@ function saveExecutionStructureBuilder(){
   if(!executionStructureBuilderDraft)return;
   const name=$('#executionStructureNameInput').value.trim();
   if(!name){
-    alert('Give this reflection structure a name.');
+    alert('Give this execution journal a name.');
     return;
   }
 
@@ -8215,7 +8227,7 @@ function saveExecutionStructureBuilder(){
   saveExecutionStructureStore(store);
   closeExecutionStructureBuilder();
   renderSelectedExecutionTrade();
-  showStatus('Reflection structure saved');
+  showStatus('Execution journal saved • select an unreviewed trade to use it');
 }
 
 function saveHistoricalExecutionStructure(){
@@ -8245,12 +8257,12 @@ function deleteActiveExecutionStructure(){
   const store=loadExecutionStructureStore();
   const active=store.structures.find(item=>item.id===store.activeId);
   if(!active)return;
-  if(!confirm('Delete the saved reflection structure "'+active.name+'"? Historical reviews will not be deleted.'))return;
+  if(!confirm('Delete the saved execution journal "'+active.name+'"? Historical reviews will not be deleted.'))return;
   store.structures=store.structures.filter(item=>item.id!==active.id);
   store.activeId=store.structures.length?store.structures[0].id:null;
   saveExecutionStructureStore(store);
   renderSelectedExecutionTrade();
-  showStatus('Reflection structure deleted');
+  showStatus('Execution journal deleted');
 }
 
 function filteredExecutionTrades(){
@@ -8594,10 +8606,14 @@ $('#executionStructureSelect').addEventListener('change',event=>{
 $('#executionUseRecommendedBtn').addEventListener('click',()=>{
   addRecommendedExecutionStructure();
   renderSelectedExecutionTrade();
-  showStatus('Recommended reflection structure added');
+  showStatus('Recommended execution journal added • select an unreviewed trade to use it');
 });
 
 $('#executionNewStructureBtn').addEventListener('click',()=>{
+  openExecutionStructureBuilder(null);
+});
+
+$('#executionNewJournalTopBtn').addEventListener('click',()=>{
   openExecutionStructureBuilder(null);
 });
 
