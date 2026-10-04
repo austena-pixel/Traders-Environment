@@ -221,7 +221,7 @@ test('Stage 1C routes only selected G-IOS evidence metrics through H-IOS to T-IO
   run("const routedResponse=respondToGoalEvidenceRequest('stage_1c_test')");
   assert.deepEqual([...run('routedResponse.requestedMetrics')], ['playbook_adherence','discipline_score']);
   assert.deepEqual([...run('routedResponse.deliveredMetrics')], ['playbook_adherence','discipline_score']);
-  assert.equal(run("JSON.parse(localStorage.getItem('hios_communication_last_signal_v1')).type"), 'evidence.responded');
+  assert.equal(run("HIOSConnectionLayer.connect('goals-ios').getPendingRequests().some(row=>row.type==='evidence.responded')"), true);
 });
 
 test('Stage 1C does not create a T-IOS request with no selected metrics or a disconnected target', () => {
@@ -272,7 +272,6 @@ test('Stage 1D routes T-IOS response through H-IOS and G-IOS applies it once', (
   assert.deepEqual([...run('response.deliveredMetrics')],['execution_errors']);
   assert.equal(run("JSON.parse(localStorage.getItem('test-goal-evidence')||'null')"),null);
   assert.equal(run("JSON.parse(localStorage.getItem('test-responses')||'null')"),null);
-  assert.equal(run("JSON.parse(localStorage.getItem('hios_communication_last_signal_v1')).type"),'evidence.responded');
   assert.equal(run("HIOSConnectionLayer.connect('goals-ios').getPendingRequests().some(row=>row.type==='evidence.responded')"),true);
 
   run(`const goalsBridge=HIOSConnectionLayer.connect('goals-ios');
@@ -280,8 +279,8 @@ test('Stage 1D routes T-IOS response through H-IOS and G-IOS applies it once', (
     const renderProductEvidenceReceiver=()=>{};
     const renderPersonalIntelligenceResponse=()=>{};`);
   const gios=read('g-ios.html');
-  run(gios.slice(gios.indexOf('function validTiosEvidenceResponse('), gios.indexOf('const PRODUCT_FOCUS_CATALOG')));
-  run("const responseSignal=JSON.parse(localStorage.getItem('hios_communication_last_signal_v1')); receiveTiosGoalEvidenceResponseSignal(responseSignal)");
+  run(gios.slice(gios.indexOf('function validTiosEvidenceResponse('), gios.indexOf('function readGoalReorientations(')));
+  run("const responseSignal=goalsBridge.getPendingRequests().find(row=>row.type==='evidence.responded'); receiveTiosGoalEvidenceResponseSignal(responseSignal)");
   assert.equal(run("JSON.parse(localStorage.getItem('test-responses')).tios.status"),'fulfilled');
   assert.equal(run("JSON.parse(localStorage.getItem(GIOS_EVIDENCE_REQUESTS_KEY)).tios.status"),'fulfilled');
   assert.equal(run("JSON.parse(localStorage.getItem('test-goal-evidence')).tios.length"),1);
@@ -306,4 +305,97 @@ test('Stage 1D rejects a T-IOS response that exceeds the selected request scope'
   }},{requestId:'req-scope'});`);
   assert.equal(run('bad.ok'),false);
   assert.match(run("bad.errors.join(' ')"),/requested metric scope|deliver every requested metric/);
+});
+
+
+test('Stage 1E H-IOS creates one user-approved working-emphasis proposal from execution errors', () => {
+  const { run } = browser();
+  run(read('hios-connection-layer.js'));
+  run(`localStorage.setItem('hios_added_products_v1', JSON.stringify(['gios','tios']));
+    localStorage.setItem('hios_goal_evidence_requests_v1',JSON.stringify({tios:{
+      requestId:'req-stage-1e',source:'goals-ios',targetProductId:'tios',area:'Trading',
+      phaseId:'phase-1',phaseName:'Stage 1',metrics:['execution_errors'],requestedAt:'2026-10-04T16:20:00+02:00'
+    }}));
+    const tios=HIOSConnectionLayer.connect('t-ios');`);
+
+  run(`const result=tios.emit('evidence.responded',{response:{
+    schema:'hios.goal-evidence-response.v1',requestId:'req-stage-1e',source:'t-ios',target:'goals-ios',productId:'tios',
+    area:'Trading',phaseId:'phase-1',phaseName:'Stage 1',
+    requestedMetrics:['execution_errors'],deliveredMetrics:['execution_errors'],unavailableMetrics:[],
+    evidence:[{metric:'execution_errors',value:8,unit:'errors',sampleSize:8,evidenceFamily:'technical',details:{}}],
+    status:'fulfilled',respondedAt:'2026-10-04T16:34:09+02:00'
+  }},{requestId:'req-stage-1e'});`);
+  assert.equal(run('result.ok'),true);
+  assert.equal(run("JSON.parse(localStorage.getItem('hios_communication_last_signal_v1')).type"),'goal.reorientation.requested');
+  assert.equal(run("JSON.parse(localStorage.getItem('hios_communication_last_signal_v1')).source"),'h-ios');
+  assert.equal(run("JSON.parse(localStorage.getItem('hios_communication_last_signal_v1')).payload.request.requiresUserApproval"),true);
+  assert.equal(run("JSON.parse(localStorage.getItem('hios_communication_last_signal_v1')).payload.request.proposedAdjustment.kind"),'working-emphasis');
+  assert.equal(run("JSON.parse(localStorage.getItem('hios_communication_last_signal_v1')).payload.request.proposedAdjustment.preserveGoalStructure"),true);
+  assert.equal(run("JSON.parse(localStorage.getItem('hios_communication_last_signal_v1')).payload.request.evidenceBasis[0].value"),8);
+
+  run(`tios.emit('evidence.responded',{response:{
+    schema:'hios.goal-evidence-response.v1',requestId:'req-stage-1e',source:'t-ios',target:'goals-ios',productId:'tios',
+    area:'Trading',phaseId:'phase-1',phaseName:'Stage 1',
+    requestedMetrics:['execution_errors'],deliveredMetrics:['execution_errors'],unavailableMetrics:[],
+    evidence:[{metric:'execution_errors',value:8,unit:'errors',sampleSize:8,evidenceFamily:'technical',details:{}}],
+    status:'fulfilled',respondedAt:'2026-10-04T16:35:00+02:00'
+  }},{requestId:'req-stage-1e'});`);
+  assert.equal(run("HIOSConnectionLayer.connect('goals-ios').getPendingRequests().filter(row=>row.type==='goal.reorientation.requested').length"),1);
+});
+
+test('Stage 1E does not propose reorientation when execution errors are zero', () => {
+  const { run } = browser();
+  run(read('hios-connection-layer.js'));
+  run(`localStorage.setItem('hios_added_products_v1', JSON.stringify(['gios','tios']));
+    localStorage.setItem('hios_goal_evidence_requests_v1',JSON.stringify({tios:{
+      requestId:'req-zero',source:'goals-ios',targetProductId:'tios',area:'Trading',
+      phaseId:'phase-1',phaseName:'Stage 1',metrics:['execution_errors'],requestedAt:'2026-10-04T16:20:00+02:00'
+    }}));
+    const tios=HIOSConnectionLayer.connect('t-ios');`);
+  run(`tios.emit('evidence.responded',{response:{
+    schema:'hios.goal-evidence-response.v1',requestId:'req-zero',source:'t-ios',target:'goals-ios',productId:'tios',
+    area:'Trading',phaseId:'phase-1',phaseName:'Stage 1',
+    requestedMetrics:['execution_errors'],deliveredMetrics:['execution_errors'],unavailableMetrics:[],
+    evidence:[{metric:'execution_errors',value:0,unit:'errors',sampleSize:8,evidenceFamily:'technical',details:{}}],
+    status:'fulfilled',respondedAt:'2026-10-04T16:40:00+02:00'
+  }},{requestId:'req-zero'});`);
+  assert.equal(run("HIOSConnectionLayer.connect('goals-ios').getPendingRequests().some(row=>row.type==='goal.reorientation.requested')"),false);
+});
+
+test('Stage 1E G-IOS applies only the working emphasis after explicit acceptance', () => {
+  const { run } = browser();
+  run(read('hios-connection-layer.js'));
+  run(`localStorage.setItem('hios_added_products_v1', JSON.stringify(['gios','tios']));
+    const GIOS_REORIENTATION_REQUESTS_KEY='hios_goal_reorientation_requests_v1';
+    const GIOS_PROGRESS_MODELS_KEY='test-models';
+    const canonicalDomain=value=>value;
+    const activeProgressPhase=model=>model?.phases?.[0]||null;
+    const loadProgressModels=()=>JSON.parse(localStorage.getItem(GIOS_PROGRESS_MODELS_KEY)||'{}');
+    const saveProgressModels=value=>localStorage.setItem(GIOS_PROGRESS_MODELS_KEY,JSON.stringify(value));
+    const currentViewArea=()=> 'Trading';
+    const goalsBridge=HIOSConnectionLayer.connect('goals-ios');
+    const renderPersonalIntelligenceResponse=()=>{};
+    const renderProductEvidenceReceiver=()=>{};
+    const toast=()=>{};
+    localStorage.setItem(GIOS_PROGRESS_MODELS_KEY,JSON.stringify({Trading:{
+      name:'Trading Progress Model',activePhaseId:'phase-1',
+      phases:[{id:'phase-1',title:'Stage 1',evidence:['execution_errors']}]
+    }}));`);
+  const gios=read('g-ios.html');
+  run(gios.slice(gios.indexOf('function readGoalReorientations('), gios.indexOf('function renderGoalReorientation(')));
+
+  run(`const reorientationSignal=HIOSConnectionLayer.connect('h-ios').emit('goal.reorientation.requested',{request:{
+    schema:'hios.goal-reorientation-request.v1',reorientationId:'reorient-accept',source:'h-ios',target:'goals-ios',
+    area:'Trading',phaseId:'phase-1',phaseName:'Stage 1',createdAt:'2026-10-04T16:45:00+02:00',
+    requiresUserApproval:true,
+    evidenceBasis:[{sourceProductId:'tios',requestId:'req-1',responseSignalId:'response-1',metric:'execution_errors',value:8,unit:'errors',sampleSize:8,observedAt:'2026-10-04T16:34:09+02:00'}],
+    proposedAdjustment:{kind:'working-emphasis',code:'reduce_execution_errors',title:'Reduce execution errors before increasing pace',description:'Keep the current goal structure, but place extra working emphasis on reducing execution errors during Stage 1.',preserveGoalStructure:true,target:{area:'Trading',phaseId:'phase-1'}}
+  }}).signal;`);
+  assert.equal(run('receiveGoalReorientationRequest(reorientationSignal)'),true);
+  assert.equal(run("currentGoalReorientation('Trading').status"),'pending');
+  assert.equal(run('decideGoalReorientation(true)'),true);
+  assert.equal(run("JSON.parse(localStorage.getItem(GIOS_PROGRESS_MODELS_KEY)).Trading.phases[0].workingEmphasis.code"),'reduce_execution_errors');
+  assert.equal(run("JSON.parse(localStorage.getItem(GIOS_PROGRESS_MODELS_KEY)).Trading.phases[0].title"),'Stage 1');
+  assert.equal(run("currentGoalReorientation('Trading').status"),'accepted');
+  assert.equal(run("goalsBridge.getPendingRequests().some(row=>row.signalId===reorientationSignal.signalId)"),false);
 });

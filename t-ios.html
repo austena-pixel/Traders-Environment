@@ -5052,7 +5052,8 @@ function respondToGoalEvidenceRequest(reason='refresh'){
   return {...response,hiosSignalId:routed.signal.signalId};
 }
 window.TIOSGoalEvidenceDiagnostic=function(){
-  const signal=readHiosJson('hios_communication_last_signal_v1',null);
+  const pending=tiosHiosBridge.getPendingRequests();
+  const signal=pending.filter(item=>item?.source==='t-ios'&&item?.type==='evidence.responded').slice(-1)[0]||readHiosJson('hios_communication_last_signal_v1',null);
   return{
     request:currentTiosEvidenceRequest(),
     response:signal?.source==='t-ios'&&signal?.type==='evidence.responded'?signal.payload?.response||null:readHiosJson(TIOS_EVIDENCE_RESPONSES_KEY,{})?.tios||null

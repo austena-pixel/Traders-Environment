@@ -239,6 +239,19 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .pi-context-grid span{display:block;color:var(--muted);font-size:7.5px;text-transform:uppercase;letter-spacing:.06em}
 .pi-context-grid strong{display:block;margin-top:5px;font-size:13px}
 @media(max-width:900px){.pi-layout{grid-template-columns:1fr}}
+.pi-reorientation{margin-top:12px;padding:12px 14px;border:1px solid rgba(251,191,36,.28);border-radius:12px;background:rgba(251,191,36,.035)}
+.pi-reorientation[hidden]{display:none}
+.pi-reorientation-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pi-reorientation-head span{color:#f2c968;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+.pi-reorientation-head b{font-size:9px;color:#dce8f7}
+.pi-reorientation strong{display:block;margin-top:7px;font-size:11px;line-height:1.4}
+.pi-reorientation p{margin:6px 0 0;color:var(--muted);font-size:8.5px;line-height:1.5}
+.pi-reorientation-evidence{margin-top:7px;color:#9fb0c4;font-size:8px}
+.pi-reorientation-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:10px}
+.pi-reorientation-actions button{border:1px solid #2b4058;background:#0a1420;color:#dce8f7;border-radius:8px;padding:7px 10px;font-size:8px;font-weight:800}
+.pi-reorientation-actions button.primary{border-color:rgba(52,211,153,.36);background:rgba(52,211,153,.07);color:#8de9c7}
+.pi-reorientation.accepted{border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.035)}
+.pi-reorientation.accepted .pi-reorientation-head span{color:#72dfb6}
 
 
 /* ===== PERSONAL INTELLIGENCE — PRIMARY ATTENTION AREA ===== */
@@ -942,6 +955,19 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
         <div><span>Product evidence</span><strong id="piEvidenceCount">0</strong></div>
       </div>
     </div>
+    <div class="pi-reorientation" id="piReorientation" hidden>
+      <div class="pi-reorientation-head">
+        <span>H·IOS reorientation</span>
+        <b id="piReorientationState">Pending decision</b>
+      </div>
+      <strong id="piReorientationTitle">Working-plan adjustment</strong>
+      <p id="piReorientationDescription"></p>
+      <div class="pi-reorientation-evidence" id="piReorientationEvidence"></div>
+      <div class="pi-reorientation-actions" id="piReorientationActions">
+        <button type="button" id="piReorientationKeep">Keep current plan</button>
+        <button type="button" class="primary" id="piReorientationApply">Apply working emphasis</button>
+      </div>
+    </div>
   </section>
 
     <section class="hero overview-goal-architecture">
@@ -1244,6 +1270,7 @@ const PRODUCT_GOAL_EVIDENCE_KEY='hios_product_goal_evidence_v1';
 const GIOS_PROGRESS_MODELS_KEY='hios_gios_progress_models_v1';
 const GIOS_EVIDENCE_REQUESTS_KEY='hios_goal_evidence_requests_v1';
 const TIOS_EVIDENCE_RESPONSES_KEY='hios_goal_evidence_responses_v1';
+const GIOS_REORIENTATION_REQUESTS_KEY='hios_goal_reorientation_requests_v1';
 
 const PRODUCT_EVIDENCE_CATALOG={
  tios:[
@@ -1438,6 +1465,145 @@ function receiveTiosGoalEvidenceResponseSignal(signal){
  return true;
 }
 
+
+function readGoalReorientations(){
+ try{
+  const value=JSON.parse(localStorage.getItem(GIOS_REORIENTATION_REQUESTS_KEY)||'{}');
+  return value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+ }catch(error){return{}}
+}
+
+function currentGoalReorientation(area){
+ const canonical=canonicalDomain(area||'');
+ return Object.values(readGoalReorientations())
+  .filter(item=>canonicalDomain(item?.area||'')===canonical)
+  .sort((a,b)=>String(b?.createdAt||'').localeCompare(String(a?.createdAt||'')))[0]||null;
+}
+
+function validGoalReorientationRequest(request){
+ return !!(
+  request &&
+  request.schema==='hios.goal-reorientation-request.v1' &&
+  request.source==='h-ios' &&
+  request.target==='goals-ios' &&
+  typeof request.reorientationId==='string' && request.reorientationId.trim() &&
+  typeof request.area==='string' && request.area.trim() &&
+  request.requiresUserApproval===true &&
+  Array.isArray(request.evidenceBasis) && request.evidenceBasis.length &&
+  request.proposedAdjustment?.kind==='working-emphasis' &&
+  request.proposedAdjustment?.preserveGoalStructure===true
+ );
+}
+
+function receiveGoalReorientationRequest(signal){
+ const request=signal?.payload?.request;
+ if(signal?.source!=='h-ios'||signal?.type!=='goal.reorientation.requested'||!validGoalReorientationRequest(request))return false;
+ const all=readGoalReorientations();
+ const existing=all[request.reorientationId];
+ all[request.reorientationId]={
+  ...request,
+  hiosSignalId:signal.signalId,
+  status:['accepted','kept'].includes(existing?.status)?existing.status:'pending',
+  decidedAt:existing?.decidedAt||null
+ };
+ localStorage.setItem(GIOS_REORIENTATION_REQUESTS_KEY,JSON.stringify(all));
+ if(typeof renderPersonalIntelligenceResponse==='function')renderPersonalIntelligenceResponse();
+ return true;
+}
+
+function decideGoalReorientation(accept){
+ const area=currentViewArea();
+ const item=currentGoalReorientation(area);
+ if(!item||item.status!=='pending')return false;
+
+ const all=readGoalReorientations();
+ const stored=all[item.reorientationId];
+ if(!stored)return false;
+
+ if(accept){
+  const models=loadProgressModels();
+  const model=models[canonicalDomain(area)];
+  const phase=model?.phases?.find(p=>p.id===item.phaseId)||activeProgressPhase(model);
+  if(!model||!phase){
+   toast('The relevant progress stage is not available.');
+   return false;
+  }
+  phase.workingEmphasis={
+   reorientationId:item.reorientationId,
+   kind:'working-emphasis',
+   code:item.proposedAdjustment.code||null,
+   title:item.proposedAdjustment.title,
+   description:item.proposedAdjustment.description,
+   evidenceBasis:item.evidenceBasis.map(entry=>({...entry})),
+   appliedAt:new Date().toISOString(),
+   source:'h-ios'
+  };
+  model.lastReorientationId=item.reorientationId;
+  model.updatedAt=new Date().toISOString();
+  saveProgressModels(models);
+  stored.status='accepted';
+ }else{
+  stored.status='kept';
+ }
+
+ stored.decidedAt=new Date().toISOString();
+ all[item.reorientationId]=stored;
+ localStorage.setItem(GIOS_REORIENTATION_REQUESTS_KEY,JSON.stringify(all));
+
+ if(goalsBridge.acknowledgeRequest&&stored.hiosSignalId){
+  goalsBridge.acknowledgeRequest(stored.hiosSignalId,{
+   reorientationId:stored.reorientationId,
+   status:stored.status,
+   area:stored.area,
+   phaseId:stored.phaseId||null
+  });
+ }
+
+ renderPersonalIntelligenceResponse();
+ renderProductEvidenceReceiver();
+ toast(accept?'Working emphasis applied. Your goal structure was not changed.':'Current plan kept.');
+ return true;
+}
+
+function renderGoalReorientation(area){
+ const panel=document.getElementById('piReorientation');
+ if(!panel)return;
+ const item=area?currentGoalReorientation(area):null;
+ const model=area?progressModelForArea(area):null;
+ const phase=activeProgressPhase(model);
+ const activeEmphasis=phase?.workingEmphasis;
+
+ if(!item&&!activeEmphasis){
+  panel.hidden=true;
+  return;
+ }
+
+ panel.hidden=false;
+ panel.classList.toggle('accepted',item?.status==='accepted'||(!item&&!!activeEmphasis));
+ const state=document.getElementById('piReorientationState');
+ const title=document.getElementById('piReorientationTitle');
+ const description=document.getElementById('piReorientationDescription');
+ const evidence=document.getElementById('piReorientationEvidence');
+ const actions=document.getElementById('piReorientationActions');
+
+ if(item){
+  const basis=item.evidenceBasis?.[0]||null;
+  state.textContent=item.status==='accepted'?'Applied to working plan':item.status==='kept'?'Current plan kept':'Pending your decision';
+  title.textContent=item.proposedAdjustment?.title||'Working-plan adjustment';
+  description.textContent=item.proposedAdjustment?.description||'';
+  evidence.textContent=basis
+   ? `Evidence basis: ${evidenceLabel('tios',basis.metric)} = ${basis.value}${basis.unit?' '+basis.unit:''}${Number(basis.sampleSize)>0?' · '+basis.sampleSize+' records':''}.`
+   : 'Evidence basis recorded by H-IOS.';
+  actions.hidden=item.status!=='pending';
+  return;
+ }
+
+ state.textContent='Working emphasis active';
+ title.textContent=activeEmphasis.title||'Working-plan emphasis';
+ description.textContent=activeEmphasis.description||'';
+ evidence.textContent='Applied from a previously accepted H-IOS reorientation request.';
+ actions.hidden=true;
+}
 
 const PRODUCT_FOCUS_CATALOG={
  tios:{
@@ -2511,6 +2677,8 @@ $('#monthProgressStrip').addEventListener('click',e=>{
  monthlyViewDate=new Date(y,m-1,1);
  navigatePage('monthly');
 });
+$('#piReorientationApply').addEventListener('click',()=>decideGoalReorientation(true));
+$('#piReorientationKeep').addEventListener('click',()=>decideGoalReorientation(false));
 $('#monthProgressStrip').addEventListener('wheel',e=>{
  const strip=e.currentTarget;
  if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){
@@ -2525,7 +2693,7 @@ window.addEventListener('storage',e=>{
   renderConnectedProductShortcuts();
   return;
  }
- if([PRODUCT_GOAL_EVIDENCE_KEY,PRODUCT_FOCUS_LINKS_KEY,'hios_product_connection_status_v1',GIOS_PROGRESS_MODELS_KEY,GIOS_EVIDENCE_REQUESTS_KEY,TIOS_EVIDENCE_RESPONSES_KEY].includes(e.key)){
+ if([PRODUCT_GOAL_EVIDENCE_KEY,PRODUCT_FOCUS_LINKS_KEY,'hios_product_connection_status_v1',GIOS_PROGRESS_MODELS_KEY,GIOS_EVIDENCE_REQUESTS_KEY,TIOS_EVIDENCE_RESPONSES_KEY,GIOS_REORIENTATION_REQUESTS_KEY].includes(e.key)){
   productFocusLinks=loadProductFocusLinks();
   renderProductFocusSuggestions();
   renderConnectedProductShortcuts();
@@ -2539,12 +2707,16 @@ normalizeViewArea();
 if(selectedViewArea)selectRootForDomain(selectedViewArea);
 goalsBridge.subscribe(processHiosGoalRequest,{source:'h-ios',types:HIOS_GOAL_REQUEST_TYPES});
 goalsBridge.subscribe(receiveTiosGoalEvidenceResponseSignal,{source:'t-ios',types:['evidence.responded']});
+goalsBridge.subscribe(receiveGoalReorientationRequest,{source:'h-ios',types:['goal.reorientation.requested']});
 goalsBridge.getPendingRequests()
  .filter(signal=>signal?.source==='h-ios'&&HIOS_GOAL_REQUEST_TYPES.includes(signal?.type))
  .forEach(processHiosGoalRequest);
 goalsBridge.getPendingRequests()
  .filter(signal=>signal?.source==='t-ios'&&signal?.type==='evidence.responded')
  .forEach(receiveTiosGoalEvidenceResponseSignal);
+goalsBridge.getPendingRequests()
+ .filter(signal=>signal?.source==='h-ios'&&signal?.type==='goal.reorientation.requested')
+ .forEach(receiveGoalReorientationRequest);
 renderAll();
 syncGiosSidebar('overview');
 
@@ -2590,6 +2762,7 @@ function renderPersonalIntelligenceResponse(){
  const response=$('#piResponse');
  const note=$('#piResponseNote');
  if(!title||!response)return;
+ renderGoalReorientation(area);
 
  if(!area){
   title.textContent='Personal Intelligence Response';

@@ -14,7 +14,8 @@
     connectionState:'hios_connection_state_v1',
     requests:'hios_communication_requests_v1',
     products:'hios_added_products_v1',
-    evidenceRequests:'hios_goal_evidence_requests_v1'
+    evidenceRequests:'hios_goal_evidence_requests_v1',
+    reorientations:'hios_goal_reorientation_requests_v1'
   });
   const CHANNEL='hios-communication-centre-v1';
   const CONTRACT_VERSION=1;
@@ -28,7 +29,8 @@
     'calendar.item.created','calendar.item.updated','calendar.item.deleted',
     'task.calendar.remove.requested','goal.calendar.remove.requested',
     'task.delete.requested','goal.delete.requested',
-    'evidence.observed','evidence.requested','evidence.responded'
+    'evidence.observed','evidence.requested','evidence.responded',
+    'goal.reorientation.requested'
   ]);
   const sourceSet=new Set(SOURCES);
   const typeSet=new Set(TYPES);
@@ -101,7 +103,8 @@
     'h-ios':Object.freeze([
       'calendar.item.created','calendar.item.updated','calendar.item.deleted',
       'task.calendar.remove.requested','goal.calendar.remove.requested',
-      'task.delete.requested','goal.delete.requested'
+      'task.delete.requested','goal.delete.requested',
+      'goal.reorientation.requested'
     ]),
     't-ios':Object.freeze([
       'evidence.observed','evidence.responded'
@@ -290,6 +293,48 @@
     return true;
   }
 
+  function stage1ReorientationFromEvidenceResponse(signal){
+    const response=signal?.payload?.response;
+    if(signal?.type!=='evidence.responded'||response?.source!=='t-ios'||response?.target!=='goals-ios')return null;
+    const evidence=Array.isArray(response.evidence)?response.evidence:[];
+    const executionErrors=evidence.find(item=>item?.metric==='execution_errors'&&Number.isFinite(Number(item?.value)));
+    if(!executionErrors||Number(executionErrors.value)<=0)return null;
+
+    const reorientationId=`reorient_${response.requestId}_execution_errors`;
+    const store=contracts.safeParse(localStorage.getItem(contracts.KEYS.reorientations),{});
+    if(store&&typeof store==='object'&&!Array.isArray(store)&&store[reorientationId])return null;
+
+    return {
+      schema:'hios.goal-reorientation-request.v1',
+      reorientationId,
+      source:'h-ios',
+      target:'goals-ios',
+      area:response.area||'Trading',
+      phaseId:response.phaseId||null,
+      phaseName:response.phaseName||null,
+      createdAt:new Date().toISOString(),
+      requiresUserApproval:true,
+      evidenceBasis:[{
+        sourceProductId:'tios',
+        requestId:response.requestId,
+        responseSignalId:signal.signalId,
+        metric:'execution_errors',
+        value:Number(executionErrors.value),
+        unit:executionErrors.unit||'errors',
+        sampleSize:executionErrors.sampleSize??null,
+        observedAt:response.respondedAt
+      }],
+      proposedAdjustment:{
+        kind:'working-emphasis',
+        code:'reduce_execution_errors',
+        title:'Reduce execution errors before increasing pace',
+        description:`Keep the current goal structure, but place extra working emphasis on reducing execution errors during ${response.phaseName||'this stage'}.`,
+        preserveGoalStructure:true,
+        target:{area:response.area||'Trading',phaseId:response.phaseId||null}
+      }
+    };
+  }
+
   function route(signal){
     const validation=contracts.validateSignal(signal);
     const errors=[...validation.errors];
@@ -384,6 +429,34 @@
         }
       }
     }
+    if(validation.valid&&signal.type==='goal.reorientation.requested'){
+      const request=signal.payload?.request;
+      const evidenceBasis=Array.isArray(request?.evidenceBasis)?request.evidenceBasis:[];
+      const adjustment=request?.proposedAdjustment;
+      if(!request||typeof request!=='object'||Array.isArray(request)){
+        errors.push('Goal reorientation request must be an object.');
+      }else{
+        if(request.schema!=='hios.goal-reorientation-request.v1')errors.push('Unsupported goal reorientation schema.');
+        if(request.source!=='h-ios'||request.source!==signal.source)errors.push('Goal reorientation source must be H-IOS.');
+        if(request.target!=='goals-ios')errors.push('Goal reorientation target must be Goals-IOS.');
+        if(typeof request.reorientationId!=='string'||!request.reorientationId.trim())errors.push('Goal reorientationId is required.');
+        if(typeof request.area!=='string'||!request.area.trim())errors.push('Goal reorientation area is required.');
+        if(request.requiresUserApproval!==true)errors.push('Goal reorientation must require user approval.');
+        if(!request.createdAt||Number.isNaN(Date.parse(request.createdAt)))errors.push('Goal reorientation createdAt must be a valid timestamp.');
+        if(!evidenceBasis.length||evidenceBasis.some(item=>!item||typeof item!=='object'||!item.sourceProductId||!item.requestId||!item.metric)){
+          errors.push('Goal reorientation requires an explicit evidence basis.');
+        }
+        if(!adjustment||typeof adjustment!=='object'||Array.isArray(adjustment)){
+          errors.push('Goal reorientation proposedAdjustment is required.');
+        }else{
+          if(adjustment.kind!=='working-emphasis')errors.push('Stage 1E supports working-emphasis adjustments only.');
+          if(typeof adjustment.title!=='string'||!adjustment.title.trim())errors.push('Goal reorientation adjustment title is required.');
+          if(typeof adjustment.description!=='string'||!adjustment.description.trim())errors.push('Goal reorientation adjustment description is required.');
+          if(adjustment.preserveGoalStructure!==true)errors.push('Stage 1E reorientation must preserve the goal structure.');
+          if(adjustment.target?.area!==request.area)errors.push('Goal reorientation adjustment target must match the request area.');
+        }
+      }
+    }
     if(errors.length){
       log.append(signal,'rejected',errors);
       console.warn('H-IOS rejected a signal:',errors,signal);
@@ -394,6 +467,31 @@
     connectionState.touch(signal.source);
     queueRequest(signal);
     signalBus.publish(signal);
+
+    if(signal.type==='evidence.responded'){
+      const request=stage1ReorientationFromEvidenceResponse(signal);
+      if(request){
+        const generated=contracts.createSignal(
+          'h-ios',
+          'goal.reorientation.requested',
+          {request},
+          {responseSignalId:signal.signalId,requestId:request.evidenceBasis[0]?.requestId||null}
+        );
+        const generatedResult=route(generated);
+        if(generatedResult.ok){
+          const store=contracts.safeParse(localStorage.getItem(contracts.KEYS.reorientations),{});
+          const next=store&&typeof store==='object'&&!Array.isArray(store)?store:{};
+          if(!next[request.reorientationId]){
+            next[request.reorientationId]={
+              ...request,
+              hiosSignalId:generated.signalId,
+              status:'pending'
+            };
+            localStorage.setItem(contracts.KEYS.reorientations,JSON.stringify(next));
+          }
+        }
+      }
+    }
     return {ok:true,signal};
   }
 
