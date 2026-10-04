@@ -399,3 +399,40 @@ test('Stage 1E G-IOS applies only the working emphasis after explicit acceptance
   assert.equal(run("currentGoalReorientation('Trading').status"),'accepted');
   assert.equal(run("goalsBridge.getPendingRequests().some(row=>row.signalId===reorientationSignal.signalId)"),false);
 });
+
+
+test('Stage 1E refreshes a pending reorientation when execution evidence changes and withdraws it at zero', () => {
+  const { run } = browser();
+  run(read('hios-connection-layer.js'));
+  run(`localStorage.setItem('hios_added_products_v1', JSON.stringify(['gios','tios']));
+    localStorage.setItem('hios_goal_evidence_requests_v1',JSON.stringify({tios:{
+      schema:'hios.goal-evidence-request.v1',requestId:'req-stage-1e-refresh',source:'goals-ios',targetProductId:'tios',area:'Trading',
+      phaseId:'phase-1',phaseName:'Stage 1',metrics:['execution_errors'],requestedAt:'2026-10-04T16:20:00+02:00'
+    }}));
+    const tios=HIOSConnectionLayer.connect('t-ios');
+    const emitExecutionErrors=(value,respondedAt)=>tios.emit('evidence.responded',{response:{
+      schema:'hios.goal-evidence-response.v1',requestId:'req-stage-1e-refresh',source:'t-ios',target:'goals-ios',productId:'tios',
+      area:'Trading',phaseId:'phase-1',phaseName:'Stage 1',
+      requestedMetrics:['execution_errors'],deliveredMetrics:['execution_errors'],unavailableMetrics:[],
+      evidence:[{metric:'execution_errors',value,unit:'errors',sampleSize:8,evidenceFamily:'technical',details:{}}],
+      status:'fulfilled',respondedAt
+    }},{requestId:'req-stage-1e-refresh'});`);
+
+  run("emitExecutionErrors(8,'2026-10-04T16:34:09+02:00')");
+  assert.equal(run("JSON.parse(localStorage.getItem('hios_goal_reorientation_requests_v1'))['reorient_req-stage-1e-refresh_execution_errors'].evidenceBasis[0].value"),8);
+  const firstSignal=run("JSON.parse(localStorage.getItem('hios_goal_reorientation_requests_v1'))['reorient_req-stage-1e-refresh_execution_errors'].hiosSignalId");
+
+  run("emitExecutionErrors(6,'2026-10-04T16:36:00+02:00')");
+  assert.equal(run("JSON.parse(localStorage.getItem('hios_goal_reorientation_requests_v1'))['reorient_req-stage-1e-refresh_execution_errors'].evidenceBasis[0].value"),6);
+  assert.notEqual(run("JSON.parse(localStorage.getItem('hios_goal_reorientation_requests_v1'))['reorient_req-stage-1e-refresh_execution_errors'].hiosSignalId"),firstSignal);
+  assert.equal(run("HIOSConnectionLayer.connect('goals-ios').getPendingRequests().filter(row=>row.type==='goal.reorientation.requested').length"),1);
+
+  const refreshedSignal=run("JSON.parse(localStorage.getItem('hios_goal_reorientation_requests_v1'))['reorient_req-stage-1e-refresh_execution_errors'].hiosSignalId");
+  run("emitExecutionErrors(6,'2026-10-04T16:37:00+02:00')");
+  assert.equal(run("JSON.parse(localStorage.getItem('hios_goal_reorientation_requests_v1'))['reorient_req-stage-1e-refresh_execution_errors'].hiosSignalId"),refreshedSignal);
+  assert.equal(run("HIOSConnectionLayer.connect('goals-ios').getPendingRequests().filter(row=>row.type==='goal.reorientation.requested').length"),1);
+
+  run("emitExecutionErrors(0,'2026-10-04T16:38:00+02:00')");
+  assert.equal(run("Boolean(JSON.parse(localStorage.getItem('hios_goal_reorientation_requests_v1'))['reorient_req-stage-1e-refresh_execution_errors'])"),false);
+  assert.equal(run("HIOSConnectionLayer.connect('goals-ios').getPendingRequests().filter(row=>row.type==='goal.reorientation.requested').length"),0);
+});

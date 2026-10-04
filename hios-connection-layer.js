@@ -302,8 +302,23 @@
 
     const reorientationId=`reorient_${response.requestId}_execution_errors`;
     const store=contracts.safeParse(localStorage.getItem(contracts.KEYS.reorientations),{});
-    if(store&&typeof store==='object'&&!Array.isArray(store)&&store[reorientationId])return null;
+    const existing=store&&typeof store==='object'&&!Array.isArray(store)?store[reorientationId]||null:null;
+    if(existing&&existing.status&&existing.status!=='pending')return null;
 
+    const previousBasis=Array.isArray(existing?.evidenceBasis)
+      ? existing.evidenceBasis.find(item=>item?.metric==='execution_errors')||null
+      : null;
+    const nextValue=Number(executionErrors.value);
+    const nextSampleSize=executionErrors.sampleSize??null;
+    const nextUnit=executionErrors.unit||'errors';
+    if(
+      existing &&
+      Number(previousBasis?.value)===nextValue &&
+      (previousBasis?.sampleSize??null)===nextSampleSize &&
+      (previousBasis?.unit||'errors')===nextUnit
+    )return null;
+
+    const now=new Date().toISOString();
     return {
       schema:'hios.goal-reorientation-request.v1',
       reorientationId,
@@ -312,16 +327,17 @@
       area:response.area||'Trading',
       phaseId:response.phaseId||null,
       phaseName:response.phaseName||null,
-      createdAt:new Date().toISOString(),
+      createdAt:existing?.createdAt||now,
+      updatedAt:now,
       requiresUserApproval:true,
       evidenceBasis:[{
         sourceProductId:'tios',
         requestId:response.requestId,
         responseSignalId:signal.signalId,
         metric:'execution_errors',
-        value:Number(executionErrors.value),
-        unit:executionErrors.unit||'errors',
-        sampleSize:executionErrors.sampleSize??null,
+        value:nextValue,
+        unit:nextUnit,
+        sampleSize:nextSampleSize,
         observedAt:response.respondedAt
       }],
       proposedAdjustment:{
@@ -333,6 +349,31 @@
         target:{area:response.area||'Trading',phaseId:response.phaseId||null}
       }
     };
+  }
+
+  function withdrawClearedStage1Reorientation(signal){
+    const response=signal?.payload?.response;
+    if(signal?.type!=='evidence.responded'||response?.source!=='t-ios'||response?.target!=='goals-ios')return false;
+    const evidence=Array.isArray(response.evidence)?response.evidence:[];
+    const executionErrors=evidence.find(item=>item?.metric==='execution_errors'&&Number.isFinite(Number(item?.value)));
+    if(!executionErrors||Number(executionErrors.value)>0)return false;
+
+    const reorientationId=`reorient_${response.requestId}_execution_errors`;
+    const store=contracts.safeParse(localStorage.getItem(contracts.KEYS.reorientations),{});
+    if(!store||typeof store!=='object'||Array.isArray(store))return false;
+    const existing=store[reorientationId];
+    if(!existing||existing.status!=='pending')return false;
+
+    if(existing.hiosSignalId){
+      acknowledgeRequest(existing.hiosSignalId,{
+        reorientationId,
+        status:'withdrawn',
+        reason:'execution-errors-cleared'
+      });
+    }
+    delete store[reorientationId];
+    localStorage.setItem(contracts.KEYS.reorientations,JSON.stringify(store));
+    return true;
   }
 
   function route(signal){
@@ -469,8 +510,11 @@
     signalBus.publish(signal);
 
     if(signal.type==='evidence.responded'){
+      withdrawClearedStage1Reorientation(signal);
       const request=stage1ReorientationFromEvidenceResponse(signal);
       if(request){
+        const before=contracts.safeParse(localStorage.getItem(contracts.KEYS.reorientations),{});
+        const existing=before&&typeof before==='object'&&!Array.isArray(before)?before[request.reorientationId]||null:null;
         const generated=contracts.createSignal(
           'h-ios',
           'goal.reorientation.requested',
@@ -479,16 +523,21 @@
         );
         const generatedResult=route(generated);
         if(generatedResult.ok){
+          if(existing?.status==='pending'&&existing.hiosSignalId&&existing.hiosSignalId!==generated.signalId){
+            acknowledgeRequest(existing.hiosSignalId,{
+              reorientationId:request.reorientationId,
+              status:'superseded',
+              reason:'newer-execution-evidence'
+            });
+          }
           const store=contracts.safeParse(localStorage.getItem(contracts.KEYS.reorientations),{});
           const next=store&&typeof store==='object'&&!Array.isArray(store)?store:{};
-          if(!next[request.reorientationId]){
-            next[request.reorientationId]={
-              ...request,
-              hiosSignalId:generated.signalId,
-              status:'pending'
-            };
-            localStorage.setItem(contracts.KEYS.reorientations,JSON.stringify(next));
-          }
+          next[request.reorientationId]={
+            ...request,
+            hiosSignalId:generated.signalId,
+            status:'pending'
+          };
+          localStorage.setItem(contracts.KEYS.reorientations,JSON.stringify(next));
         }
       }
     }

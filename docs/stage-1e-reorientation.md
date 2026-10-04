@@ -38,9 +38,9 @@ specialized evidence
 
 A meaningful plan adjustment is never applied just because evidence exists. The H-IOS proposal remains pending until the user explicitly accepts it. Rejecting/keeping the current plan leaves the progress model unchanged.
 
-## Duplicate safeguard
+## Duplicate and freshness safeguard
 
-For one evidence request, H-IOS creates at most one `execution_errors` reorientation proposal. Repeated T-IOS refreshes for the same request do not create repeated proposals.
+For one evidence request, H-IOS keeps at most one pending `execution_errors` reorientation proposal. If T-IOS sends newer execution evidence for that same request, H-IOS refreshes the pending proposal's evidence basis instead of leaving the old value frozen or creating a duplicate card. If refreshed execution errors reach zero before the user decides, the pending proposal is withdrawn.
 
 ## Deliberately unchanged
 
