@@ -211,18 +211,17 @@ test('Stage 1C routes only selected G-IOS evidence metrics through H-IOS to T-IO
   assert.equal(run("hiosBridge.getPendingRequests().some(row=>row.signalId===routedSignal.signalId)"), false);
 
   run(`const currentUser={id:'00000000-0000-4000-8000-000000000001'};
-    const publishedMetrics=[];
+    const tradingAccount={id:'test-account'};
     const tiosRequestedEvidenceMetric=metric=>({available:true,value:metric==='playbook_adherence'?80:90,unit:'%'});
-    const latestPublishedGoalEvidence=()=>null;
-    const sameGoalEvidenceSnapshot=()=>false;
-    const publishTiosSignal=(signal,metric)=>{publishedMetrics.push(metric);return{}};
     const tiosEvidenceFamily=metric=>metric==='discipline_score'?'psychological':'technical';
-    const setTiosConnectionStatus=()=>{};`);
+    const setTiosConnectionStatus=()=>{};
+    const tiosHiosBridge=HIOSConnectionLayer.connect('t-ios');`);
   run(tiosSlice(read('t-ios.html'),'function currentTiosEvidenceRequest()','function roundEvidence('));
   run(tiosSlice(read('t-ios.html'),"function respondToGoalEvidenceRequest(reason='refresh')",'window.TIOSGoalEvidenceDiagnostic'));
-  run("respondToGoalEvidenceRequest('stage_1c_test')");
-  assert.deepEqual([...run('publishedMetrics')], ['playbook_adherence','discipline_score']);
-  assert.deepEqual([...run("JSON.parse(localStorage.getItem('test-responses')).tios.requestedMetrics")], ['playbook_adherence','discipline_score']);
+  run("const routedResponse=respondToGoalEvidenceRequest('stage_1c_test')");
+  assert.deepEqual([...run('routedResponse.requestedMetrics')], ['playbook_adherence','discipline_score']);
+  assert.deepEqual([...run('routedResponse.deliveredMetrics')], ['playbook_adherence','discipline_score']);
+  assert.equal(run("JSON.parse(localStorage.getItem('hios_communication_last_signal_v1')).type"), 'evidence.responded');
 });
 
 test('Stage 1C does not create a T-IOS request with no selected metrics or a disconnected target', () => {
@@ -244,4 +243,67 @@ test('Stage 1C does not create a T-IOS request with no selected metrics or a dis
   assert.equal(run("publishGoalEvidenceRequest('Trading',{phases:[{id:'p2',title:'P2',evidence:['playbook_adherence']}]})"), null);
   assert.equal(run("localStorage.getItem('test-requests')"), null);
   assert.match(run("JSON.parse(localStorage.getItem('hios_communication_log_v1')).at(-1).errors.join(' ')"), /disconnected/);
+});
+
+
+test('Stage 1D routes T-IOS response through H-IOS and G-IOS applies it once', () => {
+  const { run } = browser();
+  run(read('hios-connection-layer.js'));
+  run(`localStorage.setItem('hios_added_products_v1', JSON.stringify(['gios','tios']));
+    const GIOS_EVIDENCE_REQUESTS_KEY='hios_goal_evidence_requests_v1';
+    const TIOS_EVIDENCE_RESPONSES_KEY='test-responses';
+    const PRODUCT_GOAL_EVIDENCE_KEY='test-goal-evidence';
+    const HIOS_PRODUCT_STATUS_KEY='test-status';
+    const request={requestId:'req-stage-1d',schema:'hios.goal-evidence-request.v1',source:'goals-ios',targetProductId:'tios',area:'Trading',modelName:'Trading Progress Model',phaseId:'phase-1',phaseName:'Stage 1',metrics:['execution_errors'],metricGroups:{technical:['execution_errors'],psychological:[],general:[]},requestedAt:'2026-10-04T16:20:00+02:00',status:'routed'};
+    localStorage.setItem(GIOS_EVIDENCE_REQUESTS_KEY,JSON.stringify({tios:request}));
+    const readHiosJson=(key,fallback)=>JSON.parse(localStorage.getItem(key)||'null')??fallback;
+    const writeHiosJson=(key,value)=>localStorage.setItem(key,JSON.stringify(value));
+    const currentUser={id:'00000000-0000-4000-8000-000000000001'};
+    const tradingAccount={id:'test-account'};
+    const tiosRequestedEvidenceMetric=metric=>metric==='execution_errors'?{available:true,value:3,unit:'errors',sampleSize:2,details:{checks:8}}:{available:false,reason:'not requested'};
+    const tiosEvidenceFamily=()=> 'technical';
+    const setTiosConnectionStatus=()=>{};
+    const tiosHiosBridge=HIOSConnectionLayer.connect('t-ios');`);
+  const tios=read('t-ios.html');
+  run(tiosSlice(tios,'function currentTiosEvidenceRequest()','function roundEvidence('));
+  run(tiosSlice(tios,"function respondToGoalEvidenceRequest(reason='refresh')",'window.TIOSGoalEvidenceDiagnostic'));
+  run("const response=respondToGoalEvidenceRequest('stage_1d_test')");
+  assert.equal(run('response.status'),'fulfilled');
+  assert.deepEqual([...run('response.deliveredMetrics')],['execution_errors']);
+  assert.equal(run("JSON.parse(localStorage.getItem('test-goal-evidence')||'null')"),null);
+  assert.equal(run("JSON.parse(localStorage.getItem('test-responses')||'null')"),null);
+  assert.equal(run("JSON.parse(localStorage.getItem('hios_communication_last_signal_v1')).type"),'evidence.responded');
+  assert.equal(run("HIOSConnectionLayer.connect('goals-ios').getPendingRequests().some(row=>row.type==='evidence.responded')"),true);
+
+  run(`const goalsBridge=HIOSConnectionLayer.connect('goals-ios');
+    const evidenceFamily=()=> 'technical';
+    const renderProductEvidenceReceiver=()=>{};
+    const renderPersonalIntelligenceResponse=()=>{};`);
+  const gios=read('g-ios.html');
+  run(gios.slice(gios.indexOf('function validTiosEvidenceResponse('), gios.indexOf('const PRODUCT_FOCUS_CATALOG')));
+  run("const responseSignal=JSON.parse(localStorage.getItem('hios_communication_last_signal_v1')); receiveTiosGoalEvidenceResponseSignal(responseSignal)");
+  assert.equal(run("JSON.parse(localStorage.getItem('test-responses')).tios.status"),'fulfilled');
+  assert.equal(run("JSON.parse(localStorage.getItem(GIOS_EVIDENCE_REQUESTS_KEY)).tios.status"),'fulfilled');
+  assert.equal(run("JSON.parse(localStorage.getItem('test-goal-evidence')).tios.length"),1);
+  assert.equal(run("JSON.parse(localStorage.getItem('test-goal-evidence')).tios[0].metric"),'execution_errors');
+  assert.equal(run("JSON.parse(localStorage.getItem('test-goal-evidence')).tios[0].value"),3);
+  assert.equal(run("HIOSConnectionLayer.connect('goals-ios').getPendingRequests().some(row=>row.type==='evidence.responded')"),false);
+  run("receiveTiosGoalEvidenceResponseSignal(responseSignal)");
+  assert.equal(run("JSON.parse(localStorage.getItem('test-goal-evidence')).tios.length"),1);
+});
+
+test('Stage 1D rejects a T-IOS response that exceeds the selected request scope', () => {
+  const { run } = browser();
+  run(read('hios-connection-layer.js'));
+  run(`localStorage.setItem('hios_added_products_v1', JSON.stringify(['gios','tios']));
+    localStorage.setItem('hios_goal_evidence_requests_v1',JSON.stringify({tios:{requestId:'req-scope',metrics:['execution_errors']}}));
+    const tiosHiosBridge=HIOSConnectionLayer.connect('t-ios');`);
+  run(`const bad=tiosHiosBridge.emit('evidence.responded',{response:{
+    schema:'hios.goal-evidence-response.v1',requestId:'req-scope',source:'t-ios',target:'goals-ios',productId:'tios',
+    requestedMetrics:['execution_errors'],deliveredMetrics:['execution_errors','discipline_score'],
+    unavailableMetrics:[],evidence:[{metric:'execution_errors',value:1},{metric:'discipline_score',value:90}],
+    status:'fulfilled',respondedAt:'2026-10-04T16:30:00+02:00'
+  }},{requestId:'req-scope'});`);
+  assert.equal(run('bad.ok'),false);
+  assert.match(run("bad.errors.join(' ')"),/requested metric scope|deliver every requested metric/);
 });

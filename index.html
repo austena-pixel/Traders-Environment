@@ -2781,6 +2781,7 @@ const HIOS_RECEIPT_KEY='hios_signal_receipts_v1';
 const HIOS_GOAL_EVIDENCE_KEY='hios_product_goal_evidence_v1';
 const GIOS_EVIDENCE_REQUESTS_KEY='hios_goal_evidence_requests_v1';
 const HIOS_EVIDENCE_REQUEST_RECEIPTS_KEY='hios_goal_evidence_request_receipts_v1';
+const HIOS_EVIDENCE_RESPONSE_RECEIPTS_KEY='hios_goal_evidence_response_receipts_v1';
 const HIOS_STRUCTURED_EVIDENCE_BUS_KEY='hios_structured_evidence_bus_v1';
 const HIOS_VERIFIED_EVIDENCE_KEY='hios_verified_evidence_v1';
 const HIOS_STRUCTURED_EVIDENCE_RECEIPTS_KEY='hios_structured_evidence_receipts_v1';
@@ -2861,6 +2862,33 @@ function receiveGoalEvidenceRequestSignal(signal){
   }
   return result;
 }
+function receiveTiosGoalEvidenceResponseReceipt(signal){
+  const response=signal?.payload?.response;
+  if(
+    signal?.source!=='t-ios' ||
+    signal?.type!=='evidence.responded' ||
+    response?.schema!=='hios.goal-evidence-response.v1' ||
+    response?.productId!=='tios' ||
+    response?.target!=='goals-ios'
+  )return false;
+  const requests=readHiosEcosystemJson(GIOS_EVIDENCE_REQUESTS_KEY,{});
+  if(requests?.tios?.requestId!==response.requestId)return false;
+  const receipts=readHiosEcosystemJson(HIOS_EVIDENCE_RESPONSE_RECEIPTS_KEY,{});
+  if(receipts[signal.signalId])return true;
+  receipts[signal.signalId]={
+    signalId:signal.signalId,
+    requestId:response.requestId,
+    productId:'tios',
+    status:response.status,
+    deliveredMetrics:[...(response.deliveredMetrics||[])],
+    receivedAt:new Date().toISOString(),
+    verified:true,
+    verifiedBy:'h-ios'
+  };
+  writeHiosEcosystemJson(HIOS_EVIDENCE_RESPONSE_RECEIPTS_KEY,receipts);
+  return true;
+}
+
 function hiosGoalEvidenceDiagnostic(productId='tios'){
   receiveGoalEvidenceRequests();
   const request=readHiosEcosystemJson(GIOS_EVIDENCE_REQUESTS_KEY,{})?.[productId]||null;
@@ -3287,9 +3315,16 @@ hiosBridge.subscribe(receiveGoalEvidenceRequestSignal,{
   source:'goals-ios',
   types:['evidence.requested']
 });
+hiosBridge.subscribe(receiveTiosGoalEvidenceResponseReceipt,{
+  source:'t-ios',
+  types:['evidence.responded']
+});
 hiosBridge.getPendingRequests()
   .filter(signal=>signal?.source==='goals-ios'&&signal?.type==='evidence.requested')
   .forEach(receiveGoalEvidenceRequestSignal);
+hiosBridge.getPendingRequests()
+  .filter(signal=>signal?.source==='t-ios'&&signal?.type==='evidence.responded')
+  .forEach(receiveTiosGoalEvidenceResponseReceipt);
 
 function pendingGoalRequests(){
   return hiosBridge.getPendingRequests().filter(request=>

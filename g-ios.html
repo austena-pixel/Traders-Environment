@@ -1348,6 +1348,96 @@ function currentEvidenceRequest(area){
  try{return (JSON.parse(localStorage.getItem(GIOS_EVIDENCE_REQUESTS_KEY)||'{}')||{})[link.productId]||null}catch(e){return null}
 }
 
+function validTiosEvidenceResponse(response,request){
+ if(!response||typeof response!=='object'||Array.isArray(response)||!request)return false;
+ if(response.schema!=='hios.goal-evidence-response.v1'||response.source!=='t-ios'||response.target!=='goals-ios'||response.productId!=='tios')return false;
+ if(response.requestId!==request.requestId||!Array.isArray(response.requestedMetrics)||!Array.isArray(request.metrics))return false;
+ if(response.requestedMetrics.length!==request.metrics.length||response.requestedMetrics.some((metric,index)=>metric!==request.metrics[index]))return false;
+ const requested=new Set(request.metrics);
+ const delivered=Array.isArray(response.deliveredMetrics)?response.deliveredMetrics:[];
+ const unavailable=Array.isArray(response.unavailableMetrics)?response.unavailableMetrics:[];
+ const evidence=Array.isArray(response.evidence)?response.evidence:[];
+ if(delivered.some(metric=>!requested.has(metric))||unavailable.some(item=>!requested.has(item?.metric)))return false;
+ if(evidence.length!==delivered.length||evidence.some(item=>!delivered.includes(item?.metric)))return false;
+ return ['fulfilled','partial','unavailable'].includes(response.status);
+}
+
+function receiveTiosGoalEvidenceResponseSignal(signal){
+ if(signal?.source!=='t-ios'||signal?.type!=='evidence.responded')return false;
+ let requests={};try{requests=JSON.parse(localStorage.getItem(GIOS_EVIDENCE_REQUESTS_KEY)||'{}')||{}}catch(error){}
+ const request=requests?.tios||null;
+ const response=signal?.payload?.response;
+ if(!validTiosEvidenceResponse(response,request))return false;
+
+ let responses={};try{responses=JSON.parse(localStorage.getItem(TIOS_EVIDENCE_RESPONSES_KEY)||'{}')||{}}catch(error){}
+ if(responses?.tios?.hiosSignalId===signal.signalId){
+  if(goalsBridge.acknowledgeRequest)goalsBridge.acknowledgeRequest(signal.signalId,{requestId:response.requestId,status:'received-by-goals-ios'});
+  return true;
+ }
+
+ const now=new Date().toISOString();
+ const verifiedResponse={
+  ...response,
+  hiosSignalId:signal.signalId,
+  hiosRoutedAt:signal.timestamp||now,
+  receivedByGoalsAt:now,
+  verifiedBy:'hios-communication-centre'
+ };
+ responses.tios=verifiedResponse;
+ localStorage.setItem(TIOS_EVIDENCE_RESPONSES_KEY,JSON.stringify(responses));
+
+ requests.tios={
+  ...request,
+  status:response.status,
+  respondedAt:response.respondedAt,
+  deliveredMetrics:[...(response.deliveredMetrics||[])],
+  unavailableMetrics:[...(response.unavailableMetrics||[])],
+  hiosResponseSignalId:signal.signalId,
+  hiosResponseReceivedAt:now
+ };
+ localStorage.setItem(GIOS_EVIDENCE_REQUESTS_KEY,JSON.stringify(requests));
+
+ let store={};try{store=JSON.parse(localStorage.getItem(PRODUCT_GOAL_EVIDENCE_KEY)||'{}')||{}}catch(error){}
+ const existing=Array.isArray(store.tios)?store.tios:[];
+ const newRows=(response.evidence||[]).map(item=>({
+  id:`${signal.signalId}:${item.metric}`,
+  schema:'hios.goal-evidence.v1',
+  productId:'tios',
+  domain:'trading',
+  signal:'goal_evidence_response',
+  metric:item.metric,
+  value:item.value,
+  timestamp:response.respondedAt,
+  source:'t-ios',
+  accountId:response.accountId||null,
+  details:{
+   requestId:response.requestId,
+   area:response.area||'Trading',
+   modelName:response.modelName||null,
+   phaseId:response.phaseId||null,
+   phaseName:response.phaseName||null,
+   requestedBy:'goals-ios',
+   responseReason:response.reason||null,
+   evidenceFamily:item.evidenceFamily||evidenceFamily('tios',item.metric),
+   unit:item.unit||null,
+   sampleSize:item.sampleSize??null,
+   available:true,
+   responseSignalId:signal.signalId,
+   ...(item.details&&typeof item.details==='object'?item.details:{})
+  }
+ }));
+ const existingIds=new Set(existing.map(row=>row?.id).filter(Boolean));
+ store.tios=existing.concat(newRows.filter(row=>!existingIds.has(row.id))).slice(-300);
+ localStorage.setItem(PRODUCT_GOAL_EVIDENCE_KEY,JSON.stringify(store));
+
+ if(goalsBridge.acknowledgeRequest){
+  goalsBridge.acknowledgeRequest(signal.signalId,{requestId:response.requestId,status:'received-by-goals-ios'});
+ }
+ if(typeof renderProductEvidenceReceiver==='function')renderProductEvidenceReceiver();
+ if(typeof renderPersonalIntelligenceResponse==='function')renderPersonalIntelligenceResponse();
+ return true;
+}
+
 
 const PRODUCT_FOCUS_CATALOG={
  tios:{
@@ -2448,7 +2538,13 @@ loadGoals();
 normalizeViewArea();
 if(selectedViewArea)selectRootForDomain(selectedViewArea);
 goalsBridge.subscribe(processHiosGoalRequest,{source:'h-ios',types:HIOS_GOAL_REQUEST_TYPES});
-goalsBridge.getPendingRequests().forEach(processHiosGoalRequest);
+goalsBridge.subscribe(receiveTiosGoalEvidenceResponseSignal,{source:'t-ios',types:['evidence.responded']});
+goalsBridge.getPendingRequests()
+ .filter(signal=>signal?.source==='h-ios'&&HIOS_GOAL_REQUEST_TYPES.includes(signal?.type))
+ .forEach(processHiosGoalRequest);
+goalsBridge.getPendingRequests()
+ .filter(signal=>signal?.source==='t-ios'&&signal?.type==='evidence.responded')
+ .forEach(receiveTiosGoalEvidenceResponseSignal);
 renderAll();
 syncGiosSidebar('overview');
 

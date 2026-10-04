@@ -13,7 +13,8 @@
     log:'hios_communication_log_v1',
     connectionState:'hios_connection_state_v1',
     requests:'hios_communication_requests_v1',
-    products:'hios_added_products_v1'
+    products:'hios_added_products_v1',
+    evidenceRequests:'hios_goal_evidence_requests_v1'
   });
   const CHANNEL='hios-communication-centre-v1';
   const CONTRACT_VERSION=1;
@@ -27,7 +28,7 @@
     'calendar.item.created','calendar.item.updated','calendar.item.deleted',
     'task.calendar.remove.requested','goal.calendar.remove.requested',
     'task.delete.requested','goal.delete.requested',
-    'evidence.observed','evidence.requested'
+    'evidence.observed','evidence.requested','evidence.responded'
   ]);
   const sourceSet=new Set(SOURCES);
   const typeSet=new Set(TYPES);
@@ -103,7 +104,7 @@
       'task.delete.requested','goal.delete.requested'
     ]),
     't-ios':Object.freeze([
-      'evidence.observed'
+      'evidence.observed','evidence.responded'
     ])
   });
   const permissionSets=Object.fromEntries(
@@ -262,7 +263,8 @@
   }
 
   function queueRequest(signal){
-    if(!String(signal?.type||'').endsWith('.requested'))return;
+    const type=String(signal?.type||'');
+    if(!type.endsWith('.requested')&&type!=='evidence.responded')return;
     const requests=readRequests();
     if(requests.some(request=>request.signalId===signal.signalId))return;
     requests.push({...signal,status:'pending'});
@@ -328,6 +330,57 @@
         if(signal.meta?.targetProductId&&signal.meta.targetProductId!==request.targetProductId)errors.push('Evidence request target does not match routing metadata.');
         if(request.targetProductId&&!connectionState.isProductEnabled(request.targetProductId)){
           errors.push(`Target product ${request.targetProductId} is disconnected from H-IOS.`);
+        }
+      }
+    }
+    if(validation.valid&&signal.type==='evidence.responded'){
+      const response=signal.payload?.response;
+      const responseIsObject=response&&typeof response==='object'&&!Array.isArray(response);
+      if(!responseIsObject){
+        errors.push('Evidence response must be an object.');
+      }else{
+        const requested=Array.isArray(response.requestedMetrics)?response.requestedMetrics:[];
+        const delivered=Array.isArray(response.deliveredMetrics)?response.deliveredMetrics:[];
+        const unavailable=Array.isArray(response.unavailableMetrics)?response.unavailableMetrics:[];
+        const evidence=Array.isArray(response.evidence)?response.evidence:[];
+        const unavailableMetrics=unavailable.map(item=>item?.metric);
+        const requestedSet=new Set(requested);
+        const deliveredSet=new Set(delivered);
+        const unavailableSet=new Set(unavailableMetrics);
+        if(response.schema!=='hios.goal-evidence-response.v1')errors.push('Unsupported evidence response schema.');
+        if(response.source!=='t-ios'||response.source!==signal.source)errors.push('Evidence response source must be T-IOS.');
+        if(response.target!=='goals-ios'||response.productId!=='tios')errors.push('Evidence response target/product is invalid.');
+        if(typeof response.requestId!=='string'||!response.requestId.trim())errors.push('Evidence response requestId is required.');
+        if(!requested.length||requested.some(metric=>typeof metric!=='string'||!metric.trim())||requestedSet.size!==requested.length){
+          errors.push('Evidence response requestedMetrics must be unique non-empty names.');
+        }
+        if(delivered.some(metric=>!requestedSet.has(metric))||deliveredSet.size!==delivered.length){
+          errors.push('Delivered evidence must stay inside the requested metric scope.');
+        }
+        if(unavailableMetrics.some(metric=>typeof metric!=='string'||!requestedSet.has(metric))||unavailableSet.size!==unavailableMetrics.length){
+          errors.push('Unavailable evidence must stay inside the requested metric scope.');
+        }
+        if(delivered.some(metric=>unavailableSet.has(metric)))errors.push('A metric cannot be both delivered and unavailable.');
+        if(evidence.length!==delivered.length||evidence.some(item=>!item||typeof item!=='object'||!deliveredSet.has(item.metric))){
+          errors.push('Evidence payload must match deliveredMetrics exactly.');
+        }
+        if(new Set(evidence.map(item=>item?.metric)).size!==evidence.length)errors.push('Evidence payload metrics must be unique.');
+        if(!['fulfilled','partial','unavailable'].includes(response.status))errors.push('Evidence response status is invalid.');
+        if(response.status==='fulfilled'&&(delivered.length!==requested.length||unavailable.length))errors.push('Fulfilled response must deliver every requested metric.');
+        if(response.status==='partial'&&(!delivered.length||!unavailable.length))errors.push('Partial response must contain delivered and unavailable metrics.');
+        if(response.status==='unavailable'&&(delivered.length||unavailable.length!==requested.length))errors.push('Unavailable response must mark every requested metric unavailable.');
+        if(!response.respondedAt||Number.isNaN(Date.parse(response.respondedAt)))errors.push('Evidence response respondedAt must be a valid timestamp.');
+        if(signal.meta?.requestId&&signal.meta.requestId!==response.requestId)errors.push('Evidence response request does not match routing metadata.');
+
+        const requests=contracts.safeParse(localStorage.getItem(contracts.KEYS.evidenceRequests),{});
+        const active=requests&&typeof requests==='object'&&!Array.isArray(requests)?requests.tios:null;
+        if(!active||active.requestId!==response.requestId){
+          errors.push('Evidence response does not match the active H-IOS request.');
+        }else{
+          const activeMetrics=Array.isArray(active.metrics)?active.metrics:[];
+          if(activeMetrics.length!==requested.length||activeMetrics.some((metric,index)=>metric!==requested[index])){
+            errors.push('Evidence response requestedMetrics do not match the active request.');
+          }
         }
       }
     }

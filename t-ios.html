@@ -4975,24 +4975,89 @@ function latestPublishedGoalEvidence(requestId,metric){
     .sort((a,b)=>String(b.timestamp||'').localeCompare(String(a.timestamp||'')))[0]||null;
 }
 function respondToGoalEvidenceRequest(reason='refresh'){
-  if(!currentUser)return null;const request=currentTiosEvidenceRequest();if(!request)return null;
-  const prior=readHiosJson(TIOS_EVIDENCE_RESPONSES_KEY,{});const delivered=[],unavailable=[];
+  if(!currentUser)return null;
+  const request=currentTiosEvidenceRequest();
+  if(!request)return null;
+
+  const delivered=[];
+  const unavailable=[];
+  const evidence=[];
+
   request.metrics.forEach(metric=>{
     const result=tiosRequestedEvidenceMetric(metric);
-    if(!result.available){unavailable.push({metric,reason:result.reason||'Unavailable'});return}
-    const previous=latestPublishedGoalEvidence(request.requestId,metric);
-    if(!sameGoalEvidenceSnapshot(previous,result)){
-      publishTiosSignal('goal_evidence_response',metric,result.value,{requestId:request.requestId,area:request.area||'Trading',modelName:request.modelName||null,phaseId:request.phaseId||null,phaseName:request.phaseName||null,requestedBy:'goals-ios',responseReason:reason,evidenceFamily:tiosEvidenceFamily(metric),unit:result.unit||null,sampleSize:result.sampleSize??null,available:true,...(result.details||{})});
+    if(!result.available){
+      unavailable.push({metric,reason:result.reason||'Unavailable'});
+      return;
     }
-    delivered.push(metric)
+    delivered.push(metric);
+    evidence.push({
+      metric,
+      value:result.value,
+      unit:result.unit||null,
+      sampleSize:result.sampleSize??null,
+      evidenceFamily:tiosEvidenceFamily(metric),
+      details:result.details&&typeof result.details==='object'?{...result.details}:{}
+    });
   });
-  const response={schema:'hios.goal-evidence-response.v1',requestId:request.requestId,source:'t-ios',target:'goals-ios',productId:'tios',area:request.area||'Trading',phaseId:request.phaseId||null,phaseName:request.phaseName||null,requestedMetrics:[...request.metrics],requestedMetricGroups:request.metricGroups||null,deliveredMetrics:delivered,deliveredMetricGroups:{technical:delivered.filter(metric=>tiosEvidenceFamily(metric)==='technical'),psychological:delivered.filter(metric=>tiosEvidenceFamily(metric)==='psychological')},unavailableMetrics:unavailable,status:unavailable.length?(delivered.length?'partial':'unavailable'):'fulfilled',respondedAt:new Date().toISOString(),reason};
-  prior.tios=response;writeHiosJson(TIOS_EVIDENCE_RESPONSES_KEY,prior);
-  const requests=readHiosJson(GIOS_EVIDENCE_REQUESTS_KEY,{});if(requests.tios?.requestId===request.requestId){requests.tios={...requests.tios,status:response.status,tiosReceivedAt:requests.tios.tiosReceivedAt||new Date().toISOString(),respondedAt:response.respondedAt,deliveredMetrics:[...delivered],unavailableMetrics:[...unavailable]};writeHiosJson(GIOS_EVIDENCE_REQUESTS_KEY,requests)}
-  setTiosConnectionStatus({goalEvidenceRequestId:request.requestId,goalEvidenceResponseStatus:response.status,goalEvidenceRespondedAt:response.respondedAt,goalEvidenceDelivered:[...delivered]});
-  window.dispatchEvent(new CustomEvent('hios:goal-evidence-response',{detail:response}));return response;
+
+  const response={
+    schema:'hios.goal-evidence-response.v1',
+    requestId:request.requestId,
+    source:'t-ios',
+    target:'goals-ios',
+    productId:'tios',
+    area:request.area||'Trading',
+    modelName:request.modelName||null,
+    phaseId:request.phaseId||null,
+    phaseName:request.phaseName||null,
+    requestedMetrics:[...request.metrics],
+    requestedMetricGroups:request.metricGroups||null,
+    evidence,
+    deliveredMetrics:delivered,
+    deliveredMetricGroups:{
+      technical:delivered.filter(metric=>tiosEvidenceFamily(metric)==='technical'),
+      psychological:delivered.filter(metric=>tiosEvidenceFamily(metric)==='psychological')
+    },
+    unavailableMetrics:unavailable,
+    status:unavailable.length?(delivered.length?'partial':'unavailable'):'fulfilled',
+    respondedAt:new Date().toISOString(),
+    reason,
+    userId:currentUser.id,
+    accountId:tradingAccount?.id||null
+  };
+
+  const routed=tiosHiosBridge.emit(
+    'evidence.responded',
+    {response},
+    {requestId:request.requestId,target:'goals-ios',productId:'tios'}
+  );
+  if(!routed?.ok){
+    setTiosConnectionStatus({
+      goalEvidenceRequestId:request.requestId,
+      goalEvidenceResponseStatus:'route-error',
+      goalEvidenceRouteErrors:[...(routed?.errors||[])],
+      goalEvidenceRespondedAt:response.respondedAt
+    });
+    return null;
+  }
+
+  setTiosConnectionStatus({
+    goalEvidenceRequestId:request.requestId,
+    goalEvidenceResponseStatus:response.status,
+    goalEvidenceRespondedAt:response.respondedAt,
+    goalEvidenceDelivered:[...delivered],
+    goalEvidenceResponseSignalId:routed.signal.signalId,
+    goalEvidenceRouteErrors:[]
+  });
+  return {...response,hiosSignalId:routed.signal.signalId};
 }
-window.TIOSGoalEvidenceDiagnostic=function(){return{request:currentTiosEvidenceRequest(),response:readHiosJson(TIOS_EVIDENCE_RESPONSES_KEY,{})?.tios||null}};
+window.TIOSGoalEvidenceDiagnostic=function(){
+  const signal=readHiosJson('hios_communication_last_signal_v1',null);
+  return{
+    request:currentTiosEvidenceRequest(),
+    response:signal?.source==='t-ios'&&signal?.type==='evidence.responded'?signal.payload?.response||null:readHiosJson(TIOS_EVIDENCE_RESPONSES_KEY,{})?.tios||null
+  };
+};
 window.addEventListener('storage',event=>{if(event.key===GIOS_EVIDENCE_REQUESTS_KEY)respondToGoalEvidenceRequest('request_changed')});
 window.addEventListener('hios:goal-evidence-routed',()=>respondToGoalEvidenceRequest('hios_routed'));
 window.addEventListener('hios:goal-evidence-request',()=>respondToGoalEvidenceRequest('request_event'));
