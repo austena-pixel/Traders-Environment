@@ -10466,6 +10466,162 @@ function shortExecutionCriterionLabel(key){
 }
 
 const TIOS_EXECUTION_INTELLIGENCE_SCHEMA='tios.execution-intelligence.v1';
+const TIOS_EXECUTION_TREND_WINDOW=3;
+const TIOS_EXECUTION_TREND_MIN_REVIEWS=TIOS_EXECUTION_TREND_WINDOW*2;
+const TIOS_EXECUTION_TREND_THRESHOLD_PCT_POINTS=10;
+
+function executionReviewChronology(review){
+  const trade=trades.find(item=>item.id===review?.trade_id)||null;
+  return {
+    primary:String(trade?.closed_at||trade?.trade_date||review?.created_at||review?.updated_at||''),
+    secondary:String(trade?.created_at||review?.created_at||review?.updated_at||''),
+    tradeId:String(review?.trade_id||''),
+    reviewId:String(review?.id||'')
+  };
+}
+
+function orderedExecutionReviews(){
+  return activeExecutionReviews().slice().sort((a,b)=>{
+    const aa=executionReviewChronology(a);
+    const bb=executionReviewChronology(b);
+    return aa.primary.localeCompare(bb.primary) ||
+      aa.secondary.localeCompare(bb.secondary) ||
+      aa.tradeId.localeCompare(bb.tradeId) ||
+      aa.reviewId.localeCompare(bb.reviewId);
+  });
+}
+
+function executionWindowSummary(reviews){
+  const reviewIds=new Set(reviews.map(review=>review.id));
+  const tradeIds=[...new Set(reviews.map(review=>review.trade_id).filter(Boolean))];
+  const rows=executionChecks.filter(row=>reviewIds.has(row.review_id));
+  const complied=rows.filter(row=>Boolean(row.complied)).length;
+  const missed=rows.length-complied;
+  const failedReviewIds=new Set(rows.filter(row=>!Boolean(row.complied)).map(row=>row.review_id));
+  const scores=reviews
+    .map(review=>executionScoreForTrade(review.trade_id))
+    .filter(value=>value!==null&&Number.isFinite(Number(value)))
+    .map(Number);
+
+  const criteria=EXECUTION_CRITERIA.map(item=>{
+    const criterionRows=rows.filter(row=>row.criterion_key===item.key);
+    const criterionComplied=criterionRows.filter(row=>Boolean(row.complied)).length;
+    const criterionMisses=criterionRows.length-criterionComplied;
+    return {
+      key:item.key,
+      label:shortExecutionCriterionLabel(item.key),
+      checks:criterionRows.length,
+      complied:criterionComplied,
+      misses:criterionMisses,
+      adherencePct:criterionRows.length
+        ? roundEvidence(criterionComplied/criterionRows.length*100,1)
+        : null
+    };
+  });
+
+  return {
+    reviewedTrades:reviews.length,
+    totalChecks:rows.length,
+    compliedChecks:complied,
+    missedChecks:missed,
+    tradesWithErrors:failedReviewIds.size,
+    aPlusExecutions:reviews.filter(review=>executionRatingForTrade(review.trade_id)==='A+').length,
+    averageScorePct:scores.length?roundEvidence(averageFinite(scores),1):null,
+    adherencePct:rows.length?roundEvidence(complied/rows.length*100,1):null,
+    errorRatePct:rows.length?roundEvidence(missed/rows.length*100,1):null,
+    criteria,
+    reviewIds:reviews.map(review=>review.id),
+    tradeIds
+  };
+}
+
+function executionTrendState(deltaPctPoints){
+  if(!Number.isFinite(Number(deltaPctPoints)))return 'insufficient-evidence';
+  if(Number(deltaPctPoints)>=TIOS_EXECUTION_TREND_THRESHOLD_PCT_POINTS)return 'improving';
+  if(Number(deltaPctPoints)<=-TIOS_EXECUTION_TREND_THRESHOLD_PCT_POINTS)return 'worsening';
+  return 'stable';
+}
+
+function buildExecutionTrend(){
+  const ordered=orderedExecutionReviews();
+  if(ordered.length<TIOS_EXECUTION_TREND_MIN_REVIEWS){
+    return {
+      state:'insufficient-evidence',
+      method:'recent-vs-previous-reviewed-trades',
+      windowSize:TIOS_EXECUTION_TREND_WINDOW,
+      minimumComparableReviews:TIOS_EXECUTION_TREND_MIN_REVIEWS,
+      availableReviewedTrades:ordered.length,
+      thresholdPctPoints:TIOS_EXECUTION_TREND_THRESHOLD_PCT_POINTS,
+      recent:null,
+      previous:null,
+      delta:null,
+      criteria:[]
+    };
+  }
+
+  const recentReviews=ordered.slice(-TIOS_EXECUTION_TREND_WINDOW);
+  const previousReviews=ordered.slice(
+    -(TIOS_EXECUTION_TREND_WINDOW*2),
+    -TIOS_EXECUTION_TREND_WINDOW
+  );
+  const recent=executionWindowSummary(recentReviews);
+  const previous=executionWindowSummary(previousReviews);
+  const adherenceDelta=(
+    Number.isFinite(Number(recent.adherencePct)) &&
+    Number.isFinite(Number(previous.adherencePct))
+  ) ? roundEvidence(Number(recent.adherencePct)-Number(previous.adherencePct),1) : null;
+
+  const criteria=EXECUTION_CRITERIA.map(item=>{
+    const recentCriterion=recent.criteria.find(row=>row.key===item.key)||null;
+    const previousCriterion=previous.criteria.find(row=>row.key===item.key)||null;
+    const delta=(
+      Number.isFinite(Number(recentCriterion?.adherencePct)) &&
+      Number.isFinite(Number(previousCriterion?.adherencePct))
+    ) ? roundEvidence(Number(recentCriterion.adherencePct)-Number(previousCriterion.adherencePct),1) : null;
+    return {
+      key:item.key,
+      label:shortExecutionCriterionLabel(item.key),
+      state:executionTrendState(delta),
+      deltaAdherencePctPoints:delta,
+      recentAdherencePct:recentCriterion?.adherencePct??null,
+      previousAdherencePct:previousCriterion?.adherencePct??null,
+      recentMisses:recentCriterion?.misses??null,
+      previousMisses:previousCriterion?.misses??null
+    };
+  });
+
+  const comparable=criteria.filter(item=>Number.isFinite(Number(item.deltaAdherencePctPoints)));
+  const bestDelta=comparable.length?Math.max(...comparable.map(item=>Number(item.deltaAdherencePctPoints))):null;
+  const worstDelta=comparable.length?Math.min(...comparable.map(item=>Number(item.deltaAdherencePctPoints))):null;
+
+  return {
+    state:executionTrendState(adherenceDelta),
+    method:'recent-vs-previous-reviewed-trades',
+    windowSize:TIOS_EXECUTION_TREND_WINDOW,
+    minimumComparableReviews:TIOS_EXECUTION_TREND_MIN_REVIEWS,
+    availableReviewedTrades:ordered.length,
+    thresholdPctPoints:TIOS_EXECUTION_TREND_THRESHOLD_PCT_POINTS,
+    recent,
+    previous,
+    delta:{
+      adherencePctPoints:adherenceDelta,
+      averageScorePctPoints:(
+        Number.isFinite(Number(recent.averageScorePct)) &&
+        Number.isFinite(Number(previous.averageScorePct))
+      ) ? roundEvidence(Number(recent.averageScorePct)-Number(previous.averageScorePct),1) : null,
+      missedChecks:recent.missedChecks-previous.missedChecks,
+      tradesWithErrors:recent.tradesWithErrors-previous.tradesWithErrors,
+      aPlusExecutions:recent.aPlusExecutions-previous.aPlusExecutions
+    },
+    criteria,
+    mostImprovedCriteria:bestDelta!==null&&bestDelta>0
+      ? comparable.filter(item=>Number(item.deltaAdherencePctPoints)===bestDelta)
+      : [],
+    mostWorsenedCriteria:worstDelta!==null&&worstDelta<0
+      ? comparable.filter(item=>Number(item.deltaAdherencePctPoints)===worstDelta)
+      : []
+  };
+}
 
 function buildExecutionIntelligenceModel(){
   const activeReviews=activeExecutionReviews();
@@ -10584,6 +10740,7 @@ function buildExecutionIntelligenceModel(){
       adherencePct:totalChecks?roundEvidence(compliedChecks/totalChecks*100,1):null,
       errorRatePct:totalChecks?roundEvidence(missedChecks/totalChecks*100,1):null
     },
+    trend:buildExecutionTrend(),
     criteria,
     currentStrongestCriteria,
     currentWeakestCriteria,
@@ -10716,7 +10873,10 @@ function renderIntelligence(){
   }else{
     setIntelligenceState('#intelExecutionState','Active','active');
     const highCount=executionIntelligence.sample.aPlusExecutions;
-    $('#intelExecutionNote').textContent=`Execution Intelligence is active. ${highCount} of ${executionReviewed} reviewed trades currently meet the 90%+ execution threshold.`;
+    const trend=executionIntelligence.trend;
+    $('#intelExecutionNote').textContent=trend?.state&&trend.state!=='insufficient-evidence'
+      ? `Execution Intelligence is active. ${highCount} of ${executionReviewed} reviewed trades are A+. Recent ${trend.windowSize}-trade execution is ${trend.state}: ${trend.recent.adherencePct.toFixed(1)}% adherence vs ${trend.previous.adherencePct.toFixed(1)}% previously (${trend.delta.adherencePctPoints>=0?'+':''}${trend.delta.adherencePctPoints.toFixed(1)} percentage points).`
+      : `Execution Intelligence is active. ${highCount} of ${executionReviewed} reviewed trades are A+. Trend comparison needs at least ${trend?.minimumComparableReviews||6} reviewed trades.`;
   }
 
   /* Specialized Intelligence — Psychology */
