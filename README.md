@@ -1,5 +1,11 @@
 # H·IOS Modular Foundation — Stage 2A
 
+> Current checkout note: the modular directory tree below describes an earlier
+> package; those folders are not present in this repository. The root pages and
+> compatibility bundle are the working implementation. The current incremental
+> Stage 1A shared evidence contract is documented in
+> [docs/evidence-contract.md](docs/evidence-contract.md).
+
 This package converts the working H·IOS + Goals-IOS prototype into the first
 backward-compatible A1/A2 modular foundation. The visible interfaces and the
 existing browser data keys are preserved.

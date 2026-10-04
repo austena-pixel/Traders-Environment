@@ -2754,6 +2754,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   </div>
 </div>
 
+<script src="core/evidence-contract.js"></script>
 <script src="hios-connection-layer.js"></script>
 <script>
 /* SAME SUPABASE AUTH PROJECT USED BY Traders-IOS */
@@ -2836,19 +2837,7 @@ function writeHiosEcosystemJson(key,value){
 /* H·IOS generic structured-evidence foundation.
    H·IOS validates structure, but does not interpret domain-specific meaning. */
 function verifyHiosStructuredEvidence(item){
-  return !!(
-    item &&
-    item.schema==='hios.evidence.v1' &&
-    item.id &&
-    item.sourceProductId &&
-    item.domain &&
-    item.evidenceType &&
-    item.observedAt &&
-    item.subject?.type &&
-    item.subject?.id &&
-    item.observation && typeof item.observation==='object' &&
-    item.evaluation && typeof item.evaluation==='object'
-  );
+  return window.HIOSEvidenceContract.validateEvidence(item).valid;
 }
 function receiveHiosStructuredEvidence(){
   const bus=readHiosEcosystemJson(HIOS_STRUCTURED_EVIDENCE_BUS_KEY,[]);
