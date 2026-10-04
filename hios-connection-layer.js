@@ -12,12 +12,13 @@
     lastSignal:'hios_communication_last_signal_v1',
     log:'hios_communication_log_v1',
     connectionState:'hios_connection_state_v1',
-    requests:'hios_communication_requests_v1'
+    requests:'hios_communication_requests_v1',
+    products:'hios_added_products_v1'
   });
   const CHANNEL='hios-communication-centre-v1';
   const CONTRACT_VERSION=1;
   const MAX_LOG_ENTRIES=250;
-  const SOURCES=Object.freeze(['goals-ios','h-ios']);
+  const SOURCES=Object.freeze(['goals-ios','h-ios','t-ios']);
   const TYPES=Object.freeze([
     'goal.created','goal.updated','goal.completed','goal.deleted',
     'goal.progress.changed','goal.deadline.changed',
@@ -25,7 +26,8 @@
     'goals.snapshot.updated','goals.state.synchronised',
     'calendar.item.created','calendar.item.updated','calendar.item.deleted',
     'task.calendar.remove.requested','goal.calendar.remove.requested',
-    'task.delete.requested','goal.delete.requested'
+    'task.delete.requested','goal.delete.requested',
+    'evidence.observed'
   ]);
   const sourceSet=new Set(SOURCES);
   const typeSet=new Set(TYPES);
@@ -98,6 +100,9 @@
       'calendar.item.created','calendar.item.updated','calendar.item.deleted',
       'task.calendar.remove.requested','goal.calendar.remove.requested',
       'task.delete.requested','goal.delete.requested'
+    ]),
+    't-ios':Object.freeze([
+      'evidence.observed'
     ])
   });
   const permissionSets=Object.fromEntries(
@@ -152,9 +157,18 @@
   const contracts=modules.contracts;
   if(!contracts)throw new Error('data-contracts.js must load before connection-state.js');
 
+  const sourceProductIds=Object.freeze({'t-ios':'tios'});
+
   function read(){
     const state=contracts.safeParse(localStorage.getItem(contracts.KEYS.connectionState),{});
     return state&&typeof state==='object'&&!Array.isArray(state)?state:{};
+  }
+
+  function isEnabled(source){
+    const productId=sourceProductIds[source];
+    if(!productId)return true;
+    const products=contracts.safeParse(localStorage.getItem(contracts.KEYS.products),[]);
+    return Array.isArray(products)&&products.includes(productId);
   }
 
   function touch(source,status='connected'){
@@ -164,7 +178,7 @@
     return state[source];
   }
 
-  modules.connectionState=Object.freeze({read,touch});
+  modules.connectionState=Object.freeze({read,touch,isEnabled});
 })(window);
 
 /* H·IOS Communication Centre — in-page, cross-tab and storage transport. */
@@ -275,6 +289,23 @@
     if(validation.valid&&!permissions.canEmit(signal.source,signal.type)){
       errors.push(`${signal.source} is not allowed to emit ${signal.type}.`);
     }
+    if(validation.valid&&!connectionState.isEnabled(signal.source)){
+      errors.push(`${signal.source} is disconnected from H-IOS.`);
+      connectionState.touch(signal.source,'disconnected');
+    }
+    if(validation.valid&&signal.type==='evidence.observed'){
+      const evidenceContract=global.HIOSEvidenceContract;
+      const evidence=signal.payload?.evidence;
+      if(!evidenceContract||typeof evidenceContract.validateEvidence!=='function'){
+        errors.push('Shared evidence contract is unavailable.');
+      }else{
+        const evidenceValidation=evidenceContract.validateEvidence(evidence);
+        if(!evidenceValidation.valid)errors.push(...evidenceValidation.errors);
+      }
+      if(signal.source==='t-ios'&&evidence?.sourceProductId!=='tios'){
+        errors.push('T-IOS evidence source does not match sourceProductId.');
+      }
+    }
     if(errors.length){
       log.append(signal,'rejected',errors);
       console.warn('H-IOS rejected a signal:',errors,signal);
@@ -345,9 +376,10 @@
 
   function connect(source){
     if(!contracts.isAllowedSource(source))throw new Error(`Unsupported H-IOS source: ${source}`);
-    connectionState.touch(source);
+    connectionState.touch(source,connectionState.isEnabled(source)?'connected':'disconnected');
     return Object.freeze({
       emit:(type,payload,meta)=>emit(source,type,payload,meta),
+      isConnected:()=>connectionState.isEnabled(source),
       subscribe:signalBus.subscribe,
       readGoals,
       readSnapshot,

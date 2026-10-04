@@ -4654,6 +4654,8 @@ textarea{resize:vertical;min-height:90px}
 
 <div class="status-bar" id="statusBar"></div>
 
+<script src="core/evidence-contract.js"></script>
+<script src="hios-connection-layer.js"></script>
 <script>
 /* =========================================================
    SUPABASE CONFIGURATION
@@ -4810,6 +4812,7 @@ const GIOS_EVIDENCE_REQUESTS_KEY='hios_goal_evidence_requests_v1';
 const TIOS_EVIDENCE_RESPONSES_KEY='hios_goal_evidence_responses_v1';
 const HIOS_STRUCTURED_EVIDENCE_BUS_KEY='hios_structured_evidence_bus_v1';
 const HIOS_STRUCTURED_EVIDENCE_LIMIT=300;
+const tiosHiosBridge=window.HIOSConnectionLayer.connect('t-ios');
 
 const TIOS_EVIDENCE_FAMILY={
  execution_adherence:'technical',execution_errors:'technical',missed_valid_opportunities:'technical',review_completion:'technical',
@@ -5003,12 +5006,13 @@ function writeHiosJson(key,value){
 
 function setTiosConnectionStatus(extra={}){
   const status=readHiosJson(HIOS_PRODUCT_STATUS_KEY,{});
+  const connected=tiosHiosBridge.isConnected();
   status.tios={
     productId:'tios',
     productName:'Traders-IOS',
     domain:'trading',
-    state:'connected',
-    publisher:'ready',
+    state:connected?'connected':'disconnected',
+    publisher:connected?'ready':'paused',
     userId:currentUser?.id || null,
     accountId:tradingAccount?.id || null,
     lastSeenAt:new Date().toISOString(),
@@ -5076,28 +5080,50 @@ function publishTiosStructuredEvidence({
   evaluation,
   model=null,
   evidenceFamily='technical',
-  context={}
+  context={},
+  observedAt=null
 }={}){
   if(!currentUser||!evidenceType||!subject?.type||!subject?.id)return null;
-  const now=new Date().toISOString();
+  const publishedAt=new Date().toISOString();
 
-  const item={
-    id:`evidence_tios_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
-    schema:'hios.evidence.v1',
-    sourceProductId:'tios',
-    sourceProductName:'Traders-IOS',
-    source:'t-ios',
-    domain:'trading',
-    evidenceFamily,
-    evidenceType,
-    subject:{type:String(subject.type),id:String(subject.id)},
-    model:model?{...model}:null,
-    observation:observation&&typeof observation==='object'?observation:{},
-    evaluation:evaluation&&typeof evaluation==='object'?evaluation:{},
-    context:{accountId:tradingAccount?.id||null,...context},
-    userId:currentUser.id,
-    observedAt:now
-  };
+  let item;
+  try{
+    item=window.HIOSEvidenceContract.createEvidence({
+      id:`evidence_tios_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
+      sourceProductId:'tios',
+      sourceProductName:'Traders-IOS',
+      source:'t-ios',
+      domain:'trading',
+      evidenceFamily,
+      evidenceType,
+      subject:{type:String(subject.type),id:String(subject.id)},
+      model:model?{...model}:null,
+      observation:observation&&typeof observation==='object'?observation:{},
+      evaluation:evaluation&&typeof evaluation==='object'?evaluation:{},
+      context:{accountId:tradingAccount?.id||null,...context},
+      userId:currentUser.id,
+      observedAt:observedAt||publishedAt
+    });
+  }catch(error){
+    console.warn('T-IOS could not create structured H-IOS evidence:',error);
+    return null;
+  }
+
+  const routed=tiosHiosBridge.emit(
+    'evidence.observed',
+    {evidence:item},
+    {productId:'tios',domain:'trading'}
+  );
+  if(!routed?.ok){
+    const disconnected=(routed?.errors||[]).some(error=>String(error).includes('disconnected'));
+    setTiosConnectionStatus({
+      state:disconnected?'disconnected':'connected',
+      publisher:disconnected?'paused':'error',
+      lastStructuredEvidenceRouteError:(routed?.errors||[]).join(' ')||'Routing failed',
+      lastSeenAt:publishedAt
+    });
+    return null;
+  }
 
   const bus=readHiosJson(HIOS_STRUCTURED_EVIDENCE_BUS_KEY,[]);
   writeHiosJson(
@@ -5106,9 +5132,12 @@ function publishTiosStructuredEvidence({
   );
 
   setTiosConnectionStatus({
-    lastStructuredEvidenceAt:now,
+    state:'connected',
+    publisher:'ready',
+    lastStructuredEvidenceAt:publishedAt,
     lastStructuredEvidenceType:evidenceType,
-    lastStructuredEvidenceMetric:item.evaluation?.metric||null
+    lastStructuredEvidenceMetric:item.evaluation?.metric||null,
+    lastStructuredEvidenceRouteError:null
   });
 
   window.dispatchEvent(new CustomEvent('hios:structured-evidence',{detail:item}));
@@ -5230,7 +5259,7 @@ async function enterApp(user){
   await loadExecutionData();
 
   /* H·IOS ecosystem connection checkpoint */
-  setTiosConnectionStatus({state:'connected',publisher:'ready'});
+  setTiosConnectionStatus();
   publishTiosSnapshot('app_loaded');
   respondToGoalEvidenceRequest('app_loaded');
 
@@ -9230,7 +9259,8 @@ function publishPlaybookReviewStructuredEvidence(tradeId){
     observation:payload.observation,
     evaluation:payload.evaluation,
     evidenceFamily:'technical',
-    context:{evidenceSource:'playbook_review'}
+    context:{evidenceSource:'playbook_review'},
+    observedAt:payload.observation.reviewedAt||null
   });
 }
 

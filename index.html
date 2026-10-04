@@ -2839,14 +2839,20 @@ function writeHiosEcosystemJson(key,value){
 function verifyHiosStructuredEvidence(item){
   return window.HIOSEvidenceContract.validateEvidence(item).valid;
 }
-function receiveHiosStructuredEvidence(){
-  const bus=readHiosEcosystemJson(HIOS_STRUCTURED_EVIDENCE_BUS_KEY,[]);
+function receiveHiosStructuredEvidence(incoming=null){
+  const bus=Array.isArray(incoming)
+    ? incoming
+    : readHiosEcosystemJson(HIOS_STRUCTURED_EVIDENCE_BUS_KEY,[]);
   const receipts=readHiosEcosystemJson(HIOS_STRUCTURED_EVIDENCE_RECEIPTS_KEY,{});
   const verified=readHiosEcosystemJson(HIOS_VERIFIED_EVIDENCE_KEY,{});
   let received=0;
 
   (Array.isArray(bus)?bus:[]).forEach(item=>{
-    if(!verifyHiosStructuredEvidence(item)||receipts[item.id])return;
+    if(
+      !verifyHiosStructuredEvidence(item) ||
+      receipts[item.id] ||
+      (item.sourceProductId==='tios'&&!isProductAdded('tios'))
+    )return;
 
     const receivedAt=new Date().toISOString();
     receipts[item.id]={
@@ -3225,6 +3231,10 @@ const HIOS_GIOS_SNAPSHOT_KEY = 'hios_gios_dashboard_v1';
 const HIOS_GIOS_FOCUS_AREAS_KEY = 'hios_gios_focus_areas_v1';
 const HIOS_CALENDAR_EVENTS_KEY = 'hios_calendar_events_v1';
 const hiosBridge=window.HIOSConnectionLayer.connect('h-ios');
+hiosBridge.subscribe(signal=>{
+  const evidence=signal?.payload?.evidence;
+  if(evidence)receiveHiosStructuredEvidence([evidence]);
+},{source:'t-ios',types:['evidence.observed']});
 
 function pendingGoalRequests(){
   return hiosBridge.getPendingRequests().filter(request=>

@@ -112,28 +112,56 @@ test('classic browser registration coexists with unchanged communication API', (
   assert.deepEqual([...storage], before);
 });
 
-test('actual T-IOS publisher output passes shared validation; H-IOS receives once', () => {
+test('Stage 1B routes one T-IOS activity through the shared connector and H-IOS receives it once', () => {
   const { run } = browser();
-  run(`const currentUser = { id: '${userId}' }; const tradingAccount = {id:'test-account'};
+  run(read('hios-connection-layer.js'));
+  run(`localStorage.setItem('hios_added_products_v1', JSON.stringify(['gios','tios']));
+    const currentUser = { id: '${userId}' }; const tradingAccount = {id:'test-account'};
     const HIOS_STRUCTURED_EVIDENCE_BUS_KEY='test-bus'; const HIOS_STRUCTURED_EVIDENCE_LIMIT=500;
     const HIOS_STRUCTURED_EVIDENCE_RECEIPTS_KEY='test-receipts'; const HIOS_VERIFIED_EVIDENCE_KEY='test-verified';
     const readHiosJson=(key,fallback)=>JSON.parse(localStorage.getItem(key)||'null')??fallback;
     const writeHiosJson=(key,value)=>localStorage.setItem(key,JSON.stringify(value));
     const readHiosEcosystemJson=readHiosJson; const writeHiosEcosystemJson=writeHiosJson;
-    const setTiosConnectionStatus=()=>{};`);
+    const setTiosConnectionStatus=()=>{};
+    const isProductAdded=id=>JSON.parse(localStorage.getItem('hios_added_products_v1')||'[]').includes(id);
+    const tiosHiosBridge=HIOSConnectionLayer.connect('t-ios');`);
+
   const tios = read('t-ios.html');
+  assert.ok(tios.indexOf('src="core/evidence-contract.js"') < tios.indexOf('src="hios-connection-layer.js"'));
+  assert.ok(tios.indexOf('src="hios-connection-layer.js"') < tios.indexOf('function publishTiosStructuredEvidence'));
+  const saveStart=tios.indexOf('async function saveEdgeReview()');
+  const saveEnd=tios.indexOf('async function deleteEdgeReview()',saveStart);
+  const saveBlock=tios.slice(saveStart,saveEnd);
+  assert.ok(saveBlock.includes("db.from('trade_plan_reviews').update"));
+  assert.ok(saveBlock.includes("db.from('trade_plan_reviews').insert"));
+  assert.ok(saveBlock.includes("db.from('trade_plan_checks').upsert"));
+  assert.ok(saveBlock.indexOf('if(checkResult.error)') < saveBlock.indexOf('publishPlaybookReviewStructuredEvidence(trade.id);'));
+
   run(tios.slice(tios.indexOf('function publishTiosStructuredEvidence('), tios.indexOf('function publishTiosSnapshot(')));
   run(`const published = publishTiosStructuredEvidence({ evidenceType:'rule_compliance_assessment',
     subject:{type:'trade',id:'test-trade'}, observation:{reviewId:'test-review'},
-    evaluation:{metric:'playbook_adherence',value:50}, model:{version:'v2'} });`);
+    evaluation:{metric:'playbook_adherence',value:50}, model:{version:'v2'},
+    observedAt:'2026-10-04T14:00:00+02:00' });`);
   assert.equal(run('HIOSEvidenceContract.validateEvidence(published).valid'), true);
+  assert.equal(run("JSON.parse(localStorage.getItem('hios_communication_last_signal_v1')).source"), 't-ios');
+  assert.equal(run("JSON.parse(localStorage.getItem('hios_communication_last_signal_v1')).type"), 'evidence.observed');
+  assert.equal(run("JSON.parse(localStorage.getItem('hios_communication_last_signal_v1')).payload.evidence.id === published.id"), true);
+
   const index = read('index.html');
   assert.ok(index.indexOf('src="core/evidence-contract.js"') < index.indexOf('function verifyHiosStructuredEvidence'));
+  assert.ok(index.includes("source:'t-ios',types:['evidence.observed']"));
   run(index.slice(index.indexOf('function verifyHiosStructuredEvidence('), index.indexOf('function hiosStructuredEvidenceDiagnostic(')));
-  assert.equal(run('receiveHiosStructuredEvidence()'), 1);
+  assert.equal(run("receiveHiosStructuredEvidence([JSON.parse(localStorage.getItem('hios_communication_last_signal_v1')).payload.evidence])"), 1);
+  assert.equal(run("receiveHiosStructuredEvidence([JSON.parse(localStorage.getItem('hios_communication_last_signal_v1')).payload.evidence])"), 0);
   assert.equal(run('receiveHiosStructuredEvidence()'), 0);
   assert.equal(run("readHiosJson('test-verified',{}).tios[0].evaluation.value"), 50);
-  run("writeHiosJson('test-bus',[{...published,id:'bad',userId:null}])");
-  assert.equal(run('receiveHiosStructuredEvidence()'), 0);
-  assert.equal(run("readHiosJson('test-verified',{}).tios.length"), 1);
+
+  run("localStorage.setItem('hios_added_products_v1', JSON.stringify(['gios']))");
+  run(`const rejected = publishTiosStructuredEvidence({ evidenceType:'rule_compliance_assessment',
+    subject:{type:'trade',id:'test-trade-2'}, observation:{reviewId:'test-review-2'},
+    evaluation:{metric:'playbook_adherence',value:75} });`);
+  assert.equal(run('rejected'), null);
+  assert.equal(run("readHiosJson('test-bus',[]).length"), 1);
+  assert.equal(run("JSON.parse(localStorage.getItem('hios_communication_log_v1')).at(-1).status"), 'rejected');
+  assert.match(run("JSON.parse(localStorage.getItem('hios_communication_log_v1')).at(-1).errors.join(' ')"), /disconnected/);
 });
