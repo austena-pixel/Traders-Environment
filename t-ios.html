@@ -3596,30 +3596,31 @@ textarea{resize:vertical;min-height:90px}
       <button class="nav-btn active" data-page="dashboard">
         <span class="nav-icon">▣</span> Dashboard
       </button>
-<div class="nav-group technical" data-nav-group="technical">
+
+      <div class="nav-group technical" data-nav-group="technical">
         <button class="nav-group-toggle" type="button" data-nav-group-toggle="technical" aria-expanded="false">
           <span class="nav-group-icon product-mark product-mark-tios" data-product-icon="trading-chart" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><use href="#product-icon-tios"/></svg></span>
-          <span class="nav-group-copy"><b>Technicals</b><small>System · execution · results</small></span>
+          <span class="nav-group-copy"><b>Technical Instruments</b><small>Build · organize · define</small></span>
           <span class="nav-group-chevron">⌄</span>
         </button>
         <div class="nav-submenu">
-          <button class="nav-btn" data-page="journal"><span class="nav-icon">◫</span> Journal</button>
-          <button class="nav-btn" data-page="statistics"><span class="nav-icon">◈</span> Statistics</button>
-          <button class="nav-btn" data-page="playbook"><span class="nav-icon">◎</span> Playbook</button>
-          <button class="nav-btn" data-page="execution"><span class="nav-icon">✓</span> Execution</button>
+          <button class="nav-btn" data-page="playbook"><span class="nav-icon">◎</span> Playbooks</button>
+          <button class="nav-btn" data-page="checklists"><span class="nav-icon">☑</span> Checklists</button>
+          <button class="nav-btn" data-page="reflections"><span class="nav-icon">◇</span> Reflections</button>
         </div>
       </div>
 
-      <div class="nav-group psychological" data-nav-group="psychological">
-        <button class="nav-group-toggle" type="button" data-nav-group-toggle="psychological" aria-expanded="false">
-          <span class="nav-group-icon">Ψ</span>
-          <span class="nav-group-copy"><b>Psychology</b><small>Mind · behaviour · identity</small></span>
-          <span class="nav-group-chevron">⌄</span>
-        </button>
-        <div class="nav-submenu">
-          <button class="nav-btn" data-page="psychology"><span class="nav-icon">◇</span> Psychology Dashboard</button>
-        </div>
-      </div>
+      <button class="nav-btn" data-page="execution">
+        <span class="nav-icon">✓</span> Execution Quality
+      </button>
+
+      <button class="nav-btn" data-page="journal">
+        <span class="nav-icon">◫</span> Journal Records
+      </button>
+
+      <button class="nav-btn" data-page="statistics">
+        <span class="nav-icon">◈</span> Statistics
+      </button>
 
       <button class="nav-btn" data-page="settings">
         <span class="nav-icon">⚙</span> Settings
@@ -3753,8 +3754,8 @@ textarea{resize:vertical;min-height:90px}
     <section class="page" id="page-journal">
       <header class="page-head">
         <div>
-          <h1>Journal</h1>
-          <p>Review, filter and edit your complete trading history.</p>
+          <h1>Journal Records</h1>
+          <p>Review the technical and psychological evidence organized around each individual trade.</p>
         </div>
         <div class="top-actions">
           <button class="btn" id="journalExportBtn">Export CSV</button>
@@ -4546,11 +4547,48 @@ textarea{resize:vertical;min-height:90px}
     </section>
 
 
+    <!-- TECHNICAL INSTRUMENTS: CHECKLISTS -->
+    <section class="page" id="page-checklists">
+      <header class="page-head">
+        <div>
+          <h1>Checklists</h1>
+          <p>Build and organize reusable rules and conditions. Measurement belongs in Execution Quality.</p>
+        </div>
+      </header>
+
+      <section class="panel" style="padding:18px">
+        <div class="intelligence-kicker">Technical Instruments</div>
+        <h3 style="margin:0 0 8px">Checklist workspace</h3>
+        <p style="margin:0;color:var(--muted);font-size:12px;line-height:1.65">
+          Checklist construction is isolated in <strong>checklists.js</strong>. No execution score, adherence result or trade measurement is created here.
+        </p>
+      </section>
+    </section>
+
+    <!-- TECHNICAL INSTRUMENTS: REFLECTIONS -->
+    <section class="page" id="page-reflections">
+      <header class="page-head">
+        <div>
+          <h1>Reflections</h1>
+          <p>Build and organize reusable structures for behaviour, decisions and state-of-mind reflection.</p>
+        </div>
+      </header>
+
+      <section class="panel" style="padding:18px">
+        <div class="intelligence-kicker">Technical Instruments</div>
+        <h3 style="margin:0 0 8px">Reflection workspace</h3>
+        <p style="margin:0;color:var(--muted);font-size:12px;line-height:1.65">
+          Reflection construction is isolated in <strong>reflections.js</strong>. Responses, scoring and analysis remain outside Technical Instruments.
+        </p>
+      </section>
+    </section>
+
+
     <section class="page" id="page-execution">
       <header class="page-head">
         <div>
-          <h1>Execution</h1>
-          <p>Measure how accurately you carried out a trade after the opportunity had already been identified.</p>
+          <h1>Execution Quality</h1>
+          <p>Measure the gap between the trading instruments you defined and what actually happened on the trade.</p>
         </div>
         <div class="top-actions">
           <button class="btn" id="executionNewJournalTopBtn">+ New Journal</button>
@@ -6595,11 +6633,10 @@ function initializeTiosNavGroups(){
  const state=readTiosNavGroupState();
  $$('.nav-group').forEach(group=>{
   const name=group.dataset.navGroup;
-  // Default both primary groups to open so Technicals and Psychology
-  // are visible at the same time. Afterwards preserve the user's choice.
+  // Keep Technical Instruments open by default, then preserve the user's choice.
   const shouldOpen=Object.prototype.hasOwnProperty.call(state,name)
    ? Boolean(state[name])
-   : ['technical','psychological'].includes(name);
+   : name==='technical';
   group.classList.toggle('open',shouldOpen);
   const toggle=group.querySelector('[data-nav-group-toggle]');
   if(toggle)toggle.setAttribute('aria-expanded',shouldOpen?'true':'false');
