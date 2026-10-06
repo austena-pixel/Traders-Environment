@@ -4785,6 +4785,78 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
 .execution-map-information.note{border-left-color:#6f8198;background:#101720}
 .execution-map-information b{display:block;margin-bottom:4px;color:#8499b1;font-size:8px;letter-spacing:.55px}
 
+.playbook-preview-table-block,
+.execution-map-table-block{
+  width:100%;
+  min-width:0;
+  margin:0 0 10px;
+  padding:10px;
+  border:1px solid #2a3a4d;
+  border-radius:9px;
+  background:#0d151f;
+}
+.playbook-preview-table-block>b,
+.execution-map-table-block>b{
+  display:block;
+  margin-bottom:7px;
+  color:#88a0b9;
+  font-size:8px;
+  letter-spacing:.6px;
+}
+.playbook-preview-table-scroll,
+.execution-map-table-scroll{
+  width:100%;
+  min-width:0;
+  overflow:auto;
+  border:1px solid #263548;
+  border-radius:7px;
+}
+.playbook-preview-table,
+.execution-map-table{
+  width:100%;
+  min-width:max-content;
+  border-collapse:collapse;
+  table-layout:auto;
+}
+.playbook-preview-table th,
+.playbook-preview-table td{
+  min-width:78px;
+  padding:6px 7px;
+  border:1px solid #2f4053;
+  color:#c7d4e3;
+  font-size:8px;
+  line-height:1.35;
+  text-align:left;
+  vertical-align:top;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+.playbook-preview-table th{
+  background:#172331;
+  color:#e0eaf5;
+  font-weight:850;
+}
+.playbook-preview-table td{background:#101923}
+.execution-map-table th,
+.execution-map-table td{
+  min-width:96px;
+  padding:8px 9px;
+  border:1px solid #2d3d50;
+  color:#c5d3e2;
+  font-size:9px;
+  line-height:1.4;
+  text-align:left;
+  vertical-align:top;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+.execution-map-table th{
+  background:#172434;
+  color:#eff6ff;
+  font-weight:850;
+}
+.execution-map-table td{background:#0d151f}
+
 .playbook-preview-choice{
   display:block!important;
   width:100%;
@@ -10380,13 +10452,14 @@ function renderExecutionMappingForm(){
 
     if(item.type==='table'){
       return `
-        <div class="execution-map-information">
+        <div class="execution-map-table-block">
           <b>TABLE CONTEXT</b>
-          <div style="overflow:auto;margin-top:7px">
-            <table style="width:100%;border-collapse:collapse;font-size:9px">
-              ${item.rows.map((row,rowIndex)=>`
-                <tr>${row.map(cell=>`<${rowIndex===0?'th':'td'} style="border:1px solid #2d3d50;padding:6px;text-align:left">${escapeHtml(cell||'—')}</${rowIndex===0?'th':'td'}>`).join('')}</tr>
-              `).join('')}
+          <div class="execution-map-table-scroll">
+            <table class="execution-map-table">
+              ${item.rows.map((row,rowIndex)=>{
+                const tag=item.hasHeader&&rowIndex===0?'th':'td';
+                return `<tr>${row.map(cell=>`<${tag}>${escapeHtml(cell||'—')}</${tag}>`).join('')}</tr>`;
+              }).join('')}
             </table>
           </div>
         </div>
@@ -11872,6 +11945,21 @@ function playbookStructuredPreviewItems(documentHtml){
   const items=[];
   let listGroupIndex=0;
 
+  function tableItemFromNode(node){
+    const table=node?.matches?.('table') ? node : node?.querySelector?.('table');
+    if(!table)return null;
+    const tableRows=[...table.querySelectorAll('tr')];
+    const rows=tableRows
+      .map(row=>[...row.children]
+        .filter(cell=>['th','td'].includes(cell.tagName?.toLowerCase()))
+        .map(cell=>(cell.textContent||'').replace(/\s+/g,' ').trim()))
+      .filter(row=>row.length&&row.some(cell=>cell!==''));
+    if(!rows.length)return null;
+    const firstRow=tableRows[0];
+    const hasHeader=Boolean(firstRow&&[...firstRow.children].some(cell=>cell.tagName?.toLowerCase()==='th'));
+    return {type:'table',rows,hasHeader};
+  }
+
   function cleanNodeText(node){
     const clone=node.cloneNode(true);
     clone.querySelectorAll?.('.pb-doc-label,.pb-doc-remove-btn').forEach(control=>control.remove());
@@ -11918,11 +12006,9 @@ function playbookStructuredPreviewItems(documentHtml){
       return;
     }
 
-    if(node.matches?.('[data-playbook-node="table"], .pb-doc-table-wrap')){
-      const rows=[...node.querySelectorAll('tr')]
-        .map(row=>[...row.children].map(cell=>(cell.textContent||'').replace(/\s+/g,' ').trim()))
-        .filter(row=>row.some(Boolean));
-      if(rows.length)items.push({type:'table',rows});
+    if(node.matches?.('[data-playbook-node="table"], .pb-doc-table-wrap, table')){
+      const tableItem=tableItemFromNode(node);
+      if(tableItem)items.push(tableItem);
       return;
     }
 
@@ -11938,6 +12024,17 @@ function playbookStructuredPreviewItems(documentHtml){
       const listGroup='list_'+(++listGroupIndex);
       [...node.children].forEach(li=>{
         if(li.tagName?.toLowerCase()!=='li')return;
+
+        // Tables inserted while the caret was inside a list may be nested in the LI.
+        // Preserve the table structure instead of flattening all cell text into one rule.
+        const nestedTable=li.querySelector?.('[data-playbook-node="table"],.pb-doc-table-wrap,table');
+        if(nestedTable){
+          const tableContainer=nestedTable.closest?.('[data-playbook-node="table"],.pb-doc-table-wrap')||nestedTable;
+          const tableItem=tableItemFromNode(tableContainer);
+          if(tableItem)items.push(tableItem);
+          return;
+        }
+
         const label=cleanNodeText(li);
         if(label)items.push({
           type:'check',
@@ -12074,13 +12171,14 @@ function renderPlaybookExecutionPreview(){
     }
     if(item.type==='table'){
       return `
-        <div class="playbook-preview-note-block">
+        <div class="playbook-preview-table-block">
           <b>TABLE</b>
-          <div style="overflow:auto;margin-top:6px">
-            <table style="width:100%;border-collapse:collapse;font-size:8px">
-              ${item.rows.map((row,rowIndex)=>`
-                <tr>${row.map(cell=>`<${rowIndex===0?'th':'td'} style="border:1px solid #314052;padding:5px;text-align:left">${escapeHtml(cell||'—')}</${rowIndex===0?'th':'td'}>`).join('')}</tr>
-              `).join('')}
+          <div class="playbook-preview-table-scroll">
+            <table class="playbook-preview-table">
+              ${item.rows.map((row,rowIndex)=>{
+                const tag=item.hasHeader&&rowIndex===0?'th':'td';
+                return `<tr>${row.map(cell=>`<${tag}>${escapeHtml(cell||'—')}</${tag}>`).join('')}</tr>`;
+              }).join('')}
             </table>
           </div>
         </div>
@@ -12307,6 +12405,29 @@ function insertPlaybookHtml(markup){
   if(!editor)return;
   document.execCommand('insertHTML',false,markup);
   syncPlaybookLiveModel();
+}
+
+function insertPlaybookBlockOutsideList(markup,range){
+  const editor=$('#playbookDocumentEditor');
+  if(!editor)return;
+
+  let node=range?.startContainer||null;
+  if(node?.nodeType!==1)node=node?.parentElement;
+  const list=node?.closest?.('ul,ol')||null;
+
+  if(list&&editor.contains(list)&&list.parentNode){
+    const temp=document.createElement('div');
+    temp.innerHTML=markup;
+    const fragment=document.createDocumentFragment();
+    [...temp.childNodes].forEach(child=>fragment.appendChild(child));
+    list.parentNode.insertBefore(fragment,list.nextSibling);
+    ensurePlaybookBlockControls();
+    syncPlaybookLiveModel();
+    return;
+  }
+
+  restorePlaybookEditorSelection(range);
+  insertPlaybookHtml(markup);
 }
 
 let playbookChoiceInsertRange=null;
@@ -12648,8 +12769,7 @@ function insertPlaybookTableFromModal(){
   `;
 
   closePlaybookTableModal();
-  restorePlaybookEditorSelection(playbookTableInsertRange);
-  insertPlaybookHtml(markup);
+  insertPlaybookBlockOutsideList(markup,playbookTableInsertRange);
   playbookTableInsertRange=null;
 }
 
