@@ -3995,6 +3995,46 @@ body.playbook-preview-resizing *{
   line-height:1.45;
   padding:5px 6px;
 }
+.playbook-style-color-grid{
+  display:grid;
+  grid-template-columns:repeat(4,58px);
+  gap:5px;
+  align-items:start;
+}
+.playbook-style-color-control{
+  display:grid;
+  gap:4px;
+  justify-items:center;
+  color:#5d6875;
+  font-size:8px;
+  font-weight:750;
+}
+.playbook-style-color-control input[type="color"]{
+  width:38px;
+  height:30px;
+  padding:2px;
+  border:1px solid #c7ced7;
+  border-radius:6px;
+  background:#fff;
+  cursor:pointer;
+}
+.playbook-style-color-control input[type="color"]:disabled{
+  cursor:not-allowed;
+  opacity:.42;
+}
+.playbook-style-color-reset{
+  min-height:31px;
+  align-self:start;
+  margin-top:0;
+  border:1px solid #c8ced6;
+  border-radius:6px;
+  background:#fff;
+  color:#354151;
+  padding:5px 9px;
+  font-size:9px;
+}
+.playbook-style-color-reset:hover:not(:disabled){border-color:#8fb5dd;background:#edf5fd}
+.playbook-style-color-reset:disabled{opacity:.45;cursor:not-allowed}
 .playbook-word-properties{display:grid;grid-template-columns:minmax(220px,1.5fr) minmax(180px,1fr) 130px auto;gap:8px;width:100%;align-items:end}
 .playbook-word-properties label span{display:block;margin-bottom:4px;color:#5d6875;font-size:8px;font-weight:750}
 .playbook-word-properties input,.playbook-word-properties select{width:100%;height:34px;border:1px solid #c8ced6;border-radius:5px;background:#fff;color:#202a36;padding:0 8px;font-size:10px}
@@ -4101,6 +4141,33 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
   left:11px!important;
   top:11px!important;
 }
+/* Custom colors are stored on the styled group and inherited by its items. */
+.playbook-word-editor ul[data-playbook-color-background]>li,
+.playbook-word-editor ol[data-playbook-color-background]>li{
+  background:var(--pb-style-bg)!important;
+}
+.playbook-word-editor ul[data-playbook-color-border]>li,
+.playbook-word-editor ol[data-playbook-color-border]>li{
+  border:1px solid var(--pb-style-border)!important;
+  border-radius:8px;
+}
+.playbook-word-editor ul[data-playbook-color-text]>li,
+.playbook-word-editor ol[data-playbook-color-text]>li{
+  color:var(--pb-style-text)!important;
+}
+.playbook-word-editor ul[data-playbook-color-accent]>li::before,
+.playbook-word-editor ol[data-playbook-color-accent]>li::before{
+  color:var(--pb-style-accent)!important;
+}
+.playbook-word-editor ul[data-playbook-color-background]>li,
+.playbook-word-editor ul[data-playbook-color-border]>li,
+.playbook-word-editor ol[data-playbook-color-background]>li,
+.playbook-word-editor ol[data-playbook-color-border]>li{
+  padding-top:8px;
+  padding-bottom:8px;
+  padding-right:9px;
+}
+
 /* Structured Either / Or groups use the same reusable layout system. */
 .playbook-word-editor .pb-doc-choice-options[data-playbook-list-layout="row"]{
   display:flex;
@@ -4135,6 +4202,19 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
   border-radius:9px;
   background:#fbf9ff;
   box-shadow:0 2px 7px rgba(57,39,92,.05);
+}
+.playbook-word-editor .pb-doc-choice-options[data-playbook-color-background]>.pb-doc-choice-option{
+  background:var(--pb-style-bg)!important;
+}
+.playbook-word-editor .pb-doc-choice-options[data-playbook-color-border]>.pb-doc-choice-option{
+  border:1px solid var(--pb-style-border)!important;
+  border-radius:8px;
+}
+.playbook-word-editor .pb-doc-choice-options[data-playbook-color-text]>.pb-doc-choice-option{
+  color:var(--pb-style-text)!important;
+}
+.playbook-word-editor .pb-doc-choice-options[data-playbook-color-accent] .pb-doc-choice-dot{
+  border-color:var(--pb-style-accent)!important;
 }
 
 @media(max-width:650px){
@@ -4493,6 +4573,16 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
   min-height:74px;
   align-items:flex-start;
 }
+.execution-map-rule-layout[data-playbook-custom-colors="1"] .execution-map-rule{
+  background:var(--pb-style-bg,#0b121b)!important;
+  border-color:var(--pb-style-border,#223147)!important;
+}
+.execution-map-rule-layout[data-playbook-custom-colors="1"] .execution-map-rule-copy strong{
+  color:var(--pb-style-text,#dce7f4)!important;
+}
+.execution-map-rule-layout[data-playbook-custom-colors="1"] input[type="checkbox"]{
+  accent-color:var(--pb-style-accent,#4b83b9);
+}
 .execution-map-rule-main{
   display:flex;
   align-items:flex-start;
@@ -4738,6 +4828,16 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
   border-color:#35516e;
   background:#101b28;
 }
+.playbook-preview-check-layout[data-playbook-custom-colors="1"] .playbook-preview-check{
+  background:var(--pb-style-bg,#0c141e)!important;
+  border-color:var(--pb-style-border,#223146)!important;
+}
+.playbook-preview-check-layout[data-playbook-custom-colors="1"] .playbook-preview-check>span:last-child{
+  color:var(--pb-style-text,#cbd7e5)!important;
+}
+.playbook-preview-check-layout[data-playbook-custom-colors="1"] .playbook-preview-checkbox{
+  border-color:var(--pb-style-accent,#56708d)!important;
+}
 
 .playbook-preview-choice-options[data-playbook-list-layout="row"]{
   display:flex!important;
@@ -4766,6 +4866,17 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
   align-items:center!important;
   border-color:#554675;
   background:#181329;
+}
+.playbook-preview-choice-options[data-playbook-custom-colors="1"]>.playbook-preview-choice-option{
+  background:var(--pb-style-bg,#100d1d)!important;
+  border-color:var(--pb-style-border,#342b50)!important;
+  color:var(--pb-style-text,#c9c2dc)!important;
+}
+.playbook-preview-choice-options[data-playbook-custom-colors="1"] .playbook-preview-choice-text{
+  color:var(--pb-style-text,#c9c2dc)!important;
+}
+.playbook-preview-choice-options[data-playbook-custom-colors="1"] .playbook-preview-choice-dot{
+  border-color:var(--pb-style-accent,#856fbd)!important;
 }
 @media(max-width:520px){
   .playbook-preview-check-layout[data-playbook-list-layout="columns-3"],
@@ -4822,6 +4933,14 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
   align-items:center;
   border-color:#514370;
   background:#171229;
+}
+.execution-map-choice-options[data-playbook-custom-colors="1"] label{
+  background:var(--pb-style-bg,#0d0c16)!important;
+  border-color:var(--pb-style-border,#302944)!important;
+  color:var(--pb-style-text,#d5cee6)!important;
+}
+.execution-map-choice-options[data-playbook-custom-colors="1"] input[type="radio"]{
+  accent-color:var(--pb-style-accent,#7659c4)!important;
 }
 .execution-map-choice-options label{
   display:flex;
@@ -5899,9 +6018,34 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
               </div>
 
               <div class="playbook-word-tool-group">
+                <span class="playbook-word-tool-label">Colors</span>
+                <div class="playbook-word-tool-row">
+                  <div class="playbook-style-color-grid">
+                    <label class="playbook-style-color-control">
+                      <input type="color" id="playbookStyleColorBackground" data-playbook-style-color="background" value="#f7f9fb" aria-label="Style fill color">
+                      <span>Fill</span>
+                    </label>
+                    <label class="playbook-style-color-control">
+                      <input type="color" id="playbookStyleColorBorder" data-playbook-style-color="border" value="#ccd5df" aria-label="Style border color">
+                      <span>Border</span>
+                    </label>
+                    <label class="playbook-style-color-control">
+                      <input type="color" id="playbookStyleColorText" data-playbook-style-color="text" value="#20242a" aria-label="Style text color">
+                      <span>Text</span>
+                    </label>
+                    <label class="playbook-style-color-control">
+                      <input type="color" id="playbookStyleColorAccent" data-playbook-style-color="accent" value="#536170" aria-label="Style accent color">
+                      <span>Accent</span>
+                    </label>
+                  </div>
+                  <button type="button" class="playbook-style-color-reset" id="playbookStyleColorReset">Reset</button>
+                </div>
+              </div>
+
+              <div class="playbook-word-tool-group">
                 <span class="playbook-word-tool-label">Selection</span>
                 <div class="playbook-style-help" id="playbookStyleSelectionHelp">
-                  Place the cursor inside a list or Either / Or group, then choose a layout.
+                  Place the cursor inside a list or Either / Or group, then choose a layout or colors.
                 </div>
               </div>
             </div>
@@ -10053,9 +10197,10 @@ function renderExecutionMappingForm(){
 
         const grouped=items.filter(candidate=>candidate.type==='check'&&candidate.listGroup===item.listGroup);
         const layout=normalizePlaybookListLayout(item.layout);
+        const styleAttrs=playbookStyleRenderAttributes(item.colors);
 
         return `
-          <div class="execution-map-rule-layout" data-playbook-list-layout="${layout}">
+          <div class="execution-map-rule-layout" data-playbook-list-layout="${layout}"${styleAttrs}>
             ${grouped.map(groupItem=>{
               const key='map_rule_'+(++checkIndex);
               return `
@@ -10091,13 +10236,14 @@ function renderExecutionMappingForm(){
     if(item.type==='choice'){
       const key='map_choice_'+(++checkIndex);
       const layout=normalizePlaybookListLayout(item.layout);
+      const styleAttrs=playbookStyleRenderAttributes(item.colors);
       return `
         <div class="execution-map-choice" data-execution-map-choice-group="${key}">
           <div class="execution-map-choice-head">
             <strong>${escapeHtml(item.label)}</strong>
             <small>Choose one condition</small>
           </div>
-          <div class="execution-map-choice-options" data-playbook-list-layout="${layout}">
+          <div class="execution-map-choice-options" data-playbook-list-layout="${layout}"${styleAttrs}>
             ${item.options.map((option,index)=>`
               <label>
                 <input type="radio" name="${key}" value="${escapeHtml(option)}" data-execution-map-choice>
@@ -11622,10 +11768,11 @@ function playbookStructuredPreviewItems(documentHtml){
       const title=(node.querySelector('[data-choice-title]')?.textContent||'Choose one').replace(/\s+/g,' ').trim()||'Choose one';
       const optionsHost=node.querySelector('.pb-doc-choice-options');
       const layout=normalizePlaybookListLayout(optionsHost?.dataset?.playbookListLayout);
+      const colors=playbookStyleColorsFromTarget(optionsHost);
       const options=[...node.querySelectorAll('[data-choice-option]')]
         .map(option=>(option.textContent||'').replace(/\s+/g,' ').trim())
         .filter(Boolean);
-      if(options.length)items.push({type:'choice',label:title,options,layout});
+      if(options.length)items.push({type:'choice',label:title,options,layout,colors});
       return;
     }
 
@@ -11655,6 +11802,7 @@ function playbookStructuredPreviewItems(documentHtml){
 
     if(node.matches?.('ul,ol')){
       const layout=normalizePlaybookListLayout(node.dataset?.playbookListLayout);
+      const colors=playbookStyleColorsFromTarget(node);
       const listGroup='list_'+(++listGroupIndex);
       [...node.children].forEach(li=>{
         if(li.tagName?.toLowerCase()!=='li')return;
@@ -11664,6 +11812,7 @@ function playbookStructuredPreviewItems(documentHtml){
           label,
           listGroup,
           layout,
+          colors,
           ordered:node.tagName?.toLowerCase()==='ol'
         });
       });
@@ -11750,8 +11899,9 @@ function renderPlaybookExecutionPreview(){
         if(previous?.type==='check'&&previous.listGroup===item.listGroup)return '';
         const grouped=items.filter(candidate=>candidate.type==='check'&&candidate.listGroup===item.listGroup);
         const layout=normalizePlaybookListLayout(item.layout);
+        const styleAttrs=playbookStyleRenderAttributes(item.colors);
         return `
-          <div class="playbook-preview-check-layout" data-playbook-list-layout="${layout}">
+          <div class="playbook-preview-check-layout" data-playbook-list-layout="${layout}"${styleAttrs}>
             ${grouped.map(groupItem=>`
               <div class="playbook-preview-check">
                 <span class="playbook-preview-checkbox" aria-hidden="true"></span>
@@ -11765,10 +11915,11 @@ function renderPlaybookExecutionPreview(){
     }
     if(item.type==='choice'){
       const layout=normalizePlaybookListLayout(item.layout);
+      const styleAttrs=playbookStyleRenderAttributes(item.colors);
       return `
         <div class="playbook-preview-choice">
           <b>${escapeHtml(item.label)}</b>
-          <div class="playbook-preview-choice-options" data-playbook-list-layout="${layout}">
+          <div class="playbook-preview-choice-options" data-playbook-list-layout="${layout}"${styleAttrs}>
             ${item.options.map(option=>`
               <div class="playbook-preview-choice-option">
                 <span class="playbook-preview-choice-dot" aria-hidden="true"></span>
@@ -12046,6 +12197,94 @@ function normalizePlaybookListLayout(layout){
     : 'vertical';
 }
 
+function normalizePlaybookStyleColor(value){
+  const color=String(value||'').trim();
+  return /^#[0-9a-f]{6}$/i.test(color)?color.toLowerCase():'';
+}
+
+function playbookStyleColorsFromTarget(target){
+  if(!target)return null;
+  const colors={
+    background:normalizePlaybookStyleColor(target.dataset?.playbookColorBackground),
+    border:normalizePlaybookStyleColor(target.dataset?.playbookColorBorder),
+    text:normalizePlaybookStyleColor(target.dataset?.playbookColorText),
+    accent:normalizePlaybookStyleColor(target.dataset?.playbookColorAccent)
+  };
+  return Object.values(colors).some(Boolean)?colors:null;
+}
+
+function playbookStyleColorDefaults(target){
+  if(target?.matches?.('.pb-doc-choice-options')){
+    return {background:'#fbf9ff',border:'#d2c9ed',text:'#20242a',accent:'#7e6aa9'};
+  }
+  return {background:'#f7f9fb',border:'#ccd5df',text:'#20242a',accent:'#536170'};
+}
+
+function syncPlaybookStyleTargetVars(target){
+  if(!target)return;
+  const colors=playbookStyleColorsFromTarget(target)||{};
+  const vars={
+    background:'--pb-style-bg',
+    border:'--pb-style-border',
+    text:'--pb-style-text',
+    accent:'--pb-style-accent'
+  };
+  Object.entries(vars).forEach(([key,cssVar])=>{
+    const value=colors[key];
+    if(value)target.style.setProperty(cssVar,value);
+    else target.style.removeProperty(cssVar);
+  });
+}
+
+function playbookStyleRenderAttributes(colors){
+  if(!colors||!Object.values(colors).some(Boolean))return '';
+  const vars=[];
+  if(colors.background)vars.push(`--pb-style-bg:${colors.background}`);
+  if(colors.border)vars.push(`--pb-style-border:${colors.border}`);
+  if(colors.text)vars.push(`--pb-style-text:${colors.text}`);
+  if(colors.accent)vars.push(`--pb-style-accent:${colors.accent}`);
+  return ` data-playbook-custom-colors="1" style="${vars.join(';')}"`;
+}
+
+function applyPlaybookStyleColor(kind,value){
+  const target=playbookListFromRange();
+  const allowed=new Set(['background','border','text','accent']);
+  const color=normalizePlaybookStyleColor(value);
+  if(!target||!allowed.has(kind)||!color){
+    if(!target)showStatus('Place the cursor inside a list or Either / Or group first');
+    refreshPlaybookListStyleControls();
+    return;
+  }
+
+  const datasetKey={
+    background:'playbookColorBackground',
+    border:'playbookColorBorder',
+    text:'playbookColorText',
+    accent:'playbookColorAccent'
+  }[kind];
+
+  target.dataset[datasetKey]=color;
+  syncPlaybookStyleTargetVars(target);
+  refreshPlaybookListStyleControls();
+  syncPlaybookLiveModel();
+  restorePlaybookEditorSelection(playbookEditorSelectionRange);
+}
+
+function resetPlaybookStyleColors(){
+  const target=playbookListFromRange();
+  if(!target){
+    showStatus('Place the cursor inside a list or Either / Or group first');
+    refreshPlaybookListStyleControls();
+    return;
+  }
+  ['playbookColorBackground','playbookColorBorder','playbookColorText','playbookColorAccent']
+    .forEach(key=>delete target.dataset[key]);
+  syncPlaybookStyleTargetVars(target);
+  refreshPlaybookListStyleControls();
+  syncPlaybookLiveModel();
+  restorePlaybookEditorSelection(playbookEditorSelectionRange);
+}
+
 function playbookListFromRange(range=playbookEditorSelectionRange){
   const editor=$('#playbookDocumentEditor');
   if(!editor||!range)return null;
@@ -12082,8 +12321,24 @@ function refreshPlaybookListStyleControls(){
   if(help){
     help.textContent=list
       ? `Selected ${playbookStyleTargetLabel(list)} · ${list.children.length} item${list.children.length===1?'':'s'} · ${layout.replace('-', ' ')}`
-      : 'Place the cursor inside a list or Either / Or group, then choose a layout.';
+      : 'Place the cursor inside a list or Either / Or group, then choose a layout or colors.';
   }
+
+  const defaults=playbookStyleColorDefaults(list);
+  const custom=playbookStyleColorsFromTarget(list)||{};
+  const colorInputs={
+    background:$('#playbookStyleColorBackground'),
+    border:$('#playbookStyleColorBorder'),
+    text:$('#playbookStyleColorText'),
+    accent:$('#playbookStyleColorAccent')
+  };
+  Object.entries(colorInputs).forEach(([kind,input])=>{
+    if(!input)return;
+    input.disabled=!list;
+    input.value=custom[kind]||defaults[kind];
+  });
+  const reset=$('#playbookStyleColorReset');
+  if(reset)reset.disabled=!list||!playbookStyleColorsFromTarget(list);
 }
 
 function applyPlaybookListLayout(layout){
@@ -12270,6 +12525,11 @@ function initPlaybookWorkspace(){
   $$('[data-playbook-list-layout]').forEach(button=>button.addEventListener('click',()=>{
     applyPlaybookListLayout(button.dataset.playbookListLayout);
   }));
+  $$('[data-playbook-style-color]').forEach(input=>{
+    input.addEventListener('input',()=>applyPlaybookStyleColor(input.dataset.playbookStyleColor,input.value));
+    input.addEventListener('change',()=>applyPlaybookStyleColor(input.dataset.playbookStyleColor,input.value));
+  });
+  $('#playbookStyleColorReset')?.addEventListener('click',resetPlaybookStyleColors);
 
   $('#playbookChoiceAddOptionBtn')?.addEventListener('click',()=>{
     if($$('[data-playbook-choice-option-input]').length<8)addPlaybookChoiceOptionInput('');
