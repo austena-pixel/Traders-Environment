@@ -3979,7 +3979,75 @@ body.playbook-preview-resizing *{
 
 .playbook-word-main{min-width:0;display:flex;flex-direction:column;background:#252930;grid-column:1;grid-row:1;border:1px solid #202a38;border-radius:16px;overflow:hidden}
 .playbook-word-ribbon{position:relative;z-index:2;border-bottom:1px solid #c7cbd0;background:#f5f6f8;color:#1b2430}
-.playbook-word-tabs{display:flex;gap:2px;padding:5px 10px 0;border-bottom:1px solid #d4d7dc}
+.playbook-word-tabs{display:flex;gap:2px;padding:5px 390px 0 10px;border-bottom:1px solid #d4d7dc}
+.ti-builder-switcher{
+  position:absolute;
+  top:6px;
+  right:10px;
+  z-index:5;
+  display:flex;
+  align-items:center;
+  gap:5px;
+  max-width:calc(100% - 390px);
+  white-space:nowrap;
+}
+.ti-builder-switcher-label{
+  margin-right:2px;
+  color:#6f7a87;
+  font-size:8px;
+  font-weight:850;
+  letter-spacing:.45px;
+  text-transform:uppercase;
+}
+.ti-builder-switch{
+  min-height:27px;
+  padding:0 9px;
+  border:1px solid #cbd1d9;
+  border-radius:7px;
+  background:#fff;
+  color:#394555;
+  font-size:8px;
+  font-weight:800;
+  cursor:pointer;
+  transition:border-color .15s ease,background .15s ease,color .15s ease,box-shadow .15s ease,transform .15s ease;
+}
+.ti-builder-switch:hover{
+  transform:translateY(-1px);
+  border-color:#8da9c8;
+  background:#edf4fb;
+}
+.ti-builder-switch.active[data-ti-builder-switch="playbook"]{
+  border-color:#5f98d5;
+  background:#e9f3ff;
+  color:#155fa9;
+  box-shadow:0 0 0 1px rgba(63,130,198,.08) inset;
+}
+.ti-builder-switch.active[data-ti-builder-switch="checklist"]{
+  border-color:#70ad8d;
+  background:#ebf8f0;
+  color:#26724b;
+  box-shadow:0 0 0 1px rgba(70,145,100,.08) inset;
+}
+.ti-builder-switch.active[data-ti-builder-switch="psych"]{
+  border-color:#a58ac0;
+  background:#f4eefb;
+  color:#754c95;
+  box-shadow:0 0 0 1px rgba(126,89,160,.08) inset;
+}
+@media(max-width:1180px){
+  .playbook-word-tabs{padding-right:315px}
+  .ti-builder-switcher{max-width:300px}
+  .ti-builder-switch{padding:0 7px;font-size:7px}
+}
+@media(max-width:900px){
+  .playbook-word-tabs{padding-right:10px}
+  .ti-builder-switcher{
+    position:static;
+    max-width:none;
+    padding:6px 10px 0;
+    overflow-x:auto;
+  }
+}
 .playbook-word-tab{min-height:31px;padding:0 13px;border:0;border-bottom:2px solid transparent;background:transparent;color:#3a4654;font-size:10px;font-weight:700}
 .playbook-word-tab.active{color:#175ea9;border-bottom-color:#175ea9}
 .playbook-word-ribbon-panel{display:none;min-height:74px;padding:8px 10px;align-items:stretch;gap:8px;overflow-x:auto}
@@ -6253,6 +6321,12 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
         <div class="playbook-word-main">
           <div class="playbook-word-ribbon" aria-label="Playbook editor ribbon">
+            <div class="ti-builder-switcher" aria-label="Technical Instrument builder">
+              <span class="ti-builder-switcher-label">Built:</span>
+              <button type="button" class="ti-builder-switch active" data-ti-builder-switch="playbook">Playbook</button>
+              <button type="button" class="ti-builder-switch" data-ti-builder-switch="checklist">Checklist</button>
+              <button type="button" class="ti-builder-switch" data-ti-builder-switch="psych">Psychological Reflection</button>
+            </div>
             <div class="playbook-word-tabs" role="tablist" aria-label="Editor tools">
               <button class="playbook-word-tab active" type="button" data-playbook-ribbon="home" role="tab" aria-selected="true">Home</button>
               <button class="playbook-word-tab" type="button" data-playbook-ribbon="insert" role="tab" aria-selected="false">Insert</button>
@@ -8585,6 +8659,16 @@ $$('[data-nav-group-toggle]').forEach(toggle=>{
 });
 initializeTiosNavGroups();
 document.body.classList.remove('execution-workspace');
+
+function switchTechnicalInstrumentBuilder(kind){
+  const target=kind==='checklist'
+    ? 'checklists'
+    : (kind==='psych'?'reflections':'playbook');
+
+  // Uses the existing in-app workspace navigation only: no page reload.
+  // Each target keeps its own document store and Execution Quality mapping.
+  navigate(target);
+}
 
 function navigate(page){
   if(page!=='playbook' && document.body.classList.contains('playbook-workspace')){
@@ -13212,6 +13296,11 @@ function initPlaybookWorkspace(){
     if(event.target.value)selectPlaybookDocument(event.target.value);
   });
 
+  $('#page-playbook')?.addEventListener('click',event=>{
+    const builder=event.target.closest('[data-ti-builder-switch]');
+    if(builder) switchTechnicalInstrumentBuilder(builder.dataset.tiBuilderSwitch);
+  });
+
   $('#playbookPreviewOpenExecutionBtn')?.addEventListener('click',previewCurrentPlaybookInExecutionQuality);
   $('#playbookPreviewAutoZoomBtn')?.addEventListener('click',()=>{
     setPlaybookPreviewAutoZoom(!playbookPreviewAutoZoom);
@@ -13445,6 +13534,12 @@ function secondaryWorkspaceHtml(kind){
 
       <div class="playbook-word-main">
         <div class="playbook-word-ribbon">
+          <div class="ti-builder-switcher" aria-label="Technical Instrument builder">
+            <span class="ti-builder-switcher-label">Built:</span>
+            <button type="button" class="ti-builder-switch" data-ti-builder-switch="playbook">Playbook</button>
+            <button type="button" class="ti-builder-switch ${kind==='checklist'?'active':''}" data-ti-builder-switch="checklist">Checklist</button>
+            <button type="button" class="ti-builder-switch ${kind==='psych'?'active':''}" data-ti-builder-switch="psych">Psychological Reflection</button>
+          </div>
           <div class="playbook-word-tabs" role="tablist">
             <button class="playbook-word-tab active" type="button" data-ti-ribbon="home">Home</button>
             <button class="playbook-word-tab" type="button" data-ti-ribbon="insert">Insert</button>
@@ -13887,6 +13982,12 @@ function initSecondaryWorkspace(kind){
   const state=secondaryState(kind);if(state.initialized)return;state.initialized=true;
   const page=secondaryPage(kind);
   page.addEventListener('click',event=>{
+    const builder=event.target.closest('[data-ti-builder-switch]');
+    if(builder){
+      switchTechnicalInstrumentBuilder(builder.dataset.tiBuilderSwitch);
+      return;
+    }
+
     const action=event.target.closest('[data-ti-action]')?.dataset.tiAction;
     if(action==='new')createSecondaryDocument(kind);
     if(action==='delete')deleteSecondaryDocument(kind);
