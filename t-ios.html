@@ -4226,6 +4226,27 @@ textarea{resize:vertical;min-height:90px}
   height:16px;
   accent-color:#7659c4;
 }
+
+.playbook-word-editor h2,
+.playbook-word-editor h3{
+  padding-top:14px;
+  border-top:1px solid #e1e5ea;
+}
+.playbook-word-editor>h2:first-child,
+.playbook-word-editor>h3:first-child{
+  padding-top:0;
+  border-top:0;
+}
+.playbook-preview-section,
+.execution-map-section{
+  padding-top:10px;
+  border-top:1px solid #243247;
+}
+.playbook-preview-body>.playbook-preview-section:first-child,
+.execution-map-form-body>.execution-map-section:first-child{
+  padding-top:0;
+  border-top:0;
+}
 </style>
 <style id="hios-product-brand-icons">
 /* Product marks use the same symbols and accents as the H-IOS sidebar. */
@@ -5192,7 +5213,6 @@ textarea{resize:vertical;min-height:90px}
                   <button type="button" class="playbook-word-insert-btn" data-playbook-insert="rule">+ Rule</button>
                   <button type="button" class="playbook-word-insert-btn" data-playbook-insert="choice">+ Either / Or</button>
                   <button type="button" class="playbook-word-insert-btn" data-playbook-insert="note">+ Note</button>
-                  <button type="button" class="playbook-word-insert-btn" data-playbook-insert="divider">Divider</button>
                 </div>
               </div>
 
@@ -10422,6 +10442,8 @@ let selectedPlaybookDocumentId=null;
 let playbookDocumentStoreKey=null;
 let playbookDocumentSaveTimer=null;
 let playbookWorkspaceInitialized=false;
+let playbookEditorObserver=null;
+let playbookEditorMutationTimer=null;
 
 function playbookDocumentKey(){
   const userId=currentUser?.id || 'anonymous';
@@ -10514,7 +10536,8 @@ function playbookStructuredPreviewItems(documentHtml){
     return (clone.textContent||'').replace(/\s+/g,' ').trim();
   }
 
-  [...host.children].forEach(node=>{
+  function readNode(node){
+    if(!node||node.nodeType!==1)return;
     const tag=node.tagName?.toLowerCase();
 
     if(['h1','h2','h3'].includes(tag)){
@@ -10530,7 +10553,7 @@ function playbookStructuredPreviewItems(documentHtml){
     }
 
     if(node.matches?.('[data-playbook-node="choice"], .pb-doc-choice')){
-      const title=(node.querySelector('[data-choice-title]')?.textContent||'Choose one').replace(/\s+/g,' ').trim() || 'Choose one';
+      const title=(node.querySelector('[data-choice-title]')?.textContent||'Choose one').replace(/\s+/g,' ').trim()||'Choose one';
       const options=[...node.querySelectorAll('[data-choice-option]')]
         .map(option=>(option.textContent||'').replace(/\s+/g,' ').trim())
         .filter(Boolean);
@@ -10557,7 +10580,8 @@ function playbookStructuredPreviewItems(documentHtml){
     }
 
     if(node.matches?.('ul,ol')){
-      [...node.querySelectorAll(':scope > li')].forEach(li=>{
+      [...node.children].forEach(li=>{
+        if(li.tagName?.toLowerCase()!=='li')return;
         const label=cleanNodeText(li);
         if(label)items.push({type:'check',label});
       });
@@ -10581,10 +10605,17 @@ function playbookStructuredPreviewItems(documentHtml){
       return;
     }
 
+    const children=[...node.children];
+    if(children.length){
+      children.forEach(readNode);
+      return;
+    }
+
     const label=cleanNodeText(node);
     if(label)items.push({type:'content',label});
-  });
+  }
 
+  [...host.children].forEach(readNode);
   return items;
 }
 
@@ -10617,8 +10648,10 @@ function renderPlaybookExecutionPreview(){
   title.textContent=source.name||'Untitled Playbook';
   const items=playbookStructuredPreviewItems(source.documentHtml);
   const checkCount=items.filter(item=>item.type==='check').length;
+  const choiceCount=items.filter(item=>item.type==='choice').length;
   const linkedCount=items.filter(item=>item.type==='checklist'||item.type==='reflection').length;
-  meta.textContent=`Preview only · ${checkCount} direct check${checkCount===1?'':'s'} · ${linkedCount} linked instrument${linkedCount===1?'':'s'}`;
+  const measurableCount=checkCount+choiceCount;
+  meta.textContent=`Preview only · ${measurableCount} condition${measurableCount===1?'':'s'} · ${linkedCount} linked instrument${linkedCount===1?'':'s'}`;
 
   const meaningful=items.some(item=>item.type!=='section');
   if(!meaningful){
@@ -10831,22 +10864,46 @@ function focusPlaybookEditor(){
   return editor;
 }
 
+function syncPlaybookLiveModel(){
+  updatePlaybookWordCount();
+  renderPlaybookExecutionPreview();
+
+  const next=collectPlaybookDocumentFromEditor();
+  if(next){
+    playbookDocuments=playbookDocuments.map(item=>item.id===next.id?next:item);
+  }
+
+  schedulePlaybookDocumentSave();
+}
+
+function observePlaybookEditor(){
+  const editor=$('#playbookDocumentEditor');
+  if(!editor||playbookEditorObserver)return;
+
+  playbookEditorObserver=new MutationObserver(()=>{
+    clearTimeout(playbookEditorMutationTimer);
+    playbookEditorMutationTimer=setTimeout(syncPlaybookLiveModel,0);
+  });
+
+  playbookEditorObserver.observe(editor,{
+    subtree:true,
+    childList:true,
+    characterData:true
+  });
+}
+
 function applyPlaybookCommand(command,value=null){
   const editor=focusPlaybookEditor();
   if(!editor)return;
   document.execCommand(command,false,value);
-  updatePlaybookWordCount();
-  renderPlaybookExecutionPreview();
-  schedulePlaybookDocumentSave();
+  syncPlaybookLiveModel();
 }
 
 function insertPlaybookHtml(markup){
   const editor=focusPlaybookEditor();
   if(!editor)return;
   document.execCommand('insertHTML',false,markup);
-  updatePlaybookWordCount();
-  renderPlaybookExecutionPreview();
-  schedulePlaybookDocumentSave();
+  syncPlaybookLiveModel();
 }
 
 function insertPlaybookElement(kind){
@@ -10855,7 +10912,6 @@ function insertPlaybookElement(kind){
     rule:'<div class="pb-doc-rule" data-playbook-node="rule"><span class="pb-doc-label">RULE</span><p>Define the trading rule here.</p></div><p><br></p>',
     choice:'<div class="pb-doc-choice" data-playbook-node="choice"><span class="pb-doc-label">EITHER / OR</span><span class="pb-doc-choice-title" data-choice-title>Market Context</span><div class="pb-doc-choice-options"><div class="pb-doc-choice-option"><span class="pb-doc-choice-dot"></span><span data-choice-option>Balance</span></div><div class="pb-doc-choice-option"><span class="pb-doc-choice-dot"></span><span data-choice-option>Imbalance</span></div></div></div><p><br></p>',
     note:'<div class="pb-doc-note" data-playbook-node="note"><span class="pb-doc-label">NOTE</span><p>Add context, explanation or reference information.</p></div><p><br></p>',
-    divider:'<hr><p><br></p>',
     checklist:'<div class="pb-doc-link" data-playbook-node="checklist-link"><span class="pb-doc-label">LINKED CHECKLIST</span><p>Type the checklist name here. This reference will later connect to the separate Checklists library.</p></div><p><br></p>',
     reflection:'<div class="pb-doc-link" data-playbook-node="reflection-link"><span class="pb-doc-label">LINKED REFLECTION</span><p>Type the reflection structure name here. This reference will later connect to the separate Reflections library.</p></div><p><br></p>'
   };
@@ -10874,6 +10930,7 @@ function setPlaybookRibbonTab(name){
 function initPlaybookWorkspace(){
   if(playbookWorkspaceInitialized||!$('#playbookDocumentEditor'))return;
   playbookWorkspaceInitialized=true;
+  observePlaybookEditor();
 
   $('#playbookDraftNewBtn')?.addEventListener('click',()=>createPlaybookDocument());
   $('#playbookLibraryNewBtn')?.addEventListener('click',()=>createPlaybookDocument());
@@ -10895,10 +10952,12 @@ function initPlaybookWorkspace(){
   $('#playbookBlockStyle')?.addEventListener('change',event=>{applyPlaybookCommand('formatBlock',event.target.value);event.target.value='p'});
   $$('[data-playbook-insert]').forEach(button=>button.addEventListener('click',()=>insertPlaybookElement(button.dataset.playbookInsert)));
 
-  ['#playbookDraftTitle','#playbookDraftDescription','#playbookDraftTags','#playbookDraftState','#playbookDocumentEditor'].forEach(selector=>{
-    $(selector)?.addEventListener('input',()=>{updatePlaybookWordCount();renderPlaybookExecutionPreview();schedulePlaybookDocumentSave()});
-    $(selector)?.addEventListener('change',schedulePlaybookDocumentSave);
+  ['#playbookDraftTitle','#playbookDraftDescription','#playbookDraftTags','#playbookDraftState'].forEach(selector=>{
+    $(selector)?.addEventListener('input',syncPlaybookLiveModel);
+    $(selector)?.addEventListener('change',syncPlaybookLiveModel);
   });
+
+  $('#playbookDocumentEditor')?.addEventListener('input',syncPlaybookLiveModel);
 
   $('#playbookDocumentEditor')?.addEventListener('paste',event=>{
     event.preventDefault();
