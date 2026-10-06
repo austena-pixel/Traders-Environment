@@ -12052,14 +12052,16 @@ function clampPlaybookPreviewWidth(width){
 }
 
 function playbookPreviewDefaultOffWidth(){
-  const shell=$('#page-playbook .playbook-word-shell');
-  const shellWidth=shell?.getBoundingClientRect().width || window.innerWidth || 0;
-  // OFF should open to the designed wider position (the marked blue-line position),
-  // not reuse an old narrow manual width.
-  return clampPlaybookPreviewWidth(Math.max(
-    PLAYBOOK_PREVIEW_DEFAULT_EXPANDED_WIDTH,
-    shellWidth*0.42
-  ));
+  const viewportWidth=window.innerWidth||0;
+
+  // Match the exact CSS default width:
+  // desktop  : clamp(440px, 36vw, 560px)
+  // medium   : clamp(320px, 38vw, 430px)
+  // This makes Auto Zoom OFF return to the exact same position seen on initial load.
+  if(viewportWidth<=1050&&viewportWidth>820){
+    return Math.max(320,Math.min(430,viewportWidth*.38));
+  }
+  return Math.max(440,Math.min(560,viewportWidth*.36));
 }
 
 function updatePlaybookPreviewLayoutControls(){
@@ -13772,12 +13774,12 @@ function toggleSecondaryAutoZoom(kind){
   if(state.autoZoom){
     shell.style.removeProperty('--playbook-preview-width');
   }else{
-    const shellWidth=shell?.getBoundingClientRect().width||window.innerWidth||0;
-    const maxWidth=Math.max(220,Math.min(720,shellWidth-420));
     if(wasAutoZoom){
-      state.previewWidth=Math.max(560,Math.min(maxWidth,shellWidth*0.42));
+      state.previewWidth=playbookPreviewDefaultOffWidth();
     }else{
-      state.previewWidth=Math.max(220,Math.min(maxWidth,state.previewWidth||560));
+      state.previewWidth=Number.isFinite(Number(state.previewWidth))
+        ? Number(state.previewWidth)
+        : playbookPreviewDefaultOffWidth();
     }
     shell.style.setProperty('--playbook-preview-width',Math.round(state.previewWidth)+'px');
   }
