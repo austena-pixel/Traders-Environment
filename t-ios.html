@@ -4355,6 +4355,28 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
 .playbook-word-editor .ti-image-field-placeholder small,.playbook-word-editor .ti-image-field-related{color:#5a748b}
 .ti-image-field-modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .ti-image-field-modal-note{margin:0 0 16px;color:#8fa4ba;font-size:11px;line-height:1.5}
+.ti-image-field-selection-note{margin:10px 0 6px;font-size:10px;color:#91b1cc}
+.ti-image-field-patterns{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(140px,100%),1fr));gap:8px}
+.ti-image-pattern{display:flex;flex-direction:column;min-width:0;padding:8px;border:1px solid #354c63;border-radius:7px;background:rgba(117,160,199,.04);color:inherit}
+label.ti-image-pattern{cursor:pointer}
+.ti-image-pattern:has(input:checked){border-color:#6ac8bc;background:rgba(106,200,188,.12)}
+.ti-image-pattern-label{display:flex;align-items:center;gap:7px;margin-top:8px;font-size:11px;line-height:1.4}
+.ti-image-pattern-label input{flex:0 0 14px;width:14px;height:14px;min-width:0;margin:0;padding:0;accent-color:#56b8aa}
+.ti-image-pattern-label > span{min-width:0}
+.ti-image-pattern-picture{display:flex;align-items:center;justify-content:center;min-height:75px;border-radius:4px;overflow:hidden;background:rgba(117,160,199,.055)}
+.ti-image-pattern-picture img{display:block;width:100%;max-height:180px;object-fit:contain}
+.ti-image-pattern-picture img:not([src]){display:none}
+.ti-image-pattern-picture-status{padding:10px;text-align:center;font-size:10px;color:#8fa4ba}
+.ti-image-pattern-picture-status[hidden]{display:none}
+.playbook-word-editor .ti-image-pattern{border-color:#bdcedb;background:#fff}
+.playbook-word-editor .ti-image-field-selection-note,.playbook-word-editor .ti-image-pattern-picture-status{color:#5a748b}
+.ti-image-pattern-design-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:12px 0 8px;font-size:12px}
+.ti-image-pattern-design-row{display:grid;grid-template-columns:90px minmax(0,1fr);gap:10px;padding:10px;margin-bottom:8px;border:1px solid #354c63;border-radius:7px}
+.ti-image-pattern-design-row .ti-image-pattern-picture img{max-height:90px}
+.ti-image-pattern-design-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.ti-image-pattern-design-actions .btn{font-size:10px;padding:5px 8px}
+.ti-image-pattern-design-help{margin:0;color:#8fa4ba;font-size:11px;line-height:1.5}
+.ti-image-pattern-design[hidden]{display:none}
 #instrumentImageFieldModal select,#instrumentImageFieldModal textarea{width:100%;font-size:12px}
 #instrumentImageFieldModal textarea{min-height:70px;resize:vertical}
 @media(max-width:520px){.ti-image-field-modal-grid{grid-template-columns:1fr;gap:0}}
@@ -11117,7 +11139,7 @@ function renderExecutionSecondaryItems(kind,doc){
   return items.map((item,itemIndex)=>{
     if(item.type==='section')return `<div class="execution-map-section ${item.level===1?'level-1':(item.level===3?'level-3':'level-2')}">${escapeHtml(item.label)}</div>`;
     if(item.type==='image')return instrumentReferenceImageHtml(item);
-    if(item.type==='image-field')return instrumentImageFieldHtml(item);
+    if(item.type==='image-field')return instrumentImageFieldHtml(item,false,{kind,area:'execution'});
     if(item.type==='psych-prompt'||(kind==='psych'&&item.type==='content')){
       return `<div class="execution-psych-prompt"><label>${escapeHtml(item.label)}</label><textarea placeholder="Psychological review response"></textarea></div>`;
     }
@@ -11190,7 +11212,7 @@ function renderExecutionMappingForm(){
   const playbookHtml=playbook
     ? (items.length?items.map((item,itemIndex)=>{
     if(item.type==='image')return instrumentReferenceImageHtml(item);
-    if(item.type==='image-field')return instrumentImageFieldHtml(item);
+    if(item.type==='image-field')return instrumentImageFieldHtml(item,false,{kind:'playbook',area:'execution'});
     if(item.type==='section'){
       return `<div class="execution-map-section ${item.level===1?'level-1':(item.level===3?'level-3':'level-2')}">${escapeHtml(item.label)}</div>`;
     }
@@ -12879,6 +12901,21 @@ function playbookModule(){
   return window.TIOS?.technicalInstruments?.playbooks || null;
 }
 
+const INSTRUMENT_STARTER_DOCUMENTS={
+  playbook:{
+    html:'<h2>Playbook</h2><p>Define the market context, setup, entry and exit conditions that form your trading edge.</p>',
+    previous:'<h2>Trading Method</h2><p>Describe the opportunity, context or idea this playbook is designed to capture.</p><h2>Rules</h2><p>Start defining your trading rules here.</p>'
+  },
+  checklist:{
+    html:'<h2>Rules</h2><p>Define the conditions, boundaries and actions that should be checked for each trade.</p>',
+    previous:'<h2>Rules</h2><p>Define reusable trading rules and conditions here.</p>'
+  }
+};
+function upgradeInstrumentStarterHtml(kind,html){
+  const value=String(html||''),starter=INSTRUMENT_STARTER_DOCUMENTS[kind];
+  return starter&&value.trim()===starter.previous?starter.html:value;
+}
+
 function normalizePlaybookDocument(raw={}){
   const module=playbookModule();
   const base=module?.create
@@ -12897,7 +12934,7 @@ function normalizePlaybookDocument(raw={}){
 
   base.name=String(raw.name||base.name||'Untitled Playbook').trim() || 'Untitled Playbook';
   base.description=String(raw.description||base.description||'');
-  base.documentHtml=String(raw.documentHtml||base.documentHtml||'');
+  base.documentHtml=upgradeInstrumentStarterHtml('playbook',raw.documentHtml||base.documentHtml||'');
   base.tags=Array.isArray(raw.tags)?raw.tags:base.tags||[];
   base.instrumentState=String(raw.instrumentState||base.instrumentState||'active');
   base.createdAt=raw.createdAt || base.createdAt || new Date().toISOString();
@@ -12921,6 +12958,7 @@ function loadPlaybookDocuments(){
   if(selectedPlaybookDocumentId&&!playbookDocuments.some(item=>item.id===selectedPlaybookDocumentId)){
     selectedPlaybookDocumentId=playbookDocuments[0]?.id || null;
   }
+  if(stored.some((item,index)=>item.documentHtml!==playbookDocuments[index].documentHtml))persistPlaybookDocuments();
 }
 
 function persistPlaybookDocuments(){
@@ -13148,9 +13186,10 @@ function renderPlaybookExecutionPreview(){
     return;
   }
 
+  const patternResponses=captureInstrumentImagePatternResponses(body,source.id);
   body.innerHTML=items.map((item,itemIndex)=>{
     if(item.type==='image')return instrumentReferenceImageHtml(item);
-    if(item.type==='image-field')return instrumentImageFieldHtml(item);
+    if(item.type==='image-field')return instrumentImageFieldHtml(item,false,{kind:'playbook',area:'preview'});
     if(item.type==='section'){
       return `<div class="playbook-preview-section ${item.level===1?'level-1':(item.level===3?'level-3':'level-2')}">${escapeHtml(item.label)}</div>`;
     }
@@ -13224,6 +13263,7 @@ function renderPlaybookExecutionPreview(){
     }
     return '';
   }).join('');
+  restoreInstrumentImagePatternResponses(body,source.id,patternResponses);
   hydratePlaybookImages(body);
 }
 
@@ -13308,7 +13348,7 @@ function createPlaybookDocument({silent=false,source=null}={}){
     : {
         name:'Untitled Playbook',
         description:'',
-        documentHtml:'<h2>Trading Method</h2><p>Describe the opportunity, context or idea this playbook is designed to capture.</p><h2>Rules</h2><p>Start defining your trading rules here.</p>',
+        documentHtml:INSTRUMENT_STARTER_DOCUMENTS.playbook.html,
         tags:[],
         instrumentState:'draft'
       };
@@ -14127,7 +14167,7 @@ const SECONDARY_INSTRUMENT_CONFIG={
     singular:'Rules',
     executionLabel:'RULES EXECUTION',
     store:'tios_checklist_documents_v2',
-    defaultHtml:'<h2>Rules</h2><p>Define reusable trading rules and conditions here.</p>',
+    defaultHtml:INSTRUMENT_STARTER_DOCUMENTS.checklist.html,
     insertPrimary:'Rule',
     module:'checklists'
   },
@@ -14168,7 +14208,7 @@ function secondaryNormalizeDoc(kind,raw={}){
     id:String(raw.id||secondaryMakeId(kind)),
     name:String(raw.name||('Untitled '+config.singular)),
     description:String(raw.description||''),
-    documentHtml:String(raw.documentHtml||config.defaultHtml),
+    documentHtml:upgradeInstrumentStarterHtml(kind,raw.documentHtml||config.defaultHtml),
     tags:Array.isArray(raw.tags)?raw.tags.map(String):[],
     instrumentState:String(raw.instrumentState||'draft'),
     createdAt:String(raw.createdAt||now),
@@ -14188,6 +14228,7 @@ function loadSecondaryDocuments(kind,{refresh=false}={}){
   state.docs=stored.map(item=>secondaryNormalizeDoc(kind,item));
   state.selectedId=localStorage.getItem(key+':selected')||state.docs[0]?.id||null;
   if(state.selectedId&&!state.docs.some(item=>item.id===state.selectedId))state.selectedId=state.docs[0]?.id||null;
+  if(stored.some((item,index)=>item.documentHtml!==state.docs[index].documentHtml))persistSecondaryDocuments(kind);
 }
 function persistSecondaryDocuments(kind){
   const state=secondaryState(kind);
@@ -14710,7 +14751,7 @@ function openSecondaryTableModal(kind){
 function secondaryPreviewHtml(kind,items){
   return items.map((item,itemIndex)=>{
     if(item.type==='image')return instrumentReferenceImageHtml(item);
-    if(item.type==='image-field')return instrumentImageFieldHtml(item);
+    if(item.type==='image-field')return instrumentImageFieldHtml(item,false,{kind,area:'preview'});
     if(item.type==='section')return '<div class="playbook-preview-section level-'+(item.level||2)+'">'+escapeHtml(item.label)+'</div>';
     if(item.type==='psych-prompt')return '<div class="ti-preview-prompt"><b>'+escapeHtml(item.label)+'</b><span></span></div>';
     if(item.type==='check'){
@@ -14750,7 +14791,9 @@ function renderSecondaryPreview(kind){
     const measurable=kind==='psych'?items.filter(x=>x.type==='psych-prompt'||x.type==='choice'||x.type==='check').length:items.filter(x=>x.type==='check'||x.type==='choice').length;
     meta.textContent='Preview only · '+measurable+' '+(kind==='psych'?'prompt':'condition')+(measurable===1?'':'s')+' · mapped separately';
   }
+  const patternResponses=captureInstrumentImagePatternResponses(body,doc.id);
   body.innerHTML=items.length?secondaryPreviewHtml(kind,items):'<div class="playbook-preview-empty">Start building this instrument to see its Execution Quality model.</div>';
+  restoreInstrumentImagePatternResponses(body,doc.id,patternResponses);
   hydratePlaybookImages(body);
 }
 function renderSecondaryDocument(kind){
@@ -14990,6 +15033,7 @@ function instrumentReferenceImageHtml(item,editable=false){
 }
 
 const INSTRUMENT_IMAGE_FIELD_STAGES={context:'Context / bias',structure:'Market structure',entry:'Entry / execution',exit:'Exit / management',reflection:'Reflection',other:'Other'};
+const INSTRUMENT_IMAGE_FIELD_SELECTIONS={capture:'Picture only',choice:'Choice — choose one pattern',check:'Check — select patterns independently'};
 let instrumentImageFieldModalContext=null;
 
 function normalizeInstrumentImageFieldStage(stage){
@@ -14997,6 +15041,45 @@ function normalizeInstrumentImageFieldStage(stage){
 }
 function makeInstrumentImageFieldId(){
   return 'image_field_'+(window.crypto?.randomUUID?.()||Date.now().toString(36)+'_'+Math.random().toString(36).slice(2));
+}
+function normalizeInstrumentImageFieldSelection(selection){
+  return Object.prototype.hasOwnProperty.call(INSTRUMENT_IMAGE_FIELD_SELECTIONS,selection)?selection:'capture';
+}
+function normalizeInstrumentImagePatterns(value){
+  let patterns=value;
+  if(typeof patterns==='string'){try{patterns=JSON.parse(patterns)}catch(error){patterns=[]}}
+  if(!Array.isArray(patterns))return [];
+  return patterns.filter(item=>item&&typeof item==='object').map(item=>({
+    id:String(item.id||makeInstrumentImageFieldId()),label:String(item.label||''),imageKey:String(item.imageKey||'')
+  }));
+}
+function instrumentImagePatternPictureHtml(pattern){
+  const key=pattern.imageKey;
+  return `<span class="ti-image-pattern-picture"${key?' data-playbook-image-key="'+escapeHtml(key)+'"':''}><img alt="${escapeHtml(pattern.label||'Representative pattern')}"><span class="ti-image-pattern-picture-status">${key?'Loading image…':'Representative picture (optional)'}</span></span>`;
+}
+function instrumentImageFieldPatternsHtml(item,editable,{kind='playbook',area='preview'}={}){
+  const selection=normalizeInstrumentImageFieldSelection(item.selection);
+  if(selection==='capture')return '';
+  const instruction=selection==='choice'?'Choose one pattern':'Check each applicable pattern';
+  const name='ti_image_pattern_'+area+'_'+kind+'_'+item.id;
+  const patterns=normalizeInstrumentImagePatterns(item.patterns).map(pattern=>{
+    const tag=editable?'div':'label';
+    const control=editable?'<span aria-hidden="true">'+(selection==='choice'?'○':'□')+'</span>':`<input type="${selection==='choice'?'radio':'checkbox'}" name="${escapeHtml(name)}" value="${escapeHtml(pattern.id)}" data-ti-image-pattern-response>`;
+    return `<${tag} class="ti-image-pattern" data-ti-image-pattern-id="${escapeHtml(pattern.id)}">${instrumentImagePatternPictureHtml(pattern)}<span class="ti-image-pattern-label">${control}<span>${escapeHtml(pattern.label)}</span></span></${tag}>`;
+  }).join('');
+  return `<div class="ti-image-field-selection-note">${instruction}</div><div class="ti-image-field-patterns" role="group" aria-label="${escapeHtml(item.label+': '+instruction)}">${patterns}</div>`;
+}
+// Keep trial selections during a Live Model refresh; responses stay out of saved design HTML.
+function captureInstrumentImagePatternResponses(root,documentId){
+  if(root.dataset.tiImagePatternDocument!==documentId)return new Set();
+  return new Set([...root.querySelectorAll('[data-ti-image-pattern-response]:checked')].map(input=>
+    JSON.stringify([input.closest('[data-ti-image-field-id]').dataset.tiImageFieldId,input.value])));
+}
+function restoreInstrumentImagePatternResponses(root,documentId,responses){
+  root.dataset.tiImagePatternDocument=documentId;
+  root.querySelectorAll('[data-ti-image-pattern-response]').forEach(input=>{
+    input.checked=responses.has(JSON.stringify([input.closest('[data-ti-image-field-id]').dataset.tiImageFieldId,input.value]));
+  });
 }
 function instrumentImageFieldItem(node,root){
   const related=node.dataset.tiImageFieldRelated||'';
@@ -15007,21 +15090,25 @@ function instrumentImageFieldItem(node,root){
     timeframe:node.dataset.tiImageFieldTimeframe||'',
     stage:normalizeInstrumentImageFieldStage(node.dataset.tiImageFieldStage),
     prompt:node.dataset.tiImageFieldPrompt||'',
+    selection:normalizeInstrumentImageFieldSelection(node.dataset.tiImageFieldSelection),
+    patterns:normalizeInstrumentImagePatterns(node.dataset.tiImageFieldPatterns),
     related,
     relatedLabel:related?(parent?.dataset.tiImageFieldLabel||'Unavailable image field'):''
   };
 }
-function instrumentImageFieldHtml(item,editable=false){
+function instrumentImageFieldHtml(item,editable=false,renderContext={}){
   const stage=normalizeInstrumentImageFieldStage(item.stage);
+  const selection=normalizeInstrumentImageFieldSelection(item.selection);
+  const patterns=normalizeInstrumentImagePatterns(item.patterns);
   const tools=editable?'<button class="ti-image-field-edit" type="button" data-ti-image-field-edit>Edit field</button>':'';
   const remove=editable?'<button class="pb-doc-remove-btn" type="button" aria-label="Remove image field" title="Remove image field">×</button>':'';
   const timeframe=item.timeframe?'<span>'+escapeHtml(item.timeframe)+'</span>':'';
-  return `<div class="ti-image-field" data-playbook-node="image-field" data-ti-image-field-id="${escapeHtml(item.id)}" data-ti-image-field-label="${escapeHtml(item.label)}" data-ti-image-field-timeframe="${escapeHtml(item.timeframe||'')}" data-ti-image-field-stage="${stage}" data-ti-image-field-prompt="${escapeHtml(item.prompt||'')}" data-ti-image-field-related="${escapeHtml(item.related||'')}" contenteditable="false">
+  return `<div class="ti-image-field" data-playbook-node="image-field" data-ti-image-field-id="${escapeHtml(item.id)}" data-ti-image-field-label="${escapeHtml(item.label)}" data-ti-image-field-timeframe="${escapeHtml(item.timeframe||'')}" data-ti-image-field-stage="${stage}" data-ti-image-field-prompt="${escapeHtml(item.prompt||'')}" data-ti-image-field-related="${escapeHtml(item.related||'')}" data-ti-image-field-selection="${selection}" data-ti-image-field-patterns="${escapeHtml(JSON.stringify(patterns))}" contenteditable="false">
     ${remove}
     <div class="ti-image-field-head"><strong class="ti-image-field-name">${escapeHtml(item.label)}</strong>${tools}</div>
     <div class="ti-image-field-meta">${timeframe}<span>${INSTRUMENT_IMAGE_FIELD_STAGES[stage]}</span></div>
     ${item.prompt?'<div class="ti-image-field-prompt">'+escapeHtml(item.prompt)+'</div>':''}
-    <div class="ti-image-field-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8" cy="8" r="1.5"/><path d="m3 17 5-5 4 4 4-6 5 7"/></svg><span>Trade picture goes here<small>Designed here · filled per trade later in Journal</small></span></div>
+    ${selection==='capture'?'<div class="ti-image-field-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8" cy="8" r="1.5"/><path d="m3 17 5-5 4 4 4-6 5 7"/></svg><span>Trade picture goes here<small>Designed here · filled per trade later in Journal</small></span></div>':instrumentImageFieldPatternsHtml({...item,selection,patterns},editable,renderContext)}
     <small class="ti-image-field-related" data-ti-image-field-related-label${item.related?'':' hidden'}>${item.related?'Related to: '+escapeHtml(item.relatedLabel||'Unavailable image field'):''}</small>
   </div>`;
 }
@@ -15042,15 +15129,70 @@ function refreshInstrumentImageFieldRelations(editor){
     }
   });
 }
-function closeInstrumentImageFieldModal({restore=true}={}){
+function closeInstrumentImageFieldModal({restore=true,keepMedia=false}={}){
   const context=instrumentImageFieldModalContext;
   const modal=$('#instrumentImageFieldModal');
   modal?.classList.remove('open');modal?.setAttribute('aria-hidden','true');
   instrumentImageFieldModalContext=null;
+  const usedKeys=new Set(context?.patterns?.map(pattern=>pattern.imageKey)||[]);
+  context?.newMediaKeys?.forEach(key=>{
+    if(!keepMedia||!usedKeys.has(key))deletePlaybookMediaRecord(key).catch(error=>console.warn('Could not remove unused representative image',error));
+  });
   if(restore&&instrumentImageContextCurrent(context)){
     if(context.field?.isConnected)context.field.querySelector('[data-ti-image-field-edit]')?.focus();
     else if(context.kind==='playbook')restorePlaybookEditorSelection(context.range);
     else {secondaryState(context.kind).selectionRange=context.range;secondaryRestoreSelection(context.kind)}
+  }
+}
+function instrumentImagePatternDesignRowHtml(pattern){
+  return `<div class="ti-image-pattern-design-row" data-image-pattern-row="${escapeHtml(pattern.id)}">${instrumentImagePatternPictureHtml(pattern)}<div><label class="playbook-choice-field"><span>Pattern name</span><input data-image-pattern-label maxlength="120" value="${escapeHtml(pattern.label)}" placeholder="e.g. Pattern 1"></label><div class="ti-image-pattern-design-actions"><button class="btn" type="button" data-image-pattern-upload>${pattern.imageKey?'Replace picture':'Add picture'}</button><button class="btn" type="button" data-image-pattern-clear${pattern.imageKey?'':' hidden'}>Remove picture</button><button class="btn" type="button" data-image-pattern-remove>Remove pattern</button></div><input type="file" data-image-pattern-file accept="image/png,image/jpeg,image/webp,image/gif" hidden></div></div>`;
+}
+function appendInstrumentImagePatternDesignRow(pattern){
+  const host=$('#instrumentImageFieldForm [data-image-pattern-rows]');
+  host.insertAdjacentHTML('beforeend',instrumentImagePatternDesignRowHtml(pattern));
+  hydratePlaybookImages(host.lastElementChild);
+}
+function syncInstrumentImagePatternDesign(){
+  const context=instrumentImageFieldModalContext,form=$('#instrumentImageFieldForm');if(!context||!form)return;
+  const selection=normalizeInstrumentImageFieldSelection(form.elements.selection.value);
+  form.querySelector('[data-image-pattern-design]').hidden=selection==='capture';
+  form.querySelector('[data-image-pattern-help]').textContent=selection==='choice'
+    ?'Add at least two patterns. Only one can be selected in this field.'
+    :'Each pattern can be checked independently.';
+  if(selection!=='capture'&&!context.patterns.length){
+    for(let i=1;i<=2;i++){
+      const pattern={id:makeInstrumentImageFieldId(),label:'Pattern '+i,imageKey:''};
+      context.patterns.push(pattern);appendInstrumentImagePatternDesignRow(pattern);
+    }
+  }
+}
+async function uploadInstrumentImagePattern(fileInput){
+  const context=instrumentImageFieldModalContext,row=fileInput.closest('[data-image-pattern-row]');
+  const pattern=context?.patterns.find(item=>item.id===row?.dataset.imagePatternRow),file=fileInput.files?.[0];
+  fileInput.value='';if(!pattern||!file)return;
+  const error=$('#instrumentImageFieldForm [data-image-field-error]');
+  const version=pattern.uploadVersion=(pattern.uploadVersion||0)+1;
+  context.pendingUploads++;$('#instrumentImageFieldForm [type="submit"]').disabled=true;
+  const button=row.querySelector('[data-image-pattern-upload]');button.disabled=true;button.textContent='Loading…';
+  error.textContent='';
+  try{
+    if(!['image/png','image/jpeg','image/webp','image/gif'].includes(file.type))throw new Error('Choose a PNG, JPG, WebP or GIF image.');
+    if(file.size>12*1024*1024)throw new Error('Choose an image smaller than 12 MB.');
+    const key=await storePlaybookDemoImage(file,context.documentId,{maxSide:2400,quality:.9,mimeType:'image/webp',builderKind:context.kind});
+    if(instrumentImageFieldModalContext!==context||!instrumentImageContextCurrent(context)||!row.isConnected||!context.patterns.includes(pattern)||pattern.uploadVersion!==version){
+      await deletePlaybookMediaRecord(key);return;
+    }
+    context.newMediaKeys.add(key);pattern.imageKey=key;
+    row.querySelector('.ti-image-pattern-picture').outerHTML=instrumentImagePatternPictureHtml(pattern);
+    row.querySelector('[data-image-pattern-clear]').hidden=false;hydratePlaybookImages(row);
+  }catch(failure){
+    if(instrumentImageFieldModalContext===context&&row.isConnected)error.textContent=failure.message||'The representative picture could not be saved.';
+  }finally{
+    context.pendingUploads--;
+    if(instrumentImageFieldModalContext===context){
+      $('#instrumentImageFieldForm [type="submit"]').disabled=context.pendingUploads>0;
+      if(row.isConnected){button.disabled=false;button.textContent=pattern.imageKey?'Replace picture':'Add picture'}
+    }
   }
 }
 function ensureInstrumentImageFieldModal(){
@@ -15069,16 +15211,47 @@ function ensureInstrumentImageFieldModal(){
       else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
     }
   });
-  $('#instrumentImageFieldForm').addEventListener('submit',saveInstrumentImageFieldFromModal);
+  const form=$('#instrumentImageFieldForm');
+  form.addEventListener('submit',saveInstrumentImageFieldFromModal);
+  form.addEventListener('change',event=>{
+    const context=instrumentImageFieldModalContext;if(!context)return;
+    if(event.target.name==='selection')syncInstrumentImagePatternDesign();
+    if(event.target.matches('[data-image-pattern-file]'))uploadInstrumentImagePattern(event.target);
+  });
+  form.addEventListener('input',event=>{
+    if(!event.target.matches('[data-image-pattern-label]'))return;
+    const row=event.target.closest('[data-image-pattern-row]');
+    const pattern=instrumentImageFieldModalContext?.patterns.find(item=>item.id===row.dataset.imagePatternRow);
+    if(pattern)pattern.label=event.target.value;
+  });
+  form.addEventListener('click',event=>{
+    const context=instrumentImageFieldModalContext;if(!context)return;
+    if(event.target.closest('[data-image-pattern-add]')){
+      const pattern={id:makeInstrumentImageFieldId(),label:'Pattern '+(context.patterns.length+1),imageKey:''};
+      context.patterns.push(pattern);appendInstrumentImagePatternDesignRow(pattern);
+      form.querySelector('[data-image-pattern-rows]').lastElementChild.querySelector('[data-image-pattern-label]').focus();return;
+    }
+    const row=event.target.closest('[data-image-pattern-row]');if(!row)return;
+    const pattern=context.patterns.find(item=>item.id===row.dataset.imagePatternRow);if(!pattern)return;
+    if(event.target.closest('[data-image-pattern-upload]'))row.querySelector('[data-image-pattern-file]').click();
+    if(event.target.closest('[data-image-pattern-clear]')){
+      pattern.uploadVersion=(pattern.uploadVersion||0)+1;pattern.imageKey='';
+      row.querySelector('.ti-image-pattern-picture').outerHTML=instrumentImagePatternPictureHtml(pattern);
+      row.querySelector('[data-image-pattern-clear]').hidden=true;row.querySelector('[data-image-pattern-upload]').textContent='Add picture';
+    }
+    if(event.target.closest('[data-image-pattern-remove]')){context.patterns=context.patterns.filter(item=>item!==pattern);row.remove()}
+  });
 }
 function openInstrumentImageFieldModal(kind,field=null){
   const context=captureInstrumentImageContext(kind);if(!context)return;
   if(field&&!context.editor.contains(field))return;
   ensureInstrumentImageFieldModal();
+  if(instrumentImageFieldModalContext)closeInstrumentImageFieldModal({restore:false});
   context.field=field;
   instrumentImageFieldModalContext=context;
-  const item=field?instrumentImageFieldItem(field,context.editor):{id:makeInstrumentImageFieldId(),label:'',timeframe:'',stage:'other',prompt:'',related:''};
+  const item=field?instrumentImageFieldItem(field,context.editor):{id:makeInstrumentImageFieldId(),label:'',timeframe:'',stage:'other',prompt:'',related:'',selection:'capture',patterns:[]};
   context.fieldId=item.id;
+  context.patterns=normalizeInstrumentImagePatterns(item.patterns);context.newMediaKeys=new Set();context.pendingUploads=0;
   const fields=[...context.editor.querySelectorAll('[data-playbook-node="image-field"]')].filter(node=>node!==field);
   const options=fields.map(node=>{
     const value=instrumentImageFieldItem(node,context.editor);
@@ -15086,17 +15259,20 @@ function openInstrumentImageFieldModal(kind,field=null){
   }).join('');
   $('#instrumentImageFieldTitle').textContent=field?'Edit Image Field':'Design Image Field';
   $('#instrumentImageFieldForm').innerHTML=`
-    <p class="ti-image-field-modal-note">Define where a picture belongs in your trading system. This creates a reusable field; trade pictures will be recorded later in Journal.</p>
+    <p class="ti-image-field-modal-note">Define a picture field or a group of representative patterns. Trade pictures and responses will be recorded later in Journal.</p>
     <label class="playbook-choice-field"><span>Field name</span><input name="label" maxlength="120" required placeholder="e.g. 4H balance / imbalance" value="${escapeHtml(item.label)}"></label>
     <div class="ti-image-field-modal-grid">
       <label class="playbook-choice-field"><span>Timeframe (optional)</span><input name="timeframe" maxlength="30" placeholder="e.g. 4H, 30min, 5min" value="${escapeHtml(item.timeframe)}"></label>
       <label class="playbook-choice-field"><span>Trading stage</span><select name="stage">${Object.entries(INSTRUMENT_IMAGE_FIELD_STAGES).map(([value,label])=>'<option value="'+value+'">'+label+'</option>').join('')}</select></label>
     </div>
     <label class="playbook-choice-field"><span>What should the picture show? (optional)</span><textarea name="prompt" maxlength="1200" placeholder="Describe the analysis, entry or exit condition to capture.">${escapeHtml(item.prompt)}</textarea></label>
+    <label class="playbook-choice-field"><span>Selection</span><select name="selection">${Object.entries(INSTRUMENT_IMAGE_FIELD_SELECTIONS).map(([value,label])=>'<option value="'+value+'">'+label+'</option>').join('')}</select></label>
+    <div class="ti-image-pattern-design" data-image-pattern-design hidden><div class="ti-image-pattern-design-head"><strong>Representative patterns</strong><button class="btn" type="button" data-image-pattern-add>+ Add pattern</button></div><p class="ti-image-pattern-design-help" data-image-pattern-help></p><div data-image-pattern-rows></div></div>
     <label class="playbook-choice-field"><span>Related image field (optional)</span><select name="related"><option value="">None</option>${options}</select></label>
     <div class="playbook-choice-error" data-image-field-error role="alert"></div>
     <div class="playbook-choice-modal-actions"><span></span><div class="playbook-choice-modal-actions-right"><button class="btn" type="button" data-image-field-close>Cancel</button><button class="btn primary" type="submit">${field?'Save Field':'Insert Image Field'}</button></div></div>`;
-  const form=$('#instrumentImageFieldForm');form.elements.stage.value=item.stage;form.elements.related.value=item.related||'';
+  const form=$('#instrumentImageFieldForm');form.elements.stage.value=item.stage;form.elements.related.value=item.related||'';form.elements.selection.value=item.selection;
+  context.patterns.forEach(appendInstrumentImagePatternDesignRow);syncInstrumentImagePatternDesign();
   const modal=$('#instrumentImageFieldModal');modal.classList.add('open');modal.setAttribute('aria-hidden','false');form.elements.label.focus();
 }
 function saveInstrumentImageFieldFromModal(event){
@@ -15106,9 +15282,15 @@ function saveInstrumentImageFieldFromModal(event){
     closeInstrumentImageFieldModal({restore:false});showStatus('The document changed. Choose an insertion point and open the field again.');return;
   }
   const form=$('#instrumentImageFieldForm');
-  const item={id:context.fieldId,label:form.elements.label.value.trim(),timeframe:form.elements.timeframe.value.trim(),stage:normalizeInstrumentImageFieldStage(form.elements.stage.value),prompt:form.elements.prompt.value.trim(),related:form.elements.related.value};
+  if(context.pendingUploads)return;
+  const item={id:context.fieldId,label:form.elements.label.value.trim(),timeframe:form.elements.timeframe.value.trim(),stage:normalizeInstrumentImageFieldStage(form.elements.stage.value),prompt:form.elements.prompt.value.trim(),related:form.elements.related.value,selection:normalizeInstrumentImageFieldSelection(form.elements.selection.value),patterns:normalizeInstrumentImagePatterns(context.patterns).map(pattern=>({...pattern,label:pattern.label.trim()}))};
   const error=form.querySelector('[data-image-field-error]');
   if(!item.label){error.textContent='Enter a field name.';form.elements.label.focus();return}
+  if(item.selection!=='capture'){
+    const minimum=item.selection==='choice'?2:1;
+    if(item.patterns.length<minimum){error.textContent='Add at least '+minimum+' pattern'+(minimum===1?'':'s')+'.';return}
+    if(item.patterns.some(pattern=>!pattern.label)){error.textContent='Enter a name for each pattern.';return}
+  }
   const fields=[...context.editor.querySelectorAll('[data-playbook-node="image-field"]')];
   const parent=fields.find(node=>node.dataset.tiImageFieldId===item.related);
   if(item.related&&!parent){error.textContent='Choose a related field in this document, or None.';return}
@@ -15124,7 +15306,7 @@ function saveInstrumentImageFieldFromModal(event){
   else context.editor.appendChild(block);
   if(!block.nextSibling){const paragraph=document.createElement('p');paragraph.innerHTML='<br>';block.after(paragraph)}
   refreshInstrumentImageFieldRelations(context.editor);
-  closeInstrumentImageFieldModal({restore:false});syncInstrumentImageDocument(context.kind);
+  closeInstrumentImageFieldModal({restore:false,keepMedia:true});hydratePlaybookImages(block);syncInstrumentImageDocument(context.kind);
   context.editor.focus();
   const range=document.createRange();range.selectNodeContents(block.querySelector('.ti-image-field-name'));range.collapse(false);
   const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);
@@ -15143,6 +15325,12 @@ function serializeInstrumentDocument(editor){
     figure.removeAttribute('data-playbook-image-src');
     figure.querySelector('[data-ti-reference-image]')?.removeAttribute('src');
     const status=figure.querySelector('.ti-reference-image-status');
+    if(status){status.hidden=false;status.textContent='Loading image…'}
+  });
+  clone.querySelectorAll('.ti-image-pattern-picture[data-playbook-image-key]').forEach(picture=>{
+    picture.removeAttribute('data-playbook-image-hydrated');
+    picture.querySelector('img')?.removeAttribute('src');
+    const status=picture.querySelector('.ti-image-pattern-picture-status');
     if(status){status.hidden=false;status.textContent='Loading image…'}
   });
   return clone.innerHTML;
@@ -15327,6 +15515,10 @@ async function hydratePlaybookImages(root=document){
       const record=await getPlaybookMediaRecord(key);
 
       if(!record?.dataUrl){
+        if(node.classList.contains('ti-image-pattern-picture')){
+          const status=node.querySelector('.ti-image-pattern-picture-status');if(status){status.hidden=false;status.textContent='Image unavailable on this device'}
+          return;
+        }
         if(node.matches('[data-playbook-node="image"]')){
           const status=node.querySelector('.ti-reference-image-status');if(status){status.hidden=false;status.textContent='Image unavailable on this device'}
           return;
@@ -15342,6 +15534,11 @@ async function hydratePlaybookImages(root=document){
       if(node.matches('[data-playbook-node="image"]')){
         const image=node.querySelector('[data-ti-reference-image]');if(image)image.src=record.dataUrl;
         const status=node.querySelector('.ti-reference-image-status');if(status)status.hidden=true;
+        return;
+      }
+      if(node.classList.contains('ti-image-pattern-picture')){
+        const image=node.querySelector('img');if(image)image.src=record.dataUrl;
+        const status=node.querySelector('.ti-image-pattern-picture-status');if(status)status.hidden=true;
         return;
       }
 
@@ -15365,6 +15562,10 @@ async function hydratePlaybookImages(root=document){
     }catch(error){
       console.warn('Could not hydrate playbook image:',error);
 
+      if(node.classList.contains('ti-image-pattern-picture')){
+        const status=node.querySelector('.ti-image-pattern-picture-status');if(status){status.hidden=false;status.textContent='Image unavailable'}
+        return;
+      }
       if(node.matches('[data-playbook-node="image"]')){
         const status=node.querySelector('.ti-reference-image-status');if(status){status.hidden=false;status.textContent='Image unavailable'}
         return;
