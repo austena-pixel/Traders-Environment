@@ -3776,8 +3776,8 @@ textarea{resize:vertical;min-height:90px}
 .playbook-word-editor:empty::before{content:attr(data-placeholder);color:#a0a6ae;pointer-events:none}
 .playbook-word-editor h1{font-size:26px;margin:28px 0 12px}.playbook-word-editor h2{font-size:21px;margin:25px 0 10px}.playbook-word-editor h3{font-size:17px;margin:22px 0 8px}.playbook-word-editor p{margin:0 0 12px}
 .playbook-word-editor blockquote{margin:16px 0;padding:8px 14px;border-left:3px solid #9da7b4;color:#4b5563;background:#f6f7f8}
-.playbook-word-editor .pb-doc-rule,.playbook-word-editor .pb-doc-note,.playbook-word-editor .pb-doc-link{margin:14px 0;padding:12px 14px;border-radius:4px}
-.playbook-word-editor .pb-doc-rule{border-left:4px solid #2f6db3;background:#eef5fd}.playbook-word-editor .pb-doc-note{border-left:4px solid #8993a0;background:#f4f5f7}.playbook-word-editor .pb-doc-link{border:1px dashed #7f8da0;background:#f8f9fb}
+.playbook-word-editor .pb-doc-rule,.playbook-word-editor .pb-doc-note,.playbook-word-editor .pb-doc-link,.playbook-word-editor .pb-doc-choice{margin:14px 0;padding:12px 14px;border-radius:4px}
+.playbook-word-editor .pb-doc-rule{border-left:4px solid #2f6db3;background:#eef5fd}.playbook-word-editor .pb-doc-note{border-left:4px solid #8993a0;background:#f4f5f7}.playbook-word-editor .pb-doc-link{border:1px dashed #7f8da0;background:#f8f9fb}.playbook-word-editor .pb-doc-choice{border-left:4px solid #7b5fc7;background:#f6f2ff}.playbook-word-editor .pb-doc-choice-title{display:block;font-weight:800;margin-bottom:8px}.playbook-word-editor .pb-doc-choice-options{display:grid;gap:6px}.playbook-word-editor .pb-doc-choice-option{display:flex;align-items:center;gap:8px}.playbook-word-editor .pb-doc-choice-dot{width:13px;height:13px;border:1px solid #7e6aa9;border-radius:50%;flex:0 0 auto}
 .playbook-word-editor .pb-doc-label{display:block;margin-bottom:5px;color:#526170;font-size:10px;font-weight:800;letter-spacing:.6px}
 .playbook-word-statusbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:7px 12px;border-top:1px solid #1d242e;background:#171b21;color:#8f9aaa;font-size:8px}
 .playbook-word-statusbar span:first-child{color:#bcd4f3}
@@ -4144,6 +4144,88 @@ textarea{resize:vertical;min-height:90px}
 .execution-map-information{margin-bottom:9px;padding:9px 11px;border-left:3px solid #31465f;border-radius:7px;background:#0b131d;color:#b6c5d5;font-size:10px;line-height:1.55}
 .execution-map-information.note{border-left-color:#6f8198;background:#101720}
 .execution-map-information b{display:block;margin-bottom:4px;color:#8499b1;font-size:8px;letter-spacing:.55px}
+
+.playbook-preview-choice{
+  margin-bottom:9px;
+  padding:10px;
+  border:1px solid #40355f;
+  border-radius:9px;
+  background:#151126;
+}
+.playbook-preview-choice>b{
+  display:block;
+  color:#d8cef4;
+  font-size:9px;
+}
+.playbook-preview-choice-options{
+  display:grid;
+  gap:6px;
+  margin-top:8px;
+}
+.playbook-preview-choice-options>div{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  color:#c9c2dc;
+  font-size:9px;
+}
+.playbook-preview-choice-dot{
+  width:13px;
+  height:13px;
+  border:1px solid #856fbd;
+  border-radius:50%;
+  flex:0 0 auto;
+}
+.playbook-preview-choice small{
+  display:block;
+  margin-top:8px;
+  color:#7f719f;
+  font-size:8px;
+}
+.execution-map-choice{
+  margin-bottom:9px;
+  padding:11px;
+  border:1px solid #443a65;
+  border-radius:11px;
+  background:#121020;
+}
+.execution-map-choice-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.execution-map-choice-head strong{
+  color:#e8e1f9;
+  font-size:11px;
+}
+.execution-map-choice-head small{
+  color:#9a8cbc;
+  font-size:8px;
+}
+.execution-map-choice-options{
+  display:grid;
+  gap:7px;
+  margin-top:10px;
+  margin-bottom:9px;
+}
+.execution-map-choice-options label{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 9px;
+  border:1px solid #302944;
+  border-radius:8px;
+  background:#0d0c16;
+  color:#d5cee6;
+  font-size:10px;
+  cursor:pointer;
+}
+.execution-map-choice-options input{
+  width:16px;
+  height:16px;
+  accent-color:#7659c4;
+}
 </style>
 <style id="hios-product-brand-icons">
 /* Product marks use the same symbols and accents as the H-IOS sidebar. */
@@ -5108,6 +5190,7 @@ textarea{resize:vertical;min-height:90px}
                 <div class="playbook-word-tool-row">
                   <button type="button" class="playbook-word-insert-btn" data-playbook-insert="section">+ Section</button>
                   <button type="button" class="playbook-word-insert-btn" data-playbook-insert="rule">+ Rule</button>
+                  <button type="button" class="playbook-word-insert-btn" data-playbook-insert="choice">+ Either / Or</button>
                   <button type="button" class="playbook-word-insert-btn" data-playbook-insert="note">+ Note</button>
                   <button type="button" class="playbook-word-insert-btn" data-playbook-insert="divider">Divider</button>
                 </div>
@@ -9168,6 +9251,27 @@ function renderExecutionMappingForm(){
       `;
     }
 
+    if(item.type==='choice'){
+      const key='map_choice_'+(++checkIndex);
+      return `
+        <div class="execution-map-choice" data-execution-map-choice-group="${key}">
+          <div class="execution-map-choice-head">
+            <strong>${escapeHtml(item.label)}</strong>
+            <small>Choose one condition</small>
+          </div>
+          <div class="execution-map-choice-options">
+            ${item.options.map((option,index)=>`
+              <label>
+                <input type="radio" name="${key}" value="${escapeHtml(option)}" data-execution-map-choice>
+                <span>${escapeHtml(option)}</span>
+              </label>
+            `).join('')}
+          </div>
+          <input class="execution-map-rule-comment" type="text" placeholder="Optional execution comment">
+        </div>
+      `;
+    }
+
     if(item.type==='checklist'){
       return `
         <div class="execution-map-linked">
@@ -9217,25 +9321,29 @@ function renderExecutionMappingForm(){
 
 function updateExecutionMappingScore(){
   const checks=$$('[data-execution-map-check]');
+  const choiceGroups=$$('[data-execution-map-choice-group]');
   const score=$('#executionMapScore');
   const meta=$('#executionMapScoreMeta');
   if(!score||!meta)return;
 
-  if(!checks.length){
+  const total=checks.length+choiceGroups.length;
+  if(!total){
     score.textContent='—';
     meta.textContent='No measurable Playbook rules yet.';
     return;
   }
 
-  const followed=checks.filter(item=>item.checked).length;
-  const pct=followed/checks.length*100;
+  const followedChecks=checks.filter(item=>item.checked).length;
+  const satisfiedChoices=choiceGroups.filter(group=>Boolean(group.querySelector('[data-execution-map-choice]:checked'))).length;
+  const followed=followedChecks+satisfiedChoices;
+  const pct=followed/total*100;
   score.textContent=pct.toFixed(1)+'%';
-  meta.textContent=`${followed} of ${checks.length} planned rule${checks.length===1?'':'s'} followed in this mapping test.`;
+  meta.textContent=`${followed} of ${total} planned condition${total===1?'':'s'} met in this mapping test.`;
 }
 
 function resetExecutionMappingInputs(){
-  $$('[data-execution-map-check]').forEach(item=>item.checked=false);
-  $$('#executionMapFormBody input[type="text"], #executionMapFormBody textarea').forEach(item=>item.value='');
+  $('[data-execution-map-check], [data-execution-map-choice]').forEach(item=>item.checked=false);
+  $('#executionMapFormBody input[type="text"], #executionMapFormBody textarea').forEach(item=>item.value='');
   updateExecutionMappingScore();
 }
 
@@ -9255,7 +9363,7 @@ function initExecutionMappingWorkspace(){
   });
 
   $('#executionMapFormBody')?.addEventListener('change',event=>{
-    if(event.target.matches('[data-execution-map-check]'))updateExecutionMappingScore();
+    if(event.target.matches('[data-execution-map-check], [data-execution-map-choice]'))updateExecutionMappingScore();
   });
 
   $('#executionMapResetBtn')?.addEventListener('click',resetExecutionMappingInputs);
@@ -10421,6 +10529,15 @@ function playbookStructuredPreviewItems(documentHtml){
       return;
     }
 
+    if(node.matches?.('[data-playbook-node="choice"], .pb-doc-choice')){
+      const title=(node.querySelector('[data-choice-title]')?.textContent||'Choose one').replace(/\s+/g,' ').trim() || 'Choose one';
+      const options=[...node.querySelectorAll('[data-choice-option]')]
+        .map(option=>(option.textContent||'').replace(/\s+/g,' ').trim())
+        .filter(Boolean);
+      if(options.length)items.push({type:'choice',label:title,options});
+      return;
+    }
+
     if(node.matches?.('[data-playbook-node="checklist-link"]')){
       const label=cleanNodeText(node)||'Linked checklist';
       items.push({type:'checklist',label});
@@ -10515,6 +10632,17 @@ function renderPlaybookExecutionPreview(){
     }
     if(item.type==='check'){
       return `<div class="playbook-preview-check"><span class="playbook-preview-checkbox" aria-hidden="true"></span><span>${escapeHtml(item.label)}</span></div>`;
+    }
+    if(item.type==='choice'){
+      return `
+        <div class="playbook-preview-choice">
+          <b>${escapeHtml(item.label)}</b>
+          <div class="playbook-preview-choice-options">
+            ${item.options.map(option=>`<div><span class="playbook-preview-choice-dot"></span><span>${escapeHtml(option)}</span></div>`).join('')}
+          </div>
+          <small>Choose one</small>
+        </div>
+      `;
     }
     if(item.type==='checklist'){
       return `<div class="playbook-preview-linked"><b>LINKED CHECKLIST</b><span>${escapeHtml(item.label)}</span></div>`;
@@ -10725,6 +10853,7 @@ function insertPlaybookElement(kind){
   const templates={
     section:'<h2>New Section</h2><p>Define this part of your trading method.</p>',
     rule:'<div class="pb-doc-rule" data-playbook-node="rule"><span class="pb-doc-label">RULE</span><p>Define the trading rule here.</p></div><p><br></p>',
+    choice:'<div class="pb-doc-choice" data-playbook-node="choice"><span class="pb-doc-label">EITHER / OR</span><span class="pb-doc-choice-title" data-choice-title>Market Context</span><div class="pb-doc-choice-options"><div class="pb-doc-choice-option"><span class="pb-doc-choice-dot"></span><span data-choice-option>Balance</span></div><div class="pb-doc-choice-option"><span class="pb-doc-choice-dot"></span><span data-choice-option>Imbalance</span></div></div></div><p><br></p>',
     note:'<div class="pb-doc-note" data-playbook-node="note"><span class="pb-doc-label">NOTE</span><p>Add context, explanation or reference information.</p></div><p><br></p>',
     divider:'<hr><p><br></p>',
     checklist:'<div class="pb-doc-link" data-playbook-node="checklist-link"><span class="pb-doc-label">LINKED CHECKLIST</span><p>Type the checklist name here. This reference will later connect to the separate Checklists library.</p></div><p><br></p>',
