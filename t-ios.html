@@ -4450,6 +4450,49 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
   background:#0b121b;
   overflow:hidden;
 }
+.execution-map-rule-layout{
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+  width:100%;
+  margin-bottom:9px;
+}
+.execution-map-rule-layout .execution-map-rule{
+  min-width:0;
+  margin-bottom:0;
+}
+.execution-map-rule-layout[data-playbook-list-layout="row"]{
+  flex-direction:row;
+  flex-wrap:wrap;
+  align-items:stretch;
+}
+.execution-map-rule-layout[data-playbook-list-layout="row"] .execution-map-rule{
+  flex:1 1 210px;
+}
+.execution-map-rule-layout[data-playbook-list-layout="columns-2"]{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+.execution-map-rule-layout[data-playbook-list-layout="columns-3"]{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+.execution-map-rule-layout[data-playbook-list-layout="squares"]{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+}
+.execution-map-rule-layout[data-playbook-list-layout="squares"] .execution-map-rule{
+  min-height:132px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  border-color:#31506f;
+  background:#101b28;
+}
+.execution-map-rule-layout[data-playbook-list-layout="squares"] .execution-map-rule-main{
+  min-height:74px;
+  align-items:flex-start;
+}
 .execution-map-rule-main{
   display:flex;
   align-items:flex-start;
@@ -4574,6 +4617,12 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
   .execution-map-controls{grid-template-columns:1fr}
   .execution-map-state{grid-column:auto}
   .execution-map-context-grid{grid-template-columns:1fr}
+  .execution-map-rule-layout[data-playbook-list-layout="columns-2"],
+  .execution-map-rule-layout[data-playbook-list-layout="columns-3"],
+  .execution-map-choice-options[data-playbook-list-layout="columns-2"],
+  .execution-map-choice-options[data-playbook-list-layout="columns-3"]{
+    grid-template-columns:1fr;
+  }
 }
 
 .playbook-preview-content{margin:0 0 8px;color:#aebdce;font-size:9px;line-height:1.55}
@@ -4750,6 +4799,29 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
   gap:7px;
   margin-top:10px;
   margin-bottom:9px;
+}
+.execution-map-choice-options[data-playbook-list-layout="row"]{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:stretch;
+}
+.execution-map-choice-options[data-playbook-list-layout="row"] label{
+  flex:1 1 150px;
+}
+.execution-map-choice-options[data-playbook-list-layout="columns-2"]{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+.execution-map-choice-options[data-playbook-list-layout="columns-3"]{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+.execution-map-choice-options[data-playbook-list-layout="squares"]{
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+}
+.execution-map-choice-options[data-playbook-list-layout="squares"] label{
+  min-height:66px;
+  align-items:center;
+  border-color:#514370;
+  background:#171229;
 }
 .execution-map-choice-options label{
   display:flex;
@@ -9969,12 +10041,39 @@ function renderExecutionMappingForm(){
   }
 
   let checkIndex=0;
-  body.innerHTML=items.map(item=>{
+  body.innerHTML=items.map((item,itemIndex)=>{
     if(item.type==='section'){
       return `<div class="execution-map-section ${item.level===1?'level-1':(item.level===3?'level-3':'level-2')}">${escapeHtml(item.label)}</div>`;
     }
 
     if(item.type==='check'){
+      if(item.listGroup){
+        const previous=items[itemIndex-1];
+        if(previous?.type==='check'&&previous.listGroup===item.listGroup)return '';
+
+        const grouped=items.filter(candidate=>candidate.type==='check'&&candidate.listGroup===item.listGroup);
+        const layout=normalizePlaybookListLayout(item.layout);
+
+        return `
+          <div class="execution-map-rule-layout" data-playbook-list-layout="${layout}">
+            ${grouped.map(groupItem=>{
+              const key='map_rule_'+(++checkIndex);
+              return `
+                <div class="execution-map-rule">
+                  <label class="execution-map-rule-main">
+                    <input type="checkbox" data-execution-map-check="${key}">
+                    <span class="execution-map-rule-copy">
+                      <strong>${escapeHtml(groupItem.label)}</strong>
+                    </span>
+                  </label>
+                  <input class="execution-map-rule-comment" type="text" placeholder="Optional execution comment">
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+      }
+
       const key='map_rule_'+(++checkIndex);
       return `
         <div class="execution-map-rule">
@@ -9991,13 +10090,14 @@ function renderExecutionMappingForm(){
 
     if(item.type==='choice'){
       const key='map_choice_'+(++checkIndex);
+      const layout=normalizePlaybookListLayout(item.layout);
       return `
         <div class="execution-map-choice" data-execution-map-choice-group="${key}">
           <div class="execution-map-choice-head">
             <strong>${escapeHtml(item.label)}</strong>
             <small>Choose one condition</small>
           </div>
-          <div class="execution-map-choice-options">
+          <div class="execution-map-choice-options" data-playbook-list-layout="${layout}">
             ${item.options.map((option,index)=>`
               <label>
                 <input type="radio" name="${key}" value="${escapeHtml(option)}" data-execution-map-choice>
