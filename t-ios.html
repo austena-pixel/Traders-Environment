@@ -4135,6 +4135,15 @@ textarea{resize:vertical;min-height:90px}
   .execution-map-state{grid-column:auto}
   .execution-map-context-grid{grid-template-columns:1fr}
 }
+
+.playbook-preview-content{margin:0 0 8px;color:#aebdce;font-size:9px;line-height:1.55}
+.playbook-preview-note-block{margin-bottom:8px;padding:9px;border-left:3px solid #708399;border-radius:7px;background:#101821}
+.playbook-preview-note-block b{display:block;color:#8194aa;font-size:8px;letter-spacing:.55px}
+.playbook-preview-note-block span{display:block;margin-top:4px;color:#c4d0dd;font-size:9px;line-height:1.5}
+.playbook-preview-divider,.execution-map-divider{height:1px;margin:12px 0;background:#263548}
+.execution-map-information{margin-bottom:9px;padding:9px 11px;border-left:3px solid #31465f;border-radius:7px;background:#0b131d;color:#b6c5d5;font-size:10px;line-height:1.55}
+.execution-map-information.note{border-left-color:#6f8198;background:#101720}
+.execution-map-information b{display:block;margin-bottom:4px;color:#8499b1;font-size:8px;letter-spacing:.55px}
 </style>
 <style id="hios-product-brand-icons">
 /* Product marks use the same symbols and accents as the H-IOS sidebar. */
@@ -7234,6 +7243,11 @@ initializeTiosNavGroups();
 document.body.classList.remove('execution-workspace');
 
 function navigate(page){
+  if(page!=='playbook' && document.body.classList.contains('playbook-workspace')){
+    clearTimeout(playbookDocumentSaveTimer);
+    savePlaybookDocument({quiet:true});
+  }
+
   $$('.nav-btn').forEach(btn=>{
     btn.classList.toggle('active', btn.dataset.page===page);
   });
@@ -9174,6 +9188,27 @@ function renderExecutionMappingForm(){
       `;
     }
 
+    if(item.type==='note'){
+      return `
+        <div class="execution-map-information note">
+          <b>PLAYBOOK NOTE</b>
+          <span>${escapeHtml(item.label)}</span>
+        </div>
+      `;
+    }
+
+    if(item.type==='content'){
+      return `
+        <div class="execution-map-information">
+          <span>${escapeHtml(item.label)}</span>
+        </div>
+      `;
+    }
+
+    if(item.type==='divider'){
+      return '<div class="execution-map-divider"></div>';
+    }
+
     return '';
   }).join('');
 
@@ -9181,7 +9216,7 @@ function renderExecutionMappingForm(){
 }
 
 function updateExecutionMappingScore(){
-  const checks=$('[data-execution-map-check]');
+  const checks=$$('[data-execution-map-check]');
   const score=$('#executionMapScore');
   const meta=$('#executionMapScoreMeta');
   if(!score||!meta)return;
@@ -9199,8 +9234,8 @@ function updateExecutionMappingScore(){
 }
 
 function resetExecutionMappingInputs(){
-  $('[data-execution-map-check]').forEach(item=>item.checked=false);
-  $('#executionMapFormBody input[type="text"], #executionMapFormBody textarea').forEach(item=>item.value='');
+  $$('[data-execution-map-check]').forEach(item=>item.checked=false);
+  $$('#executionMapFormBody input[type="text"], #executionMapFormBody textarea').forEach(item=>item.value='');
   updateExecutionMappingScore();
 }
 
@@ -10364,46 +10399,73 @@ function playbookStructuredPreviewItems(documentHtml){
   host.innerHTML=String(documentHtml||'');
 
   const items=[];
+
+  function cleanNodeText(node){
+    const clone=node.cloneNode(true);
+    clone.querySelectorAll?.('.pb-doc-label').forEach(label=>label.remove());
+    return (clone.textContent||'').replace(/\s+/g,' ').trim();
+  }
+
   [...host.children].forEach(node=>{
     const tag=node.tagName?.toLowerCase();
 
     if(['h1','h2','h3'].includes(tag)){
-      const label=(node.textContent||'').trim();
+      const label=cleanNodeText(node);
       if(label)items.push({type:'section',label,level:tag==='h3'?3:2});
       return;
     }
 
     if(node.matches?.('[data-playbook-node="rule"], .pb-doc-rule')){
-      const clone=node.cloneNode(true);
-      clone.querySelectorAll('.pb-doc-label').forEach(label=>label.remove());
-      const label=(clone.textContent||'').trim();
+      const label=cleanNodeText(node);
       if(label)items.push({type:'check',label});
       return;
     }
 
     if(node.matches?.('[data-playbook-node="checklist-link"]')){
-      const clone=node.cloneNode(true);
-      clone.querySelectorAll('.pb-doc-label').forEach(label=>label.remove());
-      const label=(clone.textContent||'').trim() || 'Linked checklist';
+      const label=cleanNodeText(node)||'Linked checklist';
       items.push({type:'checklist',label});
       return;
     }
 
     if(node.matches?.('[data-playbook-node="reflection-link"]')){
-      const clone=node.cloneNode(true);
-      clone.querySelectorAll('.pb-doc-label').forEach(label=>label.remove());
-      const label=(clone.textContent||'').trim() || 'Linked reflection';
+      const label=cleanNodeText(node)||'Linked reflection';
       items.push({type:'reflection',label});
       return;
     }
 
-    // Rules can also contain nested list items.
+    if(node.matches?.('[data-playbook-node="note"], .pb-doc-note')){
+      const label=cleanNodeText(node);
+      if(label)items.push({type:'note',label});
+      return;
+    }
+
     if(node.matches?.('ul,ol')){
       [...node.querySelectorAll(':scope > li')].forEach(li=>{
-        const label=(li.textContent||'').trim();
+        const label=cleanNodeText(li);
         if(label)items.push({type:'check',label});
       });
+      return;
     }
+
+    if(node.matches?.('blockquote')){
+      const label=cleanNodeText(node);
+      if(label)items.push({type:'note',label});
+      return;
+    }
+
+    if(node.matches?.('p')){
+      const label=cleanNodeText(node);
+      if(label)items.push({type:'content',label});
+      return;
+    }
+
+    if(node.matches?.('hr')){
+      items.push({type:'divider'});
+      return;
+    }
+
+    const label=cleanNodeText(node);
+    if(label)items.push({type:'content',label});
   });
 
   return items;
@@ -10459,6 +10521,15 @@ function renderPlaybookExecutionPreview(){
     }
     if(item.type==='reflection'){
       return `<div class="playbook-preview-reflection"><b>LINKED REFLECTION</b><span>${escapeHtml(item.label)}</span></div>`;
+    }
+    if(item.type==='note'){
+      return `<div class="playbook-preview-note-block"><b>NOTE</b><span>${escapeHtml(item.label)}</span></div>`;
+    }
+    if(item.type==='content'){
+      return `<div class="playbook-preview-content">${escapeHtml(item.label)}</div>`;
+    }
+    if(item.type==='divider'){
+      return '<div class="playbook-preview-divider"></div>';
     }
     return '';
   }).join('');
