@@ -3679,7 +3679,8 @@ textarea{resize:vertical;min-height:90px}
 ===================================================== */
 .playbook-word-page-head{margin-bottom:12px}
 .playbook-word-shell{--playbook-preview-default-width:clamp(440px,36vw,560px);--playbook-preview-width:var(--preview-base-width,var(--playbook-preview-default-width));display:grid;grid-template-columns:minmax(0,1fr) var(--playbook-preview-width);gap:8px;min-height:720px;border:0;border-radius:0;overflow:visible;background:transparent;transition:grid-template-columns .24s cubic-bezier(.22,.8,.22,1)}
-.playbook-word-shell.preview-adjusting{transition:none}
+.playbook-word-shell.preview-adjusting,
+.playbook-word-shell.preview-width-dragging{transition:none}
 .playbook-preview-width-controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px;color:#91a1b5;font-size:9px}
 .playbook-preview-width-controls label{display:flex;align-items:center;gap:6px;flex:1;min-width:140px}
 .playbook-preview-width-controls input{width:100%;min-width:60px;flex:1;accent-color:#69a8ff}
@@ -12056,6 +12057,24 @@ function previewCustomWidthBounds(shell){
   return {min:220,max:Math.max(220,Math.min(720,width-360))};
 }
 
+function previewCssDefaultBaseWidth(shell){
+  const viewportWidth=window.innerWidth||0;
+  const bounds=previewCustomWidthBounds(shell);
+  const cssDefault=viewportWidth<=1050&&viewportWidth>820
+    ? Math.max(320,Math.min(430,viewportWidth*.38))
+    : Math.max(440,Math.min(560,viewportWidth*.36));
+  return Math.max(bounds.min,Math.min(bounds.max,cssDefault));
+}
+
+function resolvedPreviewBaseWidth(shell,baseWidth){
+  const bounds=previewCustomWidthBounds(shell);
+  const numeric=Number(baseWidth);
+  if(Number.isFinite(numeric)&&numeric>0){
+    return Math.max(bounds.min,Math.min(bounds.max,numeric));
+  }
+  return previewCssDefaultBaseWidth(shell);
+}
+
 function applyPreviewCustomWidths(shell,baseWidth,expandedWidth){
   // CSS remains the only source of defaults. Overrides are bounded by the
   // available editor space and continue to respond to viewport changes.
@@ -12067,10 +12086,9 @@ function applyPreviewCustomWidths(shell,baseWidth,expandedWidth){
   const slider=shell.querySelector('[data-preview-zoom-limit]');
   if(slider){
     const bounds=previewCustomWidthBounds(shell);
-    const adjusting=shell.classList.contains('preview-adjusting');
-    shell.classList.add('preview-adjusting');
-    const returnWidth=shell.querySelector('.playbook-execution-preview').getBoundingClientRect().width;
-    if(!adjusting)shell.classList.remove('preview-adjusting');
+    // Never toggle the preview back to base width just to measure the slider minimum.
+    // Doing that on every input frame caused the visible left-right vibration.
+    const returnWidth=resolvedPreviewBaseWidth(shell,baseWidth);
     slider.min=String(Math.max(bounds.min,Math.min(bounds.max,Math.ceil(returnWidth))));
     slider.max=String(bounds.max);
     slider.value=String(Math.max(Number(slider.min),Math.min(bounds.max,expandedWidth||640)));
@@ -12085,10 +12103,27 @@ function initPreviewWidthControls(shell,onLimit,onReset){
   controls.dataset.previewWidthControls='';
   controls.innerHTML='<label>Zoom limit <input type="range" data-preview-zoom-limit aria-label="Live Model expanded width" min="220" max="720" step="1"></label><output data-preview-zoom-value>Auto</output><button class="playbook-preview-open-btn" type="button" data-preview-width-reset>Reset widths</button>';
   shell.querySelector('.playbook-preview-head').after(controls);
-  controls.querySelector('input').addEventListener('input',event=>{
-    shell.classList.remove('preview-adjusting');onLimit(Number(event.target.value));
+  const limitInput=controls.querySelector('input');
+
+  limitInput.addEventListener('pointerdown',()=>{
+    // Keep Auto Zoom active, but remove the 240 ms grid animation while the
+    // slider emits rapid input events. This prevents queued width animations.
+    shell.classList.add('preview-width-dragging');
+    const finish=()=>shell.classList.remove('preview-width-dragging');
+    window.addEventListener('pointerup',finish,{once:true});
+    window.addEventListener('pointercancel',finish,{once:true});
   });
-  controls.querySelector('button').addEventListener('click',()=>{shell.classList.remove('preview-adjusting');onReset()});
+  limitInput.addEventListener('input',event=>{
+    onLimit(Number(event.target.value));
+  });
+  limitInput.addEventListener('change',()=>shell.classList.remove('preview-width-dragging'));
+  limitInput.addEventListener('blur',()=>shell.classList.remove('preview-width-dragging'));
+
+  controls.querySelector('button').addEventListener('click',()=>{
+    shell.classList.remove('preview-adjusting');
+    shell.classList.remove('preview-width-dragging');
+    onReset();
+  });
   const preview=shell.querySelector('.playbook-execution-preview');
   const release=()=>{if(!shell.dataset.previewDragging)shell.classList.remove('preview-adjusting')};
   preview.addEventListener('pointerleave',release);
