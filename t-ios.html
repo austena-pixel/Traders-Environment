@@ -4062,6 +4062,53 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
 .playbook-word-editor .pb-doc-label{display:block;margin-bottom:5px;color:#526170;font-size:10px;font-weight:800;letter-spacing:.6px}
 .playbook-word-editor .pb-doc-remove-btn{position:absolute;top:8px;right:8px;width:24px;height:24px;display:grid;place-items:center;padding:0;border:1px solid rgba(65,76,91,.24);border-radius:6px;background:rgba(255,255,255,.72);color:#687382;font-size:16px;font-weight:800;line-height:1;cursor:pointer}
 .playbook-word-editor .pb-doc-remove-btn:hover{border-color:#d26c73;background:#fff3f4;color:#b82935}
+.playbook-word-editor .pb-doc-preview-btn{
+  position:absolute;
+  top:8px;
+  right:38px;
+  min-height:24px;
+  padding:0 9px;
+  border:1px solid #3d7fc2;
+  border-radius:7px;
+  background:linear-gradient(135deg,#eaf6ff,#d9eaff);
+  color:#1764a6;
+  font-size:9px;
+  font-weight:850;
+  cursor:pointer;
+  box-shadow:0 2px 7px rgba(43,114,184,.12);
+}
+.playbook-word-editor .pb-doc-preview-btn:hover{
+  border-color:#1764a6;
+  background:linear-gradient(135deg,#dff1ff,#cfe2ff);
+  transform:translateY(-1px);
+}
+.playbook-word-editor .pb-doc-table-wrap{
+  position:relative;
+  margin:16px 0;
+  padding:38px 12px 12px;
+  border:1px solid #d1d8e1;
+  border-radius:9px;
+  background:#fbfcfe;
+}
+.playbook-word-editor .pb-doc-table{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+}
+.playbook-word-editor .pb-doc-table th,
+.playbook-word-editor .pb-doc-table td{
+  min-width:70px;
+  padding:8px 9px;
+  border:1px solid #cbd4df;
+  color:#20242a;
+  vertical-align:top;
+  overflow-wrap:anywhere;
+}
+.playbook-word-editor .pb-doc-table th{
+  background:#eef3f8;
+  font-weight:800;
+}
+.playbook-word-editor .pb-doc-table td{background:#fff}
 
 /* Playbook Styles: list layouts. Layout is visual only; UL/OL semantics remain intact. */
 .playbook-word-editor ul[data-playbook-list-layout],
@@ -5978,6 +6025,7 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
                   <button type="button" class="playbook-word-insert-btn" data-playbook-insert="rule">+ Rule</button>
                   <button type="button" class="playbook-word-insert-btn" data-playbook-insert="choice">+ Either / Or</button>
                   <button type="button" class="playbook-word-insert-btn" data-playbook-insert="note">+ Note</button>
+                  <button type="button" class="playbook-word-insert-btn" data-playbook-insert="table">+ Table</button>
                 </div>
               </div>
 
@@ -6038,7 +6086,7 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
                       <span>Accent</span>
                     </label>
                   </div>
-                  <button type="button" class="playbook-style-color-reset" id="playbookStyleColorReset">Reset</button>
+                  <button type="button" class="playbook-style-color-reset" id="playbookStyleColorReset" title="Restore the original Playbook theme colors">Default Colors</button>
                 </div>
               </div>
 
@@ -6388,6 +6436,41 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
     </section>
 
   </main>
+</div>
+
+<!-- PLAYBOOK TABLE BUILDER -->
+<div class="modal" id="playbookTableModal" aria-hidden="true">
+  <div class="modal-card playbook-choice-modal-card">
+    <div class="modal-head">
+      <div><h2>Create Table</h2></div>
+      <button class="close" id="playbookTableModalClose" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="playbook-choice-modal-body">
+      <p class="playbook-choice-modal-intro">Choose the table size. You can edit every cell directly after inserting it.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <label class="playbook-choice-field">
+          <span>Columns</span>
+          <input id="playbookTableColumns" type="number" min="1" max="8" value="3">
+        </label>
+        <label class="playbook-choice-field">
+          <span>Rows</span>
+          <input id="playbookTableRows" type="number" min="1" max="20" value="3">
+        </label>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;color:#c7d4e4;font-size:10px">
+        <input id="playbookTableHeaderRow" type="checkbox" checked>
+        Use first row as headings
+      </label>
+      <div class="playbook-choice-error" id="playbookTableModalError"></div>
+      <div class="playbook-choice-modal-actions">
+        <span></span>
+        <div class="playbook-choice-modal-actions-right">
+          <button class="btn" type="button" id="playbookTableCancelBtn">Cancel</button>
+          <button class="btn primary" type="button" id="playbookTableInsertBtn">Insert Table</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- PLAYBOOK EITHER / OR BUILDER -->
@@ -10276,6 +10359,21 @@ function renderExecutionMappingForm(){
       `;
     }
 
+    if(item.type==='table'){
+      return `
+        <div class="execution-map-information">
+          <b>TABLE CONTEXT</b>
+          <div style="overflow:auto;margin-top:7px">
+            <table style="width:100%;border-collapse:collapse;font-size:9px">
+              ${item.rows.map((row,rowIndex)=>`
+                <tr>${row.map(cell=>`<${rowIndex===0?'th':'td'} style="border:1px solid #2d3d50;padding:6px;text-align:left">${escapeHtml(cell||'—')}</${rowIndex===0?'th':'td'}>`).join('')}</tr>
+              `).join('')}
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
     if(item.type==='note'){
       return `
         <div class="execution-map-information note">
@@ -11506,14 +11604,30 @@ function beginPlaybookCanvasResize(event,axis){
   window.addEventListener('pointermove',move);window.addEventListener('pointerup',finish);window.addEventListener('pointercancel',finish);
 }
 function playbookStructuredBlockSelector(){
-  return '[data-playbook-node="rule"],[data-playbook-node="choice"],[data-playbook-node="note"],[data-playbook-node="checklist-link"],[data-playbook-node="reflection-link"],.pb-doc-rule,.pb-doc-choice,.pb-doc-note,.pb-doc-link';
+  return '[data-playbook-node="rule"],[data-playbook-node="choice"],[data-playbook-node="note"],[data-playbook-node="checklist-link"],[data-playbook-node="reflection-link"],[data-playbook-node="table"],.pb-doc-rule,.pb-doc-choice,.pb-doc-note,.pb-doc-link,.pb-doc-table-wrap';
 }
 function ensurePlaybookBlockControls(){
   const editor=$('#playbookDocumentEditor');if(!editor)return;
   [...editor.querySelectorAll(playbookStructuredBlockSelector())].forEach(block=>{
-    if(block.querySelector(':scope > .pb-doc-remove-btn'))return;
-    const button=document.createElement('button');button.type='button';button.className='pb-doc-remove-btn';
-    button.setAttribute('contenteditable','false');button.setAttribute('aria-label','Remove this Playbook block');button.title='Remove this block';button.textContent='×';block.appendChild(button);
+    if(block.matches?.('[data-playbook-node="choice"],.pb-doc-choice')&&!block.querySelector(':scope > .pb-doc-preview-btn')){
+      const preview=document.createElement('button');
+      preview.type='button';
+      preview.className='pb-doc-preview-btn';
+      preview.setAttribute('contenteditable','false');
+      preview.title='Preview this Playbook in Execution Quality';
+      preview.textContent='Preview';
+      block.appendChild(preview);
+    }
+    if(!block.querySelector(':scope > .pb-doc-remove-btn')){
+      const button=document.createElement('button');
+      button.type='button';
+      button.className='pb-doc-remove-btn';
+      button.setAttribute('contenteditable','false');
+      button.setAttribute('aria-label','Remove this Playbook block');
+      button.title='Remove this block';
+      button.textContent='×';
+      block.appendChild(button);
+    }
   });
 }
 function removePlaybookStructuredBlock(button){
@@ -11750,7 +11864,7 @@ function playbookStructuredPreviewItems(documentHtml){
 
   function cleanNodeText(node){
     const clone=node.cloneNode(true);
-    clone.querySelectorAll?.('.pb-doc-label,.pb-doc-remove-btn').forEach(control=>control.remove());
+    clone.querySelectorAll?.('.pb-doc-label,.pb-doc-remove-btn,.pb-doc-preview-btn').forEach(control=>control.remove());
     return (clone.textContent||'').replace(/\s+/g,' ').trim();
   }
 
@@ -11791,6 +11905,14 @@ function playbookStructuredPreviewItems(documentHtml){
     if(node.matches?.('[data-playbook-node="note"], .pb-doc-note')){
       const label=cleanNodeText(node);
       if(label)items.push({type:'note',label});
+      return;
+    }
+
+    if(node.matches?.('[data-playbook-node="table"], .pb-doc-table-wrap')){
+      const rows=[...node.querySelectorAll('tr')]
+        .map(row=>[...row.children].map(cell=>(cell.textContent||'').replace(/\s+/g,' ').trim()))
+        .filter(row=>row.some(Boolean));
+      if(rows.length)items.push({type:'table',rows});
       return;
     }
 
@@ -11939,6 +12061,20 @@ function renderPlaybookExecutionPreview(){
     }
     if(item.type==='note'){
       return `<div class="playbook-preview-note-block"><b>NOTE</b><span>${escapeHtml(item.label)}</span></div>`;
+    }
+    if(item.type==='table'){
+      return `
+        <div class="playbook-preview-note-block">
+          <b>TABLE</b>
+          <div style="overflow:auto;margin-top:6px">
+            <table style="width:100%;border-collapse:collapse;font-size:8px">
+              ${item.rows.map((row,rowIndex)=>`
+                <tr>${row.map(cell=>`<${rowIndex===0?'th':'td'} style="border:1px solid #314052;padding:5px;text-align:left">${escapeHtml(cell||'—')}</${rowIndex===0?'th':'td'}>`).join('')}</tr>
+              `).join('')}
+            </table>
+          </div>
+        </div>
+      `;
     }
     if(item.type==='content'){
       return `<div class="playbook-preview-content">${escapeHtml(item.label)}</div>`;
@@ -12283,6 +12419,7 @@ function resetPlaybookStyleColors(){
   refreshPlaybookListStyleControls();
   syncPlaybookLiveModel();
   restorePlaybookEditorSelection(playbookEditorSelectionRange);
+  showStatus('Default colors restored');
 }
 
 function playbookListFromRange(range=playbookEditorSelectionRange){
@@ -12436,6 +12573,7 @@ function insertPlaybookChoiceFromModal(){
   const markup=`
     <div class="pb-doc-choice" data-playbook-node="choice">
       <span class="pb-doc-label">EITHER / OR</span>
+      <button type="button" class="pb-doc-preview-btn" contenteditable="false" title="Preview this Playbook in Execution Quality">Preview</button>
       <button type="button" class="pb-doc-remove-btn" contenteditable="false" aria-label="Remove this Playbook block" title="Remove this block">×</button>
       <span class="pb-doc-choice-title" data-choice-title>${escapeHtml(title)}</span>
       <div class="pb-doc-choice-options">
@@ -12455,9 +12593,71 @@ function insertPlaybookChoiceFromModal(){
   playbookChoiceInsertRange=null;
 }
 
+let playbookTableInsertRange=null;
+
+function openPlaybookTableModal(){
+  playbookTableInsertRange=capturePlaybookEditorSelection();
+  const modal=$('#playbookTableModal');
+  if(!modal)return;
+  $('#playbookTableColumns').value='3';
+  $('#playbookTableRows').value='3';
+  $('#playbookTableHeaderRow').checked=true;
+  $('#playbookTableModalError').textContent='';
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden','false');
+  setTimeout(()=>$('#playbookTableColumns')?.focus(),0);
+}
+
+function closePlaybookTableModal(){
+  const modal=$('#playbookTableModal');
+  if(!modal)return;
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden','true');
+}
+
+function insertPlaybookTableFromModal(){
+  const columns=Math.max(1,Math.min(8,Number($('#playbookTableColumns')?.value)||0));
+  const rows=Math.max(1,Math.min(20,Number($('#playbookTableRows')?.value)||0));
+  const useHeader=Boolean($('#playbookTableHeaderRow')?.checked);
+  const error=$('#playbookTableModalError');
+
+  if(!columns||!rows){
+    if(error)error.textContent='Choose at least 1 row and 1 column.';
+    return;
+  }
+
+  const bodyRows=Array.from({length:rows},(_,rowIndex)=>{
+    const tag=useHeader&&rowIndex===0?'th':'td';
+    return `<tr>${Array.from({length:columns},(_,colIndex)=>`<${tag}>${useHeader&&rowIndex===0?`Heading ${colIndex+1}`:'Cell'}</${tag}>`).join('')}</tr>`;
+  }).join('');
+
+  const markup=`
+    <div class="pb-doc-table-wrap" data-playbook-node="table">
+      <button type="button" class="pb-doc-remove-btn" contenteditable="false" aria-label="Remove this table" title="Remove this table">×</button>
+      <table class="pb-doc-table">${bodyRows}</table>
+    </div><p><br></p>
+  `;
+
+  closePlaybookTableModal();
+  restorePlaybookEditorSelection(playbookTableInsertRange);
+  insertPlaybookHtml(markup);
+  playbookTableInsertRange=null;
+}
+
+function previewCurrentPlaybookInExecutionQuality(){
+  if(selectedPlaybookDocumentId)executionMappingPlaybookId=selectedPlaybookDocumentId;
+  clearTimeout(playbookDocumentSaveTimer);
+  savePlaybookDocument({quiet:true});
+  navigate('execution');
+}
+
 function insertPlaybookElement(kind){
   if(kind==='choice'){
     openPlaybookChoiceModal();
+    return;
+  }
+  if(kind==='table'){
+    openPlaybookTableModal();
     return;
   }
   const templates={
@@ -12548,6 +12748,13 @@ function initPlaybookWorkspace(){
     if(event.target.id==='playbookChoiceModal')closePlaybookChoiceModal();
   });
 
+  $('#playbookTableModalClose')?.addEventListener('click',closePlaybookTableModal);
+  $('#playbookTableCancelBtn')?.addEventListener('click',closePlaybookTableModal);
+  $('#playbookTableInsertBtn')?.addEventListener('click',insertPlaybookTableFromModal);
+  $('#playbookTableModal')?.addEventListener('click',event=>{
+    if(event.target.id==='playbookTableModal')closePlaybookTableModal();
+  });
+
   ['#playbookDraftTitle','#playbookDraftDescription','#playbookDraftTags','#playbookDraftState'].forEach(selector=>{
     $(selector)?.addEventListener('input',syncPlaybookLiveModel);
     $(selector)?.addEventListener('change',syncPlaybookLiveModel);
@@ -12566,6 +12773,13 @@ function initPlaybookWorkspace(){
     refreshPlaybookListStyleControls();
   });
   $('#playbookDocumentEditor')?.addEventListener('click',event=>{
+    const previewButton=event.target.closest('.pb-doc-preview-btn');
+    if(previewButton){
+      event.preventDefault();
+      event.stopPropagation();
+      previewCurrentPlaybookInExecutionQuality();
+      return;
+    }
     const button=event.target.closest('.pb-doc-remove-btn');
     if(!button)return;
     event.preventDefault();event.stopPropagation();removePlaybookStructuredBlock(button);
