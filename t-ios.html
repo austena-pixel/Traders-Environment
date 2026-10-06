@@ -4435,7 +4435,7 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
 
 /* =====================================================
    SHARED TECHNICAL-INSTRUMENT DOCUMENT WORKSPACE
-   Used by Checklists + Psychological Review.
+   Used by Rules + Psychological Reflection.
 ===================================================== */
 body.playbook-workspace .technical-document-page{
   min-height:0;
@@ -5520,8 +5520,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
         </button>
         <div class="nav-submenu">
           <button class="nav-btn" data-page="playbook"><span class="nav-icon">◎</span> Playbooks</button>
-          <button class="nav-btn" data-page="checklists"><span class="nav-icon">☑</span> Checklists</button>
-          <button class="nav-btn" data-page="reflections"><span class="nav-icon">◇</span> Psychological Review</button>
+          <button class="nav-btn" data-page="checklists"><span class="nav-icon">☑</span> Rules</button>
+          <button class="nav-btn" data-page="reflections"><span class="nav-icon">◇</span> Psychological Reflection</button>
         </div>
       </div>
 
@@ -6336,7 +6336,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <div class="ti-builder-switcher" aria-label="Technical Instrument builder">
               <span class="ti-builder-switcher-label">Built:</span>
               <button type="button" class="ti-builder-switch active" data-ti-builder-switch="playbook">Playbook</button>
-              <button type="button" class="ti-builder-switch" data-ti-builder-switch="checklist">Checklist</button>
+              <button type="button" class="ti-builder-switch" data-ti-builder-switch="checklist">Rules</button>
               <button type="button" class="ti-builder-switch" data-ti-builder-switch="psych">Psychological Reflection</button>
             </div>
             <div class="playbook-word-tabs" role="tablist" aria-label="Editor tools">
@@ -6402,7 +6402,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               <div class="playbook-word-tool-group">
                 <span class="playbook-word-tool-label">Technical Instruments</span>
                 <div class="playbook-word-tool-row">
-                  <button type="button" class="playbook-word-insert-btn" data-playbook-insert="checklist">Link Checklist</button>
+                  <button type="button" class="playbook-word-insert-btn" data-playbook-insert="checklist">Link Rules</button>
                   <button type="button" class="playbook-word-insert-btn" data-playbook-insert="reflection">Link Reflection</button>
                 </div>
               </div>
@@ -6566,9 +6566,9 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
         </label>
 
         <div class="execution-map-control checklist">
-          <span>Checklist</span>
+          <span>Rules</span>
           <div class="execution-map-control-row">
-            <select id="executionMapChecklistSelect" aria-label="Checklist to map"></select>
+            <select id="executionMapChecklistSelect" aria-label="Rules to map"></select>
             <button class="execution-map-view-btn" type="button" id="executionMapChecklistViewBtn">View</button>
           </div>
         </div>
@@ -6631,7 +6631,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <div>
               <span>GENERATED FROM TECHNICAL INSTRUMENTS</span>
               <h2 id="executionMapPlaybookTitle">Technical Instruments Mapping</h2>
-              <p id="executionMapPlaybookMeta">Playbook, Checklist and Psychological Review are mapped independently below.</p>
+              <p id="executionMapPlaybookMeta">Playbook, Rules and Psychological Reflection are mapped independently below.</p>
             </div>
             <span class="execution-map-badge">MODEL</span>
           </div>
@@ -10599,10 +10599,10 @@ function renderExecutionMappingControls(){
 
   const checklistState=secondaryState('checklist');
   checklistSelect.innerHTML=checklistState.docs.length
-    ? checklistState.docs.map(item=>`<option value="${escapeHtml(item.id)}" ${item.id===checklist?.id?'selected':''}>${escapeHtml(item.name||'Untitled Checklist')}</option>`).join('')
-    : '<option value="">No Checklists</option>';
+    ? checklistState.docs.map(item=>`<option value="${escapeHtml(item.id)}" ${item.id===checklist?.id?'selected':''}>${escapeHtml(item.name||'Untitled Rules')}</option>`).join('')
+    : '<option value="">No Rules</option>';
   const checklistLabel=checklistSelect.closest('.execution-map-control')?.querySelector(':scope > span');
-  if(checklistLabel)checklistLabel.textContent='Checklist'+(checklistState.docs.length?` (${checklistState.docs.length})`:'');
+  if(checklistLabel)checklistLabel.textContent='Rules'+(checklistState.docs.length?` (${checklistState.docs.length})`:'');
   const checklistView=$('#executionMapChecklistViewBtn');
   if(checklistView)checklistView.disabled=!checklist;
 
@@ -10659,7 +10659,7 @@ function renderExecutionMappingTradeContext(){
 }
 
 function renderExecutionSecondaryItems(kind,doc){
-  if(!doc)return '<div class="execution-secondary-empty">No '+(kind==='checklist'?'Checklist':'Psychological Review')+' is available yet.</div>';
+  if(!doc)return '<div class="execution-secondary-empty">No '+(kind==='checklist'?'Rules':'Psychological Reflection')+' is available yet.</div>';
   const items=playbookStructuredPreviewItems(doc.documentHtml||'');
   if(!items.length)return '<div class="execution-secondary-empty">This instrument has no mapped content yet.</div>';
   let index=0;
@@ -10707,7 +10707,7 @@ function renderExecutionMappingForm(){
   if(!body)return;
 
   $('#executionMapPlaybookTitle').textContent='Technical Instruments Mapping';
-  $('#executionMapPlaybookMeta').textContent='Playbook, Checklist and Psychological Review remain separate structures inside Execution Quality.';
+  $('#executionMapPlaybookMeta').textContent='Playbook, Rules and Psychological Reflection remain separate structures inside Execution Quality.';
   $('#executionMapStatus').textContent='Mapped separately from Technical Instruments';
 
   const items=playbook?playbookStructuredPreviewItems(playbook.documentHtml||''):[];
@@ -10787,9 +10787,9 @@ function renderExecutionMappingForm(){
     if(item.type==='checklist'){
       return `
         <div class="execution-map-linked">
-          <b>LINKED CHECKLIST</b>
+          <b>LINKED RULES</b>
           <strong>${escapeHtml(item.label)}</strong>
-          <small>The checklist itself will expand here once the Checklists builder is connected.</small>
+          <small>The linked Rules will expand here from the separate Rules builder.</small>
         </div>
       `;
     }
@@ -10855,8 +10855,8 @@ function renderExecutionMappingForm(){
     </section>
     <section class="execution-instrument-section checklist" data-execution-instrument-section="checklist">
       <div class="execution-instrument-section-head">
-        <div><span>CHECKLIST MAPPING</span><strong>${escapeHtml(checklist?.name||'No Checklist selected')}</strong><small>Reusable checklist conditions are mapped independently from the Playbook.</small></div>
-        <span class="execution-instrument-badge">CHECKLIST</span>
+        <div><span>RULES MAPPING</span><strong>${escapeHtml(checklist?.name||'No Rules selected')}</strong><small>Reusable rules are mapped independently from the Playbook.</small></div>
+        <span class="execution-instrument-badge">RULES</span>
       </div>
       ${renderExecutionSecondaryItems('checklist',checklist)}
     </section>
@@ -12500,7 +12500,7 @@ function playbookStructuredPreviewItems(documentHtml){
     }
 
     if(node.matches?.('[data-playbook-node="checklist-link"]')){
-      const label=cleanNodeText(node)||'Linked checklist';
+      const label=cleanNodeText(node)||'Linked rules';
       items.push({type:'checklist',label});
       return;
     }
@@ -12678,7 +12678,7 @@ function renderPlaybookExecutionPreview(){
       `;
     }
     if(item.type==='checklist'){
-      return `<div class="playbook-preview-linked"><b>LINKED CHECKLIST</b><span>${escapeHtml(item.label)}</span></div>`;
+      return `<div class="playbook-preview-linked"><b>LINKED RULES</b><span>${escapeHtml(item.label)}</span></div>`;
     }
     if(item.type==='reflection'){
       return `<div class="playbook-preview-reflection"><b>LINKED REFLECTION</b><span>${escapeHtml(item.label)}</span></div>`;
@@ -13310,7 +13310,7 @@ function insertPlaybookElement(kind){
     section:'<h2>New Section</h2><p>Define this part of your trading method.</p>',
     rule:'<div class="pb-doc-rule" data-playbook-node="rule"><span class="pb-doc-label">RULE</span><button type="button" class="pb-doc-remove-btn" contenteditable="false" aria-label="Remove this Playbook block" title="Remove this block">×</button><p>Define the trading rule here.</p></div><p><br></p>',
     note:'<div class="pb-doc-note" data-playbook-node="note"><span class="pb-doc-label">NOTE</span><button type="button" class="pb-doc-remove-btn" contenteditable="false" aria-label="Remove this Playbook block" title="Remove this block">×</button><p>Add context, explanation or reference information.</p></div><p><br></p>',
-    checklist:'<div class="pb-doc-link" data-playbook-node="checklist-link"><span class="pb-doc-label">LINKED CHECKLIST</span><button type="button" class="pb-doc-remove-btn" contenteditable="false" aria-label="Remove this Playbook block" title="Remove this block">×</button><p>Type the checklist name here. This reference will later connect to the separate Checklists library.</p></div><p><br></p>',
+    checklist:'<div class="pb-doc-link" data-playbook-node="checklist-link"><span class="pb-doc-label">LINKED RULES</span><button type="button" class="pb-doc-remove-btn" contenteditable="false" aria-label="Remove this Playbook block" title="Remove this block">×</button><p>Type the Rules name here. This reference connects to the separate Rules library.</p></div><p><br></p>',
     reflection:'<div class="pb-doc-link" data-playbook-node="reflection-link"><span class="pb-doc-label">LINKED REFLECTION</span><button type="button" class="pb-doc-remove-btn" contenteditable="false" aria-label="Remove this Playbook block" title="Remove this block">×</button><p>Type the reflection structure name here. This reference will later connect to the separate Reflections library.</p></div><p><br></p>'
   };
   if(templates[kind])insertPlaybookHtml(templates[kind]);
@@ -13450,21 +13450,21 @@ function initPlaybookWorkspace(){
 const SECONDARY_INSTRUMENT_CONFIG={
   checklist:{
     page:'checklists',
-    label:'Checklists',
-    singular:'Checklist',
-    executionLabel:'CHECKLIST EXECUTION',
+    label:'Rules',
+    singular:'Rules',
+    executionLabel:'RULES EXECUTION',
     store:'tios_checklist_documents_v2',
-    defaultHtml:'<h2>Checklist</h2><p>Define reusable conditions and rules for this checklist.</p>',
+    defaultHtml:'<h2>Rules</h2><p>Define reusable trading rules and conditions here.</p>',
     insertPrimary:'Rule',
     module:'checklists'
   },
   psych:{
     page:'reflections',
-    label:'Psychological Review',
-    singular:'Psychological Review',
+    label:'Psychological Reflection',
+    singular:'Psychological Reflection',
     executionLabel:'PSYCHOLOGICAL REVIEW',
     store:'tios_psychological_review_documents_v2',
-    defaultHtml:'<h2>Psychological Review</h2><p>Define how behaviour, decisions and state of mind should be reviewed after execution.</p>',
+    defaultHtml:'<h2>Psychological Reflection</h2><p>Define how behaviour, decisions and state of mind should be reviewed after execution.</p>',
     insertPrimary:'Prompt',
     module:'reflections'
   }
@@ -13538,7 +13538,7 @@ function secondaryWorkspaceHtml(kind){
         <h1>${c.label}</h1>
         <p>${kind==='psych'
           ? 'Build reusable psychological review structures. Responses are recorded later in Execution Quality.'
-          : 'Build reusable rules and conditions. Measurement stays in Execution Quality.'}</p>
+          : 'Build reusable trading rules and conditions. Measurement stays in Execution Quality.'}</p>
       </div>
       <div class="top-actions">
         <button class="btn" type="button" data-ti-action="new">+ New ${c.singular}</button>
@@ -13588,7 +13588,7 @@ function secondaryWorkspaceHtml(kind){
           <div class="ti-builder-switcher" aria-label="Technical Instrument builder">
             <span class="ti-builder-switcher-label">Built:</span>
             <button type="button" class="ti-builder-switch" data-ti-builder-switch="playbook">Playbook</button>
-            <button type="button" class="ti-builder-switch ${kind==='checklist'?'active':''}" data-ti-builder-switch="checklist">Checklist</button>
+            <button type="button" class="ti-builder-switch ${kind==='checklist'?'active':''}" data-ti-builder-switch="checklist">Rules</button>
             <button type="button" class="ti-builder-switch ${kind==='psych'?'active':''}" data-ti-builder-switch="psych">Psychological Reflection</button>
           </div>
           <div class="playbook-word-tabs" role="tablist">
@@ -13859,7 +13859,7 @@ function secondaryInsert(kind,type){
   if(type==='table'){openSecondaryTableModal(kind);return}
   const templates={
     section:'<h2>New Section</h2><p>Define this section.</p>',
-    rule:'<div class="pb-doc-rule" data-playbook-node="rule"><span class="pb-doc-label">CHECKLIST ITEM</span><p>Define the condition here.</p></div><p><br></p>',
+    rule:'<div class="pb-doc-rule" data-playbook-node="rule"><span class="pb-doc-label">RULE</span><p>Define the condition here.</p></div><p><br></p>',
     prompt:'<div class="pb-doc-note" data-playbook-node="psych-prompt"><span class="pb-doc-label">REVIEW PROMPT</span><p>What should be reviewed here?</p></div><p><br></p>',
     note:'<div class="pb-doc-note" data-playbook-node="note"><span class="pb-doc-label">NOTE</span><p>Add context or guidance.</p></div><p><br></p>'
   };
