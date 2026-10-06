@@ -4325,6 +4325,19 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
 .playbook-word-editor .pb-doc-label{display:block;margin-bottom:5px;color:#526170;font-size:10px;font-weight:800;letter-spacing:.6px}
 .playbook-word-editor .pb-doc-remove-btn{position:absolute;top:8px;right:8px;width:24px;height:24px;display:grid;place-items:center;padding:0;border:1px solid rgba(65,76,91,.24);border-radius:6px;background:rgba(255,255,255,.72);color:#687382;font-size:16px;font-weight:800;line-height:1;cursor:pointer}
 .playbook-word-editor .pb-doc-remove-btn:hover{border-color:#d26c73;background:#fff3f4;color:#b82935}
+.ti-reference-image{position:relative;display:block;box-sizing:border-box;margin:14px 0;padding:10px;border:1px solid #34475a;border-radius:8px;background:#101923;max-width:100%;color:#c8d5e3}
+.ti-reference-image img{display:block;width:100%;height:auto;border-radius:4px;cursor:zoom-in}
+.ti-reference-image img:not([src]){min-height:90px;cursor:default}
+.ti-reference-image figcaption{margin-top:8px;font-size:11px;line-height:1.5;overflow-wrap:anywhere;white-space:pre-wrap}
+.ti-reference-image-status{display:block;padding:12px 0;color:#8194aa;font-size:11px}
+.ti-reference-image-status[hidden]{display:none}
+.playbook-word-editor .ti-reference-image{background:#f8fafc;border-color:#cbd5df;color:#263441}
+.ti-reference-image-tools{display:flex;align-items:center;gap:6px;margin-bottom:8px;padding-right:27px;font:10px Arial,sans-serif;color:#596b7d}
+.ti-reference-image-tools b{margin-right:auto;font-weight:600}
+.ti-reference-image-tools button{width:25px;height:24px;padding:0;border:1px solid #c7d2dc;border-radius:4px;background:#fff;color:#263441;cursor:pointer}
+.playbook-word-editor .ti-reference-image figcaption{min-height:20px;outline:none}
+.playbook-word-editor .ti-reference-image figcaption:empty:before{content:attr(data-placeholder);color:#7d8c9a;pointer-events:none}
+.ti-reference-image-resize{position:absolute;right:1px;bottom:1px;width:18px;height:18px;padding:0;border:0;background:linear-gradient(135deg,transparent 48%,#7892aa 49%,#7892aa 57%,transparent 58%,transparent 70%,#7892aa 71%,#7892aa 79%,transparent 80%);cursor:ew-resize;touch-action:none}
 .playbook-preview-head-actions{
   display:flex;
   align-items:center;
@@ -6690,6 +6703,13 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
                   <button type="button" class="playbook-word-insert-btn" data-playbook-insert="choice">+ Either / Or</button>
                   <button type="button" class="playbook-word-insert-btn" data-playbook-insert="note">+ Note</button>
                   <button type="button" class="playbook-word-insert-btn" data-playbook-insert="table">+ Table</button>
+                </div>
+              </div>
+
+              <div class="playbook-word-tool-group">
+                <span class="playbook-word-tool-label">Media</span>
+                <div class="playbook-word-tool-row">
+                  <button type="button" class="playbook-word-insert-btn" data-playbook-insert="image">+ Image / Screenshot</button>
                 </div>
               </div>
 
@@ -11019,6 +11039,7 @@ function renderExecutionSecondaryItems(kind,doc){
   let index=0;
   return items.map((item,itemIndex)=>{
     if(item.type==='section')return `<div class="execution-map-section ${item.level===1?'level-1':(item.level===3?'level-3':'level-2')}">${escapeHtml(item.label)}</div>`;
+    if(item.type==='image')return instrumentReferenceImageHtml(item);
     if(item.type==='psych-prompt'||(kind==='psych'&&item.type==='content')){
       return `<div class="execution-psych-prompt"><label>${escapeHtml(item.label)}</label><textarea placeholder="Psychological review response"></textarea></div>`;
     }
@@ -11090,6 +11111,7 @@ function renderExecutionMappingForm(){
   let checkIndex=0;
   const playbookHtml=playbook
     ? (items.length?items.map((item,itemIndex)=>{
+    if(item.type==='image')return instrumentReferenceImageHtml(item);
     if(item.type==='section'){
       return `<div class="execution-map-section ${item.level===1?'level-1':(item.level===3?'level-3':'level-2')}">${escapeHtml(item.label)}</div>`;
     }
@@ -11249,6 +11271,7 @@ function renderExecutionMappingForm(){
   };
 
   body.innerHTML=instrumentHtml[activeInstrument];
+  hydratePlaybookImages(body);
   renderExecutionMappingControls();
   updateExecutionMappingScore();
 }
@@ -12515,7 +12538,7 @@ function beginPlaybookCanvasResize(event,axis){
   window.addEventListener('pointermove',move);window.addEventListener('pointerup',finish);window.addEventListener('pointercancel',finish);
 }
 function playbookStructuredBlockSelector(){
-  return '[data-playbook-node="rule"],[data-playbook-node="choice"],[data-playbook-node="note"],[data-playbook-node="checklist-link"],[data-playbook-node="reflection-link"],[data-playbook-node="table"],.pb-doc-rule,.pb-doc-choice,.pb-doc-note,.pb-doc-link,.pb-doc-table-wrap';
+  return '[data-playbook-node="rule"],[data-playbook-node="choice"],[data-playbook-node="note"],[data-playbook-node="checklist-link"],[data-playbook-node="reflection-link"],[data-playbook-node="table"],[data-playbook-node="image"],.pb-doc-rule,.pb-doc-choice,.pb-doc-note,.pb-doc-link,.pb-doc-table-wrap';
 }
 function ensurePlaybookBlockControls(){
   const editor=$('#playbookDocumentEditor');if(!editor)return;
@@ -12863,13 +12886,19 @@ function playbookStructuredPreviewItems(documentHtml){
 
   function cleanNodeText(node){
     const clone=node.cloneNode(true);
-    clone.querySelectorAll?.('.pb-doc-label,.pb-doc-remove-btn').forEach(control=>control.remove());
+    clone.querySelectorAll?.('.pb-doc-label,.pb-doc-remove-btn,[data-playbook-node="image"]').forEach(control=>control.remove());
     return (clone.textContent||'').replace(/\s+/g,' ').trim();
   }
 
   function readNode(node){
     if(!node||node.nodeType!==1)return;
     const tag=node.tagName?.toLowerCase();
+
+    if(node.matches?.('[data-playbook-node="image"]')){
+      const key=node.dataset.playbookImageKey;
+      if(key)items.push({type:'image',key,width:normalizeInstrumentImageWidth(node.dataset.playbookImageWidth),caption:(node.querySelector('figcaption')?.textContent||'').trim()});
+      return;
+    }
 
     if(node.matches?.('[data-playbook-node="rule"], .pb-doc-rule')){
       const label=cleanNodeText(node);
@@ -13029,6 +13058,7 @@ function renderPlaybookExecutionPreview(){
   }
 
   body.innerHTML=items.map((item,itemIndex)=>{
+    if(item.type==='image')return instrumentReferenceImageHtml(item);
     if(item.type==='section'){
       return `<div class="playbook-preview-section ${item.level===1?'level-1':(item.level===3?'level-3':'level-2')}">${escapeHtml(item.label)}</div>`;
     }
@@ -13102,6 +13132,7 @@ function renderPlaybookExecutionPreview(){
     }
     return '';
   }).join('');
+  hydratePlaybookImages(body);
 }
 
 function playbookDocumentSummary(documentItem){
@@ -13154,6 +13185,7 @@ function renderPlaybookDocumentEditor(){
   title.value=item.name||'Untitled Playbook';
   editor.innerHTML=item.documentHtml||'';
   ensurePlaybookBlockControls();
+  hydratePlaybookImages(editor);
   description.value=item.description||'';
   tags.value=(item.tags||[]).join(', ');
   state.value=['active','draft','archived'].includes(item.instrumentState)?item.instrumentState:'active';
@@ -13209,7 +13241,7 @@ function collectPlaybookDocumentFromEditor(){
   const description=String($('#playbookDraftDescription')?.value||'').trim();
   const tags=String($('#playbookDraftTags')?.value||'').split(',').map(tag=>tag.trim()).filter(Boolean);
   const instrumentState=String($('#playbookDraftState')?.value||'active');
-  const documentHtml=String($('#playbookDocumentEditor')?.innerHTML||'');
+  const documentHtml=serializeInstrumentDocument($('#playbookDocumentEditor'));
   return {...item,name:title,description,tags:[...new Set(tags)],instrumentState,documentHtml,updatedAt:new Date().toISOString()};
 }
 
@@ -13822,6 +13854,7 @@ function previewCurrentPlaybookInExecutionQuality(){
 }
 
 function insertPlaybookElement(kind){
+  if(kind==='image'){openInstrumentImagePicker('playbook');return}
   if(kind==='choice'){
     openPlaybookChoiceModal();
     return;
@@ -13865,6 +13898,7 @@ function initPlaybookWorkspace(){
   if(playbookWorkspaceInitialized||!$('#playbookDocumentEditor'))return;
   playbookWorkspaceInitialized=true;
   observePlaybookEditor();
+  initInstrumentImageEditor('playbook');
   initInstrumentStyleSelection(
     $('#playbookDocumentEditor'),$('#page-playbook .playbook-word-ribbon'),
     rememberPlaybookEditorSelection,()=>{playbookEditorSelectionRange=null},refreshPlaybookListStyleControls
@@ -13976,6 +14010,7 @@ function initPlaybookWorkspace(){
   });
 
   $('#playbookDocumentEditor')?.addEventListener('paste',event=>{
+    if(pasteInstrumentReferenceImage('playbook',event))return;
     event.preventDefault();
     const plain=event.clipboardData?.getData('text/plain')||'';
     document.execCommand('insertText',false,plain);
@@ -14187,6 +14222,10 @@ function secondaryWorkspaceHtml(kind){
                 <button type="button" class="playbook-word-insert-btn" data-ti-insert="table">+ Table</button>
               </div>
             </div>
+            <div class="playbook-word-tool-group">
+              <span class="playbook-word-tool-label">Media</span>
+              <div class="playbook-word-tool-row"><button type="button" class="playbook-word-insert-btn" data-ti-insert="image">+ Image / Screenshot</button></div>
+            </div>
           </div>
 
           <div class="playbook-word-ribbon-panel" data-ti-ribbon-panel="styles">
@@ -14345,7 +14384,7 @@ function collectSecondaryDocument(kind){
     description:String(secondaryFind(kind,'[data-ti-description]')?.value||'').trim(),
     tags:String(secondaryFind(kind,'[data-ti-tags]')?.value||'').split(',').map(x=>x.trim()).filter(Boolean),
     instrumentState:String(secondaryFind(kind,'[data-ti-state]')?.value||'draft'),
-    documentHtml:String(secondaryFind(kind,'[data-ti-editor]')?.innerHTML||''),
+    documentHtml:serializeInstrumentDocument(secondaryFind(kind,'[data-ti-editor]')),
     updatedAt:new Date().toISOString()
   };
 }
@@ -14506,6 +14545,7 @@ function secondaryInsertHtml(kind,html){
   editor.focus();document.execCommand('insertHTML',false,html);ensureSecondaryBlockControls(kind);renderSecondaryPreview(kind);scheduleSecondarySave(kind);
 }
 function secondaryInsert(kind,type){
+  if(type==='image'){openInstrumentImagePicker(kind);return}
   if(type==='choice'){openSecondaryChoiceModal(kind);return}
   if(type==='table'){openSecondaryTableModal(kind);return}
   const templates={
@@ -14571,6 +14611,7 @@ function openSecondaryTableModal(kind){
 
 function secondaryPreviewHtml(kind,items){
   return items.map((item,itemIndex)=>{
+    if(item.type==='image')return instrumentReferenceImageHtml(item);
     if(item.type==='section')return '<div class="playbook-preview-section level-'+(item.level||2)+'">'+escapeHtml(item.label)+'</div>';
     if(item.type==='psych-prompt')return '<div class="ti-preview-prompt"><b>'+escapeHtml(item.label)+'</b><span></span></div>';
     if(item.type==='check'){
@@ -14611,6 +14652,7 @@ function renderSecondaryPreview(kind){
     meta.textContent='Preview only · '+measurable+' '+(kind==='psych'?'prompt':'condition')+(measurable===1?'':'s')+' · mapped separately';
   }
   body.innerHTML=items.length?secondaryPreviewHtml(kind,items):'<div class="playbook-preview-empty">Start building this instrument to see its Execution Quality model.</div>';
+  hydratePlaybookImages(body);
 }
 function renderSecondaryDocument(kind){
   secondaryState(kind).selectionRange=null;
@@ -14621,6 +14663,7 @@ function renderSecondaryDocument(kind){
   secondaryFind(kind,'[data-ti-tags]').value=(doc.tags||[]).join(', ');
   secondaryFind(kind,'[data-ti-state]').value=doc.instrumentState||'draft';
   const editor=secondaryFind(kind,'[data-ti-editor]');editor.innerHTML=doc.documentHtml||'';ensureSecondaryBlockControls(kind);
+  hydratePlaybookImages(editor);
   const words=(editor.innerText||'').trim().split(/\s+/).filter(Boolean).length;
   secondaryFind(kind,'[data-ti-word-count]').textContent=words+' words';
   secondaryFind(kind,'[data-ti-save-state]').textContent='Saved';
@@ -14697,6 +14740,7 @@ function previewSecondaryInExecution(kind){
 function initSecondaryWorkspace(kind){
   const state=secondaryState(kind);if(state.initialized)return;state.initialized=true;
   const page=secondaryPage(kind);
+  initInstrumentImageEditor(kind);
   initInstrumentStyleSelection(
     secondaryFind(kind,'[data-ti-editor]'),secondaryFind(kind,'.playbook-word-ribbon'),
     ()=>secondaryRememberSelection(kind),()=>{state.selectionRange=null},()=>refreshSecondaryStyleControls(kind)
@@ -14834,27 +14878,187 @@ function loadImageElement(src){
   });
 }
 
-async function compressPlaybookDemoImage(file){
+function normalizeInstrumentImageWidth(value){
+  return Math.max(20,Math.min(100,Math.round(Number(value)||75)));
+}
+
+function instrumentReferenceImageHtml(item,editable=false){
+  const width=normalizeInstrumentImageWidth(item.width);
+  const caption=String(item.caption||'');
+  const tools=editable?`<div class="ti-reference-image-tools" contenteditable="false"><b>Reference image</b><button type="button" data-ti-reference-size="-10" aria-label="Make image narrower">−</button><span data-ti-reference-width-label>${width}%</span><button type="button" data-ti-reference-size="10" aria-label="Make image wider">+</button></div><button type="button" class="pb-doc-remove-btn" contenteditable="false" aria-label="Remove reference image" title="Remove reference image">×</button>`:'';
+  const captionHtml=editable||caption?`<figcaption${editable?' contenteditable="true" data-placeholder="Add a caption…" aria-label="Image caption"':''}>${escapeHtml(caption)}</figcaption>`:'';
+  return `<figure class="ti-reference-image" data-playbook-node="image" data-playbook-image-key="${escapeHtml(item.key)}" data-playbook-image-width="${width}" style="width:${width}%" contenteditable="false">${tools}<img data-ti-reference-image data-ti-reference-open alt="${escapeHtml(caption||'Reference image')}" tabindex="0" role="button" aria-label="Open reference image"><span class="ti-reference-image-status">Loading image…</span>${captionHtml}${editable?'<button type="button" class="ti-reference-image-resize" data-ti-reference-resize aria-label="Resize reference image" title="Drag to resize; arrow keys adjust width"></button>':''}</figure>`;
+}
+
+// Store the media key and presentation in document HTML, not transient data URLs.
+// The existing image database holds the binary for all three builders.
+function serializeInstrumentDocument(editor){
+  if(!editor)return '';
+  const clone=editor.cloneNode(true);
+  clone.querySelectorAll('[data-playbook-node="image"]').forEach(figure=>{
+    figure.removeAttribute('data-playbook-image-hydrated');
+    figure.removeAttribute('data-playbook-image-src');
+    figure.querySelector('[data-ti-reference-image]')?.removeAttribute('src');
+    const status=figure.querySelector('.ti-reference-image-status');
+    if(status){status.hidden=false;status.textContent='Loading image…'}
+  });
+  return clone.innerHTML;
+}
+
+function instrumentImageEditor(kind){
+  return kind==='playbook'?$('#playbookDocumentEditor'):secondaryFind(kind,'[data-ti-editor]');
+}
+function instrumentImageDocumentId(kind){
+  return kind==='playbook'?currentPlaybookDocument()?.id:currentSecondaryDocument(kind)?.id;
+}
+function instrumentImageScope(kind){
+  return kind==='playbook'?playbookDocumentKey():secondaryStoreKey(kind);
+}
+function captureInstrumentImageContext(kind){
+  const editor=instrumentImageEditor(kind);
+  if(!editor||!instrumentImageDocumentId(kind))return null;
+  const remembered=kind==='playbook'?playbookEditorSelectionRange:secondaryState(kind).selectionRange;
+  const range=(kind==='playbook'?capturePlaybookEditorSelection():secondaryCaptureSelection(kind))||remembered;
+  let element=range?.startContainer;
+  if(element?.nodeType!==1)element=element?.parentElement;
+  const anchor=element?.closest?.('[data-playbook-node],ul,ol')||element?.closest?.('p,h1,h2,h3,blockquote,table');
+  return {kind,editor,documentId:instrumentImageDocumentId(kind),scope:instrumentImageScope(kind),anchor:anchor&&editor.contains(anchor)?anchor:null};
+}
+function instrumentImageContextCurrent(context){
+  return Boolean(context&&context.editor.isConnected&&context.editor.closest('.page.active')&&
+    instrumentImageEditor(context.kind)===context.editor&&instrumentImageDocumentId(context.kind)===context.documentId&&
+    instrumentImageScope(context.kind)===context.scope);
+}
+function syncInstrumentImageDocument(kind){
+  if(kind==='playbook')syncPlaybookLiveModel();
+  else {renderSecondaryPreview(kind);scheduleSecondarySave(kind)}
+}
+
+function openInstrumentImagePicker(kind){
+  const context=captureInstrumentImageContext(kind);if(!context)return;
+  $('#instrumentReferenceImageInput')?.remove();
+  const input=document.createElement('input');
+  input.type='file';input.id='instrumentReferenceImageInput';input.accept='image/png,image/jpeg,image/webp,image/gif';input.multiple=true;input.hidden=true;
+  input.addEventListener('change',()=>{
+    const files=[...input.files];input.remove();
+    insertInstrumentReferenceFiles(files,context);
+  },{once:true});
+  input.addEventListener('cancel',()=>input.remove(),{once:true});
+  document.body.appendChild(input);input.click();
+}
+
+function pasteInstrumentReferenceImage(kind,event){
+  const files=[...(event.clipboardData?.items||[])]
+    .filter(item=>item.kind==='file'&&item.type.startsWith('image/')).map(item=>item.getAsFile()).filter(Boolean);
+  if(!files.length)return false;
+  event.preventDefault();
+  insertInstrumentReferenceFiles(files,captureInstrumentImageContext(kind));
+  return true;
+}
+
+async function insertInstrumentReferenceFiles(files,context){
+  if(!context)return;
+  for(const file of files){
+    let key=null,inserted=false;
+    try{
+      if(!instrumentImageContextCurrent(context)){showStatus('The document changed. Select an insertion point and add the image again.');return}
+      if(!['image/png','image/jpeg','image/webp','image/gif'].includes(file.type))throw new Error('Choose a PNG, JPG, WebP or GIF image.');
+      if(file.size>12*1024*1024)throw new Error('Choose an image smaller than 12 MB.');
+      key=await storePlaybookDemoImage(file,context.documentId,{maxSide:2400,quality:.9,mimeType:'image/webp',builderKind:context.kind});
+      if(!instrumentImageContextCurrent(context)||context.anchor&&!context.editor.contains(context.anchor)){
+        await deletePlaybookMediaRecord(key);key=null;
+        showStatus('The document or insertion point changed. Add the image again.');return;
+      }
+      const host=document.createElement('div');host.innerHTML=instrumentReferenceImageHtml({key,width:75,caption:''},true);
+      const figure=host.firstElementChild;
+      if(context.anchor)context.anchor.after(figure);else context.editor.appendChild(figure);
+      inserted=true;context.anchor=figure;
+      if(!figure.nextSibling){const paragraph=document.createElement('p');paragraph.innerHTML='<br>';figure.after(paragraph)}
+      hydratePlaybookImages(context.editor);
+      syncInstrumentImageDocument(context.kind);
+      const caption=figure.querySelector('figcaption');caption.focus();
+      const range=document.createRange();range.selectNodeContents(caption);range.collapse(false);
+      const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);
+      if(context.kind==='playbook')rememberPlaybookEditorSelection();else secondaryRememberSelection(context.kind);
+    }catch(error){
+      if(key&&!inserted)await deletePlaybookMediaRecord(key).catch(()=>{});
+      showStatus(error.message||'Could not add the image. Please try again.');
+    }
+  }
+}
+
+function setInstrumentReferenceWidth(kind,figure,width){
+  const next=normalizeInstrumentImageWidth(width);
+  figure.dataset.playbookImageWidth=String(next);figure.style.width=next+'%';
+  const label=figure.querySelector('[data-ti-reference-width-label]');if(label)label.textContent=next+'%';
+  syncInstrumentImageDocument(kind);
+}
+
+function initInstrumentImageEditor(kind){
+  const editor=instrumentImageEditor(kind);if(!editor||editor.dataset.referenceImagesReady==='1')return;
+  editor.dataset.referenceImagesReady='1';
+  if(document.body.dataset.referenceImageViewerReady!=='1'){
+    document.body.dataset.referenceImageViewerReady='1';
+    const openImage=event=>{
+      const image=event.target.closest('[data-ti-reference-open]');
+      if(image?.getAttribute('src')){event.preventDefault();openPlaybookImageViewer(image.src,image.alt)}
+    };
+    document.addEventListener('click',openImage);
+    document.addEventListener('keydown',event=>{if(['Enter',' '].includes(event.key)&&event.target.matches('[data-ti-reference-open]'))openImage(event)});
+  }
+  editor.addEventListener('input',event=>{
+    const caption=event.target.closest('figcaption'),figure=caption?.closest('[data-playbook-node="image"]');
+    if(figure){const image=figure.querySelector('[data-ti-reference-image]');if(image)image.alt=caption.textContent.trim()||'Reference image'}
+  });
+  if(kind!=='playbook')editor.addEventListener('paste',event=>pasteInstrumentReferenceImage(kind,event));
+  editor.addEventListener('click',event=>{
+    const size=event.target.closest('[data-ti-reference-size]');
+    if(size){event.preventDefault();setInstrumentReferenceWidth(kind,size.closest('figure'),Number(size.closest('figure').dataset.playbookImageWidth)+Number(size.dataset.tiReferenceSize));return}
+  });
+  editor.addEventListener('keydown',event=>{
+    const handle=event.target.closest('[data-ti-reference-resize]');
+    if(handle&&['ArrowLeft','ArrowRight'].includes(event.key)){
+      event.preventDefault();const figure=handle.closest('figure');
+      setInstrumentReferenceWidth(kind,figure,Number(figure.dataset.playbookImageWidth)+(event.key==='ArrowLeft'?-5:5));
+    }
+  });
+  editor.addEventListener('pointerdown',event=>{
+    const handle=event.target.closest('[data-ti-reference-resize]');if(!handle)return;
+    event.preventDefault();
+    const figure=handle.closest('figure'),startWidth=normalizeInstrumentImageWidth(figure.dataset.playbookImageWidth);
+    const availableWidth=figure.getBoundingClientRect().width/(startWidth/100),startX=event.clientX,pointerId=event.pointerId;
+    handle.setPointerCapture?.(pointerId);
+    const move=e=>{if(e.pointerId===pointerId&&editor.contains(figure))setInstrumentReferenceWidth(kind,figure,startWidth+(e.clientX-startX)*100/availableWidth)};
+    const finish=e=>{
+      if(e.pointerId!==pointerId)return;
+      window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',finish);window.removeEventListener('pointercancel',finish);
+      try{handle.releasePointerCapture?.(pointerId)}catch(error){}
+    };
+    window.addEventListener('pointermove',move);window.addEventListener('pointerup',finish);window.addEventListener('pointercancel',finish);
+  });
+}
+
+async function compressPlaybookDemoImage(file,{maxSide=1400,quality=.82,mimeType='image/jpeg'}={}){
   const source=await readFileAsDataUrl(file);
   const image=await loadImageElement(source);
-  const maxSide=1400;
   const scale=Math.min(1,maxSide/Math.max(image.naturalWidth||1,image.naturalHeight||1));
   const width=Math.max(1,Math.round(image.naturalWidth*scale));
   const height=Math.max(1,Math.round(image.naturalHeight*scale));
   const canvas=document.createElement('canvas');
   canvas.width=width;canvas.height=height;
-  const ctx=canvas.getContext('2d',{alpha:false});
+  const ctx=canvas.getContext('2d',{alpha:mimeType!=='image/jpeg'});
   ctx.drawImage(image,0,0,width,height);
-  return canvas.toDataURL('image/jpeg',0.82);
+  return canvas.toDataURL(mimeType,quality);
 }
 
-async function storePlaybookDemoImage(file,ruleId){
+async function storePlaybookDemoImage(file,ruleId,options={}){
   if(!file?.type?.startsWith('image/'))throw new Error('Choose an image file.');
-  const dataUrl=await compressPlaybookDemoImage(file);
+  const dataUrl=await compressPlaybookDemoImage(file,options);
   const key=`pbimg_${currentUser?.id||'anon'}_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
   await savePlaybookMediaRecord({
     key,
     ruleId:String(ruleId||''),
+    ...(options.builderKind?{builderKind:options.builderKind,documentId:String(ruleId||'')}:{}),
     name:file.name||'playbook-demo.jpg',
     dataUrl,
     createdAt:new Date().toISOString()
@@ -14878,11 +15082,21 @@ async function hydratePlaybookImages(root=document){
       const record=await getPlaybookMediaRecord(key);
 
       if(!record?.dataUrl){
+        if(node.matches('[data-playbook-node="image"]')){
+          const status=node.querySelector('.ti-reference-image-status');if(status){status.hidden=false;status.textContent='Image unavailable on this device'}
+          return;
+        }
         if(isBuilderItem){
           if(loading)loading.textContent='Image unavailable on this device';
         }else{
           node.innerHTML='<span class="playbook-media-loading">Image unavailable on this device</span>';
         }
+        return;
+      }
+
+      if(node.matches('[data-playbook-node="image"]')){
+        const image=node.querySelector('[data-ti-reference-image]');if(image)image.src=record.dataUrl;
+        const status=node.querySelector('.ti-reference-image-status');if(status)status.hidden=true;
         return;
       }
 
@@ -14906,6 +15120,11 @@ async function hydratePlaybookImages(root=document){
     }catch(error){
       console.warn('Could not hydrate playbook image:',error);
 
+      if(node.matches('[data-playbook-node="image"]')){
+        const status=node.querySelector('.ti-reference-image-status');if(status){status.hidden=false;status.textContent='Image unavailable'}
+        return;
+      }
+
       if(isBuilderItem){
         if(loading)loading.textContent='Image unavailable';
       }else{
@@ -14925,11 +15144,12 @@ function playbookReviewImagesHtml(rule){
   return `<div class="playbook-demo-images">${keys.map(key=>`<button type="button" class="playbook-demo-thumb" data-playbook-demo-open data-playbook-image-key="${escapeHtml(key)}" aria-label="Open demonstration image"><span class="playbook-media-loading">Loading demo…</span></button>`).join('')}</div>`;
 }
 
-function openPlaybookImageViewer(src){
+function openPlaybookImageViewer(src,alt='Playbook demonstration image'){
   const viewer=$('#playbookImageViewer');
   const image=$('#playbookImageViewerImg');
   if(!viewer||!image||!src)return;
   image.src=src;
+  image.alt=alt;
   viewer.classList.add('show');
   viewer.setAttribute('aria-hidden','false');
 }
