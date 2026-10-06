@@ -4322,6 +4322,78 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
 
 
 /* =====================================================
+   SHARED TECHNICAL-INSTRUMENT DOCUMENT WORKSPACE
+   Used by Checklists + Psychological Review.
+===================================================== */
+body.playbook-workspace .technical-document-page{
+  flex:1;
+  min-height:0;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+body.playbook-workspace .technical-document-page .page-head{flex:0 0 auto}
+body.playbook-workspace .technical-document-page .playbook-word-shell{
+  flex:1 1 auto;
+  min-height:0;
+  overflow:hidden;
+}
+body.playbook-workspace .technical-document-page .playbook-word-main{
+  min-height:0;
+  height:100%;
+}
+body.playbook-workspace .technical-document-page .playbook-word-document-stage{
+  min-height:0;
+  overflow:auto;
+  overscroll-behavior:contain;
+}
+body.playbook-workspace .technical-document-page .playbook-word-library{
+  min-height:0;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+body.playbook-workspace .technical-document-page .playbook-preview-body{
+  flex:1 1 auto;
+  min-height:0;
+  overflow:auto;
+}
+.ti-workspace-description{
+  margin:0;
+  color:#627082;
+  font-size:9px;
+  line-height:1.45;
+}
+.ti-preview-prompt{
+  margin-bottom:9px;
+  padding:10px;
+  border:1px solid #3b304f;
+  border-radius:9px;
+  background:#15121f;
+}
+.ti-preview-prompt b{
+  display:block;
+  color:#d7cae9;
+  font-size:9px;
+  line-height:1.45;
+}
+.ti-preview-prompt span{
+  display:block;
+  height:24px;
+  margin-top:8px;
+  border:1px dashed #58486f;
+  border-radius:6px;
+  background:#100d17;
+}
+@media(min-width:861px){
+  body.playbook-workspace .technical-document-page .playbook-word-shell.ti-auto-zoom:has(.playbook-execution-preview:hover),
+  body.playbook-workspace .technical-document-page .playbook-word-shell.ti-auto-zoom:has(.playbook-execution-preview:focus-within){
+    --playbook-preview-width:min(540px,calc(100% - 360px));
+  }
+}
+
+/* =====================================================
    EXECUTION QUALITY — PLAYBOOK MAPPING WORKSPACE
 ===================================================== */
 .execution-back-instruments-btn{
@@ -5248,7 +5320,7 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
         <div class="nav-submenu">
           <button class="nav-btn" data-page="playbook"><span class="nav-icon">◎</span> Playbooks</button>
           <button class="nav-btn" data-page="checklists"><span class="nav-icon">☑</span> Checklists</button>
-          <button class="nav-btn" data-page="reflections"><span class="nav-icon">◇</span> Reflections</button>
+          <button class="nav-btn" data-page="reflections"><span class="nav-icon">◇</span> Psychological Review</button>
         </div>
       </div>
 
@@ -6254,40 +6326,10 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
 
 
     <!-- TECHNICAL INSTRUMENTS: CHECKLISTS -->
-    <section class="page" id="page-checklists">
-      <header class="page-head">
-        <div>
-          <h1>Checklists</h1>
-          <p>Build and organize reusable rules and conditions. Measurement belongs in Execution Quality.</p>
-        </div>
-      </header>
+    <section class="page technical-document-page" id="page-checklists" data-ti-kind="checklist"></section>
 
-      <section class="panel" style="padding:18px">
-        <div class="intelligence-kicker">Technical Instruments</div>
-        <h3 style="margin:0 0 8px">Checklist workspace</h3>
-        <p style="margin:0;color:var(--muted);font-size:12px;line-height:1.65">
-          Checklist construction is isolated in <strong>checklists.js</strong>. No execution score, adherence result or trade measurement is created here.
-        </p>
-      </section>
-    </section>
-
-    <!-- TECHNICAL INSTRUMENTS: REFLECTIONS -->
-    <section class="page" id="page-reflections">
-      <header class="page-head">
-        <div>
-          <h1>Reflections</h1>
-          <p>Build and organize reusable structures for behaviour, decisions and state-of-mind reflection.</p>
-        </div>
-      </header>
-
-      <section class="panel" style="padding:18px">
-        <div class="intelligence-kicker">Technical Instruments</div>
-        <h3 style="margin:0 0 8px">Reflection workspace</h3>
-        <p style="margin:0;color:var(--muted);font-size:12px;line-height:1.65">
-          Reflection construction is isolated in <strong>reflections.js</strong>. Responses, scoring and analysis remain outside Technical Instruments.
-        </p>
-      </section>
-    </section>
+    <!-- TECHNICAL INSTRUMENTS: PSYCHOLOGICAL REVIEW -->
+    <section class="page technical-document-page" id="page-reflections" data-ti-kind="psych"></section>
 
 
     <section class="page" id="page-execution">
@@ -8430,11 +8472,12 @@ function navigate(page){
   });
 
   const executionWorkspace=page==='execution';
+  const technicalDocumentWorkspace=['playbook','checklists','reflections'].includes(page);
   const playbookWorkspace=page==='playbook';
   document.body.classList.toggle('execution-workspace',executionWorkspace);
-  document.body.classList.toggle('playbook-workspace',playbookWorkspace);
+  document.body.classList.toggle('playbook-workspace',technicalDocumentWorkspace);
 
-  if(playbookWorkspace){
+  if(technicalDocumentWorkspace){
     closeSidebarMobile();
     if(window.matchMedia('(min-width: 861px)').matches){
       setTiosDesktopSidebarCollapsed(true);
@@ -8456,6 +8499,14 @@ if(page==='journal'){
 
   if(page==='playbook'){
     renderPlaybookWorkspace();
+  }
+
+  if(page==='checklists'){
+    renderSecondaryInstrumentWorkspace('checklist');
+  }
+
+  if(page==='reflections'){
+    renderSecondaryInstrumentWorkspace('psych');
   }
 
   if(page==='statistics'){
@@ -12000,6 +12051,12 @@ function playbookStructuredPreviewItems(documentHtml){
       return;
     }
 
+    if(node.matches?.('[data-playbook-node="psych-prompt"]')){
+      const label=cleanNodeText(node);
+      if(label)items.push({type:'psych-prompt',label});
+      return;
+    }
+
     if(node.matches?.('[data-playbook-node="note"], .pb-doc-note')){
       const label=cleanNodeText(node);
       if(label)items.push({type:'note',label});
@@ -12920,6 +12977,623 @@ function initPlaybookWorkspace(){
       savePlaybookDocument();
     }
   });
+}
+
+/* =========================
+   SHARED CHECKLIST / PSYCHOLOGICAL REVIEW WORKSPACE
+========================= */
+const SECONDARY_INSTRUMENT_CONFIG={
+  checklist:{
+    page:'checklists',
+    label:'Checklists',
+    singular:'Checklist',
+    executionLabel:'CHECKLIST EXECUTION',
+    store:'tios_checklist_documents_v2',
+    defaultHtml:'<h2>Checklist</h2><p>Define reusable conditions and rules for this checklist.</p>',
+    insertPrimary:'Rule',
+    module:'checklists'
+  },
+  psych:{
+    page:'reflections',
+    label:'Psychological Review',
+    singular:'Psychological Review',
+    executionLabel:'PSYCHOLOGICAL REVIEW',
+    store:'tios_psychological_review_documents_v2',
+    defaultHtml:'<h2>Psychological Review</h2><p>Define how behaviour, decisions and state of mind should be reviewed after execution.</p>',
+    insertPrimary:'Prompt',
+    module:'reflections'
+  }
+};
+
+const secondaryInstrumentState={
+  checklist:{docs:[],selectedId:null,storeKey:null,initialized:false,selectionRange:null,saveTimer:null,autoZoom:true,previewWidth:540,canvasZoom:1},
+  psych:{docs:[],selectedId:null,storeKey:null,initialized:false,selectionRange:null,saveTimer:null,autoZoom:true,previewWidth:540,canvasZoom:1}
+};
+
+function secondaryConfig(kind){return SECONDARY_INSTRUMENT_CONFIG[kind]||SECONDARY_INSTRUMENT_CONFIG.checklist}
+function secondaryState(kind){return secondaryInstrumentState[kind]||secondaryInstrumentState.checklist}
+function secondaryPage(kind){return $('#page-'+secondaryConfig(kind).page)}
+function secondaryFind(kind,selector){return secondaryPage(kind)?.querySelector(selector)||null}
+function secondaryFindAll(kind,selector){return [...(secondaryPage(kind)?.querySelectorAll(selector)||[])]}
+
+function secondaryStoreKey(kind){
+  const config=secondaryConfig(kind);
+  return [config.store,currentUser?.id||'anon',tradingAccount?.id||'default'].join(':');
+}
+function secondaryMakeId(kind){
+  return kind+'_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,9);
+}
+function secondaryNormalizeDoc(kind,raw={}){
+  const config=secondaryConfig(kind);
+  const now=new Date().toISOString();
+  return {
+    id:String(raw.id||secondaryMakeId(kind)),
+    name:String(raw.name||('Untitled '+config.singular)),
+    description:String(raw.description||''),
+    documentHtml:String(raw.documentHtml||config.defaultHtml),
+    tags:Array.isArray(raw.tags)?raw.tags.map(String):[],
+    instrumentState:String(raw.instrumentState||'draft'),
+    createdAt:String(raw.createdAt||now),
+    updatedAt:String(raw.updatedAt||now)
+  };
+}
+function loadSecondaryDocuments(kind){
+  const state=secondaryState(kind);
+  const key=secondaryStoreKey(kind);
+  if(state.storeKey===key)return;
+  state.storeKey=key;
+  let stored=[];
+  try{
+    const parsed=JSON.parse(localStorage.getItem(key)||'[]');
+    stored=Array.isArray(parsed)?parsed:[];
+  }catch(error){console.warn('Could not read '+kind+' documents',error)}
+  state.docs=stored.map(item=>secondaryNormalizeDoc(kind,item));
+  state.selectedId=localStorage.getItem(key+':selected')||state.docs[0]?.id||null;
+  if(state.selectedId&&!state.docs.some(item=>item.id===state.selectedId))state.selectedId=state.docs[0]?.id||null;
+}
+function persistSecondaryDocuments(kind){
+  const state=secondaryState(kind);
+  if(!state.storeKey)state.storeKey=secondaryStoreKey(kind);
+  localStorage.setItem(state.storeKey,JSON.stringify(state.docs));
+  if(state.selectedId)localStorage.setItem(state.storeKey+':selected',state.selectedId);
+}
+function currentSecondaryDocument(kind){
+  const state=secondaryState(kind);
+  return state.docs.find(item=>item.id===state.selectedId)||null;
+}
+
+function secondaryWorkspaceHtml(kind){
+  const c=secondaryConfig(kind);
+  const primaryInsert=kind==='psych'
+    ? '<button type="button" class="playbook-word-insert-btn" data-ti-insert="prompt">+ Prompt</button>'
+    : '<button type="button" class="playbook-word-insert-btn" data-ti-insert="rule">+ Rule</button>';
+  return `
+    <header class="page-head playbook-word-page-head">
+      <div>
+        <h1>${c.label}</h1>
+        <p>${kind==='psych'
+          ? 'Build reusable psychological review structures. Responses are recorded later in Execution Quality.'
+          : 'Build reusable rules and conditions. Measurement stays in Execution Quality.'}</p>
+      </div>
+      <div class="top-actions">
+        <button class="btn" type="button" data-ti-action="new">+ New ${c.singular}</button>
+        <button class="btn danger" type="button" data-ti-action="delete">Delete ${c.singular}</button>
+        <button class="btn primary" type="button" data-ti-action="save">Save</button>
+      </div>
+    </header>
+
+    <section class="playbook-word-shell ti-auto-zoom" data-ti-shell>
+      <aside class="playbook-word-library playbook-execution-preview" aria-label="${c.singular} Execution Quality preview">
+        <div class="playbook-preview-resize-handle" data-ti-preview-resize role="separator" tabindex="0" aria-orientation="vertical" title="Drag to resize preview"></div>
+        <div class="playbook-preview-head">
+          <div>
+            <span>EXECUTION QUALITY PREVIEW</span>
+            <strong>Live model</strong>
+          </div>
+          <div class="playbook-preview-head-actions">
+            <button class="playbook-preview-open-btn" type="button" data-ti-action="preview">Preview</button>
+            <button class="playbook-preview-autozoom" type="button" data-ti-action="autozoom" aria-pressed="true">
+              <span>Auto Zoom</span>
+              <span class="playbook-preview-toggle-track" aria-hidden="true"><span class="playbook-preview-toggle-thumb"></span></span>
+              <strong class="playbook-preview-autozoom-state" data-ti-autozoom-state>ON</strong>
+            </button>
+          </div>
+        </div>
+
+        <label class="playbook-preview-document-picker">
+          <span>Preview ${c.singular.toLowerCase()}</span>
+          <select data-ti-preview-select></select>
+        </label>
+
+        <div class="playbook-preview-summary">
+          <span class="playbook-preview-kicker">${c.executionLabel}</span>
+          <strong data-ti-preview-title>Untitled</strong>
+          <small data-ti-preview-meta>Preview only</small>
+        </div>
+
+        <div class="playbook-preview-body" data-ti-preview-body></div>
+
+        <div class="playbook-word-library-note playbook-preview-note">
+          This is mapped separately from Playbooks. Nothing is scored or recorded here; actual responses belong in Execution Quality.
+        </div>
+      </aside>
+
+      <div class="playbook-word-main">
+        <div class="playbook-word-ribbon">
+          <div class="playbook-word-tabs" role="tablist">
+            <button class="playbook-word-tab active" type="button" data-ti-ribbon="home">Home</button>
+            <button class="playbook-word-tab" type="button" data-ti-ribbon="insert">Insert</button>
+            <button class="playbook-word-tab" type="button" data-ti-ribbon="styles">Styles</button>
+            <button class="playbook-word-tab" type="button" data-ti-ribbon="instrument">${c.singular}</button>
+          </div>
+
+          <div class="playbook-word-ribbon-panel active" data-ti-ribbon-panel="home">
+            <div class="playbook-word-tool-group">
+              <span class="playbook-word-tool-label">History</span>
+              <div class="playbook-word-tool-row">
+                <button class="playbook-word-tool-btn" type="button" data-ti-command="undo">↶</button>
+                <button class="playbook-word-tool-btn" type="button" data-ti-command="redo">↷</button>
+              </div>
+            </div>
+            <div class="playbook-word-tool-group">
+              <span class="playbook-word-tool-label">Structure</span>
+              <select class="playbook-word-style-select" data-ti-block-style>
+                <option value="p">Normal</option><option value="h1">Heading 1</option><option value="h2">Heading 2</option><option value="h3">Heading 3</option>
+              </select>
+            </div>
+            <div class="playbook-word-tool-group">
+              <span class="playbook-word-tool-label">Formatting</span>
+              <div class="playbook-word-tool-row">
+                <button class="playbook-word-tool-btn strong" type="button" data-ti-command="bold">B</button>
+                <button class="playbook-word-tool-btn italic" type="button" data-ti-command="italic">I</button>
+                <button class="playbook-word-tool-btn underline" type="button" data-ti-command="underline">U</button>
+              </div>
+            </div>
+            <div class="playbook-word-tool-group">
+              <span class="playbook-word-tool-label">Paragraph</span>
+              <div class="playbook-word-tool-row">
+                <button class="playbook-word-tool-btn" type="button" data-ti-command="insertUnorderedList">•≡</button>
+                <button class="playbook-word-tool-btn" type="button" data-ti-command="insertOrderedList">1≡</button>
+                <button class="playbook-word-tool-btn" type="button" data-ti-command="justifyLeft">≡</button>
+                <button class="playbook-word-tool-btn" type="button" data-ti-command="justifyCenter">☰</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="playbook-word-ribbon-panel" data-ti-ribbon-panel="insert">
+            <div class="playbook-word-tool-group">
+              <span class="playbook-word-tool-label">Document</span>
+              <div class="playbook-word-tool-row">
+                <button type="button" class="playbook-word-insert-btn" data-ti-insert="section">+ Section</button>
+                ${primaryInsert}
+                <button type="button" class="playbook-word-insert-btn" data-ti-insert="choice">+ Either / Or</button>
+                <button type="button" class="playbook-word-insert-btn" data-ti-insert="note">+ Note</button>
+                <button type="button" class="playbook-word-insert-btn" data-ti-insert="table">+ Table</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="playbook-word-ribbon-panel" data-ti-ribbon-panel="styles">
+            <div class="playbook-word-tool-group">
+              <span class="playbook-word-tool-label">List Layout</span>
+              <div class="playbook-word-tool-row">
+                ${['vertical','row','columns-2','columns-3','squares'].map((layout,index)=>`
+                  <button type="button" class="playbook-list-style-btn" data-ti-list-layout="${layout}">
+                    <span class="playbook-list-style-preview ${layout}" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+                    <span>${['Vertical','Row','2 Columns','3 Columns','Squares'][index]}</span>
+                  </button>`).join('')}
+              </div>
+            </div>
+            <div class="playbook-word-tool-group">
+              <span class="playbook-word-tool-label">Colors</span>
+              <div class="playbook-word-tool-row">
+                <div class="playbook-style-color-grid">
+                  <label class="playbook-style-color-control"><input type="color" data-ti-style-color="background" value="#f7f9fb"><span>Fill</span></label>
+                  <label class="playbook-style-color-control"><input type="color" data-ti-style-color="border" value="#ccd5df"><span>Border</span></label>
+                  <label class="playbook-style-color-control"><input type="color" data-ti-style-color="text" value="#20242a"><span>Text</span></label>
+                  <label class="playbook-style-color-control"><input type="color" data-ti-style-color="accent" value="#536170"><span>Accent</span></label>
+                </div>
+                <button type="button" class="playbook-style-color-reset" data-ti-action="default-colors">Default Colors</button>
+              </div>
+            </div>
+            <div class="playbook-word-tool-group">
+              <span class="playbook-word-tool-label">Selection</span>
+              <div class="playbook-style-help" data-ti-style-help>Place the cursor inside a list or Either / Or group, then choose a layout or colors.</div>
+            </div>
+          </div>
+
+          <div class="playbook-word-ribbon-panel" data-ti-ribbon-panel="instrument">
+            <div class="playbook-word-properties">
+              <label><span>Description</span><input type="text" data-ti-description placeholder="${c.singular} purpose"></label>
+              <label><span>Tags</span><input type="text" data-ti-tags placeholder="comma, separated"></label>
+              <label><span>State</span><select data-ti-state><option value="draft">Draft</option><option value="active">Active</option><option value="archived">Archived</option></select></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="playbook-word-document-stage">
+          <article class="playbook-word-page" data-ti-page>
+            <input class="playbook-word-title-input" data-ti-title type="text" placeholder="Untitled ${c.singular}">
+            <div class="playbook-word-title-rule"></div>
+            <div class="playbook-word-editor" data-ti-editor contenteditable="true" role="textbox" aria-multiline="true" spellcheck="true"></div>
+            <div class="playbook-canvas-resize-handle horizontal" data-ti-canvas-resize="x" aria-hidden="true"></div>
+            <div class="playbook-canvas-resize-handle vertical" data-ti-canvas-resize="y" aria-hidden="true"></div>
+            <div class="playbook-canvas-resize-handle corner" data-ti-canvas-resize="both" aria-hidden="true"></div>
+          </article>
+        </div>
+
+        <div class="playbook-word-statusbar">
+          <span data-ti-save-state>Ready</span>
+          <span>Technical Instrument · definition only</span>
+          <div class="playbook-word-status-right">
+            <span data-ti-word-count>0 words</span>
+            <div class="playbook-canvas-controls">
+              <button class="playbook-canvas-control" type="button" data-ti-zoom="-">−</button>
+              <span class="playbook-canvas-zoom-value" data-ti-zoom-value>100%</span>
+              <button class="playbook-canvas-control" type="button" data-ti-zoom="+">+</button>
+              <button class="playbook-canvas-control" type="button" data-ti-zoom="reset">100</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>`;
+}
+
+function ensureSecondaryWorkspaceChrome(kind){
+  const page=secondaryPage(kind);
+  if(!page||page.dataset.tiReady==='1')return;
+  page.innerHTML=secondaryWorkspaceHtml(kind);
+  page.dataset.tiReady='1';
+  initSecondaryWorkspace(kind);
+}
+
+function createSecondaryDocument(kind,{silent=false}={}){
+  loadSecondaryDocuments(kind);
+  const state=secondaryState(kind),config=secondaryConfig(kind),now=new Date().toISOString();
+  const module=window.TIOS?.technicalInstruments?.[config.module];
+  const baseInput={
+    name:'Untitled '+config.singular,
+    description:'',
+    documentHtml:config.defaultHtml,
+    tags:[],
+    instrumentState:'draft',
+    createdAt:now
+  };
+  if(kind==='checklist')baseInput.items=[];
+  else baseInput.fields=[];
+  const created=module?.create?module.create(baseInput):secondaryNormalizeDoc(kind,baseInput);
+  const doc=secondaryNormalizeDoc(kind,{...created,...baseInput,id:created?.id||secondaryMakeId(kind)});
+  state.docs.unshift(doc); state.selectedId=doc.id; persistSecondaryDocuments(kind);
+  renderSecondaryDocument(kind);
+  if(!silent)showStatus('New '+config.singular+' created');
+}
+function collectSecondaryDocument(kind){
+  const current=currentSecondaryDocument(kind); if(!current)return null;
+  return {
+    ...current,
+    name:String(secondaryFind(kind,'[data-ti-title]')?.value||'').trim()||('Untitled '+secondaryConfig(kind).singular),
+    description:String(secondaryFind(kind,'[data-ti-description]')?.value||'').trim(),
+    tags:String(secondaryFind(kind,'[data-ti-tags]')?.value||'').split(',').map(x=>x.trim()).filter(Boolean),
+    instrumentState:String(secondaryFind(kind,'[data-ti-state]')?.value||'draft'),
+    documentHtml:String(secondaryFind(kind,'[data-ti-editor]')?.innerHTML||''),
+    updatedAt:new Date().toISOString()
+  };
+}
+function saveSecondaryDocument(kind,{quiet=false}={}){
+  const next=collectSecondaryDocument(kind); if(!next)return;
+  const state=secondaryState(kind);
+  state.docs=state.docs.map(item=>item.id===next.id?next:item);
+  persistSecondaryDocuments(kind);
+  renderSecondaryPreview(kind);
+  const saveState=secondaryFind(kind,'[data-ti-save-state]'); if(saveState)saveState.textContent='Saved';
+  if(!quiet)showStatus(secondaryConfig(kind).singular+' saved');
+}
+function scheduleSecondarySave(kind){
+  const state=secondaryState(kind);
+  const saveState=secondaryFind(kind,'[data-ti-save-state]'); if(saveState)saveState.textContent='Saving…';
+  clearTimeout(state.saveTimer);
+  state.saveTimer=setTimeout(()=>saveSecondaryDocument(kind,{quiet:true}),650);
+}
+function selectSecondaryDocument(kind,id){
+  const state=secondaryState(kind);
+  if(!state.docs.some(item=>item.id===id))return;
+  if(currentSecondaryDocument(kind))saveSecondaryDocument(kind,{quiet:true});
+  state.selectedId=id; persistSecondaryDocuments(kind); renderSecondaryDocument(kind);
+}
+function deleteSecondaryDocument(kind){
+  const state=secondaryState(kind),current=currentSecondaryDocument(kind),config=secondaryConfig(kind);
+  if(!current)return;
+  if(!confirm('Delete "'+current.name+'"?'))return;
+  state.docs=state.docs.filter(item=>item.id!==current.id);
+  state.selectedId=state.docs[0]?.id||null; persistSecondaryDocuments(kind);
+  if(!state.docs.length){createSecondaryDocument(kind,{silent:true});return}
+  renderSecondaryDocument(kind);
+  showStatus(config.singular+' deleted');
+}
+
+function secondaryCaptureSelection(kind){
+  const editor=secondaryFind(kind,'[data-ti-editor]'),sel=window.getSelection?.();
+  if(!editor||!sel||!sel.rangeCount)return null;
+  const range=sel.getRangeAt(0);
+  if(!editor.contains(range.commonAncestorContainer))return null;
+  return range.cloneRange();
+}
+function secondaryRememberSelection(kind){
+  const range=secondaryCaptureSelection(kind); if(range)secondaryState(kind).selectionRange=range;
+}
+function secondaryRestoreSelection(kind){
+  const editor=secondaryFind(kind,'[data-ti-editor]'),range=secondaryState(kind).selectionRange;
+  if(!editor)return false;
+  editor.focus();
+  if(!range)return false;
+  try{const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);return true}catch(error){return false}
+}
+function secondaryStyleTarget(kind){
+  const editor=secondaryFind(kind,'[data-ti-editor]'),range=secondaryState(kind).selectionRange;
+  if(!editor||!range)return null;
+  let node=range.startContainer;if(node?.nodeType!==1)node=node?.parentElement;
+  const list=node?.closest?.('ul,ol'); if(list&&editor.contains(list))return list;
+  const choice=node?.closest?.('[data-playbook-node="choice"],.pb-doc-choice')?.querySelector?.('.pb-doc-choice-options');
+  return choice&&editor.contains(choice)?choice:null;
+}
+function refreshSecondaryStyleControls(kind){
+  const target=secondaryStyleTarget(kind);
+  const layout=normalizePlaybookListLayout(target?.dataset?.playbookListLayout);
+  secondaryFindAll(kind,'[data-ti-list-layout]').forEach(btn=>btn.classList.toggle('active',Boolean(target)&&btn.dataset.tiListLayout===layout));
+  const help=secondaryFind(kind,'[data-ti-style-help]');
+  if(help)help.textContent=target?'Selected group · '+target.children.length+' item'+(target.children.length===1?'':'s')+' · '+layout.replace('-',' '):'Place the cursor inside a list or Either / Or group, then choose a layout or colors.';
+  const defaults=playbookStyleColorDefaults(target),custom=playbookStyleColorsFromTarget(target)||{};
+  secondaryFindAll(kind,'[data-ti-style-color]').forEach(input=>{
+    const key=input.dataset.tiStyleColor;input.disabled=!target;input.value=custom[key]||defaults[key];
+  });
+  const reset=secondaryFind(kind,'[data-ti-action="default-colors"]'); if(reset)reset.disabled=!target||!playbookStyleColorsFromTarget(target);
+}
+function applySecondaryLayout(kind,layout){
+  const target=secondaryStyleTarget(kind);
+  if(!target){showStatus('Place the cursor inside a list or Either / Or group first');return}
+  if(layout==='vertical')target.removeAttribute('data-playbook-list-layout'); else target.dataset.playbookListLayout=layout;
+  refreshSecondaryStyleControls(kind); renderSecondaryPreview(kind); secondaryRestoreSelection(kind); scheduleSecondarySave(kind);
+}
+function applySecondaryColor(kind,key,value){
+  const target=secondaryStyleTarget(kind); if(!target)return;
+  const datasetKey={background:'playbookColorBackground',border:'playbookColorBorder',text:'playbookColorText',accent:'playbookColorAccent'}[key];
+  if(!datasetKey)return;
+  target.dataset[datasetKey]=normalizePlaybookStyleColor(value); syncPlaybookStyleTargetVars(target);
+  refreshSecondaryStyleControls(kind); renderSecondaryPreview(kind); scheduleSecondarySave(kind);
+}
+function resetSecondaryColors(kind){
+  const target=secondaryStyleTarget(kind);if(!target)return;
+  ['playbookColorBackground','playbookColorBorder','playbookColorText','playbookColorAccent'].forEach(key=>delete target.dataset[key]);
+  syncPlaybookStyleTargetVars(target);refreshSecondaryStyleControls(kind);renderSecondaryPreview(kind);scheduleSecondarySave(kind);
+  showStatus('Default colors restored');
+}
+
+function ensureSecondaryBlockControls(kind){
+  const editor=secondaryFind(kind,'[data-ti-editor]');if(!editor)return;
+  editor.querySelectorAll('[data-playbook-node]').forEach(block=>{
+    if(block.closest('[data-playbook-node]')!==block)return;
+    if(!block.querySelector(':scope > .pb-doc-remove-btn')){
+      const b=document.createElement('button');b.type='button';b.className='pb-doc-remove-btn';b.contentEditable='false';b.textContent='×';b.title='Remove this block';block.appendChild(b);
+    }
+  });
+}
+function secondaryInsertHtml(kind,html){
+  secondaryRestoreSelection(kind);
+  const editor=secondaryFind(kind,'[data-ti-editor]');if(!editor)return;
+  editor.focus();document.execCommand('insertHTML',false,html);ensureSecondaryBlockControls(kind);renderSecondaryPreview(kind);scheduleSecondarySave(kind);
+}
+function secondaryInsert(kind,type){
+  if(type==='choice'){openSecondaryChoiceModal(kind);return}
+  if(type==='table'){openSecondaryTableModal(kind);return}
+  const templates={
+    section:'<h2>New Section</h2><p>Define this section.</p>',
+    rule:'<div class="pb-doc-rule" data-playbook-node="rule"><span class="pb-doc-label">CHECKLIST ITEM</span><p>Define the condition here.</p></div><p><br></p>',
+    prompt:'<div class="pb-doc-note" data-playbook-node="psych-prompt"><span class="pb-doc-label">REVIEW PROMPT</span><p>What should be reviewed here?</p></div><p><br></p>',
+    note:'<div class="pb-doc-note" data-playbook-node="note"><span class="pb-doc-label">NOTE</span><p>Add context or guidance.</p></div><p><br></p>'
+  };
+  if(templates[type])secondaryInsertHtml(kind,templates[type]);
+}
+
+let secondaryModalContext=null;
+function ensureSecondaryBuilderModal(){
+  if($('#secondaryInstrumentModal'))return;
+  const modal=document.createElement('div');
+  modal.className='modal';modal.id='secondaryInstrumentModal';
+  modal.innerHTML='<div class="modal-card playbook-choice-modal-card"><div class="modal-head"><div><h2 data-secondary-modal-title>Structured Input</h2></div><button class="close" type="button" data-secondary-modal-close>×</button></div><div class="playbook-choice-modal-body" data-secondary-modal-body></div></div>';
+  document.body.appendChild(modal);
+  modal.addEventListener('click',event=>{if(event.target===modal||event.target.closest('[data-secondary-modal-close]'))closeSecondaryModal()});
+}
+function closeSecondaryModal(){const modal=$('#secondaryInstrumentModal');if(modal)modal.classList.remove('open');secondaryModalContext=null}
+function openSecondaryChoiceModal(kind){
+  ensureSecondaryBuilderModal();
+  secondaryModalContext={kind,type:'choice',range:secondaryState(kind).selectionRange};
+  $('[data-secondary-modal-title]').textContent='Create Either / Or Condition';
+  $('[data-secondary-modal-body]').innerHTML=`
+    <label class="playbook-choice-field"><span>Condition / group title</span><input data-secondary-choice-title placeholder="e.g. Market Context"></label>
+    <label class="playbook-choice-field"><span>Choice 1</span><input data-secondary-choice-option placeholder="First option"></label>
+    <label class="playbook-choice-field"><span>Choice 2</span><input data-secondary-choice-option placeholder="Second option"></label>
+    <label class="playbook-choice-field"><span>Choice 3 (optional)</span><input data-secondary-choice-option placeholder="Optional"></label>
+    <div class="playbook-choice-error" data-secondary-error></div>
+    <div class="playbook-choice-modal-actions"><span></span><div class="playbook-choice-modal-actions-right"><button class="btn" type="button" data-secondary-cancel>Cancel</button><button class="btn primary" type="button" data-secondary-confirm>Insert Condition</button></div></div>`;
+  const modal=$('#secondaryInstrumentModal');modal.classList.add('open');
+  $('[data-secondary-cancel]').onclick=closeSecondaryModal;
+  $('[data-secondary-confirm]').onclick=()=>{
+    const title=String($('[data-secondary-choice-title]')?.value||'').trim();
+    const options=$$('[data-secondary-choice-option]').map(x=>x.value.trim()).filter(Boolean);
+    if(!title||options.length<2){$('[data-secondary-error]').textContent='Enter a title and at least two choices.';return}
+    secondaryState(kind).selectionRange=secondaryModalContext.range;
+    const html=`<div class="pb-doc-choice" data-playbook-node="choice"><span class="pb-doc-label">EITHER / OR</span><span class="pb-doc-choice-title" data-choice-title>${escapeHtml(title)}</span><div class="pb-doc-choice-options">${options.map(x=>`<div class="pb-doc-choice-option"><span class="pb-doc-choice-dot"></span><span data-choice-option>${escapeHtml(x)}</span></div>`).join('')}</div></div><p><br></p>`;
+    closeSecondaryModal();secondaryInsertHtml(kind,html);
+  };
+}
+function openSecondaryTableModal(kind){
+  ensureSecondaryBuilderModal();
+  secondaryModalContext={kind,type:'table',range:secondaryState(kind).selectionRange};
+  $('[data-secondary-modal-title]').textContent='Create Table';
+  $('[data-secondary-modal-body]').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label class="playbook-choice-field"><span>Columns</span><input data-secondary-table-cols type="number" min="1" max="8" value="3"></label><label class="playbook-choice-field"><span>Rows</span><input data-secondary-table-rows type="number" min="1" max="20" value="3"></label></div>
+    <label style="display:flex;gap:8px;align-items:center;color:#c7d4e4;font-size:10px"><input data-secondary-table-header type="checkbox" checked> Use first row as headings</label>
+    <div class="playbook-choice-modal-actions"><span></span><div class="playbook-choice-modal-actions-right"><button class="btn" type="button" data-secondary-cancel>Cancel</button><button class="btn primary" type="button" data-secondary-confirm>Insert Table</button></div></div>`;
+  const modal=$('#secondaryInstrumentModal');modal.classList.add('open');
+  $('[data-secondary-cancel]').onclick=closeSecondaryModal;
+  $('[data-secondary-confirm]').onclick=()=>{
+    const cols=Math.max(1,Math.min(8,Number($('[data-secondary-table-cols]').value)||3));
+    const rows=Math.max(1,Math.min(20,Number($('[data-secondary-table-rows]').value)||3));
+    const header=Boolean($('[data-secondary-table-header]').checked);
+    secondaryState(kind).selectionRange=secondaryModalContext.range;
+    const tableRows=Array.from({length:rows},(_,r)=>{const tag=header&&r===0?'th':'td';return '<tr>'+Array.from({length:cols},(_,c)=>'<'+tag+'>'+(header&&r===0?'Heading '+(c+1):'Cell')+'</'+tag+'>').join('')+'</tr>'}).join('');
+    closeSecondaryModal();secondaryInsertHtml(kind,`<div class="pb-doc-table-wrap" data-playbook-node="table"><table class="pb-doc-table">${tableRows}</table></div><p><br></p>`);
+  };
+}
+
+function secondaryPreviewHtml(kind,items){
+  return items.map((item,itemIndex)=>{
+    if(item.type==='section')return '<div class="playbook-preview-section level-'+(item.level||2)+'">'+escapeHtml(item.label)+'</div>';
+    if(item.type==='psych-prompt')return '<div class="ti-preview-prompt"><b>'+escapeHtml(item.label)+'</b><span></span></div>';
+    if(item.type==='check'){
+      if(item.listGroup){
+        const prev=items[itemIndex-1];if(prev?.type==='check'&&prev.listGroup===item.listGroup)return '';
+        const grouped=items.filter(x=>x.type==='check'&&x.listGroup===item.listGroup),layout=normalizePlaybookListLayout(item.layout),attrs=playbookStyleRenderAttributes(item.colors);
+        return '<div class="playbook-preview-check-layout" data-playbook-list-layout="'+layout+'"'+attrs+'>'+grouped.map(x=>'<div class="playbook-preview-check"><span class="playbook-preview-checkbox"></span><span>'+escapeHtml(x.label)+'</span></div>').join('')+'</div>';
+      }
+      return kind==='psych'
+        ? '<div class="ti-preview-prompt"><b>'+escapeHtml(item.label)+'</b><span></span></div>'
+        : '<div class="playbook-preview-check"><span class="playbook-preview-checkbox"></span><span>'+escapeHtml(item.label)+'</span></div>';
+    }
+    if(item.type==='choice'){
+      const layout=normalizePlaybookListLayout(item.layout),attrs=playbookStyleRenderAttributes(item.colors);
+      return '<div class="playbook-preview-choice"><b>'+escapeHtml(item.label)+'</b><div class="playbook-preview-choice-options" data-playbook-list-layout="'+layout+'"'+attrs+'>'+item.options.map(x=>'<div class="playbook-preview-choice-option"><span class="playbook-preview-choice-dot"></span><span class="playbook-preview-choice-text">'+escapeHtml(x)+'</span></div>').join('')+'</div><small>Choose one</small></div>';
+    }
+    if(item.type==='table'){
+      return '<div class="playbook-preview-table-block"><b>TABLE</b><div class="playbook-preview-table-scroll"><table class="playbook-preview-table">'+item.rows.map((row,r)=>{const tag=item.hasHeader&&r===0?'th':'td';return '<tr>'+row.map(cell=>'<'+tag+'>'+escapeHtml(cell||'—')+'</'+tag+'>').join('')+'</tr>'}).join('')+'</table></div></div>';
+    }
+    if(item.type==='note')return '<div class="playbook-preview-note-block"><b>NOTE</b><span>'+escapeHtml(item.label)+'</span></div>';
+    if(item.type==='content')return '<div class="playbook-preview-content">'+escapeHtml(item.label)+'</div>';
+    if(item.type==='divider')return '<div class="playbook-preview-divider"></div>';
+    return '';
+  }).join('');
+}
+function renderSecondaryPreview(kind){
+  const state=secondaryState(kind),doc=currentSecondaryDocument(kind),body=secondaryFind(kind,'[data-ti-preview-body]');
+  if(!body)return;
+  const select=secondaryFind(kind,'[data-ti-preview-select]');
+  if(select)select.innerHTML=state.docs.map(item=>'<option value="'+escapeHtml(item.id)+'" '+(item.id===state.selectedId?'selected':'')+'>'+escapeHtml(item.name)+'</option>').join('');
+  const title=secondaryFind(kind,'[data-ti-preview-title]');if(title)title.textContent=doc?.name||'Untitled';
+  if(!doc){body.innerHTML='<div class="playbook-preview-empty">Create an instrument first.</div>';return}
+  const sourceHtml=secondaryFind(kind,'[data-ti-editor]')?.innerHTML||doc.documentHtml||'';
+  const items=playbookStructuredPreviewItems(sourceHtml);
+  const meta=secondaryFind(kind,'[data-ti-preview-meta]');
+  if(meta){
+    const measurable=kind==='psych'?items.filter(x=>x.type==='psych-prompt'||x.type==='choice'||x.type==='check').length:items.filter(x=>x.type==='check'||x.type==='choice').length;
+    meta.textContent='Preview only · '+measurable+' '+(kind==='psych'?'prompt':'condition')+(measurable===1?'':'s')+' · mapped separately';
+  }
+  body.innerHTML=items.length?secondaryPreviewHtml(kind,items):'<div class="playbook-preview-empty">Start building this instrument to see its Execution Quality model.</div>';
+}
+function renderSecondaryDocument(kind){
+  const doc=currentSecondaryDocument(kind);if(!doc)return;
+  secondaryFind(kind,'[data-ti-title]').value=doc.name||'';
+  secondaryFind(kind,'[data-ti-description]').value=doc.description||'';
+  secondaryFind(kind,'[data-ti-tags]').value=(doc.tags||[]).join(', ');
+  secondaryFind(kind,'[data-ti-state]').value=doc.instrumentState||'draft';
+  const editor=secondaryFind(kind,'[data-ti-editor]');editor.innerHTML=doc.documentHtml||'';ensureSecondaryBlockControls(kind);
+  const words=(editor.innerText||'').trim().split(/\s+/).filter(Boolean).length;
+  secondaryFind(kind,'[data-ti-word-count]').textContent=words+' words';
+  secondaryFind(kind,'[data-ti-save-state]').textContent='Saved';
+  renderSecondaryPreview(kind);
+}
+
+function applySecondaryCommand(kind,command,value=null){
+  const editor=secondaryFind(kind,'[data-ti-editor]');if(!editor)return;
+  secondaryRestoreSelection(kind);editor.focus();
+  if(command==='formatBlock')document.execCommand('formatBlock',false,value||'p');
+  else document.execCommand(command,false,null);
+  secondaryRememberSelection(kind);renderSecondaryPreview(kind);scheduleSecondarySave(kind);
+}
+function setSecondaryRibbon(kind,name){
+  secondaryFindAll(kind,'[data-ti-ribbon]').forEach(btn=>btn.classList.toggle('active',btn.dataset.tiRibbon===name));
+  secondaryFindAll(kind,'[data-ti-ribbon-panel]').forEach(panel=>panel.classList.toggle('active',panel.dataset.tiRibbonPanel===name));
+  if(name==='styles')refreshSecondaryStyleControls(kind);
+}
+function toggleSecondaryAutoZoom(kind){
+  const state=secondaryState(kind),shell=secondaryFind(kind,'[data-ti-shell]'),btn=secondaryFind(kind,'[data-ti-action="autozoom"]');
+  state.autoZoom=!state.autoZoom;shell.classList.toggle('ti-auto-zoom',state.autoZoom);
+  if(state.autoZoom)shell.style.removeProperty('--playbook-preview-width');else shell.style.setProperty('--playbook-preview-width',Math.round(state.previewWidth)+'px');
+  btn?.setAttribute('aria-pressed',state.autoZoom?'true':'false');
+  const label=secondaryFind(kind,'[data-ti-autozoom-state]');if(label)label.textContent=state.autoZoom?'ON':'OFF';
+}
+function beginSecondaryPreviewResize(kind,event){
+  if(event.pointerType==='mouse'&&event.button!==0)return;
+  event.preventDefault();
+  const state=secondaryState(kind),shell=secondaryFind(kind,'[data-ti-shell]'),preview=secondaryFind(kind,'.playbook-execution-preview');
+  const startX=event.clientX,startWidth=preview.getBoundingClientRect().width;
+  state.autoZoom=false;shell.classList.remove('ti-auto-zoom');
+  const move=e=>{state.previewWidth=Math.max(220,Math.min(720,startWidth+(startX-e.clientX)));shell.style.setProperty('--playbook-preview-width',Math.round(state.previewWidth)+'px')};
+  const end=()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',end);const b=secondaryFind(kind,'[data-ti-action="autozoom"]');b?.setAttribute('aria-pressed','false');const s=secondaryFind(kind,'[data-ti-autozoom-state]');if(s)s.textContent='OFF'};
+  window.addEventListener('pointermove',move);window.addEventListener('pointerup',end);
+}
+function setSecondaryZoom(kind,next){
+  const state=secondaryState(kind),page=secondaryFind(kind,'[data-ti-page]');
+  if(next==='reset')state.canvasZoom=1;else state.canvasZoom=Math.max(.5,Math.min(2,state.canvasZoom+(next==='+'?.1:-.1)));
+  page.style.zoom=String(state.canvasZoom);secondaryFind(kind,'[data-ti-zoom-value]').textContent=Math.round(state.canvasZoom*100)+'%';
+}
+function beginSecondaryCanvasResize(kind,event,axis){
+  if(event.pointerType==='mouse'&&event.button!==0)return;
+  event.preventDefault();
+  const page=secondaryFind(kind,'[data-ti-page]'),zoom=secondaryState(kind).canvasZoom||1,rect=page.getBoundingClientRect();
+  const startX=event.clientX,startY=event.clientY,startW=rect.width/zoom,startH=rect.height/zoom;
+  const move=e=>{if(axis==='x'||axis==='both')page.style.width=Math.max(520,Math.min(1800,startW+(e.clientX-startX)/zoom))+'px';if(axis==='y'||axis==='both')page.style.minHeight=Math.max(520,Math.min(2600,startH+(e.clientY-startY)/zoom))+'px'};
+  const end=()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',end)};
+  window.addEventListener('pointermove',move);window.addEventListener('pointerup',end);
+}
+
+function previewSecondaryInExecution(kind){
+  saveSecondaryDocument(kind,{quiet:true});
+  if(kind==='checklist')executionMappingChecklistId=secondaryState(kind).selectedId;
+  else executionMappingPsychId=secondaryState(kind).selectedId;
+  executionMappingReturnPage=secondaryConfig(kind).page;
+  navigate('execution');
+}
+
+function initSecondaryWorkspace(kind){
+  const state=secondaryState(kind);if(state.initialized)return;state.initialized=true;
+  const page=secondaryPage(kind);
+  page.addEventListener('click',event=>{
+    const action=event.target.closest('[data-ti-action]')?.dataset.tiAction;
+    if(action==='new')createSecondaryDocument(kind);
+    if(action==='delete')deleteSecondaryDocument(kind);
+    if(action==='save')saveSecondaryDocument(kind);
+    if(action==='preview')previewSecondaryInExecution(kind);
+    if(action==='autozoom')toggleSecondaryAutoZoom(kind);
+    if(action==='default-colors')resetSecondaryColors(kind);
+    const tab=event.target.closest('[data-ti-ribbon]');if(tab)setSecondaryRibbon(kind,tab.dataset.tiRibbon);
+    const cmd=event.target.closest('[data-ti-command]');if(cmd)applySecondaryCommand(kind,cmd.dataset.tiCommand);
+    const insert=event.target.closest('[data-ti-insert]');if(insert)secondaryInsert(kind,insert.dataset.tiInsert);
+    const layout=event.target.closest('[data-ti-list-layout]');if(layout)applySecondaryLayout(kind,layout.dataset.tiListLayout);
+    const remove=event.target.closest('.pb-doc-remove-btn');if(remove){event.preventDefault();const block=remove.closest('[data-playbook-node]');block?.remove();renderSecondaryPreview(kind);scheduleSecondarySave(kind)}
+    const zoom=event.target.closest('[data-ti-zoom]');if(zoom)setSecondaryZoom(kind,zoom.dataset.tiZoom);
+  });
+  page.addEventListener('input',event=>{
+    if(event.target.matches('[data-ti-style-color]'))applySecondaryColor(kind,event.target.dataset.tiStyleColor,event.target.value);
+    if(event.target.closest('[data-ti-editor]')){secondaryRememberSelection(kind);renderSecondaryPreview(kind);scheduleSecondarySave(kind)}
+    if(event.target.matches('[data-ti-title],[data-ti-description],[data-ti-tags]')){renderSecondaryPreview(kind);scheduleSecondarySave(kind)}
+  });
+  page.addEventListener('change',event=>{
+    if(event.target.matches('[data-ti-preview-select]'))selectSecondaryDocument(kind,event.target.value);
+    if(event.target.matches('[data-ti-state]'))scheduleSecondarySave(kind);
+    if(event.target.matches('[data-ti-block-style]')){applySecondaryCommand(kind,'formatBlock',event.target.value);event.target.value='p'}
+  });
+  page.addEventListener('mouseup',event=>{if(event.target.closest('[data-ti-editor]')){secondaryRememberSelection(kind);refreshSecondaryStyleControls(kind)}});
+  page.addEventListener('keyup',event=>{if(event.target.closest('[data-ti-editor]')){secondaryRememberSelection(kind);refreshSecondaryStyleControls(kind)}});
+  secondaryFind(kind,'[data-ti-preview-resize]')?.addEventListener('pointerdown',e=>beginSecondaryPreviewResize(kind,e));
+  secondaryFindAll(kind,'[data-ti-canvas-resize]').forEach(handle=>handle.addEventListener('pointerdown',e=>beginSecondaryCanvasResize(kind,e,handle.dataset.tiCanvasResize)));
+}
+
+function renderSecondaryInstrumentWorkspace(kind){
+  ensureSecondaryWorkspaceChrome(kind);
+  loadSecondaryDocuments(kind);
+  const state=secondaryState(kind);
+  if(!state.docs.length){createSecondaryDocument(kind,{silent:true});return}
+  renderSecondaryDocument(kind);
 }
 
 /* =========================
