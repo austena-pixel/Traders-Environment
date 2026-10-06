@@ -4101,10 +4101,47 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
   left:11px!important;
   top:11px!important;
 }
+/* Structured Either / Or groups use the same reusable layout system. */
+.playbook-word-editor .pb-doc-choice-options[data-playbook-list-layout="row"]{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:stretch;
+  gap:8px;
+}
+.playbook-word-editor .pb-doc-choice-options[data-playbook-list-layout="row"]>.pb-doc-choice-option{
+  flex:0 1 auto;
+  min-width:110px;
+}
+.playbook-word-editor .pb-doc-choice-options[data-playbook-list-layout="columns-2"]{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+}
+.playbook-word-editor .pb-doc-choice-options[data-playbook-list-layout="columns-3"]{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+}
+.playbook-word-editor .pb-doc-choice-options[data-playbook-list-layout="squares"]{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(135px,1fr));
+  gap:9px;
+}
+.playbook-word-editor .pb-doc-choice-options[data-playbook-list-layout="squares"]>.pb-doc-choice-option{
+  min-height:62px;
+  align-items:center;
+  padding:10px 12px;
+  border:1px solid #d2c9ed;
+  border-radius:9px;
+  background:#fbf9ff;
+  box-shadow:0 2px 7px rgba(57,39,92,.05);
+}
+
 @media(max-width:650px){
   .playbook-word-editor [data-playbook-list-layout="columns-3"]{grid-template-columns:repeat(2,minmax(0,1fr))}
   .playbook-word-editor [data-playbook-list-layout="columns-2"],
   .playbook-word-editor [data-playbook-list-layout="columns-3"]{column-gap:18px}
+  .playbook-word-editor .pb-doc-choice-options[data-playbook-list-layout="columns-3"]{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 .playbook-word-statusbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:7px 12px;border-top:1px solid #1d242e;background:#171b21;color:#8f9aaa;font-size:8px}
 .playbook-word-statusbar span:first-child{color:#bcd4f3}
@@ -4611,6 +4648,81 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
   margin-top:8px;
   color:#7f719f;
   font-size:8px;
+}
+
+/* Live Model mirrors list and Either / Or layouts from the Playbook. */
+.playbook-preview-check-layout{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  width:100%;
+  margin-bottom:8px;
+}
+.playbook-preview-check-layout .playbook-preview-check{
+  margin-bottom:0;
+  min-width:0;
+}
+.playbook-preview-check-layout[data-playbook-list-layout="row"]{
+  flex-direction:row;
+  flex-wrap:wrap;
+  align-items:stretch;
+}
+.playbook-preview-check-layout[data-playbook-list-layout="row"] .playbook-preview-check{
+  flex:0 1 auto;
+  min-width:105px;
+}
+.playbook-preview-check-layout[data-playbook-list-layout="columns-2"]{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+.playbook-preview-check-layout[data-playbook-list-layout="columns-3"]{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+.playbook-preview-check-layout[data-playbook-list-layout="squares"]{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(105px,1fr));
+}
+.playbook-preview-check-layout[data-playbook-list-layout="squares"] .playbook-preview-check{
+  min-height:58px;
+  align-items:center;
+  border-color:#35516e;
+  background:#101b28;
+}
+
+.playbook-preview-choice-options[data-playbook-list-layout="row"]{
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:wrap!important;
+  align-items:stretch!important;
+}
+.playbook-preview-choice-options[data-playbook-list-layout="row"]>.playbook-preview-choice-option{
+  flex:0 1 auto;
+  min-width:100px;
+}
+.playbook-preview-choice-options[data-playbook-list-layout="columns-2"]{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
+.playbook-preview-choice-options[data-playbook-list-layout="columns-3"]{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+}
+.playbook-preview-choice-options[data-playbook-list-layout="squares"]{
+  display:grid!important;
+  grid-template-columns:repeat(auto-fit,minmax(100px,1fr))!important;
+}
+.playbook-preview-choice-options[data-playbook-list-layout="squares"]>.playbook-preview-choice-option{
+  min-height:56px;
+  align-items:center!important;
+  border-color:#554675;
+  background:#181329;
+}
+@media(max-width:520px){
+  .playbook-preview-check-layout[data-playbook-list-layout="columns-3"],
+  .playbook-preview-choice-options[data-playbook-list-layout="columns-3"]{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
 }
 .execution-map-choice{
   margin-bottom:9px;
@@ -5717,7 +5829,7 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
               <div class="playbook-word-tool-group">
                 <span class="playbook-word-tool-label">Selection</span>
                 <div class="playbook-style-help" id="playbookStyleSelectionHelp">
-                  Place the cursor inside a list, then choose a layout.
+                  Place the cursor inside a list or Either / Or group, then choose a layout.
                 </div>
               </div>
             </div>
@@ -11388,6 +11500,7 @@ function playbookStructuredPreviewItems(documentHtml){
   host.innerHTML=String(documentHtml||'');
 
   const items=[];
+  let listGroupIndex=0;
 
   function cleanNodeText(node){
     const clone=node.cloneNode(true);
@@ -11407,10 +11520,12 @@ function playbookStructuredPreviewItems(documentHtml){
 
     if(node.matches?.('[data-playbook-node="choice"], .pb-doc-choice')){
       const title=(node.querySelector('[data-choice-title]')?.textContent||'Choose one').replace(/\s+/g,' ').trim()||'Choose one';
+      const optionsHost=node.querySelector('.pb-doc-choice-options');
+      const layout=normalizePlaybookListLayout(optionsHost?.dataset?.playbookListLayout);
       const options=[...node.querySelectorAll('[data-choice-option]')]
         .map(option=>(option.textContent||'').replace(/\s+/g,' ').trim())
         .filter(Boolean);
-      if(options.length)items.push({type:'choice',label:title,options});
+      if(options.length)items.push({type:'choice',label:title,options,layout});
       return;
     }
 
@@ -11439,10 +11554,18 @@ function playbookStructuredPreviewItems(documentHtml){
     }
 
     if(node.matches?.('ul,ol')){
+      const layout=normalizePlaybookListLayout(node.dataset?.playbookListLayout);
+      const listGroup='list_'+(++listGroupIndex);
       [...node.children].forEach(li=>{
         if(li.tagName?.toLowerCase()!=='li')return;
         const label=cleanNodeText(li);
-        if(label)items.push({type:'check',label});
+        if(label)items.push({
+          type:'check',
+          label,
+          listGroup,
+          layout,
+          ordered:node.tagName?.toLowerCase()==='ol'
+        });
       });
       return;
     }
@@ -11517,18 +11640,35 @@ function renderPlaybookExecutionPreview(){
     return;
   }
 
-  body.innerHTML=items.map(item=>{
+  body.innerHTML=items.map((item,itemIndex)=>{
     if(item.type==='section'){
       return `<div class="playbook-preview-section ${item.level===1?'level-1':(item.level===3?'level-3':'level-2')}">${escapeHtml(item.label)}</div>`;
     }
     if(item.type==='check'){
+      if(item.listGroup){
+        const previous=items[itemIndex-1];
+        if(previous?.type==='check'&&previous.listGroup===item.listGroup)return '';
+        const grouped=items.filter(candidate=>candidate.type==='check'&&candidate.listGroup===item.listGroup);
+        const layout=normalizePlaybookListLayout(item.layout);
+        return `
+          <div class="playbook-preview-check-layout" data-playbook-list-layout="${layout}">
+            ${grouped.map(groupItem=>`
+              <div class="playbook-preview-check">
+                <span class="playbook-preview-checkbox" aria-hidden="true"></span>
+                <span>${escapeHtml(groupItem.label)}</span>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
       return `<div class="playbook-preview-check"><span class="playbook-preview-checkbox" aria-hidden="true"></span><span>${escapeHtml(item.label)}</span></div>`;
     }
     if(item.type==='choice'){
+      const layout=normalizePlaybookListLayout(item.layout);
       return `
         <div class="playbook-preview-choice">
           <b>${escapeHtml(item.label)}</b>
-          <div class="playbook-preview-choice-options">
+          <div class="playbook-preview-choice-options" data-playbook-list-layout="${layout}">
             ${item.options.map(option=>`
               <div class="playbook-preview-choice-option">
                 <span class="playbook-preview-choice-dot" aria-hidden="true"></span>
@@ -11800,17 +11940,36 @@ function rememberPlaybookEditorSelection(){
   if(range)playbookEditorSelectionRange=range;
 }
 
+function normalizePlaybookListLayout(layout){
+  return ['vertical','row','columns-2','columns-3','squares'].includes(String(layout||''))
+    ? String(layout)
+    : 'vertical';
+}
+
 function playbookListFromRange(range=playbookEditorSelectionRange){
   const editor=$('#playbookDocumentEditor');
   if(!editor||!range)return null;
   let node=range.startContainer;
   if(node?.nodeType!==1)node=node?.parentElement;
-  const list=node?.closest?.('ul,ol')||null;
-  return list&&editor.contains(list)?list:null;
+
+  const nativeList=node?.closest?.('ul,ol')||null;
+  if(nativeList&&editor.contains(nativeList))return nativeList;
+
+  const choiceBlock=node?.closest?.('[data-playbook-node="choice"],.pb-doc-choice')||null;
+  const choiceOptions=choiceBlock?.querySelector?.('.pb-doc-choice-options')||null;
+  if(choiceOptions&&editor.contains(choiceOptions))return choiceOptions;
+
+  return null;
 }
 
 function currentPlaybookListLayout(list=playbookListFromRange()){
-  return list?.dataset?.playbookListLayout||'vertical';
+  return normalizePlaybookListLayout(list?.dataset?.playbookListLayout);
+}
+
+function playbookStyleTargetLabel(target){
+  if(!target)return 'list';
+  if(target.matches?.('.pb-doc-choice-options'))return 'Either / Or group';
+  return target.tagName?.toLowerCase()==='ol'?'numbered list':'list';
 }
 
 function refreshPlaybookListStyleControls(){
@@ -11822,8 +11981,8 @@ function refreshPlaybookListStyleControls(){
   const help=$('#playbookStyleSelectionHelp');
   if(help){
     help.textContent=list
-      ? `Selected list · ${list.children.length} item${list.children.length===1?'':'s'} · ${layout.replace('-', ' ')}`
-      : 'Place the cursor inside a list, then choose a layout.';
+      ? `Selected ${playbookStyleTargetLabel(list)} · ${list.children.length} item${list.children.length===1?'':'s'} · ${layout.replace('-', ' ')}`
+      : 'Place the cursor inside a list or Either / Or group, then choose a layout.';
   }
 }
 
@@ -11833,7 +11992,7 @@ function applyPlaybookListLayout(layout){
 
   const list=playbookListFromRange();
   if(!list){
-    showStatus('Place the cursor inside a list first');
+    showStatus('Place the cursor inside a list or Either / Or group first');
     refreshPlaybookListStyleControls();
     return;
   }
