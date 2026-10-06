@@ -6322,7 +6322,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
           <div class="playbook-preview-body" id="playbookExecutionPreviewBody">
             <div class="playbook-preview-empty">
-              Add structured rules, linked checklists or reflections to see how they will appear in Execution Quality.
+              Add structured rules, linked rules or reflections to see how they will appear in Execution Quality.
             </div>
           </div>
 
@@ -6638,7 +6638,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
           <div class="execution-map-form-body" id="executionMapFormBody">
             <div class="execution-map-empty">
-              Your Playbook rules, checklists and reflections will appear here in the structure they will use during Execution Quality.
+              Your Playbook rules, linked rules and reflections will appear here in the structure they will use during Execution Quality.
             </div>
           </div>
 
@@ -6876,13 +6876,13 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           <input id="executionStructureNameInput" type="text" maxlength="80" placeholder="e.g. My Execution Journal">
         </label>
         <div class="execution-builder-add-actions">
-          <button class="btn" type="button" id="executionAddChecklistItemBtn">+ Checklist Item</button>
+          <button class="btn" type="button" id="executionAddChecklistItemBtn">+ Rule</button>
           <button class="btn" type="button" id="executionAddReflectionPromptBtn">+ Reflection Sentence</button>
         </div>
       </div>
       <div class="execution-builder-items" id="executionStructureBuilderItems"></div>
       <div class="execution-builder-foot">
-        <small>Build any mix you want. Checklist items are measurable; reflection sentences capture written context without affecting the score.</small>
+        <small>Build any mix you want. Rules are measurable; reflection sentences capture written context without affecting the score.</small>
         <div class="execution-builder-add-actions">
           <button class="btn" type="button" id="executionStructureCancelBtn">Cancel</button>
           <button class="btn primary" type="button" id="executionStructureSaveBtn">Save Journal</button>
@@ -10024,7 +10024,7 @@ function executionStructureSummary(structure){
   const items=structure.items||[];
   const checks=items.filter(item=>item.type==='check').length;
   const texts=items.filter(item=>item.type==='text').length;
-  return checks+' checklist item'+(checks===1?'':'s')+' • '+texts+' reflection prompt'+(texts===1?'':'s');
+  return checks+' rule'+(checks===1?'':'s')+' • '+texts+' reflection prompt'+(texts===1?'':'s');
 }
 
 function renderExecutionStructureControls(review){
@@ -10231,7 +10231,7 @@ function renderExecutionStructureBuilderItems(){
   container.innerHTML='';
   const draft=executionStructureBuilderDraft;
   if(!draft||!draft.items.length){
-    container.innerHTML='<div class="execution-builder-empty">Add a checklist item, a reflection sentence, or both.</div>';
+    container.innerHTML='<div class="execution-builder-empty">Add a rule, a reflection sentence, or both.</div>';
     return;
   }
 
@@ -10244,7 +10244,7 @@ function renderExecutionStructureBuilderItems(){
     head.className='execution-builder-item-head';
     const type=document.createElement('span');
     type.className='execution-builder-type';
-    type.textContent=item.type==='text'?'Reflection sentence':'Checklist item';
+    type.textContent=item.type==='text'?'Reflection sentence':'Rule';
     const actions=document.createElement('div');
     actions.className='execution-builder-item-actions';
     actions.innerHTML='<button type="button" data-builder-action="up" title="Move up">↑</button><button type="button" data-builder-action="down" title="Move down">↓</button><button type="button" data-builder-action="delete" title="Delete">×</button>';
@@ -10256,7 +10256,7 @@ function renderExecutionStructureBuilderItems(){
     const label=document.createElement('input');
     label.type='text';
     label.value=item.label||'';
-    label.placeholder=item.type==='text'?'Reflection sentence / prompt':'Checklist statement';
+    label.placeholder=item.type==='text'?'Reflection sentence / prompt':'Rule statement';
     label.dataset.builderField='label';
     const guidance=document.createElement('textarea');
     guidance.value=item.guidance||'';
@@ -10319,7 +10319,7 @@ function saveExecutionStructureBuilder(){
     .filter(item=>item.label);
 
   if(!items.length){
-    alert('Add at least one checklist item or reflection sentence.');
+    alert('Add at least one rule or reflection sentence.');
     return;
   }
 
@@ -10659,7 +10659,7 @@ function renderExecutionMappingTradeContext(){
 }
 
 function renderExecutionSecondaryItems(kind,doc){
-  if(!doc)return '<div class="execution-secondary-empty">No '+(kind==='checklist'?'Rules':'Psychological Reflection')+' is available yet.</div>';
+  if(!doc)return '<div class="execution-secondary-empty">No '+(kind==='checklist'?'Rules are':'Psychological Reflection is')+' available yet.</div>';
   const items=playbookStructuredPreviewItems(doc.documentHtml||'');
   if(!items.length)return '<div class="execution-secondary-empty">This instrument has no mapped content yet.</div>';
   let index=0;

@@ -45,11 +45,11 @@
 
   function validate(checklist){
     const errors=[];
-    if(!checklist||typeof checklist!=='object') errors.push('Checklist is required.');
+    if(!checklist||typeof checklist!=='object') errors.push('Rules are required.');
     else{
-      if(!textValue(checklist.name)) errors.push('Checklist name is required.');
-      if(!Array.isArray(checklist.items)) errors.push('Checklist items must be an array.');
-      else if(checklist.items.some(item=>!textValue(item&&item.label))) errors.push('Every checklist item needs a label.');
+      if(!textValue(checklist.name)) errors.push('Rules name is required.');
+      if(!Array.isArray(checklist.items)) errors.push('Rules must be an array.');
+      else if(checklist.items.some(item=>!textValue(item&&item.label))) errors.push('Every rule needs a label.');
     }
     return {valid:errors.length===0,errors};
   }
