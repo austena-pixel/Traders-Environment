@@ -10625,7 +10625,7 @@ function renderExecutionMappingControls(){
   const psychView=$('#executionMapPsychViewBtn');
   if(psychView)psychView.disabled=!psych;
 
-  $('[data-execution-map-instrument]').forEach(control=>{
+  $$('[data-execution-map-instrument]').forEach(control=>{
     control.classList.toggle('active',control.dataset.executionMapInstrument===executionMappingActiveInstrument);
   });
 }
@@ -10936,8 +10936,8 @@ function updateExecutionMappingScore(){
 }
 
 function resetExecutionMappingInputs(){
-  $('#executionMapFormBody input[type="checkbox"], #executionMapFormBody input[type="radio"]').forEach(item=>item.checked=false);
-  $('#executionMapFormBody input[type="text"], #executionMapFormBody textarea').forEach(item=>item.value='');
+  $$('#executionMapFormBody input[type="checkbox"], #executionMapFormBody input[type="radio"]').forEach(item=>item.checked=false);
+  $$('#executionMapFormBody input[type="text"], #executionMapFormBody textarea').forEach(item=>item.value='');
   updateExecutionMappingScore();
 }
 
@@ -10991,7 +10991,7 @@ function initExecutionMappingWorkspace(){
     viewExecutionInstrumentSection('psych');
   });
 
-  $('[data-execution-map-instrument]').forEach(control=>{
+  $$('[data-execution-map-instrument]').forEach(control=>{
     control.addEventListener('click',event=>{
       if(event.target.closest('select,button'))return;
       const kind=control.dataset.executionMapInstrument;
