@@ -13843,10 +13843,10 @@ function insertPlaybookElement(kind){
 function setPlaybookStyleCategory(name){
   const allowed=new Set(['alignment','spacing','borders','presets','colors','reset']);
   const next=allowed.has(name)?name:'alignment';
-  $('[data-playbook-style-category]').forEach(button=>{
+  $$('[data-playbook-style-category]').forEach(button=>{
     button.classList.toggle('active',button.dataset.playbookStyleCategory===next);
   });
-  $('[data-playbook-style-category-panel]').forEach(panel=>{
+  $$('[data-playbook-style-category-panel]').forEach(panel=>{
     panel.classList.toggle('active',panel.dataset.playbookStyleCategoryPanel===next);
   });
 }
@@ -13909,9 +13909,9 @@ function initPlaybookWorkspace(){
   $('#playbookCanvasZoomIn')?.addEventListener('click',()=>setPlaybookCanvasZoom(playbookCanvasZoom+.1));
   $('#playbookCanvasZoomReset')?.addEventListener('click',()=>setPlaybookCanvasZoom(1));
 
-  $('[data-playbook-ribbon]').forEach(button=>button.addEventListener('click',()=>setPlaybookRibbonTab(button.dataset.playbookRibbon)));
-  $('[data-playbook-style-category]').forEach(button=>button.addEventListener('click',()=>setPlaybookStyleCategory(button.dataset.playbookStyleCategory)));
-  $('[data-playbook-command]').forEach(button=>button.addEventListener('click',()=>applyPlaybookCommand(button.dataset.playbookCommand)));
+  $$('[data-playbook-ribbon]').forEach(button=>button.addEventListener('click',()=>setPlaybookRibbonTab(button.dataset.playbookRibbon)));
+  $$('[data-playbook-style-category]').forEach(button=>button.addEventListener('click',()=>setPlaybookStyleCategory(button.dataset.playbookStyleCategory)));
+  $$('[data-playbook-command]').forEach(button=>button.addEventListener('click',()=>applyPlaybookCommand(button.dataset.playbookCommand)));
   $('#playbookBlockStyle')?.addEventListener('change',event=>{applyPlaybookCommand('formatBlock',event.target.value);event.target.value='p'});
   $$('[data-playbook-insert]').forEach(button=>button.addEventListener('click',()=>insertPlaybookElement(button.dataset.playbookInsert)));
   $$('button[data-playbook-list-layout]').forEach(button=>button.addEventListener('click',()=>{
