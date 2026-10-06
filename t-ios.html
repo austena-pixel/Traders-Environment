@@ -12051,6 +12051,17 @@ function clampPlaybookPreviewWidth(width){
   return Math.max(bounds.min,Math.min(bounds.max,Number.isFinite(numeric)?numeric:fallback));
 }
 
+function playbookPreviewDefaultOffWidth(){
+  const shell=$('#page-playbook .playbook-word-shell');
+  const shellWidth=shell?.getBoundingClientRect().width || window.innerWidth || 0;
+  // OFF should open to the designed wider position (the marked blue-line position),
+  // not reuse an old narrow manual width.
+  return clampPlaybookPreviewWidth(Math.max(
+    PLAYBOOK_PREVIEW_DEFAULT_EXPANDED_WIDTH,
+    shellWidth*0.42
+  ));
+}
+
 function updatePlaybookPreviewLayoutControls(){
   const toggle=$('#playbookPreviewAutoZoomBtn');
   const state=$('#playbookPreviewAutoZoomState');
@@ -12084,12 +12095,19 @@ function applyPlaybookPreviewLayout(){
 
 function setPlaybookPreviewAutoZoom(enabled,{manualWidth=null,persist=true}={}){
   loadPlaybookPreviewLayout();
+  const wasAutoZoom=playbookPreviewAutoZoom;
   playbookPreviewAutoZoom=Boolean(enabled);
+
   if(Number.isFinite(Number(manualWidth))){
+    // Manual resize path: preserve the exact width the user is dragging from/to.
     playbookPreviewManualWidth=clampPlaybookPreviewWidth(Number(manualWidth));
+  }else if(!playbookPreviewAutoZoom&&wasAutoZoom){
+    // Toggle ON → OFF: always snap to the designed default expanded position.
+    playbookPreviewManualWidth=playbookPreviewDefaultOffWidth();
   }else if(!playbookPreviewAutoZoom){
-    playbookPreviewManualWidth=clampPlaybookPreviewWidth(playbookPreviewManualWidth||PLAYBOOK_PREVIEW_DEFAULT_EXPANDED_WIDTH);
+    playbookPreviewManualWidth=clampPlaybookPreviewWidth(playbookPreviewManualWidth||playbookPreviewDefaultOffWidth());
   }
+
   applyPlaybookPreviewLayout();
   if(persist)persistPlaybookPreviewLayout();
 }
@@ -13747,8 +13765,23 @@ function setSecondaryRibbon(kind,name){
 }
 function toggleSecondaryAutoZoom(kind){
   const state=secondaryState(kind),shell=secondaryFind(kind,'[data-ti-shell]'),btn=secondaryFind(kind,'[data-ti-action="autozoom"]');
-  state.autoZoom=!state.autoZoom;shell.classList.toggle('ti-auto-zoom',state.autoZoom);
-  if(state.autoZoom)shell.style.removeProperty('--playbook-preview-width');else shell.style.setProperty('--playbook-preview-width',Math.round(state.previewWidth)+'px');
+  const wasAutoZoom=state.autoZoom;
+  state.autoZoom=!state.autoZoom;
+  shell.classList.toggle('ti-auto-zoom',state.autoZoom);
+
+  if(state.autoZoom){
+    shell.style.removeProperty('--playbook-preview-width');
+  }else{
+    const shellWidth=shell?.getBoundingClientRect().width||window.innerWidth||0;
+    const maxWidth=Math.max(220,Math.min(720,shellWidth-420));
+    if(wasAutoZoom){
+      state.previewWidth=Math.max(560,Math.min(maxWidth,shellWidth*0.42));
+    }else{
+      state.previewWidth=Math.max(220,Math.min(maxWidth,state.previewWidth||560));
+    }
+    shell.style.setProperty('--playbook-preview-width',Math.round(state.previewWidth)+'px');
+  }
+
   btn?.setAttribute('aria-pressed',state.autoZoom?'true':'false');
   const label=secondaryFind(kind,'[data-ti-autozoom-state]');if(label)label.textContent=state.autoZoom?'ON':'OFF';
 }
