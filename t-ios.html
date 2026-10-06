@@ -2634,14 +2634,6 @@ textarea{resize:vertical;min-height:90px}
   filter:brightness(1.08);
   animation-play-state:paused;
 }
-.playbook-save-action-heart{
-  display:inline-block;
-  color:#ff92ac;
-  font-size:13px;
-  line-height:1;
-  text-shadow:0 0 9px rgba(255,102,143,.58);
-  animation:playbookHeartIconPump .9s ease-in-out infinite;
-}
 .playbook-save-action-close{
   position:absolute;
   top:6px;
@@ -2674,17 +2666,9 @@ textarea{resize:vertical;min-height:90px}
   34%{transform:scale(1.055)}
   48%{transform:scale(1)}
 }
-@keyframes playbookHeartIconPump{
-  0%,100%{transform:scale(1)}
-  18%{transform:scale(1.28)}
-  34%{transform:scale(.98)}
-  48%{transform:scale(1.18)}
-  66%{transform:scale(1)}
-}
 @media(prefers-reduced-motion:reduce){
   .playbook-save-action.show,
-  .playbook-save-action-btn,
-  .playbook-save-action-heart{animation:none}
+  .playbook-save-action-btn{animation:none}
 }
 
 /* MOBILE */
@@ -5433,7 +5417,6 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
               <span>Inspect how this Playbook maps into actual Execution Quality.</span>
             </div>
             <button class="playbook-save-action-btn" id="playbookSaveViewExecutionBtn" type="button">
-              <span class="playbook-save-action-heart" aria-hidden="true">♥</span>
               <span>View Playbook in Execution Quality</span>
             </button>
           </div>
