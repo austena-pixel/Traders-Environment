@@ -4147,6 +4147,27 @@ body.playbook-preview-resizing *{
 }
 .playbook-style-color-reset:hover:not(:disabled){border-color:#8fb5dd;background:#edf5fd}
 .playbook-style-color-reset:disabled{opacity:.45;cursor:not-allowed}
+.playbook-style-option-btn{
+  min-width:48px;
+  min-height:31px;
+  padding:5px 8px;
+  border:1px solid #c8ced6;
+  border-radius:6px;
+  background:#fff;
+  color:#354151;
+  font-size:9px;
+  font-weight:750;
+  cursor:pointer;
+}
+.playbook-style-option-btn:hover:not(:disabled){border-color:#8fb5dd;background:#edf5fd}
+.playbook-style-option-btn.active{
+  border-color:#2b72b8;
+  background:#e6f2ff;
+  color:#155c9c;
+  box-shadow:0 0 0 1px rgba(43,114,184,.1) inset;
+}
+.playbook-style-option-btn:disabled{opacity:.42;cursor:not-allowed}
+.playbook-style-option-btn.wide{min-width:88px}
 .playbook-word-properties{display:grid;grid-template-columns:minmax(220px,1.5fr) minmax(180px,1fr) 130px auto;gap:8px;width:100%;align-items:end}
 .playbook-word-properties label span{display:block;margin-bottom:4px;color:#5d6875;font-size:8px;font-weight:750}
 .playbook-word-properties input,.playbook-word-properties select{width:100%;height:34px;border:1px solid #c8ced6;border-radius:5px;background:#fff;color:#202a36;padding:0 8px;font-size:10px}
@@ -5371,6 +5392,125 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
   accent-color:#7659c4;
 }
 
+/* Advanced Styles: alignment, spacing, borders and visual presets.
+   These are presentation-only and are carried into Live Model + Execution Quality. */
+.playbook-word-editor ul[data-playbook-align="center"]>li,
+.playbook-word-editor ol[data-playbook-align="center"]>li{text-align:center}
+.playbook-word-editor ul[data-playbook-align="right"]>li,
+.playbook-word-editor ol[data-playbook-align="right"]>li{text-align:right}
+.playbook-word-editor .pb-doc-choice-options[data-playbook-align="center"]>.pb-doc-choice-option{justify-content:center;text-align:center}
+.playbook-word-editor .pb-doc-choice-options[data-playbook-align="right"]>.pb-doc-choice-option{justify-content:flex-end;text-align:right}
+
+.playbook-preview-check-layout[data-playbook-align="center"] .playbook-preview-check,
+.playbook-preview-choice-options[data-playbook-align="center"]>.playbook-preview-choice-option{justify-content:center;text-align:center}
+.playbook-preview-check-layout[data-playbook-align="right"] .playbook-preview-check,
+.playbook-preview-choice-options[data-playbook-align="right"]>.playbook-preview-choice-option{justify-content:flex-end;text-align:right}
+
+.execution-map-rule-layout[data-playbook-align="center"] .execution-map-rule-main,
+.execution-map-choice-options[data-playbook-align="center"] label{justify-content:center;text-align:center}
+.execution-map-rule-layout[data-playbook-align="right"] .execution-map-rule-main,
+.execution-map-choice-options[data-playbook-align="right"] label{justify-content:flex-end;text-align:right}
+.execution-map-rule-layout[data-playbook-align="center"] .execution-map-rule-copy{text-align:center}
+.execution-map-rule-layout[data-playbook-align="right"] .execution-map-rule-copy{text-align:right}
+
+/* Spacing density */
+.playbook-word-editor ul[data-playbook-spacing="compact"]>li,
+.playbook-word-editor ol[data-playbook-spacing="compact"]>li{margin-bottom:2px!important;padding-top:4px!important;padding-bottom:4px!important}
+.playbook-word-editor ul[data-playbook-spacing="relaxed"]>li,
+.playbook-word-editor ol[data-playbook-spacing="relaxed"]>li{margin-bottom:10px!important;padding-top:12px!important;padding-bottom:12px!important}
+.playbook-word-editor [data-playbook-spacing="compact"][data-playbook-list-layout]{row-gap:4px!important;column-gap:10px!important}
+.playbook-word-editor [data-playbook-spacing="relaxed"][data-playbook-list-layout]{row-gap:13px!important;column-gap:26px!important}
+.playbook-word-editor .pb-doc-choice-options[data-playbook-spacing="compact"]{gap:4px!important}
+.playbook-word-editor .pb-doc-choice-options[data-playbook-spacing="compact"]>.pb-doc-choice-option{padding:5px 7px!important}
+.playbook-word-editor .pb-doc-choice-options[data-playbook-spacing="relaxed"]{gap:13px!important}
+.playbook-word-editor .pb-doc-choice-options[data-playbook-spacing="relaxed"]>.pb-doc-choice-option{padding:13px 15px!important}
+
+.playbook-preview-check-layout[data-playbook-spacing="compact"],
+.playbook-preview-choice-options[data-playbook-spacing="compact"]{gap:4px!important}
+.playbook-preview-check-layout[data-playbook-spacing="relaxed"],
+.playbook-preview-choice-options[data-playbook-spacing="relaxed"]{gap:12px!important}
+.playbook-preview-check-layout[data-playbook-spacing="compact"] .playbook-preview-check,
+.playbook-preview-choice-options[data-playbook-spacing="compact"]>.playbook-preview-choice-option{padding:5px 7px!important}
+.playbook-preview-check-layout[data-playbook-spacing="relaxed"] .playbook-preview-check,
+.playbook-preview-choice-options[data-playbook-spacing="relaxed"]>.playbook-preview-choice-option{padding:12px 13px!important}
+
+.execution-map-rule-layout[data-playbook-spacing="compact"],
+.execution-map-choice-options[data-playbook-spacing="compact"]{gap:5px!important}
+.execution-map-rule-layout[data-playbook-spacing="relaxed"],
+.execution-map-choice-options[data-playbook-spacing="relaxed"]{gap:13px!important}
+.execution-map-rule-layout[data-playbook-spacing="compact"] .execution-map-rule-main,
+.execution-map-choice-options[data-playbook-spacing="compact"] label{padding:7px 8px!important}
+.execution-map-rule-layout[data-playbook-spacing="relaxed"] .execution-map-rule-main,
+.execution-map-choice-options[data-playbook-spacing="relaxed"] label{padding:14px 15px!important}
+
+/* Presets */
+.playbook-word-editor ul[data-playbook-preset="card"]>li,
+.playbook-word-editor ol[data-playbook-preset="card"]>li,
+.playbook-word-editor .pb-doc-choice-options[data-playbook-preset="card"]>.pb-doc-choice-option{
+  background:#f7f9fb;border:1px solid #ccd5df;border-radius:10px;box-shadow:0 2px 8px rgba(21,36,52,.06);padding:9px 11px;
+}
+.playbook-word-editor ul[data-playbook-preset="highlight"]>li,
+.playbook-word-editor ol[data-playbook-preset="highlight"]>li,
+.playbook-word-editor .pb-doc-choice-options[data-playbook-preset="highlight"]>.pb-doc-choice-option{
+  background:#edf6ff;border:1px solid #b8d5ef;border-left:3px solid #4b83b9;border-radius:8px;padding:9px 11px;
+}
+.playbook-word-editor ul[data-playbook-preset="minimal"]>li,
+.playbook-word-editor ol[data-playbook-preset="minimal"]>li,
+.playbook-word-editor .pb-doc-choice-options[data-playbook-preset="minimal"]>.pb-doc-choice-option{
+  background:transparent;border:0;border-bottom:1px solid #d9e0e8;border-radius:0;box-shadow:none;padding:7px 4px;
+}
+
+.playbook-preview-check-layout[data-playbook-preset="card"] .playbook-preview-check,
+.playbook-preview-choice-options[data-playbook-preset="card"]>.playbook-preview-choice-option{
+  background:#101b28;border:1px solid #35516e;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,.14);padding:9px 10px;
+}
+.playbook-preview-check-layout[data-playbook-preset="highlight"] .playbook-preview-check,
+.playbook-preview-choice-options[data-playbook-preset="highlight"]>.playbook-preview-choice-option{
+  background:#122033;border:1px solid #365d83;border-left:3px solid #69a8ff;border-radius:9px;padding:9px 10px;
+}
+.playbook-preview-check-layout[data-playbook-preset="minimal"] .playbook-preview-check,
+.playbook-preview-choice-options[data-playbook-preset="minimal"]>.playbook-preview-choice-option{
+  background:transparent;border:0;border-bottom:1px solid #253447;border-radius:0;box-shadow:none;padding:7px 2px;
+}
+
+.execution-map-rule-layout[data-playbook-preset="card"] .execution-map-rule,
+.execution-map-choice-options[data-playbook-preset="card"] label{
+  background:#101b28;border:1px solid #31506f;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,.13);
+}
+.execution-map-rule-layout[data-playbook-preset="highlight"] .execution-map-rule,
+.execution-map-choice-options[data-playbook-preset="highlight"] label{
+  background:#122236;border:1px solid #3b648c;border-left:3px solid #69a8ff;border-radius:9px;
+}
+.execution-map-rule-layout[data-playbook-preset="minimal"] .execution-map-rule,
+.execution-map-choice-options[data-playbook-preset="minimal"] label{
+  background:transparent;border:0;border-bottom:1px solid #26374b;border-radius:0;box-shadow:none;
+}
+
+/* Explicit border controls override the preset border while preserving custom colors. */
+.playbook-word-editor ul[data-playbook-border="none"]>li,
+.playbook-word-editor ol[data-playbook-border="none"]>li,
+.playbook-word-editor .pb-doc-choice-options[data-playbook-border="none"]>.pb-doc-choice-option{border:0!important;box-shadow:none!important}
+.playbook-word-editor ul[data-playbook-border="thin"]>li,
+.playbook-word-editor ol[data-playbook-border="thin"]>li,
+.playbook-word-editor .pb-doc-choice-options[data-playbook-border="thin"]>.pb-doc-choice-option{border:1px solid var(--pb-style-border,#ccd5df)!important;border-radius:8px}
+.playbook-word-editor ul[data-playbook-border="strong"]>li,
+.playbook-word-editor ol[data-playbook-border="strong"]>li,
+.playbook-word-editor .pb-doc-choice-options[data-playbook-border="strong"]>.pb-doc-choice-option{border:2px solid var(--pb-style-border,#9bb6d1)!important;border-radius:10px}
+
+.playbook-preview-check-layout[data-playbook-border="none"] .playbook-preview-check,
+.playbook-preview-choice-options[data-playbook-border="none"]>.playbook-preview-choice-option{border:0!important;box-shadow:none!important}
+.playbook-preview-check-layout[data-playbook-border="thin"] .playbook-preview-check,
+.playbook-preview-choice-options[data-playbook-border="thin"]>.playbook-preview-choice-option{border:1px solid var(--pb-style-border,#35516e)!important;border-radius:8px}
+.playbook-preview-check-layout[data-playbook-border="strong"] .playbook-preview-check,
+.playbook-preview-choice-options[data-playbook-border="strong"]>.playbook-preview-choice-option{border:2px solid var(--pb-style-border,#5f86b3)!important;border-radius:10px}
+
+.execution-map-rule-layout[data-playbook-border="none"] .execution-map-rule,
+.execution-map-choice-options[data-playbook-border="none"] label{border:0!important;box-shadow:none!important}
+.execution-map-rule-layout[data-playbook-border="thin"] .execution-map-rule,
+.execution-map-choice-options[data-playbook-border="thin"] label{border:1px solid var(--pb-style-border,#31506f)!important;border-radius:8px}
+.execution-map-rule-layout[data-playbook-border="strong"] .execution-map-rule,
+.execution-map-choice-options[data-playbook-border="strong"] label{border:2px solid var(--pb-style-border,#5f86b3)!important;border-radius:10px}
+
 .playbook-word-editor h2,
 .playbook-word-editor h3{
   padding-top:14px;
@@ -6440,6 +6580,44 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               </div>
 
               <div class="playbook-word-tool-group">
+                <span class="playbook-word-tool-label">Alignment</span>
+                <div class="playbook-word-tool-row">
+                  <button type="button" class="playbook-style-option-btn" data-playbook-style-align="left">Left</button>
+                  <button type="button" class="playbook-style-option-btn" data-playbook-style-align="center">Center</button>
+                  <button type="button" class="playbook-style-option-btn" data-playbook-style-align="right">Right</button>
+                </div>
+              </div>
+
+              <div class="playbook-word-tool-group">
+                <span class="playbook-word-tool-label">Spacing</span>
+                <div class="playbook-word-tool-row">
+                  <button type="button" class="playbook-style-option-btn" data-playbook-style-spacing="compact">Compact</button>
+                  <button type="button" class="playbook-style-option-btn" data-playbook-style-spacing="normal">Normal</button>
+                  <button type="button" class="playbook-style-option-btn" data-playbook-style-spacing="relaxed">Relaxed</button>
+                </div>
+              </div>
+
+              <div class="playbook-word-tool-group">
+                <span class="playbook-word-tool-label">Borders</span>
+                <div class="playbook-word-tool-row">
+                  <button type="button" class="playbook-style-option-btn" data-playbook-style-border="default">Default</button>
+                  <button type="button" class="playbook-style-option-btn" data-playbook-style-border="none">None</button>
+                  <button type="button" class="playbook-style-option-btn" data-playbook-style-border="thin">Thin</button>
+                  <button type="button" class="playbook-style-option-btn" data-playbook-style-border="strong">Strong</button>
+                </div>
+              </div>
+
+              <div class="playbook-word-tool-group">
+                <span class="playbook-word-tool-label">Presets</span>
+                <div class="playbook-word-tool-row">
+                  <button type="button" class="playbook-style-option-btn" data-playbook-style-preset="plain">Plain</button>
+                  <button type="button" class="playbook-style-option-btn" data-playbook-style-preset="card">Card</button>
+                  <button type="button" class="playbook-style-option-btn" data-playbook-style-preset="highlight">Highlight</button>
+                  <button type="button" class="playbook-style-option-btn" data-playbook-style-preset="minimal">Minimal</button>
+                </div>
+              </div>
+
+              <div class="playbook-word-tool-group">
                 <span class="playbook-word-tool-label">Colors</span>
                 <div class="playbook-word-tool-row">
                   <div class="playbook-style-color-grid">
@@ -6465,9 +6643,16 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               </div>
 
               <div class="playbook-word-tool-group">
+                <span class="playbook-word-tool-label">Reset</span>
+                <div class="playbook-word-tool-row">
+                  <button type="button" class="playbook-style-option-btn wide" id="playbookStyleResetSelected">Reset Selected</button>
+                </div>
+              </div>
+
+              <div class="playbook-word-tool-group">
                 <span class="playbook-word-tool-label">Selection</span>
                 <div class="playbook-style-help" id="playbookStyleSelectionHelp">
-                  Place the cursor inside a list or Either / Or group, then choose a layout or colors.
+                  Place the cursor inside a list or Either / Or group, then style that selected structure.
                 </div>
               </div>
             </div>
@@ -10689,7 +10874,7 @@ function renderExecutionSecondaryItems(kind,doc){
         if(previous?.type==='check'&&previous.listGroup===item.listGroup)return '';
         const grouped=items.filter(candidate=>candidate.type==='check'&&candidate.listGroup===item.listGroup);
         const layout=normalizePlaybookListLayout(item.layout);
-        const styleAttrs=playbookStyleRenderAttributes(item.colors);
+        const styleAttrs=playbookStyleRenderAttributes(item.colors,item.style);
         return `<div class="execution-map-rule-layout" data-playbook-list-layout="${layout}"${styleAttrs}>${grouped.map(group=>{
           const key=(kind==='checklist'?'checklist':'psych')+'_check_'+(++index);
           return `<div class="execution-map-rule"><label class="execution-map-rule-main"><input type="checkbox" data-execution-${kind}-check="${key}"><span class="execution-map-rule-copy"><strong>${escapeHtml(group.label)}</strong></span></label><input class="execution-map-rule-comment" type="text" placeholder="Optional comment"></div>`;
@@ -10701,7 +10886,7 @@ function renderExecutionSecondaryItems(kind,doc){
     if(item.type==='choice'){
       const key=(kind==='checklist'?'checklist':'psych')+'_choice_'+(++index);
       const layout=normalizePlaybookListLayout(item.layout);
-      const styleAttrs=playbookStyleRenderAttributes(item.colors);
+      const styleAttrs=playbookStyleRenderAttributes(item.colors,item.style);
       return `<div class="execution-map-choice" data-execution-${kind}-choice-group="${key}"><div class="execution-map-choice-head"><strong>${escapeHtml(item.label)}</strong><small>Choose one</small></div><div class="execution-map-choice-options" data-playbook-list-layout="${layout}"${styleAttrs}>${item.options.map(option=>`<label><input type="radio" name="${key}" value="${escapeHtml(option)}" data-execution-${kind}-choice><span>${escapeHtml(option)}</span></label>`).join('')}</div><input class="execution-map-rule-comment" type="text" placeholder="Optional comment"></div>`;
     }
     if(item.type==='table'){
@@ -10762,7 +10947,7 @@ function renderExecutionMappingForm(){
 
         const grouped=items.filter(candidate=>candidate.type==='check'&&candidate.listGroup===item.listGroup);
         const layout=normalizePlaybookListLayout(item.layout);
-        const styleAttrs=playbookStyleRenderAttributes(item.colors);
+        const styleAttrs=playbookStyleRenderAttributes(item.colors,item.style);
 
         return `
           <div class="execution-map-rule-layout" data-playbook-list-layout="${layout}"${styleAttrs}>
@@ -10801,7 +10986,7 @@ function renderExecutionMappingForm(){
     if(item.type==='choice'){
       const key='map_choice_'+(++checkIndex);
       const layout=normalizePlaybookListLayout(item.layout);
-      const styleAttrs=playbookStyleRenderAttributes(item.colors);
+      const styleAttrs=playbookStyleRenderAttributes(item.colors,item.style);
       return `
         <div class="execution-map-choice" data-execution-map-choice-group="${key}">
           <div class="execution-map-choice-head">
@@ -12543,10 +12728,11 @@ function playbookStructuredPreviewItems(documentHtml){
       const optionsHost=node.querySelector('.pb-doc-choice-options');
       const layout=normalizePlaybookListLayout(optionsHost?.dataset?.playbookListLayout);
       const colors=playbookStyleColorsFromTarget(optionsHost);
+      const style=playbookVisualStyleFromTarget(optionsHost);
       const options=[...node.querySelectorAll('[data-choice-option]')]
         .map(option=>(option.textContent||'').replace(/\s+/g,' ').trim())
         .filter(Boolean);
-      if(options.length)items.push({type:'choice',label:title,options,layout,colors});
+      if(options.length)items.push({type:'choice',label:title,options,layout,colors,style});
       return;
     }
 
@@ -12589,6 +12775,7 @@ function playbookStructuredPreviewItems(documentHtml){
     if(node.matches?.('ul,ol')){
       const layout=normalizePlaybookListLayout(node.dataset?.playbookListLayout);
       const colors=playbookStyleColorsFromTarget(node);
+      const style=playbookVisualStyleFromTarget(node);
       const listGroup='list_'+(++listGroupIndex);
       [...node.children].forEach(li=>{
         if(li.tagName?.toLowerCase()!=='li')return;
@@ -12610,6 +12797,7 @@ function playbookStructuredPreviewItems(documentHtml){
           listGroup,
           layout,
           colors,
+          style,
           ordered:node.tagName?.toLowerCase()==='ol'
         });
       });
@@ -12696,7 +12884,7 @@ function renderPlaybookExecutionPreview(){
         if(previous?.type==='check'&&previous.listGroup===item.listGroup)return '';
         const grouped=items.filter(candidate=>candidate.type==='check'&&candidate.listGroup===item.listGroup);
         const layout=normalizePlaybookListLayout(item.layout);
-        const styleAttrs=playbookStyleRenderAttributes(item.colors);
+        const styleAttrs=playbookStyleRenderAttributes(item.colors,item.style);
         return `
           <div class="playbook-preview-check-layout" data-playbook-list-layout="${layout}"${styleAttrs}>
             ${grouped.map(groupItem=>`
@@ -12712,7 +12900,7 @@ function renderPlaybookExecutionPreview(){
     }
     if(item.type==='choice'){
       const layout=normalizePlaybookListLayout(item.layout);
-      const styleAttrs=playbookStyleRenderAttributes(item.colors);
+      const styleAttrs=playbookStyleRenderAttributes(item.colors,item.style);
       return `
         <div class="playbook-preview-choice">
           <b>${escapeHtml(item.label)}</b>
@@ -13048,6 +13236,40 @@ function playbookStyleColorsFromTarget(target){
   return Object.values(colors).some(Boolean)?colors:null;
 }
 
+function playbookVisualStyleFromTarget(target){
+  const data=target?.dataset||{};
+  return {
+    align:['center','right'].includes(data.playbookAlign)?data.playbookAlign:'left',
+    spacing:['compact','relaxed'].includes(data.playbookSpacing)?data.playbookSpacing:'normal',
+    border:['none','thin','strong'].includes(data.playbookBorder)?data.playbookBorder:'default',
+    preset:['card','highlight','minimal'].includes(data.playbookPreset)?data.playbookPreset:'plain'
+  };
+}
+
+function setPlaybookVisualStyleOnTarget(target,kind,value){
+  if(!target)return false;
+  const config={
+    align:{dataset:'playbookAlign',default:'left',allowed:['left','center','right']},
+    spacing:{dataset:'playbookSpacing',default:'normal',allowed:['compact','normal','relaxed']},
+    border:{dataset:'playbookBorder',default:'default',allowed:['default','none','thin','strong']},
+    preset:{dataset:'playbookPreset',default:'plain',allowed:['plain','card','highlight','minimal']}
+  }[kind];
+  if(!config||!config.allowed.includes(String(value||'')))return false;
+  if(value===config.default)delete target.dataset[config.dataset];
+  else target.dataset[config.dataset]=value;
+  return true;
+}
+
+function resetPlaybookTargetStyle(target){
+  if(!target)return;
+  target.removeAttribute('data-playbook-list-layout');
+  [
+    'playbookAlign','playbookSpacing','playbookBorder','playbookPreset',
+    'playbookColorBackground','playbookColorBorder','playbookColorText','playbookColorAccent'
+  ].forEach(key=>delete target.dataset[key]);
+  syncPlaybookStyleTargetVars(target);
+}
+
 function playbookStyleColorDefaults(target){
   if(target?.matches?.('.pb-doc-choice-options')){
     return {background:'#fbf9ff',border:'#d2c9ed',text:'#20242a',accent:'#7e6aa9'};
@@ -13071,14 +13293,24 @@ function syncPlaybookStyleTargetVars(target){
   });
 }
 
-function playbookStyleRenderAttributes(colors){
-  if(!colors||!Object.values(colors).some(Boolean))return '';
+function playbookStyleRenderAttributes(colors,visualStyle=null){
+  const visual=visualStyle||{align:'left',spacing:'normal',border:'default',preset:'plain'};
+  const attrs=[];
+  if(visual.align&&visual.align!=='left')attrs.push(`data-playbook-align="${visual.align}"`);
+  if(visual.spacing&&visual.spacing!=='normal')attrs.push(`data-playbook-spacing="${visual.spacing}"`);
+  if(visual.border&&visual.border!=='default')attrs.push(`data-playbook-border="${visual.border}"`);
+  if(visual.preset&&visual.preset!=='plain')attrs.push(`data-playbook-preset="${visual.preset}"`);
+
   const vars=[];
-  if(colors.background)vars.push(`--pb-style-bg:${colors.background}`);
-  if(colors.border)vars.push(`--pb-style-border:${colors.border}`);
-  if(colors.text)vars.push(`--pb-style-text:${colors.text}`);
-  if(colors.accent)vars.push(`--pb-style-accent:${colors.accent}`);
-  return ` data-playbook-custom-colors="1" style="${vars.join(';')}"`;
+  if(colors?.background)vars.push(`--pb-style-bg:${colors.background}`);
+  if(colors?.border)vars.push(`--pb-style-border:${colors.border}`);
+  if(colors?.text)vars.push(`--pb-style-text:${colors.text}`);
+  if(colors?.accent)vars.push(`--pb-style-accent:${colors.accent}`);
+  if(vars.length){
+    attrs.push('data-playbook-custom-colors="1"');
+    attrs.push(`style="${vars.join(';')}"`);
+  }
+  return attrs.length?' '+attrs.join(' '):'';
 }
 
 function applyPlaybookStyleColor(kind,value){
@@ -13150,14 +13382,30 @@ function playbookStyleTargetLabel(target){
 function refreshPlaybookListStyleControls(){
   const list=playbookListFromRange();
   const layout=currentPlaybookListLayout(list);
+  const visual=playbookVisualStyleFromTarget(list);
+
   $$('[data-playbook-list-layout]').forEach(button=>{
+    button.disabled=!list;
     button.classList.toggle('active',Boolean(list)&&button.dataset.playbookListLayout===layout);
   });
+
+  [
+    ['align','data-playbook-style-align'],
+    ['spacing','data-playbook-style-spacing'],
+    ['border','data-playbook-style-border'],
+    ['preset','data-playbook-style-preset']
+  ].forEach(([key,attribute])=>{
+    $$('['+attribute+']').forEach(button=>{
+      button.disabled=!list;
+      button.classList.toggle('active',Boolean(list)&&button.getAttribute(attribute)===visual[key]);
+    });
+  });
+
   const help=$('#playbookStyleSelectionHelp');
   if(help){
     help.textContent=list
-      ? `Selected ${playbookStyleTargetLabel(list)} · ${list.children.length} item${list.children.length===1?'':'s'} · ${layout.replace('-', ' ')}`
-      : 'Place the cursor inside a list or Either / Or group, then choose a layout or colors.';
+      ? `Selected ${playbookStyleTargetLabel(list)} · ${list.children.length} item${list.children.length===1?'':'s'} · ${layout.replace('-', ' ')} · ${visual.preset} preset`
+      : 'Place the cursor inside a list or Either / Or group, then style that selected structure.';
   }
 
   const defaults=playbookStyleColorDefaults(list);
@@ -13173,8 +13421,10 @@ function refreshPlaybookListStyleControls(){
     input.disabled=!list;
     input.value=custom[kind]||defaults[kind];
   });
-  const reset=$('#playbookStyleColorReset');
-  if(reset)reset.disabled=!list||!playbookStyleColorsFromTarget(list);
+  const resetColors=$('#playbookStyleColorReset');
+  if(resetColors)resetColors.disabled=!list||!playbookStyleColorsFromTarget(list);
+  const resetSelected=$('#playbookStyleResetSelected');
+  if(resetSelected)resetSelected.disabled=!list;
 }
 
 function applyPlaybookListLayout(layout){
@@ -13194,6 +13444,33 @@ function applyPlaybookListLayout(layout){
   refreshPlaybookListStyleControls();
   syncPlaybookLiveModel();
   restorePlaybookEditorSelection(playbookEditorSelectionRange);
+}
+
+function applyPlaybookVisualStyle(kind,value){
+  const target=playbookListFromRange();
+  if(!target){
+    showStatus('Place the cursor inside a list or Either / Or group first');
+    refreshPlaybookListStyleControls();
+    return;
+  }
+  if(!setPlaybookVisualStyleOnTarget(target,kind,value))return;
+  refreshPlaybookListStyleControls();
+  syncPlaybookLiveModel();
+  restorePlaybookEditorSelection(playbookEditorSelectionRange);
+}
+
+function resetPlaybookSelectedStyle(){
+  const target=playbookListFromRange();
+  if(!target){
+    showStatus('Place the cursor inside a list or Either / Or group first');
+    refreshPlaybookListStyleControls();
+    return;
+  }
+  resetPlaybookTargetStyle(target);
+  refreshPlaybookListStyleControls();
+  syncPlaybookLiveModel();
+  restorePlaybookEditorSelection(playbookEditorSelectionRange);
+  showStatus('Selected structure style reset');
 }
 
 function refreshPlaybookChoiceOptionRows(){
@@ -13426,14 +13703,19 @@ function initPlaybookWorkspace(){
   $$('[data-playbook-command]').forEach(button=>button.addEventListener('click',()=>applyPlaybookCommand(button.dataset.playbookCommand)));
   $('#playbookBlockStyle')?.addEventListener('change',event=>{applyPlaybookCommand('formatBlock',event.target.value);event.target.value='p'});
   $$('[data-playbook-insert]').forEach(button=>button.addEventListener('click',()=>insertPlaybookElement(button.dataset.playbookInsert)));
-  $$('[data-playbook-list-layout]').forEach(button=>button.addEventListener('click',()=>{
+  $('[data-playbook-list-layout]').forEach(button=>button.addEventListener('click',()=>{
     applyPlaybookListLayout(button.dataset.playbookListLayout);
   }));
-  $$('[data-playbook-style-color]').forEach(input=>{
+  $('[data-playbook-style-align]').forEach(button=>button.addEventListener('click',()=>applyPlaybookVisualStyle('align',button.dataset.playbookStyleAlign)));
+  $('[data-playbook-style-spacing]').forEach(button=>button.addEventListener('click',()=>applyPlaybookVisualStyle('spacing',button.dataset.playbookStyleSpacing)));
+  $('[data-playbook-style-border]').forEach(button=>button.addEventListener('click',()=>applyPlaybookVisualStyle('border',button.dataset.playbookStyleBorder)));
+  $('[data-playbook-style-preset]').forEach(button=>button.addEventListener('click',()=>applyPlaybookVisualStyle('preset',button.dataset.playbookStylePreset)));
+  $('[data-playbook-style-color]').forEach(input=>{
     input.addEventListener('input',()=>applyPlaybookStyleColor(input.dataset.playbookStyleColor,input.value));
     input.addEventListener('change',()=>applyPlaybookStyleColor(input.dataset.playbookStyleColor,input.value));
   });
   $('#playbookStyleColorReset')?.addEventListener('click',resetPlaybookStyleColors);
+  $('#playbookStyleResetSelected')?.addEventListener('click',resetPlaybookSelectedStyle);
 
   $('#playbookChoiceAddOptionBtn')?.addEventListener('click',()=>{
     if($$('[data-playbook-choice-option-input]').length<8)addPlaybookChoiceOptionInput('');
@@ -13708,6 +13990,40 @@ function secondaryWorkspaceHtml(kind){
               </div>
             </div>
             <div class="playbook-word-tool-group">
+              <span class="playbook-word-tool-label">Alignment</span>
+              <div class="playbook-word-tool-row">
+                <button type="button" class="playbook-style-option-btn" data-ti-style-align="left">Left</button>
+                <button type="button" class="playbook-style-option-btn" data-ti-style-align="center">Center</button>
+                <button type="button" class="playbook-style-option-btn" data-ti-style-align="right">Right</button>
+              </div>
+            </div>
+            <div class="playbook-word-tool-group">
+              <span class="playbook-word-tool-label">Spacing</span>
+              <div class="playbook-word-tool-row">
+                <button type="button" class="playbook-style-option-btn" data-ti-style-spacing="compact">Compact</button>
+                <button type="button" class="playbook-style-option-btn" data-ti-style-spacing="normal">Normal</button>
+                <button type="button" class="playbook-style-option-btn" data-ti-style-spacing="relaxed">Relaxed</button>
+              </div>
+            </div>
+            <div class="playbook-word-tool-group">
+              <span class="playbook-word-tool-label">Borders</span>
+              <div class="playbook-word-tool-row">
+                <button type="button" class="playbook-style-option-btn" data-ti-style-border="default">Default</button>
+                <button type="button" class="playbook-style-option-btn" data-ti-style-border="none">None</button>
+                <button type="button" class="playbook-style-option-btn" data-ti-style-border="thin">Thin</button>
+                <button type="button" class="playbook-style-option-btn" data-ti-style-border="strong">Strong</button>
+              </div>
+            </div>
+            <div class="playbook-word-tool-group">
+              <span class="playbook-word-tool-label">Presets</span>
+              <div class="playbook-word-tool-row">
+                <button type="button" class="playbook-style-option-btn" data-ti-style-preset="plain">Plain</button>
+                <button type="button" class="playbook-style-option-btn" data-ti-style-preset="card">Card</button>
+                <button type="button" class="playbook-style-option-btn" data-ti-style-preset="highlight">Highlight</button>
+                <button type="button" class="playbook-style-option-btn" data-ti-style-preset="minimal">Minimal</button>
+              </div>
+            </div>
+            <div class="playbook-word-tool-group">
               <span class="playbook-word-tool-label">Colors</span>
               <div class="playbook-word-tool-row">
                 <div class="playbook-style-color-grid">
@@ -13720,8 +14036,14 @@ function secondaryWorkspaceHtml(kind){
               </div>
             </div>
             <div class="playbook-word-tool-group">
+              <span class="playbook-word-tool-label">Reset</span>
+              <div class="playbook-word-tool-row">
+                <button type="button" class="playbook-style-option-btn wide" data-ti-action="reset-style">Reset Selected</button>
+              </div>
+            </div>
+            <div class="playbook-word-tool-group">
               <span class="playbook-word-tool-label">Selection</span>
-              <div class="playbook-style-help" data-ti-style-help>Place the cursor inside a list or Either / Or group, then choose a layout or colors.</div>
+              <div class="playbook-style-help" data-ti-style-help>Place the cursor inside a list or Either / Or group, then style that selected structure.</div>
             </div>
           </div>
 
@@ -13863,15 +14185,42 @@ function secondaryStyleTarget(kind){
 function refreshSecondaryStyleControls(kind){
   const target=secondaryStyleTarget(kind);
   const layout=normalizePlaybookListLayout(target?.dataset?.playbookListLayout);
-  secondaryFindAll(kind,'[data-ti-list-layout]').forEach(btn=>btn.classList.toggle('active',Boolean(target)&&btn.dataset.tiListLayout===layout));
+  const visual=playbookVisualStyleFromTarget(target);
+
+  secondaryFindAll(kind,'[data-ti-list-layout]').forEach(btn=>{
+    btn.disabled=!target;
+    btn.classList.toggle('active',Boolean(target)&&btn.dataset.tiListLayout===layout);
+  });
+
+  [
+    ['align','data-ti-style-align'],
+    ['spacing','data-ti-style-spacing'],
+    ['border','data-ti-style-border'],
+    ['preset','data-ti-style-preset']
+  ].forEach(([key,attribute])=>{
+    secondaryFindAll(kind,'['+attribute+']').forEach(button=>{
+      button.disabled=!target;
+      button.classList.toggle('active',Boolean(target)&&button.getAttribute(attribute)===visual[key]);
+    });
+  });
+
   const help=secondaryFind(kind,'[data-ti-style-help]');
-  if(help)help.textContent=target?'Selected group · '+target.children.length+' item'+(target.children.length===1?'':'s')+' · '+layout.replace('-',' '):'Place the cursor inside a list or Either / Or group, then choose a layout or colors.';
+  if(help)help.textContent=target
+    ? 'Selected group · '+target.children.length+' item'+(target.children.length===1?'':'s')+' · '+layout.replace('-',' ')+' · '+visual.preset+' preset'
+    : 'Place the cursor inside a list or Either / Or group, then style that selected structure.';
+
   const defaults=playbookStyleColorDefaults(target),custom=playbookStyleColorsFromTarget(target)||{};
   secondaryFindAll(kind,'[data-ti-style-color]').forEach(input=>{
-    const key=input.dataset.tiStyleColor;input.disabled=!target;input.value=custom[key]||defaults[key];
+    const key=input.dataset.tiStyleColor;
+    input.disabled=!target;
+    input.value=custom[key]||defaults[key];
   });
-  const reset=secondaryFind(kind,'[data-ti-action="default-colors"]'); if(reset)reset.disabled=!target||!playbookStyleColorsFromTarget(target);
+  const resetColors=secondaryFind(kind,'[data-ti-action="default-colors"]');
+  if(resetColors)resetColors.disabled=!target||!playbookStyleColorsFromTarget(target);
+  const resetSelected=secondaryFind(kind,'[data-ti-action="reset-style"]');
+  if(resetSelected)resetSelected.disabled=!target;
 }
+
 function applySecondaryLayout(kind,layout){
   const target=secondaryStyleTarget(kind);
   if(!target){showStatus('Place the cursor inside a list or Either / Or group first');return}
@@ -13890,6 +14239,35 @@ function resetSecondaryColors(kind){
   ['playbookColorBackground','playbookColorBorder','playbookColorText','playbookColorAccent'].forEach(key=>delete target.dataset[key]);
   syncPlaybookStyleTargetVars(target);refreshSecondaryStyleControls(kind);renderSecondaryPreview(kind);scheduleSecondarySave(kind);
   showStatus('Default colors restored');
+}
+
+function applySecondaryVisualStyle(kind,styleKind,value){
+  const target=secondaryStyleTarget(kind);
+  if(!target){
+    showStatus('Place the cursor inside a list or Either / Or group first');
+    refreshSecondaryStyleControls(kind);
+    return;
+  }
+  if(!setPlaybookVisualStyleOnTarget(target,styleKind,value))return;
+  refreshSecondaryStyleControls(kind);
+  renderSecondaryPreview(kind);
+  secondaryRestoreSelection(kind);
+  scheduleSecondarySave(kind);
+}
+
+function resetSecondarySelectedStyle(kind){
+  const target=secondaryStyleTarget(kind);
+  if(!target){
+    showStatus('Place the cursor inside a list or Either / Or group first');
+    refreshSecondaryStyleControls(kind);
+    return;
+  }
+  resetPlaybookTargetStyle(target);
+  refreshSecondaryStyleControls(kind);
+  renderSecondaryPreview(kind);
+  secondaryRestoreSelection(kind);
+  scheduleSecondarySave(kind);
+  showStatus('Selected structure style reset');
 }
 
 function ensureSecondaryBlockControls(kind){
@@ -13977,7 +14355,7 @@ function secondaryPreviewHtml(kind,items){
     if(item.type==='check'){
       if(item.listGroup){
         const prev=items[itemIndex-1];if(prev?.type==='check'&&prev.listGroup===item.listGroup)return '';
-        const grouped=items.filter(x=>x.type==='check'&&x.listGroup===item.listGroup),layout=normalizePlaybookListLayout(item.layout),attrs=playbookStyleRenderAttributes(item.colors);
+        const grouped=items.filter(x=>x.type==='check'&&x.listGroup===item.listGroup),layout=normalizePlaybookListLayout(item.layout),attrs=playbookStyleRenderAttributes(item.colors,item.style);
         return '<div class="playbook-preview-check-layout" data-playbook-list-layout="'+layout+'"'+attrs+'>'+grouped.map(x=>'<div class="playbook-preview-check"><span class="playbook-preview-checkbox"></span><span>'+escapeHtml(x.label)+'</span></div>').join('')+'</div>';
       }
       return kind==='psych'
@@ -13985,7 +14363,7 @@ function secondaryPreviewHtml(kind,items){
         : '<div class="playbook-preview-check"><span class="playbook-preview-checkbox"></span><span>'+escapeHtml(item.label)+'</span></div>';
     }
     if(item.type==='choice'){
-      const layout=normalizePlaybookListLayout(item.layout),attrs=playbookStyleRenderAttributes(item.colors);
+      const layout=normalizePlaybookListLayout(item.layout),attrs=playbookStyleRenderAttributes(item.colors,item.style);
       return '<div class="playbook-preview-choice"><b>'+escapeHtml(item.label)+'</b><div class="playbook-preview-choice-options" data-playbook-list-layout="'+layout+'"'+attrs+'>'+item.options.map(x=>'<div class="playbook-preview-choice-option"><span class="playbook-preview-choice-dot"></span><span class="playbook-preview-choice-text">'+escapeHtml(x)+'</span></div>').join('')+'</div><small>Choose one</small></div>';
     }
     if(item.type==='table'){
@@ -14099,10 +14477,15 @@ function initSecondaryWorkspace(kind){
     if(action==='preview')previewSecondaryInExecution(kind);
     if(action==='autozoom')toggleSecondaryAutoZoom(kind);
     if(action==='default-colors')resetSecondaryColors(kind);
+    if(action==='reset-style')resetSecondarySelectedStyle(kind);
     const tab=event.target.closest('[data-ti-ribbon]');if(tab)setSecondaryRibbon(kind,tab.dataset.tiRibbon);
     const cmd=event.target.closest('[data-ti-command]');if(cmd)applySecondaryCommand(kind,cmd.dataset.tiCommand);
     const insert=event.target.closest('[data-ti-insert]');if(insert)secondaryInsert(kind,insert.dataset.tiInsert);
     const layout=event.target.closest('[data-ti-list-layout]');if(layout)applySecondaryLayout(kind,layout.dataset.tiListLayout);
+    const align=event.target.closest('[data-ti-style-align]');if(align)applySecondaryVisualStyle(kind,'align',align.dataset.tiStyleAlign);
+    const spacing=event.target.closest('[data-ti-style-spacing]');if(spacing)applySecondaryVisualStyle(kind,'spacing',spacing.dataset.tiStyleSpacing);
+    const border=event.target.closest('[data-ti-style-border]');if(border)applySecondaryVisualStyle(kind,'border',border.dataset.tiStyleBorder);
+    const preset=event.target.closest('[data-ti-style-preset]');if(preset)applySecondaryVisualStyle(kind,'preset',preset.dataset.tiStylePreset);
     const remove=event.target.closest('.pb-doc-remove-btn');if(remove){event.preventDefault();const block=remove.closest('[data-playbook-node]');block?.remove();renderSecondaryPreview(kind);scheduleSecondarySave(kind)}
     const zoom=event.target.closest('[data-ti-zoom]');if(zoom)setSecondaryZoom(kind,zoom.dataset.tiZoom);
   });
