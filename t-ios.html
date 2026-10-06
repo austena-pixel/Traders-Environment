@@ -674,6 +674,12 @@ body.playbook-workspace .main{
 
 @media(min-width:861px){
   body.playbook-workspace{
+    height:100vh;
+    overflow:hidden;
+  }
+  body.playbook-workspace .shell{
+    height:100vh;
+    min-height:0;
     overflow:hidden;
   }
   body.playbook-workspace #page-playbook .playbook-word-shell.playbook-auto-zoom:has(.playbook-execution-preview:hover),
@@ -682,26 +688,33 @@ body.playbook-workspace .main{
   }
   body.playbook-workspace .main{
     height:100vh;
-    overflow:hidden;
-    display:flex;
-    flex-direction:column;
-  }
-  body.playbook-workspace #page-playbook{
-    flex:1;
     min-height:0;
     overflow:hidden;
     display:flex;
     flex-direction:column;
   }
-  body.playbook-workspace #page-playbook .playbook-word-page-head{
+  body.playbook-workspace #page-playbook.active,
+  body.playbook-workspace .technical-document-page.active{
+    display:flex;
+    flex-direction:column;
+    flex:0 0 auto;
+    height:calc(100vh - 36px);
+    min-height:0;
+    overflow:hidden;
+  }
+  body.playbook-workspace #page-playbook .playbook-word-page-head,
+  body.playbook-workspace .technical-document-page .playbook-word-page-head{
     flex:0 0 auto;
   }
-  body.playbook-workspace #page-playbook .playbook-word-shell{
-    flex:1 1 auto;
+  body.playbook-workspace #page-playbook .playbook-word-shell,
+  body.playbook-workspace .technical-document-page .playbook-word-shell{
+    flex:1 1 0;
+    height:auto;
     min-height:0;
     overflow:hidden;
   }
-  body.playbook-workspace #page-playbook .playbook-word-main{
+  body.playbook-workspace #page-playbook .playbook-word-main,
+  body.playbook-workspace .technical-document-page .playbook-word-main{
     min-height:0;
     height:100%;
   }
@@ -4326,21 +4339,8 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
    Used by Checklists + Psychological Review.
 ===================================================== */
 body.playbook-workspace .technical-document-page{
-  flex:1;
   min-height:0;
   overflow:hidden;
-  display:flex;
-  flex-direction:column;
-}
-body.playbook-workspace .technical-document-page .page-head{flex:0 0 auto}
-body.playbook-workspace .technical-document-page .playbook-word-shell{
-  flex:1 1 auto;
-  min-height:0;
-  overflow:hidden;
-}
-body.playbook-workspace .technical-document-page .playbook-word-main{
-  min-height:0;
-  height:100%;
 }
 body.playbook-workspace .technical-document-page .playbook-word-document-stage{
   min-height:0;
