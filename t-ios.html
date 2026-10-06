@@ -12078,10 +12078,13 @@ function updatePlaybookPreviewLayoutControls(){
   }
 }
 
-function applyPlaybookPreviewLayout(){
+function applyPlaybookPreviewLayout({reload=true}={}){
   const shell=$('#page-playbook .playbook-word-shell');
   if(!shell)return;
-  loadPlaybookPreviewLayout();
+  // Reload saved layout only for normal renders/resizes. When the user has
+  // just toggled Auto Zoom or dragged the divider, keep the fresh in-memory
+  // width instead of immediately replacing it with the older saved width.
+  if(reload)loadPlaybookPreviewLayout();
   shell.classList.toggle('playbook-auto-zoom',playbookPreviewAutoZoom);
   shell.classList.toggle('playbook-manual-zoom',!playbookPreviewAutoZoom);
   if(window.matchMedia('(max-width: 820px)').matches){
@@ -12110,7 +12113,7 @@ function setPlaybookPreviewAutoZoom(enabled,{manualWidth=null,persist=true}={}){
     playbookPreviewManualWidth=clampPlaybookPreviewWidth(playbookPreviewManualWidth||playbookPreviewDefaultOffWidth());
   }
 
-  applyPlaybookPreviewLayout();
+  applyPlaybookPreviewLayout({reload:false});
   if(persist)persistPlaybookPreviewLayout();
 }
 
@@ -12118,7 +12121,7 @@ function setPlaybookPreviewManualWidth(width,{persist=true}={}){
   loadPlaybookPreviewLayout();
   playbookPreviewAutoZoom=false;
   playbookPreviewManualWidth=clampPlaybookPreviewWidth(width);
-  applyPlaybookPreviewLayout();
+  applyPlaybookPreviewLayout({reload:false});
   if(persist)persistPlaybookPreviewLayout();
 }
 
