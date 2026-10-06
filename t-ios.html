@@ -3792,6 +3792,349 @@ textarea{resize:vertical;min-height:90px}
     box-shadow:0 0 0 1px rgba(105,168,255,.06) inset;
   }
 }
+
+
+/* =====================================================
+   EXECUTION QUALITY — PLAYBOOK MAPPING WORKSPACE
+===================================================== */
+.execution-map-controls{
+  display:grid;
+  grid-template-columns:minmax(180px,280px) minmax(180px,280px) minmax(220px,1fr);
+  gap:10px;
+  margin-bottom:12px;
+}
+.execution-map-control,
+.execution-map-state{
+  border:1px solid #202d3d;
+  border-radius:12px;
+  background:#0b1119;
+  padding:10px;
+}
+.execution-map-control>span,
+.execution-map-state>span{
+  display:block;
+  margin-bottom:5px;
+  color:#73859b;
+  font-size:8px;
+  font-weight:850;
+  letter-spacing:.65px;
+}
+.execution-map-control select{
+  width:100%;
+  min-height:36px;
+  border:1px solid #29384d;
+  border-radius:8px;
+  background:#0a0f16;
+  color:#eef4fb;
+  padding:0 9px;
+  font-size:10px;
+}
+.execution-map-state strong{
+  display:block;
+  color:#c7d8ea;
+  font-size:11px;
+}
+.execution-map-layout{
+  display:grid;
+  grid-template-columns:minmax(250px,310px) minmax(0,1fr);
+  gap:12px;
+  min-height:0;
+}
+.execution-map-context,
+.execution-map-form{
+  min-height:0;
+}
+.execution-map-context{
+  padding:14px;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+}
+.execution-map-context-head>span,
+.execution-map-form-head>div>span{
+  display:block;
+  color:#7c93ad;
+  font-size:8px;
+  font-weight:850;
+  letter-spacing:.7px;
+}
+.execution-map-context-head strong{
+  display:block;
+  margin-top:5px;
+  color:#f0f5fb;
+  font-size:14px;
+}
+.execution-map-context-head small{
+  display:block;
+  margin-top:5px;
+  color:#718298;
+  font-size:9px;
+  line-height:1.45;
+}
+.execution-map-context-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:14px;
+}
+.execution-map-context-grid>div{
+  border:1px solid #1f2d3d;
+  border-radius:9px;
+  background:#0a1017;
+  padding:9px;
+}
+.execution-map-context-grid span{
+  display:block;
+  color:#71839a;
+  font-size:8px;
+}
+.execution-map-context-grid strong{
+  display:block;
+  margin-top:4px;
+  color:#dbe5f0;
+  font-size:10px;
+  overflow-wrap:anywhere;
+}
+.execution-map-principle{
+  margin-top:12px;
+  padding:11px;
+  border:1px solid #26394f;
+  border-radius:10px;
+  background:#0d1723;
+}
+.execution-map-principle strong{
+  display:block;
+  color:#f2f6fb;
+  font-size:10px;
+}
+.execution-map-principle span{
+  display:block;
+  margin-top:5px;
+  color:#91a3b9;
+  font-size:9px;
+  line-height:1.55;
+}
+.execution-map-score{
+  margin-top:12px;
+  padding:13px;
+  border:1px solid #24405f;
+  border-radius:11px;
+  background:#0d1722;
+}
+.execution-map-score span{
+  color:#7f93aa;
+  font-size:9px;
+}
+.execution-map-score strong{
+  display:block;
+  margin-top:4px;
+  color:#fff;
+  font-size:27px;
+}
+.execution-map-score small{
+  display:block;
+  margin-top:4px;
+  color:#74879d;
+  font-size:8px;
+  line-height:1.4;
+}
+.execution-map-form{
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.execution-map-form-head{
+  flex:0 0 auto;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  padding:15px 16px;
+  border-bottom:1px solid #1f2a38;
+  background:#0c121a;
+}
+.execution-map-form-head h2{
+  margin:5px 0 0;
+  font-size:18px;
+}
+.execution-map-form-head p{
+  margin:5px 0 0;
+  color:#7f8fa3;
+  font-size:9px;
+  line-height:1.45;
+}
+.execution-map-badge{
+  flex:0 0 auto;
+  padding:5px 8px;
+  border:1px solid #315073;
+  border-radius:999px;
+  background:#0d1928;
+  color:#9cc8f8;
+  font-size:8px;
+  font-weight:850;
+  letter-spacing:.55px;
+}
+.execution-map-form-body{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  padding:16px;
+}
+.execution-map-empty{
+  min-height:260px;
+  display:grid;
+  place-items:center;
+  padding:24px;
+  border:1px dashed #283a50;
+  border-radius:12px;
+  color:#73859a;
+  text-align:center;
+  font-size:10px;
+  line-height:1.6;
+}
+.execution-map-section{
+  margin:17px 0 8px;
+  color:#eef5fc;
+  font-size:13px;
+  font-weight:850;
+}
+.execution-map-section:first-child{margin-top:0}
+.execution-map-section.level-3{
+  color:#b5c5d7;
+  font-size:11px;
+}
+.execution-map-rule{
+  margin-bottom:9px;
+  border:1px solid #223147;
+  border-radius:11px;
+  background:#0b121b;
+  overflow:hidden;
+}
+.execution-map-rule-main{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  padding:11px;
+}
+.execution-map-rule-main input{
+  width:17px;
+  height:17px;
+  flex:0 0 auto;
+  margin-top:1px;
+}
+.execution-map-rule-copy{
+  flex:1;
+  min-width:0;
+}
+.execution-map-rule-copy strong{
+  display:block;
+  color:#dce7f4;
+  font-size:11px;
+  line-height:1.45;
+}
+.execution-map-rule-comment{
+  width:calc(100% - 22px);
+  margin:0 11px 11px;
+  min-height:34px;
+  border:1px solid #27384c;
+  border-radius:7px;
+  background:#090f16;
+  color:#dfe8f2;
+  padding:7px 8px;
+  font-size:9px;
+}
+.execution-map-linked{
+  margin-bottom:10px;
+  padding:11px;
+  border:1px dashed #35506d;
+  border-radius:11px;
+  background:#0d1722;
+}
+.execution-map-linked b{
+  display:block;
+  color:#8eabd0;
+  font-size:8px;
+  letter-spacing:.55px;
+}
+.execution-map-linked strong{
+  display:block;
+  margin-top:5px;
+  color:#dbe6f2;
+  font-size:10px;
+}
+.execution-map-linked small{
+  display:block;
+  margin-top:5px;
+  color:#6f8197;
+  font-size:8px;
+  line-height:1.4;
+}
+.execution-map-reflection{
+  margin-bottom:10px;
+  padding:11px;
+  border:1px solid #2b3c51;
+  border-radius:11px;
+  background:#0c151f;
+}
+.execution-map-reflection b{
+  display:block;
+  color:#93a9c3;
+  font-size:8px;
+  letter-spacing:.55px;
+}
+.execution-map-reflection label{
+  display:block;
+  margin-top:5px;
+  color:#dbe5f1;
+  font-size:10px;
+  line-height:1.4;
+}
+.execution-map-reflection textarea{
+  width:100%;
+  min-height:72px;
+  margin-top:8px;
+  border:1px solid #29394c;
+  border-radius:8px;
+  background:#090f16;
+  color:#e1e8f0;
+  padding:9px;
+  font-size:10px;
+  resize:vertical;
+}
+.execution-map-footer{
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:10px 13px;
+  border-top:1px solid #1e2937;
+  background:#0a0f16;
+}
+.execution-map-footer span{
+  color:#72849a;
+  font-size:8px;
+}
+@media(min-width:861px){
+  body.execution-workspace #page-execution .execution-map-controls{
+    flex:0 0 auto;
+  }
+  body.execution-workspace #page-execution .execution-map-layout{
+    flex:1 1 auto;
+    min-height:0;
+    overflow:hidden;
+  }
+}
+@media(max-width:900px){
+  .execution-map-controls{grid-template-columns:1fr 1fr}
+  .execution-map-state{grid-column:1/-1}
+  .execution-map-layout{grid-template-columns:1fr}
+}
+@media(max-width:620px){
+  .execution-map-controls{grid-template-columns:1fr}
+  .execution-map-state{grid-column:auto}
+  .execution-map-context-grid{grid-template-columns:1fr}
+}
 </style>
 <style id="hios-product-brand-icons">
 /* Product marks use the same symbols and accents as the H-IOS sidebar. */
@@ -4864,138 +5207,88 @@ textarea{resize:vertical;min-height:90px}
       <header class="page-head">
         <div>
           <h1>Execution Quality</h1>
-          <p>Measure the gap between the trading instruments you defined and what actually happened on the trade.</p>
+          <p>Confirm how the trading instruments you design map into the form used to compare planned behaviour with actual behaviour.</p>
         </div>
         <div class="top-actions">
-          <button class="btn" id="executionNewJournalTopBtn">+ New Journal</button>
-          <button class="btn" id="executionRefreshBtn">Refresh</button>
-          <button class="btn primary" id="executionSaveTopBtn">Save Review</button>
+          <button class="btn" type="button" id="executionMapRefreshBtn">Refresh Mapping</button>
         </div>
       </header>
 
-      <section class="execution-summary">
-        <div class="metric">
-          <div class="label">Reviewed Trades</div>
-          <div class="value neutral" id="executionReviewedCount">0</div>
-          <div class="sub">Execution reviews completed</div>
-        </div>
-        <div class="metric">
-          <div class="label">Average Execution</div>
-          <div class="value neutral" id="executionAvgScore">—</div>
-          <div class="sub">Process quality</div>
-        </div>
-        <div class="metric">
-          <div class="label">A+ Executions</div>
-          <div class="value neutral" id="executionAPlusCount">0</div>
-          <div class="sub">All execution conditions met</div>
-        </div>
-        <div class="metric">
-          <div class="label">Unreviewed Trades</div>
-          <div class="value neutral" id="executionUnreviewedCount">0</div>
-          <div class="sub">Awaiting execution review</div>
+      <section class="execution-map-controls">
+        <label class="execution-map-control">
+          <span>Trade</span>
+          <select id="executionMapTradeSelect" aria-label="Trade to review"></select>
+        </label>
+
+        <label class="execution-map-control">
+          <span>Playbook</span>
+          <select id="executionMapPlaybookSelect" aria-label="Playbook to map"></select>
+        </label>
+
+        <div class="execution-map-state">
+          <span>MAPPING STATUS</span>
+          <strong id="executionMapStatus">Waiting for a Playbook</strong>
         </div>
       </section>
 
-      <div class="execution-layout">
-        <aside class="panel execution-browser">
-          <div class="execution-browser-head">
-            <h3>Trades</h3>
-            <span class="pager-text" id="executionTradeCount">0 trades</span>
+      <div class="execution-map-layout">
+        <aside class="panel execution-map-context">
+          <div class="execution-map-context-head">
+            <span>TRADE CONTEXT</span>
+            <strong id="executionMapTradeTitle">No trade selected</strong>
+            <small id="executionMapTradeMeta">Choose a trade to place the Playbook around a real trading record.</small>
           </div>
 
-          <div class="execution-filters">
-            <input id="executionSearch" type="text" placeholder="Search instrument or setup">
-            <select id="executionStatusFilter">
-              <option value="">All</option>
-              <option value="reviewed">Reviewed</option>
-              <option value="unreviewed">Unreviewed</option>
-              <option value="aplus">A+</option>
-              <option value="a">A</option>
-              <option value="b">B</option>
-            </select>
+          <div class="execution-map-context-grid">
+            <div>
+              <span>Instrument</span>
+              <strong id="executionMapInstrument">—</strong>
+            </div>
+            <div>
+              <span>Direction</span>
+              <strong id="executionMapDirection">—</strong>
+            </div>
+            <div>
+              <span>Setup</span>
+              <strong id="executionMapSetup">—</strong>
+            </div>
+            <div>
+              <span>P&amp;L</span>
+              <strong id="executionMapPnl">—</strong>
+            </div>
           </div>
 
-          <div class="execution-trade-list" id="executionTradeList">
-            <div class="empty-state">No trades recorded yet.</div>
+          <div class="execution-map-principle">
+            <strong>Planned → Actual</strong>
+            <span>The form on the right is generated from the selected Playbook. Checking an item means the planned condition was actually followed.</span>
           </div>
 
-          <div class="execution-help">
-            <strong>Edge asks:</strong> Should this trade have been taken?<br>
-            <strong>Execution asks:</strong> Once I chose to take it, did I carry it out correctly?
+          <div class="execution-map-score">
+            <span>Live execution match</span>
+            <strong id="executionMapScore">—</strong>
+            <small id="executionMapScoreMeta">No measurable Playbook rules yet.</small>
           </div>
         </aside>
 
-        <section class="panel execution-editor">
-          <div class="execution-empty" id="executionEmptyState">
-            Select a trade on the left to evaluate the quality of its actual execution independently of P&amp;L.
+        <section class="panel execution-map-form">
+          <div class="execution-map-form-head">
+            <div>
+              <span>GENERATED FROM TECHNICAL INSTRUMENTS</span>
+              <h2 id="executionMapPlaybookTitle">No Playbook selected</h2>
+              <p id="executionMapPlaybookMeta">Build a Playbook first, then return here to confirm its Execution Quality structure.</p>
+            </div>
+            <span class="execution-map-badge">MODEL</span>
           </div>
 
-          <div class="hidden" id="executionEditorContent">
-            <div class="execution-trade-header">
-              <div class="execution-trade-header-top">
-                <div>
-                  <h3 id="executionSelectedTitle">—</h3>
-                  <p id="executionSelectedSubtitle">—</p>
-                </div>
-                <span class="grade-badge grade-none" id="executionHeaderGrade">Unreviewed</span>
-              </div>
-
-              <div class="execution-trade-kpis">
-                <span class="execution-mini-kpi" id="executionSelectedPnl">P&amp;L: —</span>
-                <span class="execution-mini-kpi" id="executionSelectedReturn">Return: —</span>
-                <span class="execution-mini-kpi" id="executionSelectedEdge">Edge: —</span>
-              </div>
+          <div class="execution-map-form-body" id="executionMapFormBody">
+            <div class="execution-map-empty">
+              Your Playbook rules, checklists and reflections will appear here in the structure they will use during Execution Quality.
             </div>
+          </div>
 
-            <div class="execution-score-board">
-              <div class="execution-score-card">
-                <span>Live Execution Score</span>
-                <strong id="executionLiveScore">0.0%</strong>
-              </div>
-
-              <div class="execution-score-card">
-                <span>Execution Rating</span>
-                <strong id="executionLiveRating">B</strong>
-              </div>
-            </div>
-
-            <div class="execution-principle">
-              <strong>Important:</strong> A profitable trade can still be poorly executed, and a losing trade can still be executed perfectly.
-              This page measures your behaviour after the decision to trade, not the financial result.
-            </div>
-
-            <div class="execution-structure-bar">
-              <div class="execution-structure-copy">
-                <span class="kicker">Execution journal</span>
-                <strong id="executionStructureName">No journal selected</strong>
-                <small id="executionStructureMeta">Create your own journal, or add the T-IOS recommended journal when you want it.</small>
-              </div>
-              <div class="execution-structure-actions" id="executionStructureActions">
-                <span class="execution-journal-library-label" id="executionJournalLibraryLabel">My Journals</span>
-                <select id="executionStructureSelect" aria-label="Execution journal"></select>
-                <button class="btn" type="button" id="executionUseRecommendedBtn">Use Recommended</button>
-                <button class="btn" type="button" id="executionNewStructureBtn">+ New Journal</button>
-                <button class="btn" type="button" id="executionEditStructureBtn">Edit</button>
-                <button class="btn danger" type="button" id="executionDeleteStructureBtn">Delete</button>
-                <button class="btn" type="button" id="executionSaveHistoricalStructureBtn" hidden>Save This Structure</button>
-              </div>
-            </div>
-
-            <div class="execution-structure-empty" id="executionStructureEmpty">
-              <strong>Build your own execution journal.</strong>
-              <span>Mix checklist items with written reflection prompts, save multiple journals, and choose the one that fits the way you trade.</span>
-            </div>
-
-            <div class="execution-reflection-fields" id="executionReflectionFields"></div>
-
-            <div class="execution-help" id="executionScoringHelp">
-              Checklist items contribute to the execution score. Written reflection prompts are qualitative and do not change the numeric score.
-            </div>
-
-            <div class="execution-actions">
-              <button class="btn danger" type="button" id="executionDeleteReviewBtn">Delete Review</button>
-              <button class="btn primary" type="button" id="executionSaveReviewBtn">Save Review</button>
-            </div>
+          <div class="execution-map-footer">
+            <span>Mapping test only — these responses are not saved yet.</span>
+            <button class="btn" type="button" id="executionMapResetBtn">Reset Inputs</button>
           </div>
         </section>
       </div>
@@ -8733,7 +9026,227 @@ function renderSelectedExecutionTrade(){
   loadExecutionReviewIntoEditor(trade);
 }
 
+let executionMappingPlaybookId=null;
+let executionMappingTradeId=null;
+let executionMappingInitialized=false;
+
+function executionMappingPlaybook(){
+  loadPlaybookDocuments();
+
+  if(
+    executionMappingPlaybookId &&
+    playbookDocuments.some(item=>item.id===executionMappingPlaybookId)
+  ){
+    return playbookDocuments.find(item=>item.id===executionMappingPlaybookId);
+  }
+
+  const selected=currentPlaybookDocument();
+  if(selected){
+    executionMappingPlaybookId=selected.id;
+    return selected;
+  }
+
+  const first=playbookDocuments[0]||null;
+  executionMappingPlaybookId=first?.id||null;
+  return first;
+}
+
+function executionMappingTrade(){
+  if(
+    executionMappingTradeId &&
+    trades.some(item=>String(item.id)===String(executionMappingTradeId))
+  ){
+    return trades.find(item=>String(item.id)===String(executionMappingTradeId));
+  }
+
+  const selected=trades.find(item=>String(item.id)===String(selectedExecutionTradeId));
+  if(selected){
+    executionMappingTradeId=selected.id;
+    return selected;
+  }
+
+  executionMappingTradeId=trades[0]?.id||null;
+  return trades[0]||null;
+}
+
+function renderExecutionMappingControls(){
+  const tradeSelect=$('#executionMapTradeSelect');
+  const playbookSelect=$('#executionMapPlaybookSelect');
+  if(!tradeSelect||!playbookSelect)return;
+
+  const trade=executionMappingTrade();
+  const playbook=executionMappingPlaybook();
+
+  tradeSelect.innerHTML=trades.length
+    ? trades.map(item=>{
+        const label=[item.trade_date,item.instrument,item.direction].filter(Boolean).join(' · ');
+        return `<option value="${escapeHtml(String(item.id))}" ${String(item.id)===String(trade?.id)?'selected':''}>${escapeHtml(label||'Trade')}</option>`;
+      }).join('')
+    : '<option value="">No trades</option>';
+
+  playbookSelect.innerHTML=playbookDocuments.length
+    ? playbookDocuments.map(item=>`<option value="${escapeHtml(item.id)}" ${item.id===playbook?.id?'selected':''}>${escapeHtml(item.name||'Untitled Playbook')}</option>`).join('')
+    : '<option value="">No Playbooks</option>';
+}
+
+function renderExecutionMappingTradeContext(){
+  const trade=executionMappingTrade();
+
+  $('#executionMapTradeTitle').textContent=trade
+    ? [trade.instrument,trade.direction].filter(Boolean).join(' · ') || 'Trade'
+    : 'No trade selected';
+
+  $('#executionMapTradeMeta').textContent=trade
+    ? [trade.trade_date,trade.setup].filter(Boolean).join(' · ') || 'Trading record'
+    : 'Choose a trade to place the Playbook around a real trading record.';
+
+  $('#executionMapInstrument').textContent=trade?.instrument||'—';
+  $('#executionMapDirection').textContent=trade?.direction||'—';
+  $('#executionMapSetup').textContent=trade?.setup||'—';
+  $('#executionMapPnl').textContent=trade ? signedMoney(Number(trade.pnl)||0) : '—';
+}
+
+function renderExecutionMappingForm(){
+  const playbook=executionMappingPlaybook();
+  const body=$('#executionMapFormBody');
+  if(!body)return;
+
+  if(!playbook){
+    $('#executionMapPlaybookTitle').textContent='No Playbook selected';
+    $('#executionMapPlaybookMeta').textContent='Build a Playbook first, then return here to confirm its Execution Quality structure.';
+    $('#executionMapStatus').textContent='Waiting for a Playbook';
+    body.innerHTML='<div class="execution-map-empty">Create a Playbook under Technical Instruments to generate an Execution Quality form here.</div>';
+    updateExecutionMappingScore();
+    return;
+  }
+
+  $('#executionMapPlaybookTitle').textContent=playbook.name||'Untitled Playbook';
+  $('#executionMapPlaybookMeta').textContent='Generated directly from the current Playbook definition.';
+  $('#executionMapStatus').textContent='Mapped from Technical Instruments';
+
+  const items=playbookStructuredPreviewItems(playbook.documentHtml||'');
+  const meaningful=items.some(item=>item.type!=='section');
+
+  if(!meaningful){
+    body.innerHTML='<div class="execution-map-empty">This Playbook has no structured execution items yet. Add Rule blocks, lists, linked Checklists, or linked Reflections under Playbooks.</div>';
+    updateExecutionMappingScore();
+    return;
+  }
+
+  let checkIndex=0;
+  body.innerHTML=items.map(item=>{
+    if(item.type==='section'){
+      return `<div class="execution-map-section ${item.level===3?'level-3':''}">${escapeHtml(item.label)}</div>`;
+    }
+
+    if(item.type==='check'){
+      const key='map_rule_'+(++checkIndex);
+      return `
+        <div class="execution-map-rule">
+          <label class="execution-map-rule-main">
+            <input type="checkbox" data-execution-map-check="${key}">
+            <span class="execution-map-rule-copy">
+              <strong>${escapeHtml(item.label)}</strong>
+            </span>
+          </label>
+          <input class="execution-map-rule-comment" type="text" placeholder="Optional execution comment">
+        </div>
+      `;
+    }
+
+    if(item.type==='checklist'){
+      return `
+        <div class="execution-map-linked">
+          <b>LINKED CHECKLIST</b>
+          <strong>${escapeHtml(item.label)}</strong>
+          <small>The checklist itself will expand here once the Checklists builder is connected.</small>
+        </div>
+      `;
+    }
+
+    if(item.type==='reflection'){
+      return `
+        <div class="execution-map-reflection">
+          <b>LINKED REFLECTION</b>
+          <label>${escapeHtml(item.label)}</label>
+          <textarea placeholder="Execution reflection response"></textarea>
+        </div>
+      `;
+    }
+
+    return '';
+  }).join('');
+
+  updateExecutionMappingScore();
+}
+
+function updateExecutionMappingScore(){
+  const checks=$('[data-execution-map-check]');
+  const score=$('#executionMapScore');
+  const meta=$('#executionMapScoreMeta');
+  if(!score||!meta)return;
+
+  if(!checks.length){
+    score.textContent='—';
+    meta.textContent='No measurable Playbook rules yet.';
+    return;
+  }
+
+  const followed=checks.filter(item=>item.checked).length;
+  const pct=followed/checks.length*100;
+  score.textContent=pct.toFixed(1)+'%';
+  meta.textContent=`${followed} of ${checks.length} planned rule${checks.length===1?'':'s'} followed in this mapping test.`;
+}
+
+function resetExecutionMappingInputs(){
+  $('[data-execution-map-check]').forEach(item=>item.checked=false);
+  $('#executionMapFormBody input[type="text"], #executionMapFormBody textarea').forEach(item=>item.value='');
+  updateExecutionMappingScore();
+}
+
+function initExecutionMappingWorkspace(){
+  if(executionMappingInitialized)return;
+  executionMappingInitialized=true;
+
+  $('#executionMapTradeSelect')?.addEventListener('change',event=>{
+    executionMappingTradeId=event.target.value||null;
+    renderExecutionMappingTradeContext();
+  });
+
+  $('#executionMapPlaybookSelect')?.addEventListener('change',event=>{
+    executionMappingPlaybookId=event.target.value||null;
+    renderExecutionMappingControls();
+    renderExecutionMappingForm();
+  });
+
+  $('#executionMapFormBody')?.addEventListener('change',event=>{
+    if(event.target.matches('[data-execution-map-check]'))updateExecutionMappingScore();
+  });
+
+  $('#executionMapResetBtn')?.addEventListener('click',resetExecutionMappingInputs);
+
+  $('#executionMapRefreshBtn')?.addEventListener('click',()=>{
+    playbookDocumentStoreKey=null;
+    loadPlaybookDocuments();
+    renderExecutionMappingWorkspace();
+    showStatus('Execution mapping refreshed from Technical Instruments');
+  });
+}
+
+function renderExecutionMappingWorkspace(){
+  if(!$('#executionMapFormBody'))return;
+  initExecutionMappingWorkspace();
+  loadPlaybookDocuments();
+  renderExecutionMappingControls();
+  renderExecutionMappingTradeContext();
+  renderExecutionMappingForm();
+}
+
 function renderExecution(){
+  if($('#executionMapFormBody')){
+    renderExecutionMappingWorkspace();
+    return;
+  }
   renderExecutionSummary();
   renderExecutionTradeList();
   renderSelectedExecutionTrade();
@@ -8936,7 +9449,7 @@ async function deleteExecutionReview(){
   showStatus('Execution review deleted');
 }
 
-$('#executionStructureSelect').addEventListener('change',event=>{
+$('#executionStructureSelect')?.addEventListener('change',event=>{
   setActiveExecutionStructure(event.target.value);
   const selectedReview=executionReviewForTrade(selectedExecutionTradeId);
   renderSelectedExecutionTrade();
@@ -8947,39 +9460,39 @@ $('#executionStructureSelect').addEventListener('change',event=>{
   );
 });
 
-$('#executionUseRecommendedBtn').addEventListener('click',()=>{
+$('#executionUseRecommendedBtn')?.addEventListener('click',()=>{
   addRecommendedExecutionStructure();
   renderSelectedExecutionTrade();
   showStatus('Recommended execution journal added • select an unreviewed trade to use it');
 });
 
-$('#executionNewStructureBtn').addEventListener('click',()=>{
+$('#executionNewStructureBtn')?.addEventListener('click',()=>{
   openExecutionStructureBuilder(null);
 });
 
-$('#executionNewJournalTopBtn').addEventListener('click',()=>{
+$('#executionNewJournalTopBtn')?.addEventListener('click',()=>{
   openExecutionStructureBuilder(null);
 });
 
-$('#executionEditStructureBtn').addEventListener('click',()=>{
+$('#executionEditStructureBtn')?.addEventListener('click',()=>{
   const active=activeExecutionStructure();
   if(active)openExecutionStructureBuilder(active);
 });
 
-$('#executionDeleteStructureBtn').addEventListener('click',deleteActiveExecutionStructure);
-$('#executionSaveHistoricalStructureBtn').addEventListener('click',saveHistoricalExecutionStructure);
+$('#executionDeleteStructureBtn')?.addEventListener('click',deleteActiveExecutionStructure);
+$('#executionSaveHistoricalStructureBtn')?.addEventListener('click',saveHistoricalExecutionStructure);
 
-$('#executionStructureModalClose').addEventListener('click',closeExecutionStructureBuilder);
-$('#executionStructureCancelBtn').addEventListener('click',closeExecutionStructureBuilder);
-$('#executionAddChecklistItemBtn').addEventListener('click',()=>addExecutionBuilderItem('check'));
-$('#executionAddReflectionPromptBtn').addEventListener('click',()=>addExecutionBuilderItem('text'));
-$('#executionStructureSaveBtn').addEventListener('click',saveExecutionStructureBuilder);
+$('#executionStructureModalClose')?.addEventListener('click',closeExecutionStructureBuilder);
+$('#executionStructureCancelBtn')?.addEventListener('click',closeExecutionStructureBuilder);
+$('#executionAddChecklistItemBtn')?.addEventListener('click',()=>addExecutionBuilderItem('check'));
+$('#executionAddReflectionPromptBtn')?.addEventListener('click',()=>addExecutionBuilderItem('text'));
+$('#executionStructureSaveBtn')?.addEventListener('click',saveExecutionStructureBuilder);
 
-$('#executionStructureNameInput').addEventListener('input',event=>{
+$('#executionStructureNameInput')?.addEventListener('input',event=>{
   if(executionStructureBuilderDraft)executionStructureBuilderDraft.name=event.target.value;
 });
 
-$('#executionStructureBuilderItems').addEventListener('input',event=>{
+$('#executionStructureBuilderItems')?.addEventListener('input',event=>{
   const row=event.target.closest('[data-builder-index]');
   if(!row||!executionStructureBuilderDraft)return;
   const index=Number(row.dataset.builderIndex);
@@ -8989,7 +9502,7 @@ $('#executionStructureBuilderItems').addEventListener('input',event=>{
   if(field==='label'||field==='guidance')item[field]=event.target.value;
 });
 
-$('#executionStructureBuilderItems').addEventListener('click',event=>{
+$('#executionStructureBuilderItems')?.addEventListener('click',event=>{
   const button=event.target.closest('[data-builder-action]');
   if(!button||!executionStructureBuilderDraft)return;
   const row=button.closest('[data-builder-index]');
@@ -9010,21 +9523,21 @@ $('#executionStructureBuilderItems').addEventListener('click',event=>{
   renderExecutionStructureBuilderItems();
 });
 
-$('#executionStructureModal').addEventListener('click',event=>{
+$('#executionStructureModal')?.addEventListener('click',event=>{
   if(event.target.id==='executionStructureModal')closeExecutionStructureBuilder();
 });
 
-$('#executionSearch').addEventListener(
+$('#executionSearch')?.addEventListener(
   'input',
   renderExecutionTradeList
 );
 
-$('#executionStatusFilter').addEventListener(
+$('#executionStatusFilter')?.addEventListener(
   'change',
   renderExecutionTradeList
 );
 
-$('#executionRefreshBtn').addEventListener(
+$('#executionRefreshBtn')?.addEventListener(
   'click',
   async()=>{
     await loadTrades();
@@ -9038,17 +9551,17 @@ $('#executionRefreshBtn').addEventListener(
   }
 );
 
-$('#executionSaveReviewBtn').addEventListener(
+$('#executionSaveReviewBtn')?.addEventListener(
   'click',
   saveExecutionReview
 );
 
-$('#executionSaveTopBtn').addEventListener(
+$('#executionSaveTopBtn')?.addEventListener(
   'click',
   saveExecutionReview
 );
 
-$('#executionDeleteReviewBtn').addEventListener(
+$('#executionDeleteReviewBtn')?.addEventListener(
   'click',
   deleteExecutionReview
 );
