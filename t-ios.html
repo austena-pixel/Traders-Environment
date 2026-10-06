@@ -11908,7 +11908,7 @@ const PLAYBOOK_PREVIEW_MAX_WIDTH=720;
 const PLAYBOOK_PREVIEW_EDITOR_MIN_WIDTH=360;
 let playbookPreviewLayoutKey=null;
 let playbookPreviewAutoZoom=true;
-let playbookPreviewManualWidth=PLAYBOOK_PREVIEW_DEFAULT_EXPANDED_WIDTH;
+let playbookPreviewManualWidth=null;
 
 function playbookDocumentKey(){
   const userId=currentUser?.id || 'anonymous';
@@ -12013,13 +12013,12 @@ function loadPlaybookPreviewLayout(){
   if(playbookPreviewLayoutKey===key)return;
   playbookPreviewLayoutKey=key;
   playbookPreviewAutoZoom=true;
-  playbookPreviewManualWidth=PLAYBOOK_PREVIEW_DEFAULT_EXPANDED_WIDTH;
+  playbookPreviewManualWidth=null;
   try{
     const stored=JSON.parse(localStorage.getItem(key)||'null');
     if(stored&&typeof stored==='object'){
       if(typeof stored.autoZoom==='boolean')playbookPreviewAutoZoom=stored.autoZoom;
-      const width=Number(stored.manualWidth);
-      if(Number.isFinite(width))playbookPreviewManualWidth=width;
+      // Manual widths last only for this OFF session; ignore legacy saved widths.
     }
   }catch(error){
     console.warn('Could not read Playbook preview layout preference',error);
@@ -12029,8 +12028,7 @@ function loadPlaybookPreviewLayout(){
 function persistPlaybookPreviewLayout(){
   if(!playbookPreviewLayoutKey)playbookPreviewLayoutKey=playbookPreviewLayoutStorageKey();
   localStorage.setItem(playbookPreviewLayoutKey,JSON.stringify({
-    autoZoom:playbookPreviewAutoZoom,
-    manualWidth:Math.round(playbookPreviewManualWidth)
+    autoZoom:playbookPreviewAutoZoom
   }));
 }
 
@@ -12051,19 +12049,6 @@ function clampPlaybookPreviewWidth(width){
   return Math.max(bounds.min,Math.min(bounds.max,Number.isFinite(numeric)?numeric:fallback));
 }
 
-function playbookPreviewDefaultOffWidth(){
-  const viewportWidth=window.innerWidth||0;
-
-  // Match the exact CSS default width:
-  // desktop  : clamp(440px, 36vw, 560px)
-  // medium   : clamp(320px, 38vw, 430px)
-  // This makes Auto Zoom OFF return to the exact same position seen on initial load.
-  if(viewportWidth<=1050&&viewportWidth>820){
-    return Math.max(320,Math.min(430,viewportWidth*.38));
-  }
-  return Math.max(440,Math.min(560,viewportWidth*.36));
-}
-
 function updatePlaybookPreviewLayoutControls(){
   const toggle=$('#playbookPreviewAutoZoomBtn');
   const state=$('#playbookPreviewAutoZoomState');
@@ -12074,7 +12059,8 @@ function updatePlaybookPreviewLayoutControls(){
     const bounds=playbookPreviewWidthBounds();
     handle.setAttribute('aria-valuemin',String(Math.round(bounds.min)));
     handle.setAttribute('aria-valuemax',String(Math.round(bounds.max)));
-    handle.setAttribute('aria-valuenow',String(Math.round(playbookPreviewManualWidth)));
+    const width=$('#page-playbook .playbook-execution-preview')?.getBoundingClientRect().width||0;
+    handle.setAttribute('aria-valuenow',String(Math.round(width)));
   }
 }
 
@@ -12089,7 +12075,7 @@ function applyPlaybookPreviewLayout({reload=true}={}){
   shell.classList.toggle('playbook-manual-zoom',!playbookPreviewAutoZoom);
   if(window.matchMedia('(max-width: 820px)').matches){
     shell.style.removeProperty('--playbook-preview-width');
-  }else if(playbookPreviewAutoZoom){
+  }else if(playbookPreviewAutoZoom||playbookPreviewManualWidth===null){
     shell.style.removeProperty('--playbook-preview-width');
   }else{
     playbookPreviewManualWidth=clampPlaybookPreviewWidth(playbookPreviewManualWidth);
@@ -12100,18 +12086,12 @@ function applyPlaybookPreviewLayout({reload=true}={}){
 
 function setPlaybookPreviewAutoZoom(enabled,{manualWidth=null,persist=true}={}){
   loadPlaybookPreviewLayout();
-  const wasAutoZoom=playbookPreviewAutoZoom;
   playbookPreviewAutoZoom=Boolean(enabled);
-
-  if(Number.isFinite(Number(manualWidth))){
-    // Manual resize path: preserve the exact width the user is dragging from/to.
-    playbookPreviewManualWidth=clampPlaybookPreviewWidth(Number(manualWidth));
-  }else if(!playbookPreviewAutoZoom&&wasAutoZoom){
-    // Toggle ON → OFF: always snap to the designed default expanded position.
-    playbookPreviewManualWidth=playbookPreviewDefaultOffWidth();
-  }else if(!playbookPreviewAutoZoom){
-    playbookPreviewManualWidth=clampPlaybookPreviewWidth(playbookPreviewManualWidth||playbookPreviewDefaultOffWidth());
-  }
+  // Only an explicit resize overrides CSS. Toggles reset to the same responsive
+  // CSS default used on initial load and on hover return (no pixel calculation).
+  playbookPreviewManualWidth=!playbookPreviewAutoZoom&&manualWidth!==null&&Number.isFinite(Number(manualWidth))
+    ? clampPlaybookPreviewWidth(Number(manualWidth))
+    : null;
 
   applyPlaybookPreviewLayout({reload:false});
   if(persist)persistPlaybookPreviewLayout();
@@ -12163,9 +12143,7 @@ function nudgePlaybookPreviewWidth(event){
   if(window.matchMedia('(max-width: 820px)').matches)return;
   event.preventDefault();
   const preview=$('.playbook-execution-preview');
-  const current=playbookPreviewAutoZoom
-    ? (preview?.getBoundingClientRect().width||PLAYBOOK_PREVIEW_DEFAULT_EXPANDED_WIDTH)
-    : playbookPreviewManualWidth;
+  const current=preview?.getBoundingClientRect().width||PLAYBOOK_PREVIEW_DEFAULT_EXPANDED_WIDTH;
   const delta=event.key==='ArrowLeft'?24:-24;
   setPlaybookPreviewManualWidth(current+delta);
 }
@@ -13770,22 +13748,11 @@ function setSecondaryRibbon(kind,name){
 }
 function toggleSecondaryAutoZoom(kind){
   const state=secondaryState(kind),shell=secondaryFind(kind,'[data-ti-shell]'),btn=secondaryFind(kind,'[data-ti-action="autozoom"]');
-  const wasAutoZoom=state.autoZoom;
   state.autoZoom=!state.autoZoom;
   shell.classList.toggle('ti-auto-zoom',state.autoZoom);
-
-  if(state.autoZoom){
-    shell.style.removeProperty('--playbook-preview-width');
-  }else{
-    if(wasAutoZoom){
-      state.previewWidth=playbookPreviewDefaultOffWidth();
-    }else{
-      state.previewWidth=Number.isFinite(Number(state.previewWidth))
-        ? Number(state.previewWidth)
-        : playbookPreviewDefaultOffWidth();
-    }
-    shell.style.setProperty('--playbook-preview-width',Math.round(state.previewWidth)+'px');
-  }
+  // Both toggle directions discard manual overrides and reuse the CSS default.
+  state.previewWidth=null;
+  shell.style.removeProperty('--playbook-preview-width');
 
   btn?.setAttribute('aria-pressed',state.autoZoom?'true':'false');
   const label=secondaryFind(kind,'[data-ti-autozoom-state]');if(label)label.textContent=state.autoZoom?'ON':'OFF';
@@ -16873,3 +16840,4 @@ initializeSupabase();
 
 </body>
 </html>
+
