@@ -2558,6 +2558,56 @@ textarea{resize:vertical;min-height:90px}
 }
 .status-bar.show{display:block}
 
+.playbook-save-action{
+  position:fixed;
+  right:18px;
+  bottom:18px;
+  z-index:165;
+  width:min(360px,calc(100vw - 36px));
+  display:none;
+  gap:10px;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px;
+  border:1px solid #2d4b68;
+  border-radius:14px;
+  background:#0d1722;
+  box-shadow:0 18px 45px rgba(0,0,0,.42);
+}
+.playbook-save-action.show{display:flex}
+.playbook-save-action-copy{min-width:0}
+.playbook-save-action-copy strong{
+  display:block;
+  color:#eef5fc;
+  font-size:11px;
+}
+.playbook-save-action-copy span{
+  display:block;
+  margin-top:3px;
+  color:#8fa1b6;
+  font-size:9px;
+  line-height:1.4;
+}
+.playbook-save-action-btn{
+  flex:0 0 auto;
+  min-height:36px;
+  padding:0 11px;
+  border:1px solid #4d78a6;
+  border-radius:9px;
+  background:#14263a;
+  color:#d9ebff;
+  font-size:10px;
+  font-weight:800;
+}
+.playbook-save-action-btn:hover{
+  border-color:#6ca8e8;
+  background:#1a314a;
+}
+@media(max-width:560px){
+  .playbook-save-action{align-items:stretch;flex-direction:column}
+  .playbook-save-action-btn{width:100%}
+}
+
 /* MOBILE */
 .sidebar-overlay{
   display:none;
@@ -3997,6 +4047,18 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
   color:#dbe5f0;
   font-size:10px;
   overflow-wrap:anywhere;
+}
+.execution-trade-direction.buy,
+#executionMapDirection.buy{color:var(--green)!important}
+.execution-trade-direction.sell,
+#executionMapDirection.sell{color:var(--red)!important}
+#executionMapPnl.pos{color:var(--green)!important}
+#executionMapPnl.neg{color:var(--red)!important}
+.execution-map-context-head .execution-trade-direction{
+  display:inline;
+  margin:0;
+  font-size:inherit;
+  font-weight:inherit;
 }
 .execution-map-principle{
   margin-top:12px;
@@ -5917,6 +5979,16 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
 
 <div class="status-bar" id="statusBar"></div>
 
+<div class="playbook-save-action" id="playbookSaveAction" role="status" aria-live="polite">
+  <div class="playbook-save-action-copy">
+    <strong>Playbook saved</strong>
+    <span>Your current Playbook is ready to inspect in Execution Quality.</span>
+  </div>
+  <button class="playbook-save-action-btn" id="playbookSaveViewExecutionBtn" type="button">
+    View Playbook in Execution Quality
+  </button>
+</div>
+
 <script src="core/evidence-contract.js"></script>
 <script src="hios-connection-layer.js"></script>
 <script src="technical-instruments/playbooks.js"></script>
@@ -5996,6 +6068,28 @@ function showStatus(text, ms=2200){
 
 function pnlClass(v){
   return v>0?'pos':v<0?'neg':'neutral';
+}
+
+function executionDirectionClass(direction){
+  const value=String(direction||'').trim().toLowerCase();
+  if(value==='buy'||value==='long')return 'buy';
+  if(value==='sell'||value==='short')return 'sell';
+  return '';
+}
+
+function hidePlaybookSaveAction(){
+  const toast=$('#playbookSaveAction');
+  if(!toast)return;
+  toast.classList.remove('show');
+  clearTimeout(hidePlaybookSaveAction.timer);
+}
+
+function showPlaybookSaveAction(){
+  const toast=$('#playbookSaveAction');
+  if(!toast)return;
+  toast.classList.add('show');
+  clearTimeout(hidePlaybookSaveAction.timer);
+  hidePlaybookSaveAction.timer=setTimeout(()=>toast.classList.remove('show'),8000);
 }
 
 function localDateString(d){
@@ -7589,6 +7683,12 @@ if(page==='journal'){
 
 $$('.nav-btn').forEach(btn=>{
   btn.addEventListener('click',()=>navigate(btn.dataset.page));
+});
+
+$('#playbookSaveViewExecutionBtn')?.addEventListener('click',()=>{
+  if(selectedPlaybookDocumentId)executionMappingPlaybookId=selectedPlaybookDocumentId;
+  hidePlaybookSaveAction();
+  navigate('execution');
 });
 
 function openSidebarMobile(){
@@ -9400,19 +9500,44 @@ function renderExecutionMappingControls(){
 
 function renderExecutionMappingTradeContext(){
   const trade=executionMappingTrade();
+  const direction=trade?.direction||'';
+  const directionClass=executionDirectionClass(direction);
+  const pnl=trade ? (Number(trade.pnl)||0) : null;
 
-  $('#executionMapTradeTitle').textContent=trade
-    ? [trade.instrument,trade.direction].filter(Boolean).join(' · ') || 'Trade'
-    : 'No trade selected';
+  const tradeTitle=$('#executionMapTradeTitle');
+  if(tradeTitle){
+    if(trade){
+      const instrument=escapeHtml(trade.instrument||'Trade');
+      const directionHtml=direction
+        ? ` · <span class="execution-trade-direction ${directionClass}">${escapeHtml(direction)}</span>`
+        : '';
+      tradeTitle.innerHTML=instrument+directionHtml;
+    }else{
+      tradeTitle.textContent='No trade selected';
+    }
+  }
 
   $('#executionMapTradeMeta').textContent=trade
     ? [trade.trade_date,trade.setup].filter(Boolean).join(' · ') || 'Trading record'
     : 'Choose a trade to place the Playbook around a real trading record.';
 
   $('#executionMapInstrument').textContent=trade?.instrument||'—';
-  $('#executionMapDirection').textContent=trade?.direction||'—';
+
+  const directionEl=$('#executionMapDirection');
+  if(directionEl){
+    directionEl.textContent=direction||'—';
+    directionEl.classList.remove('buy','sell');
+    if(directionClass)directionEl.classList.add(directionClass);
+  }
+
   $('#executionMapSetup').textContent=trade?.setup||'—';
-  $('#executionMapPnl').textContent=trade ? signedMoney(Number(trade.pnl)||0) : '—';
+
+  const pnlEl=$('#executionMapPnl');
+  if(pnlEl){
+    pnlEl.textContent=trade ? signedMoney(pnl) : '—';
+    pnlEl.classList.remove('pos','neg','neutral');
+    if(trade)pnlEl.classList.add(pnlClass(pnl));
+  }
 }
 
 function renderExecutionMappingForm(){
@@ -11249,7 +11374,7 @@ function savePlaybookDocument({quiet=false}={}){
   persistPlaybookDocuments();
   renderPlaybookExecutionPreview();
   $('#playbookDraftSaveState').textContent='Saved';
-  if(!quiet)showStatus('Playbook saved');
+  if(!quiet)showPlaybookSaveAction();
 }
 
 function schedulePlaybookDocumentSave(){
