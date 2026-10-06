@@ -4338,6 +4338,26 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
 .playbook-word-editor .ti-reference-image figcaption{min-height:20px;outline:none}
 .playbook-word-editor .ti-reference-image figcaption:empty:before{content:attr(data-placeholder);color:#7d8c9a;pointer-events:none}
 .ti-reference-image-resize{position:absolute;right:1px;bottom:1px;width:18px;height:18px;padding:0;border:0;background:linear-gradient(135deg,transparent 48%,#7892aa 49%,#7892aa 57%,transparent 58%,transparent 70%,#7892aa 71%,#7892aa 79%,transparent 80%);cursor:ew-resize;touch-action:none}
+.ti-image-field{position:relative;margin:12px 0;padding:12px;border:1px dashed #42617e;border-radius:9px;background:#0e1823;color:#cbd8e5;max-width:100%;overflow-wrap:anywhere}
+.ti-image-field-head{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
+.ti-image-field-name{font-size:12px;line-height:1.4}
+.ti-image-field-meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;font-size:9px}
+.ti-image-field-meta span{padding:3px 6px;border:1px solid #354c63;border-radius:5px}
+.ti-image-field-prompt{margin-top:8px;font-size:11px;line-height:1.5;white-space:pre-wrap}
+.ti-image-field-placeholder{display:flex;align-items:center;gap:10px;margin-top:10px;padding:13px;border-radius:6px;background:rgba(117,160,199,.055);font-size:10px;line-height:1.5}
+.ti-image-field-placeholder svg{width:25px;height:25px;flex:0 0 auto;color:#8ca9c3}
+.ti-image-field-placeholder small{display:block;color:#8093a8;font-size:9px}
+.ti-image-field-related{display:block;margin-top:8px;font-size:10px;color:#91b1cc}
+.ti-image-field-related[hidden]{display:none}
+.ti-image-field-edit{flex:0 0 auto;padding:5px 8px;border:1px solid #b9c8d5;border-radius:5px;background:#fff;color:#2c465c;font-size:10px;cursor:pointer}
+.playbook-word-editor .ti-image-field{background:#f7fafc;border-color:#9aafc0;color:#253b4e;padding-right:42px}
+.playbook-word-editor .ti-image-field-meta span{border-color:#bdcedb}
+.playbook-word-editor .ti-image-field-placeholder small,.playbook-word-editor .ti-image-field-related{color:#5a748b}
+.ti-image-field-modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ti-image-field-modal-note{margin:0 0 16px;color:#8fa4ba;font-size:11px;line-height:1.5}
+#instrumentImageFieldModal select,#instrumentImageFieldModal textarea{width:100%;font-size:12px}
+#instrumentImageFieldModal textarea{min-height:70px;resize:vertical}
+@media(max-width:520px){.ti-image-field-modal-grid{grid-template-columns:1fr;gap:0}}
 .playbook-preview-head-actions{
   display:flex;
   align-items:center;
@@ -6744,7 +6764,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               <div class="playbook-word-tool-group">
                 <span class="playbook-word-tool-label">Media</span>
                 <div class="playbook-word-tool-row">
-                  <button type="button" class="playbook-word-insert-btn" data-playbook-insert="image">+ Image / Screenshot</button>
+                  <button type="button" class="playbook-word-insert-btn" data-playbook-insert="image-field" title="Design a picture field to fill for each trade later">+ Image Field</button>
+                  <button type="button" class="playbook-word-insert-btn" data-playbook-insert="image" title="Upload a reference picture that belongs to the instrument">+ Reference Image</button>
                 </div>
               </div>
 
@@ -11096,6 +11117,7 @@ function renderExecutionSecondaryItems(kind,doc){
   return items.map((item,itemIndex)=>{
     if(item.type==='section')return `<div class="execution-map-section ${item.level===1?'level-1':(item.level===3?'level-3':'level-2')}">${escapeHtml(item.label)}</div>`;
     if(item.type==='image')return instrumentReferenceImageHtml(item);
+    if(item.type==='image-field')return instrumentImageFieldHtml(item);
     if(item.type==='psych-prompt'||(kind==='psych'&&item.type==='content')){
       return `<div class="execution-psych-prompt"><label>${escapeHtml(item.label)}</label><textarea placeholder="Psychological review response"></textarea></div>`;
     }
@@ -11168,6 +11190,7 @@ function renderExecutionMappingForm(){
   const playbookHtml=playbook
     ? (items.length?items.map((item,itemIndex)=>{
     if(item.type==='image')return instrumentReferenceImageHtml(item);
+    if(item.type==='image-field')return instrumentImageFieldHtml(item);
     if(item.type==='section'){
       return `<div class="execution-map-section ${item.level===1?'level-1':(item.level===3?'level-3':'level-2')}">${escapeHtml(item.label)}</div>`;
     }
@@ -12599,7 +12622,7 @@ function beginPlaybookCanvasResize(event,axis){
   window.addEventListener('pointermove',move);window.addEventListener('pointerup',finish);window.addEventListener('pointercancel',finish);
 }
 function playbookStructuredBlockSelector(){
-  return '[data-playbook-node="rule"],[data-playbook-node="choice"],[data-playbook-node="note"],[data-playbook-node="checklist-link"],[data-playbook-node="reflection-link"],[data-playbook-node="table"],[data-playbook-node="image"],.pb-doc-rule,.pb-doc-choice,.pb-doc-note,.pb-doc-link,.pb-doc-table-wrap';
+  return '[data-playbook-node="rule"],[data-playbook-node="choice"],[data-playbook-node="note"],[data-playbook-node="checklist-link"],[data-playbook-node="reflection-link"],[data-playbook-node="table"],[data-playbook-node="image"],[data-playbook-node="image-field"],.pb-doc-rule,.pb-doc-choice,.pb-doc-note,.pb-doc-link,.pb-doc-table-wrap';
 }
 function ensurePlaybookBlockControls(){
   const editor=$('#playbookDocumentEditor');if(!editor)return;
@@ -12615,11 +12638,13 @@ function ensurePlaybookBlockControls(){
       block.appendChild(button);
     }
   });
+  refreshInstrumentImageFieldRelations(editor);
 }
 function removePlaybookStructuredBlock(button){
   const block=button?.closest(playbookStructuredBlockSelector());if(!block)return;
   const next=block.nextElementSibling;block.remove();
   if(next&&next.tagName?.toLowerCase()==='p'&&!String(next.textContent||'').trim())next.remove();
+  refreshInstrumentImageFieldRelations($('#playbookDocumentEditor'));
   syncPlaybookLiveModel();
 }
 
@@ -12947,7 +12972,7 @@ function playbookStructuredPreviewItems(documentHtml){
 
   function cleanNodeText(node){
     const clone=node.cloneNode(true);
-    clone.querySelectorAll?.('.pb-doc-label,.pb-doc-remove-btn,[data-playbook-node="image"]').forEach(control=>control.remove());
+    clone.querySelectorAll?.('.pb-doc-label,.pb-doc-remove-btn,[data-playbook-node="image"],[data-playbook-node="image-field"]').forEach(control=>control.remove());
     return (clone.textContent||'').replace(/\s+/g,' ').trim();
   }
 
@@ -12958,6 +12983,11 @@ function playbookStructuredPreviewItems(documentHtml){
     if(node.matches?.('[data-playbook-node="image"]')){
       const key=node.dataset.playbookImageKey;
       if(key)items.push({type:'image',key,width:normalizeInstrumentImageWidth(node.dataset.playbookImageWidth),caption:(node.querySelector('figcaption')?.textContent||'').trim()});
+      return;
+    }
+
+    if(node.matches?.('[data-playbook-node="image-field"]')){
+      items.push({type:'image-field',...instrumentImageFieldItem(node,host)});
       return;
     }
 
@@ -13120,6 +13150,7 @@ function renderPlaybookExecutionPreview(){
 
   body.innerHTML=items.map((item,itemIndex)=>{
     if(item.type==='image')return instrumentReferenceImageHtml(item);
+    if(item.type==='image-field')return instrumentImageFieldHtml(item);
     if(item.type==='section'){
       return `<div class="playbook-preview-section ${item.level===1?'level-1':(item.level===3?'level-3':'level-2')}">${escapeHtml(item.label)}</div>`;
     }
@@ -13916,6 +13947,7 @@ function previewCurrentPlaybookInExecutionQuality(){
 
 function insertPlaybookElement(kind){
   if(kind==='image'){openInstrumentImagePicker('playbook');return}
+  if(kind==='image-field'){openInstrumentImageFieldModal('playbook');return}
   if(kind==='choice'){
     openPlaybookChoiceModal();
     return;
@@ -14285,7 +14317,10 @@ function secondaryWorkspaceHtml(kind){
             </div>
             <div class="playbook-word-tool-group">
               <span class="playbook-word-tool-label">Media</span>
-              <div class="playbook-word-tool-row"><button type="button" class="playbook-word-insert-btn" data-ti-insert="image">+ Image / Screenshot</button></div>
+              <div class="playbook-word-tool-row">
+                <button type="button" class="playbook-word-insert-btn" data-ti-insert="image-field" title="Design a picture field to fill for each trade later">+ Image Field</button>
+                <button type="button" class="playbook-word-insert-btn" data-ti-insert="image" title="Upload a reference picture that belongs to the instrument">+ Reference Image</button>
+              </div>
             </div>
           </div>
 
@@ -14599,6 +14634,7 @@ function ensureSecondaryBlockControls(kind){
       const b=document.createElement('button');b.type='button';b.className='pb-doc-remove-btn';b.contentEditable='false';b.textContent='×';b.title='Remove this block';block.appendChild(b);
     }
   });
+  refreshInstrumentImageFieldRelations(editor);
 }
 function secondaryInsertHtml(kind,html){
   secondaryRestoreSelection(kind);
@@ -14607,6 +14643,7 @@ function secondaryInsertHtml(kind,html){
 }
 function secondaryInsert(kind,type){
   if(type==='image'){openInstrumentImagePicker(kind);return}
+  if(type==='image-field'){openInstrumentImageFieldModal(kind);return}
   if(type==='choice'){openSecondaryChoiceModal(kind);return}
   if(type==='table'){openSecondaryTableModal(kind);return}
   const templates={
@@ -14673,6 +14710,7 @@ function openSecondaryTableModal(kind){
 function secondaryPreviewHtml(kind,items){
   return items.map((item,itemIndex)=>{
     if(item.type==='image')return instrumentReferenceImageHtml(item);
+    if(item.type==='image-field')return instrumentImageFieldHtml(item);
     if(item.type==='section')return '<div class="playbook-preview-section level-'+(item.level||2)+'">'+escapeHtml(item.label)+'</div>';
     if(item.type==='psych-prompt')return '<div class="ti-preview-prompt"><b>'+escapeHtml(item.label)+'</b><span></span></div>';
     if(item.type==='check'){
@@ -14835,7 +14873,7 @@ function initSecondaryWorkspace(kind){
     const spacing=event.target.closest('[data-ti-style-spacing]');if(spacing)applySecondaryVisualStyle(kind,'spacing',spacing.dataset.tiStyleSpacing);
     const border=event.target.closest('[data-ti-style-border]');if(border)applySecondaryVisualStyle(kind,'border',border.dataset.tiStyleBorder);
     const preset=event.target.closest('[data-ti-style-preset]');if(preset)applySecondaryVisualStyle(kind,'preset',preset.dataset.tiStylePreset);
-    const remove=event.target.closest('.pb-doc-remove-btn');if(remove){event.preventDefault();const block=remove.closest('[data-playbook-node]');block?.remove();renderSecondaryPreview(kind);scheduleSecondarySave(kind)}
+    const remove=event.target.closest('.pb-doc-remove-btn');if(remove){event.preventDefault();const block=remove.closest('[data-playbook-node]');block?.remove();refreshInstrumentImageFieldRelations(secondaryFind(kind,'[data-ti-editor]'));renderSecondaryPreview(kind);scheduleSecondarySave(kind)}
     const zoom=event.target.closest('[data-ti-zoom]');if(zoom)setSecondaryZoom(kind,zoom.dataset.tiZoom);
   });
   page.addEventListener('input',event=>{
@@ -14951,10 +14989,154 @@ function instrumentReferenceImageHtml(item,editable=false){
   return `<figure class="ti-reference-image" data-playbook-node="image" data-playbook-image-key="${escapeHtml(item.key)}" data-playbook-image-width="${width}" style="width:${width}%" contenteditable="false">${tools}<img data-ti-reference-image data-ti-reference-open alt="${escapeHtml(caption||'Reference image')}" tabindex="0" role="button" aria-label="Open reference image"><span class="ti-reference-image-status">Loading image…</span>${captionHtml}${editable?'<button type="button" class="ti-reference-image-resize" data-ti-reference-resize aria-label="Resize reference image" title="Drag to resize; arrow keys adjust width"></button>':''}</figure>`;
 }
 
+const INSTRUMENT_IMAGE_FIELD_STAGES={context:'Context / bias',structure:'Market structure',entry:'Entry / execution',exit:'Exit / management',reflection:'Reflection',other:'Other'};
+let instrumentImageFieldModalContext=null;
+
+function normalizeInstrumentImageFieldStage(stage){
+  return Object.prototype.hasOwnProperty.call(INSTRUMENT_IMAGE_FIELD_STAGES,stage)?stage:'other';
+}
+function makeInstrumentImageFieldId(){
+  return 'image_field_'+(window.crypto?.randomUUID?.()||Date.now().toString(36)+'_'+Math.random().toString(36).slice(2));
+}
+function instrumentImageFieldItem(node,root){
+  const related=node.dataset.tiImageFieldRelated||'';
+  const parent=related?[...root.querySelectorAll('[data-playbook-node="image-field"]')].find(field=>field.dataset.tiImageFieldId===related):null;
+  return {
+    id:node.dataset.tiImageFieldId||'',
+    label:node.dataset.tiImageFieldLabel||'Image / Screenshot',
+    timeframe:node.dataset.tiImageFieldTimeframe||'',
+    stage:normalizeInstrumentImageFieldStage(node.dataset.tiImageFieldStage),
+    prompt:node.dataset.tiImageFieldPrompt||'',
+    related,
+    relatedLabel:related?(parent?.dataset.tiImageFieldLabel||'Unavailable image field'):''
+  };
+}
+function instrumentImageFieldHtml(item,editable=false){
+  const stage=normalizeInstrumentImageFieldStage(item.stage);
+  const tools=editable?'<button class="ti-image-field-edit" type="button" data-ti-image-field-edit>Edit field</button>':'';
+  const remove=editable?'<button class="pb-doc-remove-btn" type="button" aria-label="Remove image field" title="Remove image field">×</button>':'';
+  const timeframe=item.timeframe?'<span>'+escapeHtml(item.timeframe)+'</span>':'';
+  return `<div class="ti-image-field" data-playbook-node="image-field" data-ti-image-field-id="${escapeHtml(item.id)}" data-ti-image-field-label="${escapeHtml(item.label)}" data-ti-image-field-timeframe="${escapeHtml(item.timeframe||'')}" data-ti-image-field-stage="${stage}" data-ti-image-field-prompt="${escapeHtml(item.prompt||'')}" data-ti-image-field-related="${escapeHtml(item.related||'')}" contenteditable="false">
+    ${remove}
+    <div class="ti-image-field-head"><strong class="ti-image-field-name">${escapeHtml(item.label)}</strong>${tools}</div>
+    <div class="ti-image-field-meta">${timeframe}<span>${INSTRUMENT_IMAGE_FIELD_STAGES[stage]}</span></div>
+    ${item.prompt?'<div class="ti-image-field-prompt">'+escapeHtml(item.prompt)+'</div>':''}
+    <div class="ti-image-field-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8" cy="8" r="1.5"/><path d="m3 17 5-5 4 4 4-6 5 7"/></svg><span>Trade picture goes here<small>Designed here · filled per trade later in Journal</small></span></div>
+    <small class="ti-image-field-related" data-ti-image-field-related-label${item.related?'':' hidden'}>${item.related?'Related to: '+escapeHtml(item.relatedLabel||'Unavailable image field'):''}</small>
+  </div>`;
+}
+function refreshInstrumentImageFieldRelations(editor){
+  if(!editor)return;
+  const seen=new Set();
+  editor.querySelectorAll('[data-playbook-node="image-field"]').forEach(field=>{
+    if(!field.dataset.tiImageFieldId||seen.has(field.dataset.tiImageFieldId))field.dataset.tiImageFieldId=makeInstrumentImageFieldId();
+    seen.add(field.dataset.tiImageFieldId);
+  });
+  editor.querySelectorAll('[data-playbook-node="image-field"]').forEach(field=>{
+    const item=instrumentImageFieldItem(field,editor);
+    const label=field.querySelector('[data-ti-image-field-related-label]');
+    if(label){
+      label.hidden=!item.related;
+      const text=item.related?'Related to: '+item.relatedLabel:'';
+      if(label.textContent!==text)label.textContent=text;
+    }
+  });
+}
+function closeInstrumentImageFieldModal({restore=true}={}){
+  const context=instrumentImageFieldModalContext;
+  const modal=$('#instrumentImageFieldModal');
+  modal?.classList.remove('open');modal?.setAttribute('aria-hidden','true');
+  instrumentImageFieldModalContext=null;
+  if(restore&&instrumentImageContextCurrent(context)){
+    if(context.field?.isConnected)context.field.querySelector('[data-ti-image-field-edit]')?.focus();
+    else if(context.kind==='playbook')restorePlaybookEditorSelection(context.range);
+    else {secondaryState(context.kind).selectionRange=context.range;secondaryRestoreSelection(context.kind)}
+  }
+}
+function ensureInstrumentImageFieldModal(){
+  if($('#instrumentImageFieldModal'))return;
+  const modal=document.createElement('div');modal.id='instrumentImageFieldModal';modal.className='modal';
+  modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.setAttribute('aria-hidden','true');modal.setAttribute('aria-labelledby','instrumentImageFieldTitle');
+  modal.innerHTML='<div class="modal-card playbook-choice-modal-card"><div class="modal-head"><h2 id="instrumentImageFieldTitle">Design Image Field</h2><button class="close" type="button" data-image-field-close aria-label="Close image field design">×</button></div><form class="playbook-choice-modal-body" id="instrumentImageFieldForm"></form></div>';
+  document.body.appendChild(modal);
+  modal.addEventListener('click',event=>{if(event.target===modal||event.target.closest('[data-image-field-close]'))closeInstrumentImageFieldModal()});
+  modal.addEventListener('keydown',event=>{
+    if(event.key==='Escape'){event.preventDefault();closeInstrumentImageFieldModal()}
+    if(event.key==='Tab'){
+      const controls=[...modal.querySelectorAll('input,textarea,select,button')].filter(el=>!el.disabled&&el.offsetParent!==null);
+      const first=controls[0],last=controls[controls.length-1];
+      if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}
+      else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
+    }
+  });
+  $('#instrumentImageFieldForm').addEventListener('submit',saveInstrumentImageFieldFromModal);
+}
+function openInstrumentImageFieldModal(kind,field=null){
+  const context=captureInstrumentImageContext(kind);if(!context)return;
+  if(field&&!context.editor.contains(field))return;
+  ensureInstrumentImageFieldModal();
+  context.field=field;
+  instrumentImageFieldModalContext=context;
+  const item=field?instrumentImageFieldItem(field,context.editor):{id:makeInstrumentImageFieldId(),label:'',timeframe:'',stage:'other',prompt:'',related:''};
+  context.fieldId=item.id;
+  const fields=[...context.editor.querySelectorAll('[data-playbook-node="image-field"]')].filter(node=>node!==field);
+  const options=fields.map(node=>{
+    const value=instrumentImageFieldItem(node,context.editor);
+    return '<option value="'+escapeHtml(value.id)+'">'+escapeHtml(value.label+(value.timeframe?' · '+value.timeframe:''))+'</option>';
+  }).join('');
+  $('#instrumentImageFieldTitle').textContent=field?'Edit Image Field':'Design Image Field';
+  $('#instrumentImageFieldForm').innerHTML=`
+    <p class="ti-image-field-modal-note">Define where a picture belongs in your trading system. This creates a reusable field; trade pictures will be recorded later in Journal.</p>
+    <label class="playbook-choice-field"><span>Field name</span><input name="label" maxlength="120" required placeholder="e.g. 4H balance / imbalance" value="${escapeHtml(item.label)}"></label>
+    <div class="ti-image-field-modal-grid">
+      <label class="playbook-choice-field"><span>Timeframe (optional)</span><input name="timeframe" maxlength="30" placeholder="e.g. 4H, 30min, 5min" value="${escapeHtml(item.timeframe)}"></label>
+      <label class="playbook-choice-field"><span>Trading stage</span><select name="stage">${Object.entries(INSTRUMENT_IMAGE_FIELD_STAGES).map(([value,label])=>'<option value="'+value+'">'+label+'</option>').join('')}</select></label>
+    </div>
+    <label class="playbook-choice-field"><span>What should the picture show? (optional)</span><textarea name="prompt" maxlength="1200" placeholder="Describe the analysis, entry or exit condition to capture.">${escapeHtml(item.prompt)}</textarea></label>
+    <label class="playbook-choice-field"><span>Related image field (optional)</span><select name="related"><option value="">None</option>${options}</select></label>
+    <div class="playbook-choice-error" data-image-field-error role="alert"></div>
+    <div class="playbook-choice-modal-actions"><span></span><div class="playbook-choice-modal-actions-right"><button class="btn" type="button" data-image-field-close>Cancel</button><button class="btn primary" type="submit">${field?'Save Field':'Insert Image Field'}</button></div></div>`;
+  const form=$('#instrumentImageFieldForm');form.elements.stage.value=item.stage;form.elements.related.value=item.related||'';
+  const modal=$('#instrumentImageFieldModal');modal.classList.add('open');modal.setAttribute('aria-hidden','false');form.elements.label.focus();
+}
+function saveInstrumentImageFieldFromModal(event){
+  event.preventDefault();
+  const context=instrumentImageFieldModalContext;
+  if(!instrumentImageContextCurrent(context)||context.field&&!context.editor.contains(context.field)||!context.field&&context.anchor&&!context.editor.contains(context.anchor)){
+    closeInstrumentImageFieldModal({restore:false});showStatus('The document changed. Choose an insertion point and open the field again.');return;
+  }
+  const form=$('#instrumentImageFieldForm');
+  const item={id:context.fieldId,label:form.elements.label.value.trim(),timeframe:form.elements.timeframe.value.trim(),stage:normalizeInstrumentImageFieldStage(form.elements.stage.value),prompt:form.elements.prompt.value.trim(),related:form.elements.related.value};
+  const error=form.querySelector('[data-image-field-error]');
+  if(!item.label){error.textContent='Enter a field name.';form.elements.label.focus();return}
+  const fields=[...context.editor.querySelectorAll('[data-playbook-node="image-field"]')];
+  const parent=fields.find(node=>node.dataset.tiImageFieldId===item.related);
+  if(item.related&&!parent){error.textContent='Choose a related field in this document, or None.';return}
+  const seen=new Set([item.id]);let related=item.related;
+  while(related){
+    if(seen.has(related)){error.textContent='Choose a related field that does not create a loop.';return}
+    seen.add(related);related=fields.find(node=>node.dataset.tiImageFieldId===related)?.dataset.tiImageFieldRelated||'';
+  }
+  item.relatedLabel=parent?.dataset.tiImageFieldLabel||'';
+  const host=document.createElement('div');host.innerHTML=instrumentImageFieldHtml(item,true);const block=host.firstElementChild;
+  if(context.field)context.field.replaceWith(block);
+  else if(context.anchor)context.anchor.after(block);
+  else context.editor.appendChild(block);
+  if(!block.nextSibling){const paragraph=document.createElement('p');paragraph.innerHTML='<br>';block.after(paragraph)}
+  refreshInstrumentImageFieldRelations(context.editor);
+  closeInstrumentImageFieldModal({restore:false});syncInstrumentImageDocument(context.kind);
+  context.editor.focus();
+  const range=document.createRange();range.selectNodeContents(block.querySelector('.ti-image-field-name'));range.collapse(false);
+  const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);
+  if(context.kind==='playbook')rememberPlaybookEditorSelection();else secondaryRememberSelection(context.kind);
+  block.querySelector('[data-ti-image-field-edit]').focus();
+}
+
 // Store the media key and presentation in document HTML, not transient data URLs.
 // The existing image database holds the binary for all three builders.
 function serializeInstrumentDocument(editor){
   if(!editor)return '';
+  refreshInstrumentImageFieldRelations(editor);
   const clone=editor.cloneNode(true);
   clone.querySelectorAll('[data-playbook-node="image"]').forEach(figure=>{
     figure.removeAttribute('data-playbook-image-hydrated');
@@ -14983,7 +15165,7 @@ function captureInstrumentImageContext(kind){
   let element=range?.startContainer;
   if(element?.nodeType!==1)element=element?.parentElement;
   const anchor=element?.closest?.('[data-playbook-node],ul,ol')||element?.closest?.('p,h1,h2,h3,blockquote,table');
-  return {kind,editor,documentId:instrumentImageDocumentId(kind),scope:instrumentImageScope(kind),anchor:anchor&&editor.contains(anchor)?anchor:null};
+  return {kind,editor,documentId:instrumentImageDocumentId(kind),scope:instrumentImageScope(kind),anchor:anchor&&editor.contains(anchor)?anchor:null,range:range?.cloneRange()||null};
 }
 function instrumentImageContextCurrent(context){
   return Boolean(context&&context.editor.isConnected&&context.editor.closest('.page.active')&&
@@ -15073,6 +15255,8 @@ function initInstrumentImageEditor(kind){
   });
   if(kind!=='playbook')editor.addEventListener('paste',event=>pasteInstrumentReferenceImage(kind,event));
   editor.addEventListener('click',event=>{
+    const fieldEdit=event.target.closest('[data-ti-image-field-edit]');
+    if(fieldEdit){event.preventDefault();openInstrumentImageFieldModal(kind,fieldEdit.closest('[data-playbook-node="image-field"]'));return}
     const size=event.target.closest('[data-ti-reference-size]');
     if(size){event.preventDefault();setInstrumentReferenceWidth(kind,size.closest('figure'),Number(size.closest('figure').dataset.playbookImageWidth)+Number(size.dataset.tiReferenceSize));return}
   });
