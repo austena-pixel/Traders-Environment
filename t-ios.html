@@ -682,9 +682,8 @@ body.playbook-workspace .main{
     min-height:0;
     overflow:hidden;
   }
-  body.playbook-workspace #page-playbook .playbook-word-shell.playbook-auto-zoom:has(.playbook-execution-preview:hover),
-  body.playbook-workspace #page-playbook .playbook-word-shell.playbook-auto-zoom:has(.playbook-execution-preview:focus-within){
-    --playbook-preview-width:min(640px,calc(100% - 420px));
+  body.playbook-workspace #page-playbook .playbook-word-shell.playbook-auto-zoom:not(.preview-adjusting):has(.playbook-execution-preview:hover){
+    --playbook-preview-width:max(var(--preview-base-width,var(--playbook-preview-default-width)),var(--preview-expanded-width,min(640px,calc(100% - 420px))));
   }
   body.playbook-workspace .main{
     height:100vh;
@@ -3679,7 +3678,14 @@ textarea{resize:vertical;min-height:90px}
    TECHNICAL INSTRUMENTS — PLAYBOOK WORD WORKSPACE
 ===================================================== */
 .playbook-word-page-head{margin-bottom:12px}
-.playbook-word-shell{--playbook-preview-width:clamp(440px,36vw,560px);display:grid;grid-template-columns:minmax(0,1fr) var(--playbook-preview-width);gap:8px;min-height:720px;border:0;border-radius:0;overflow:visible;background:transparent;transition:grid-template-columns .24s cubic-bezier(.22,.8,.22,1)}
+.playbook-word-shell{--playbook-preview-default-width:clamp(440px,36vw,560px);--playbook-preview-width:var(--preview-base-width,var(--playbook-preview-default-width));display:grid;grid-template-columns:minmax(0,1fr) var(--playbook-preview-width);gap:8px;min-height:720px;border:0;border-radius:0;overflow:visible;background:transparent;transition:grid-template-columns .24s cubic-bezier(.22,.8,.22,1)}
+.playbook-word-shell.preview-adjusting{transition:none}
+.playbook-preview-width-controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px;color:#91a1b5;font-size:9px}
+.playbook-preview-width-controls label{display:flex;align-items:center;gap:6px;flex:1;min-width:140px}
+.playbook-preview-width-controls input{width:100%;min-width:60px;flex:1;accent-color:#69a8ff}
+.playbook-preview-width-controls output{min-width:34px}
+.playbook-preview-width-controls button{font-size:9px}
+@media(max-width:820px){.playbook-preview-width-controls{display:none}}
 .playbook-word-library{min-width:0;padding:14px;border:1px solid #202a38;border-radius:16px;background:#0c1117;grid-column:2;grid-row:1;overflow:hidden;transition:border-color .18s ease,box-shadow .18s ease}
 .playbook-execution-preview{
   position:relative;
@@ -4328,7 +4334,7 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
 .playbook-canvas-control{min-width:24px;height:22px;padding:0 6px;border:1px solid #334154;border-radius:6px;background:#0e151e;color:#cbd7e6;font-size:10px;line-height:20px}
 .playbook-canvas-control:hover{border-color:#5f86b3;background:#152130;color:#fff}
 .playbook-canvas-zoom-value{min-width:38px;text-align:center;color:#b9c8d9!important;font-size:8px}
-@media(max-width:1050px) and (min-width:821px){.playbook-word-shell{--playbook-preview-width:clamp(320px,38vw,430px)}.playbook-word-page{padding:40px 42px 60px}.playbook-word-properties{grid-template-columns:1fr 1fr}}
+@media(max-width:1050px) and (min-width:821px){.playbook-word-shell{--playbook-preview-default-width:clamp(320px,38vw,430px)}.playbook-word-page{padding:40px 42px 60px}.playbook-word-properties{grid-template-columns:1fr 1fr}}
 @media(max-width:820px){.playbook-word-shell{grid-template-columns:1fr;gap:8px}.playbook-word-main{grid-column:1;grid-row:1}.playbook-word-library{grid-column:1;grid-row:2;border:1px solid #202a38}.playbook-preview-resize-handle{display:none}.playbook-word-library-list{max-height:170px;grid-template-columns:repeat(2,minmax(0,1fr))}.playbook-word-document-stage{padding:0}.playbook-word-page{min-height:760px;padding:32px 22px 48px}.playbook-word-properties{grid-template-columns:1fr}}
 @media(max-width:520px){.playbook-word-library-list{grid-template-columns:1fr}.playbook-word-page{padding:28px 18px 42px}.playbook-word-title-input{font-size:23px}.playbook-word-ribbon-panel{min-height:68px}}
 
@@ -4412,9 +4418,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
   background:#100d17;
 }
 @media(min-width:861px){
-  body.playbook-workspace .technical-document-page .playbook-word-shell.ti-auto-zoom:has(.playbook-execution-preview:hover),
-  body.playbook-workspace .technical-document-page .playbook-word-shell.ti-auto-zoom:has(.playbook-execution-preview:focus-within){
-    --playbook-preview-width:min(640px,calc(100% - 420px));
+  body.playbook-workspace .technical-document-page .playbook-word-shell.ti-auto-zoom:not(.preview-adjusting):has(.playbook-execution-preview:hover){
+    --playbook-preview-width:max(var(--preview-base-width,var(--playbook-preview-default-width)),var(--preview-expanded-width,min(640px,calc(100% - 420px))));
   }
 }
 
@@ -11909,6 +11914,7 @@ const PLAYBOOK_PREVIEW_EDITOR_MIN_WIDTH=360;
 let playbookPreviewLayoutKey=null;
 let playbookPreviewAutoZoom=true;
 let playbookPreviewManualWidth=null;
+let playbookPreviewExpandedWidth=null;
 
 function playbookDocumentKey(){
   const userId=currentUser?.id || 'anonymous';
@@ -12014,11 +12020,16 @@ function loadPlaybookPreviewLayout(){
   playbookPreviewLayoutKey=key;
   playbookPreviewAutoZoom=true;
   playbookPreviewManualWidth=null;
+  playbookPreviewExpandedWidth=null;
   try{
     const stored=JSON.parse(localStorage.getItem(key)||'null');
     if(stored&&typeof stored==='object'){
       if(typeof stored.autoZoom==='boolean')playbookPreviewAutoZoom=stored.autoZoom;
-      // Manual widths last only for this OFF session; ignore legacy saved widths.
+      // Versioned fields avoid restoring the old, narrow manualWidth preference.
+      if(stored.widthVersion===2){
+        if(Number.isFinite(stored.baseWidth)&&stored.baseWidth>0)playbookPreviewManualWidth=stored.baseWidth;
+        if(Number.isFinite(stored.expandedWidth)&&stored.expandedWidth>0)playbookPreviewExpandedWidth=stored.expandedWidth;
+      }
     }
   }catch(error){
     console.warn('Could not read Playbook preview layout preference',error);
@@ -12028,8 +12039,80 @@ function loadPlaybookPreviewLayout(){
 function persistPlaybookPreviewLayout(){
   if(!playbookPreviewLayoutKey)playbookPreviewLayoutKey=playbookPreviewLayoutStorageKey();
   localStorage.setItem(playbookPreviewLayoutKey,JSON.stringify({
-    autoZoom:playbookPreviewAutoZoom
+    autoZoom:playbookPreviewAutoZoom,
+    widthVersion:2,
+    baseWidth:playbookPreviewManualWidth,
+    expandedWidth:playbookPreviewExpandedWidth
   }));
+}
+
+function previewCustomWidthBounds(shell){
+  const width=shell?.getBoundingClientRect().width||window.innerWidth;
+  return {min:220,max:Math.max(220,Math.min(720,width-360))};
+}
+
+function applyPreviewCustomWidths(shell,baseWidth,expandedWidth){
+  // CSS remains the only source of defaults. Overrides are bounded by the
+  // available editor space and continue to respond to viewport changes.
+  shell.style.removeProperty('--playbook-preview-width');
+  for(const [name,width] of [['--preview-base-width',baseWidth],['--preview-expanded-width',expandedWidth]]){
+    if(Number.isFinite(width)&&width>0)shell.style.setProperty(name,`min(${Math.round(width)}px,max(220px,calc(100% - 360px)))`);
+    else shell.style.removeProperty(name);
+  }
+  const slider=shell.querySelector('[data-preview-zoom-limit]');
+  if(slider){
+    const bounds=previewCustomWidthBounds(shell);
+    const adjusting=shell.classList.contains('preview-adjusting');
+    shell.classList.add('preview-adjusting');
+    const returnWidth=shell.querySelector('.playbook-execution-preview').getBoundingClientRect().width;
+    if(!adjusting)shell.classList.remove('preview-adjusting');
+    slider.min=String(Math.max(bounds.min,Math.min(bounds.max,Math.ceil(returnWidth))));
+    slider.max=String(bounds.max);
+    slider.value=String(Math.max(Number(slider.min),Math.min(bounds.max,expandedWidth||640)));
+    shell.querySelector('[data-preview-zoom-value]').textContent=expandedWidth===null?'Auto':slider.value+'px';
+  }
+}
+
+function initPreviewWidthControls(shell,onLimit,onReset){
+  if(shell.querySelector('[data-preview-width-controls]'))return;
+  const controls=document.createElement('div');
+  controls.className='playbook-preview-width-controls';
+  controls.dataset.previewWidthControls='';
+  controls.innerHTML='<label>Zoom limit <input type="range" data-preview-zoom-limit aria-label="Live Model expanded width" min="220" max="720" step="1"></label><output data-preview-zoom-value>Auto</output><button class="playbook-preview-open-btn" type="button" data-preview-width-reset>Reset widths</button>';
+  shell.querySelector('.playbook-preview-head').after(controls);
+  controls.querySelector('input').addEventListener('input',event=>{
+    shell.classList.remove('preview-adjusting');onLimit(Number(event.target.value));
+  });
+  controls.querySelector('button').addEventListener('click',()=>{shell.classList.remove('preview-adjusting');onReset()});
+  const preview=shell.querySelector('.playbook-execution-preview');
+  const release=()=>{if(!shell.dataset.previewDragging)shell.classList.remove('preview-adjusting')};
+  preview.addEventListener('pointerleave',release);
+  preview.addEventListener('focusout',event=>{if(!preview.contains(event.relatedTarget))release()});
+}
+
+function beginPreviewBaseResize(shell,event,onWidth,onFinish=()=>{}){
+  if(!shell||window.matchMedia('(max-width: 820px)').matches)return;
+  if(event.pointerType==='mouse'&&event.button!==0)return;
+  event.preventDefault();
+  const preview=shell.querySelector('.playbook-execution-preview');
+  const startWidth=preview.getBoundingClientRect().width,startX=event.clientX,pointerId=event.pointerId;
+  shell.dataset.previewDragging='1';shell.classList.add('preview-adjusting');
+  document.body.classList.add('playbook-preview-resizing');
+  onWidth(startWidth);
+  const move=e=>{
+    if(e.pointerId!==pointerId)return;
+    const bounds=previewCustomWidthBounds(shell);
+    onWidth(Math.max(bounds.min,Math.min(bounds.max,startWidth+startX-e.clientX)));
+  };
+  const finish=e=>{
+    if(e.pointerId!==pointerId)return;
+    window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',finish);window.removeEventListener('pointercancel',finish);
+    delete shell.dataset.previewDragging;document.body.classList.remove('playbook-preview-resizing');
+    // Keep the chosen return width visible until the pointer leaves the panel.
+    if(!preview.matches(':hover'))shell.classList.remove('preview-adjusting');
+    onFinish();
+  };
+  window.addEventListener('pointermove',move);window.addEventListener('pointerup',finish);window.addEventListener('pointercancel',finish);
 }
 
 function playbookPreviewWidthBounds(){
@@ -12073,25 +12156,22 @@ function applyPlaybookPreviewLayout({reload=true}={}){
   if(reload)loadPlaybookPreviewLayout();
   shell.classList.toggle('playbook-auto-zoom',playbookPreviewAutoZoom);
   shell.classList.toggle('playbook-manual-zoom',!playbookPreviewAutoZoom);
-  if(window.matchMedia('(max-width: 820px)').matches){
-    shell.style.removeProperty('--playbook-preview-width');
-  }else if(playbookPreviewAutoZoom||playbookPreviewManualWidth===null){
-    shell.style.removeProperty('--playbook-preview-width');
-  }else{
-    playbookPreviewManualWidth=clampPlaybookPreviewWidth(playbookPreviewManualWidth);
-    shell.style.setProperty('--playbook-preview-width',`${Math.round(playbookPreviewManualWidth)}px`);
-  }
+  initPreviewWidthControls(shell,width=>{
+    playbookPreviewExpandedWidth=width;
+    applyPlaybookPreviewLayout({reload:false});
+    persistPlaybookPreviewLayout();
+  },()=>{
+    playbookPreviewManualWidth=null;playbookPreviewExpandedWidth=null;
+    applyPlaybookPreviewLayout({reload:false});persistPlaybookPreviewLayout();
+  });
+  applyPreviewCustomWidths(shell,playbookPreviewManualWidth,playbookPreviewExpandedWidth);
   updatePlaybookPreviewLayoutControls();
 }
 
 function setPlaybookPreviewAutoZoom(enabled,{manualWidth=null,persist=true}={}){
   loadPlaybookPreviewLayout();
   playbookPreviewAutoZoom=Boolean(enabled);
-  // Only an explicit resize overrides CSS. Toggles reset to the same responsive
-  // CSS default used on initial load and on hover return (no pixel calculation).
-  playbookPreviewManualWidth=!playbookPreviewAutoZoom&&manualWidth!==null&&Number.isFinite(Number(manualWidth))
-    ? clampPlaybookPreviewWidth(Number(manualWidth))
-    : null;
+  if(manualWidth!==null&&Number.isFinite(Number(manualWidth)))playbookPreviewManualWidth=clampPlaybookPreviewWidth(Number(manualWidth));
 
   applyPlaybookPreviewLayout({reload:false});
   if(persist)persistPlaybookPreviewLayout();
@@ -12099,43 +12179,15 @@ function setPlaybookPreviewAutoZoom(enabled,{manualWidth=null,persist=true}={}){
 
 function setPlaybookPreviewManualWidth(width,{persist=true}={}){
   loadPlaybookPreviewLayout();
-  playbookPreviewAutoZoom=false;
   playbookPreviewManualWidth=clampPlaybookPreviewWidth(width);
   applyPlaybookPreviewLayout({reload:false});
   if(persist)persistPlaybookPreviewLayout();
 }
 
 function beginPlaybookPreviewResize(event){
-  if(window.matchMedia('(max-width: 820px)').matches)return;
-  if(event.pointerType==='mouse'&&event.button!==0)return;
-  const preview=$('.playbook-execution-preview');
-  const handle=$('#playbookPreviewResizeHandle');
-  if(!preview||!handle)return;
-  event.preventDefault();
-  const currentWidth=preview.getBoundingClientRect().width;
-  setPlaybookPreviewAutoZoom(false,{manualWidth:currentWidth,persist:false});
-  const startX=event.clientX;
-  const startWidth=playbookPreviewManualWidth;
-  const pointerId=event.pointerId;
-  document.body.classList.add('playbook-preview-resizing');
-  try{handle.setPointerCapture?.(pointerId)}catch(error){}
-  const onMove=moveEvent=>{
-    if(moveEvent.pointerId!==pointerId)return;
-    const nextWidth=startWidth+(startX-moveEvent.clientX);
-    setPlaybookPreviewManualWidth(nextWidth,{persist:false});
-  };
-  const finish=endEvent=>{
-    if(endEvent.pointerId!==pointerId)return;
-    window.removeEventListener('pointermove',onMove);
-    window.removeEventListener('pointerup',finish);
-    window.removeEventListener('pointercancel',finish);
-    document.body.classList.remove('playbook-preview-resizing');
-    try{handle.releasePointerCapture?.(pointerId)}catch(error){}
-    persistPlaybookPreviewLayout();
-  };
-  window.addEventListener('pointermove',onMove);
-  window.addEventListener('pointerup',finish);
-  window.addEventListener('pointercancel',finish);
+  loadPlaybookPreviewLayout();
+  beginPreviewBaseResize($('#page-playbook .playbook-word-shell'),event,
+    width=>setPlaybookPreviewManualWidth(width,{persist:false}),persistPlaybookPreviewLayout);
 }
 
 function nudgePlaybookPreviewWidth(event){
@@ -12145,6 +12197,7 @@ function nudgePlaybookPreviewWidth(event){
   const preview=$('.playbook-execution-preview');
   const current=preview?.getBoundingClientRect().width||PLAYBOOK_PREVIEW_DEFAULT_EXPANDED_WIDTH;
   const delta=event.key==='ArrowLeft'?24:-24;
+  $('#page-playbook .playbook-word-shell')?.classList.add('preview-adjusting');
   setPlaybookPreviewManualWidth(current+delta);
 }
 
@@ -13126,8 +13179,8 @@ function initPlaybookWorkspace(){
   $('#playbookPreviewResizeHandle')?.addEventListener('pointerdown',beginPlaybookPreviewResize);
   $('#playbookPreviewResizeHandle')?.addEventListener('keydown',nudgePlaybookPreviewWidth);
   window.addEventListener('resize',()=>{
-    if(!playbookPreviewAutoZoom)applyPlaybookPreviewLayout();
-    else updatePlaybookPreviewLayoutControls();
+    applyPlaybookPreviewLayout();
+    ['checklist','psych'].forEach(kind=>applySecondaryPreviewLayout(kind));
   });
 
   $('#playbookCanvasResizeX')?.addEventListener('pointerdown',event=>beginPlaybookCanvasResize(event,'x'));
@@ -13238,8 +13291,8 @@ const SECONDARY_INSTRUMENT_CONFIG={
 };
 
 const secondaryInstrumentState={
-  checklist:{docs:[],selectedId:null,storeKey:null,initialized:false,selectionRange:null,saveTimer:null,autoZoom:true,previewWidth:560,canvasZoom:1},
-  psych:{docs:[],selectedId:null,storeKey:null,initialized:false,selectionRange:null,saveTimer:null,autoZoom:true,previewWidth:560,canvasZoom:1}
+  checklist:{docs:[],selectedId:null,storeKey:null,initialized:false,selectionRange:null,saveTimer:null,autoZoom:true,previewWidth:null,expandedWidth:null,canvasZoom:1},
+  psych:{docs:[],selectedId:null,storeKey:null,initialized:false,selectionRange:null,saveTimer:null,autoZoom:true,previewWidth:null,expandedWidth:null,canvasZoom:1}
 };
 
 function secondaryConfig(kind){return SECONDARY_INSTRUMENT_CONFIG[kind]||SECONDARY_INSTRUMENT_CONFIG.checklist}
@@ -13477,6 +13530,7 @@ function ensureSecondaryWorkspaceChrome(kind){
   page.innerHTML=secondaryWorkspaceHtml(kind);
   page.dataset.tiReady='1';
   initSecondaryWorkspace(kind);
+  applySecondaryPreviewLayout(kind);
 }
 
 function createSecondaryDocument(kind,{silent=false}={}){
@@ -13746,26 +13800,25 @@ function setSecondaryRibbon(kind,name){
   secondaryFindAll(kind,'[data-ti-ribbon-panel]').forEach(panel=>panel.classList.toggle('active',panel.dataset.tiRibbonPanel===name));
   if(name==='styles')refreshSecondaryStyleControls(kind);
 }
-function toggleSecondaryAutoZoom(kind){
-  const state=secondaryState(kind),shell=secondaryFind(kind,'[data-ti-shell]'),btn=secondaryFind(kind,'[data-ti-action="autozoom"]');
-  state.autoZoom=!state.autoZoom;
+function applySecondaryPreviewLayout(kind){
+  const state=secondaryState(kind),shell=secondaryFind(kind,'[data-ti-shell]');
+  if(!shell)return;
   shell.classList.toggle('ti-auto-zoom',state.autoZoom);
-  // Both toggle directions discard manual overrides and reuse the CSS default.
-  state.previewWidth=null;
-  shell.style.removeProperty('--playbook-preview-width');
-
-  btn?.setAttribute('aria-pressed',state.autoZoom?'true':'false');
+  initPreviewWidthControls(shell,width=>{state.expandedWidth=width;applySecondaryPreviewLayout(kind)},()=>{
+    state.previewWidth=null;state.expandedWidth=null;applySecondaryPreviewLayout(kind);
+  });
+  applyPreviewCustomWidths(shell,state.previewWidth,state.expandedWidth);
+  secondaryFind(kind,'[data-ti-action="autozoom"]')?.setAttribute('aria-pressed',state.autoZoom?'true':'false');
   const label=secondaryFind(kind,'[data-ti-autozoom-state]');if(label)label.textContent=state.autoZoom?'ON':'OFF';
 }
+function toggleSecondaryAutoZoom(kind){
+  secondaryState(kind).autoZoom=!secondaryState(kind).autoZoom;
+  applySecondaryPreviewLayout(kind);
+}
 function beginSecondaryPreviewResize(kind,event){
-  if(event.pointerType==='mouse'&&event.button!==0)return;
-  event.preventDefault();
-  const state=secondaryState(kind),shell=secondaryFind(kind,'[data-ti-shell]'),preview=secondaryFind(kind,'.playbook-execution-preview');
-  const startX=event.clientX,startWidth=preview.getBoundingClientRect().width;
-  state.autoZoom=false;shell.classList.remove('ti-auto-zoom');
-  const move=e=>{state.previewWidth=Math.max(220,Math.min(720,startWidth+(startX-e.clientX)));shell.style.setProperty('--playbook-preview-width',Math.round(state.previewWidth)+'px')};
-  const end=()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',end);const b=secondaryFind(kind,'[data-ti-action="autozoom"]');b?.setAttribute('aria-pressed','false');const s=secondaryFind(kind,'[data-ti-autozoom-state]');if(s)s.textContent='OFF'};
-  window.addEventListener('pointermove',move);window.addEventListener('pointerup',end);
+  beginPreviewBaseResize(secondaryFind(kind,'[data-ti-shell]'),event,width=>{
+    secondaryState(kind).previewWidth=width;applySecondaryPreviewLayout(kind);
+  });
 }
 function setSecondaryZoom(kind,next){
   const state=secondaryState(kind),page=secondaryFind(kind,'[data-ti-page]');
