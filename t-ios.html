@@ -684,7 +684,7 @@ body.playbook-workspace .main{
   }
   body.playbook-workspace #page-playbook .playbook-word-shell.playbook-auto-zoom:has(.playbook-execution-preview:hover),
   body.playbook-workspace #page-playbook .playbook-word-shell.playbook-auto-zoom:has(.playbook-execution-preview:focus-within){
-    --playbook-preview-width:min(540px,calc(100% - 360px));
+    --playbook-preview-width:min(640px,calc(100% - 420px));
   }
   body.playbook-workspace .main{
     height:100vh;
@@ -725,7 +725,8 @@ body.playbook-workspace .main{
   }
   body.playbook-workspace #page-playbook .playbook-word-library{
     min-height:0;
-    height:100%;
+    height:auto;
+    align-self:stretch;
     display:flex;
     flex-direction:column;
     overflow:hidden;
@@ -3678,9 +3679,18 @@ textarea{resize:vertical;min-height:90px}
    TECHNICAL INSTRUMENTS — PLAYBOOK WORD WORKSPACE
 ===================================================== */
 .playbook-word-page-head{margin-bottom:12px}
-.playbook-word-shell{--playbook-preview-width:238px;display:grid;grid-template-columns:minmax(0,1fr) var(--playbook-preview-width);gap:8px;min-height:720px;border:0;border-radius:0;overflow:visible;background:transparent;transition:grid-template-columns .24s cubic-bezier(.22,.8,.22,1)}
+.playbook-word-shell{--playbook-preview-width:clamp(440px,36vw,560px);display:grid;grid-template-columns:minmax(0,1fr) var(--playbook-preview-width);gap:8px;min-height:720px;border:0;border-radius:0;overflow:visible;background:transparent;transition:grid-template-columns .24s cubic-bezier(.22,.8,.22,1)}
 .playbook-word-library{min-width:0;padding:14px;border:1px solid #202a38;border-radius:16px;background:#0c1117;grid-column:2;grid-row:1;overflow:hidden;transition:border-color .18s ease,box-shadow .18s ease}
-.playbook-execution-preview{position:relative}
+.playbook-execution-preview{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-self:stretch;
+  min-width:0;
+  min-height:0;
+  height:100%;
+  overflow:hidden;
+}
 .playbook-preview-resize-handle{
   position:absolute;
   z-index:4;
@@ -3736,9 +3746,13 @@ body.playbook-preview-resizing *{
   display:flex;
   align-items:center;
   justify-content:space-between;
+  flex:0 0 auto;
   gap:10px;
+  min-width:0;
   margin-bottom:12px;
 }
+.playbook-preview-head>div:first-child{min-width:0}
+.playbook-preview-head-actions{flex:0 0 auto;flex-wrap:nowrap}
 .playbook-preview-head > div > span:first-child{
   display:block;
   color:#7f9ab7;
@@ -3806,6 +3820,8 @@ body.playbook-preview-resizing *{
 }
 .playbook-preview-document-picker{
   display:block;
+  flex:0 0 auto;
+  min-width:0;
   margin-bottom:11px;
 }
 .playbook-preview-document-picker>span{
@@ -3826,6 +3842,8 @@ body.playbook-preview-resizing *{
   font-size:10px;
 }
 .playbook-preview-summary{
+  flex:0 0 auto;
+  min-width:0;
   border:1px solid #26374d;
   border-radius:11px;
   background:#101a26;
@@ -3853,11 +3871,14 @@ body.playbook-preview-resizing *{
   font-size:8px;
 }
 .playbook-preview-body{
-  flex:1 1 auto;
+  flex:1 1 0;
+  width:100%;
+  min-width:0;
   min-height:0;
+  overflow-x:hidden;
   overflow-y:auto;
   overscroll-behavior:contain;
-  padding-right:2px;
+  padding-right:4px;
 }
 .playbook-preview-empty{
   min-height:180px;
@@ -3944,6 +3965,9 @@ body.playbook-preview-resizing *{
 }
 .playbook-preview-note{
   flex:0 0 auto;
+  width:100%;
+  min-width:0;
+  margin-top:8px;
 }
 
 .playbook-word-main{min-width:0;display:flex;flex-direction:column;background:#252930;grid-column:1;grid-row:1;border:1px solid #202a38;border-radius:16px;overflow:hidden}
@@ -4304,7 +4328,7 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
 .playbook-canvas-control{min-width:24px;height:22px;padding:0 6px;border:1px solid #334154;border-radius:6px;background:#0e151e;color:#cbd7e6;font-size:10px;line-height:20px}
 .playbook-canvas-control:hover{border-color:#5f86b3;background:#152130;color:#fff}
 .playbook-canvas-zoom-value{min-width:38px;text-align:center;color:#b9c8d9!important;font-size:8px}
-@media(max-width:1050px){.playbook-word-shell{--playbook-preview-width:200px}.playbook-word-page{padding:40px 42px 60px}.playbook-word-properties{grid-template-columns:1fr 1fr}}
+@media(max-width:1050px) and (min-width:821px){.playbook-word-shell{--playbook-preview-width:clamp(320px,38vw,430px)}.playbook-word-page{padding:40px 42px 60px}.playbook-word-properties{grid-template-columns:1fr 1fr}}
 @media(max-width:820px){.playbook-word-shell{grid-template-columns:1fr;gap:8px}.playbook-word-main{grid-column:1;grid-row:1}.playbook-word-library{grid-column:1;grid-row:2;border:1px solid #202a38}.playbook-preview-resize-handle{display:none}.playbook-word-library-list{max-height:170px;grid-template-columns:repeat(2,minmax(0,1fr))}.playbook-word-document-stage{padding:0}.playbook-word-page{min-height:760px;padding:32px 22px 48px}.playbook-word-properties{grid-template-columns:1fr}}
 @media(max-width:520px){.playbook-word-library-list{grid-template-columns:1fr}.playbook-word-page{padding:28px 18px 42px}.playbook-word-title-input{font-size:23px}.playbook-word-ribbon-panel{min-height:68px}}
 
@@ -4349,7 +4373,8 @@ body.playbook-workspace .technical-document-page .playbook-word-document-stage{
 }
 body.playbook-workspace .technical-document-page .playbook-word-library{
   min-height:0;
-  height:100%;
+  height:auto;
+  align-self:stretch;
   display:flex;
   flex-direction:column;
   overflow:hidden;
@@ -4389,7 +4414,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 @media(min-width:861px){
   body.playbook-workspace .technical-document-page .playbook-word-shell.ti-auto-zoom:has(.playbook-execution-preview:hover),
   body.playbook-workspace .technical-document-page .playbook-word-shell.ti-auto-zoom:has(.playbook-execution-preview:focus-within){
-    --playbook-preview-width:min(540px,calc(100% - 360px));
+    --playbook-preview-width:min(640px,calc(100% - 420px));
   }
 }
 
@@ -11877,7 +11902,7 @@ let playbookCanvasWidth=null;
 let playbookCanvasHeight=null;
 let playbookCanvasZoom=1;
 const PLAYBOOK_PREVIEW_LAYOUT_PREFIX='tios_playbook_preview_layout_v1';
-const PLAYBOOK_PREVIEW_DEFAULT_EXPANDED_WIDTH=540;
+const PLAYBOOK_PREVIEW_DEFAULT_EXPANDED_WIDTH=560;
 const PLAYBOOK_PREVIEW_MIN_WIDTH=220;
 const PLAYBOOK_PREVIEW_MAX_WIDTH=720;
 const PLAYBOOK_PREVIEW_EDITOR_MIN_WIDTH=360;
@@ -13212,8 +13237,8 @@ const SECONDARY_INSTRUMENT_CONFIG={
 };
 
 const secondaryInstrumentState={
-  checklist:{docs:[],selectedId:null,storeKey:null,initialized:false,selectionRange:null,saveTimer:null,autoZoom:true,previewWidth:540,canvasZoom:1},
-  psych:{docs:[],selectedId:null,storeKey:null,initialized:false,selectionRange:null,saveTimer:null,autoZoom:true,previewWidth:540,canvasZoom:1}
+  checklist:{docs:[],selectedId:null,storeKey:null,initialized:false,selectionRange:null,saveTimer:null,autoZoom:true,previewWidth:560,canvasZoom:1},
+  psych:{docs:[],selectedId:null,storeKey:null,initialized:false,selectionRange:null,saveTimer:null,autoZoom:true,previewWidth:560,canvasZoom:1}
 };
 
 function secondaryConfig(kind){return SECONDARY_INSTRUMENT_CONFIG[kind]||SECONDARY_INSTRUMENT_CONFIG.checklist}
