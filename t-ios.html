@@ -3568,6 +3568,188 @@ textarea{resize:vertical;min-height:90px}
 .playbook-word-library-item small{display:block;margin-top:4px;color:#76879b;font-size:8px;text-transform:uppercase;letter-spacing:.45px}
 .playbook-word-library-empty{padding:18px 8px;color:#738196;font-size:10px;line-height:1.6;text-align:center}
 .playbook-word-library-note{margin-top:12px;padding-top:11px;border-top:1px solid #1d2734;color:#6f8094;font-size:9px;line-height:1.55}
+.playbook-preview-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:12px;
+}
+.playbook-preview-head span:first-child{
+  display:block;
+  color:#7f9ab7;
+  font-size:8px;
+  font-weight:850;
+  letter-spacing:.75px;
+}
+.playbook-preview-head strong{
+  display:block;
+  margin-top:3px;
+  font-size:13px;
+}
+.playbook-preview-live{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:5px 7px;
+  border:1px solid #28553f;
+  border-radius:999px;
+  background:#0b1d16;
+  color:#94dfb7;
+  font-size:8px;
+  font-weight:850;
+  letter-spacing:.5px;
+}
+.playbook-preview-live::before{
+  content:'';
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#25d07d;
+  box-shadow:0 0 7px rgba(37,208,125,.65);
+}
+.playbook-preview-document-picker{
+  display:block;
+  margin-bottom:11px;
+}
+.playbook-preview-document-picker>span{
+  display:block;
+  margin-bottom:5px;
+  color:#718298;
+  font-size:8px;
+  font-weight:750;
+}
+.playbook-preview-document-picker select{
+  width:100%;
+  height:36px;
+  border:1px solid #2b3a4d;
+  border-radius:9px;
+  background:#090e14;
+  color:#dce7f5;
+  padding:0 9px;
+  font-size:10px;
+}
+.playbook-preview-summary{
+  border:1px solid #26374d;
+  border-radius:11px;
+  background:#101a26;
+  padding:11px;
+  margin-bottom:10px;
+}
+.playbook-preview-kicker{
+  display:block;
+  color:#7b8fa8;
+  font-size:8px;
+  font-weight:850;
+  letter-spacing:.65px;
+}
+.playbook-preview-summary strong{
+  display:block;
+  margin-top:5px;
+  color:#eff5fc;
+  font-size:12px;
+  line-height:1.35;
+}
+.playbook-preview-summary small{
+  display:block;
+  margin-top:4px;
+  color:#72849a;
+  font-size:8px;
+}
+.playbook-preview-body{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  padding-right:2px;
+}
+.playbook-preview-empty{
+  min-height:180px;
+  display:grid;
+  place-items:center;
+  padding:22px 12px;
+  border:1px dashed #26364a;
+  border-radius:11px;
+  color:#72839a;
+  text-align:center;
+  font-size:9px;
+  line-height:1.6;
+}
+.playbook-preview-section{
+  margin:13px 0 7px;
+  color:#d8e5f4;
+  font-size:10px;
+  font-weight:850;
+  line-height:1.35;
+}
+.playbook-preview-section.level-3{
+  color:#9fb0c4;
+  font-size:9px;
+}
+.playbook-preview-check{
+  display:flex;
+  gap:8px;
+  align-items:flex-start;
+  margin-bottom:7px;
+  padding:9px;
+  border:1px solid #223146;
+  border-radius:9px;
+  background:#0c141e;
+}
+.playbook-preview-checkbox{
+  width:15px;
+  height:15px;
+  flex:0 0 auto;
+  margin-top:1px;
+  border:1px solid #56708d;
+  border-radius:3px;
+  background:#0a0f16;
+}
+.playbook-preview-check span{
+  min-width:0;
+  color:#cbd7e5;
+  font-size:9px;
+  line-height:1.45;
+}
+.playbook-preview-linked,
+.playbook-preview-reflection{
+  margin-bottom:8px;
+  padding:9px;
+  border:1px solid #2c3f56;
+  border-radius:9px;
+  background:#0d1722;
+}
+.playbook-preview-linked b,
+.playbook-preview-reflection b{
+  display:block;
+  color:#8fa9c6;
+  font-size:8px;
+  letter-spacing:.55px;
+}
+.playbook-preview-linked span,
+.playbook-preview-reflection span{
+  display:block;
+  margin-top:5px;
+  color:#d4dfeb;
+  font-size:9px;
+  line-height:1.45;
+}
+.playbook-preview-reflection::after{
+  content:'Reflection response will appear here';
+  display:block;
+  min-height:40px;
+  margin-top:8px;
+  padding:7px;
+  border:1px solid #28394c;
+  border-radius:6px;
+  background:#090f16;
+  color:#63758a;
+  font-size:8px;
+}
+.playbook-preview-note{
+  flex:0 0 auto;
+}
+
 .playbook-word-main{min-width:0;display:flex;flex-direction:column;background:#252930;grid-column:1;grid-row:1;border:1px solid #202a38;border-radius:16px;overflow:hidden}
 .playbook-word-ribbon{position:relative;z-index:2;border-bottom:1px solid #c7cbd0;background:#f5f6f8;color:#1b2430}
 .playbook-word-tabs{display:flex;gap:2px;padding:5px 10px 0;border-bottom:1px solid #d4d7dc}
@@ -4488,21 +4670,34 @@ textarea{resize:vertical;min-height:90px}
       </header>
 
       <section class="playbook-word-shell">
-        <aside class="playbook-word-library">
-          <div class="playbook-word-library-head">
+        <aside class="playbook-word-library playbook-execution-preview" aria-label="Execution Quality preview">
+          <div class="playbook-preview-head">
             <div>
-              <span>PLAYBOOK LIBRARY</span>
-              <strong>Your documents</strong>
+              <span>EXECUTION QUALITY PREVIEW</span>
+              <strong>Live model</strong>
             </div>
-            <button class="playbook-word-mini-btn" type="button" id="playbookLibraryNewBtn" title="Create playbook" aria-label="Create playbook">+</button>
+            <span class="playbook-preview-live">LIVE</span>
           </div>
 
-          <input class="playbook-word-search" id="playbookLibrarySearch" type="search" placeholder="Search playbooks">
+          <label class="playbook-preview-document-picker">
+            <span>Preview playbook</span>
+            <select id="playbookPreviewDocumentSelect" aria-label="Playbook shown in preview"></select>
+          </label>
 
-          <div class="playbook-word-library-list" id="playbookLibraryList"></div>
+          <div class="playbook-preview-summary">
+            <span class="playbook-preview-kicker">PLAYBOOK EXECUTION</span>
+            <strong id="playbookPreviewTitle">Untitled Playbook</strong>
+            <small id="playbookPreviewMeta">Preview only</small>
+          </div>
 
-          <div class="playbook-word-library-note">
-            Playbooks are definitions only. No score, adherence result or trade measurement is created here.
+          <div class="playbook-preview-body" id="playbookExecutionPreviewBody">
+            <div class="playbook-preview-empty">
+              Add structured rules, linked checklists or reflections to see how they will appear in Execution Quality.
+            </div>
+          </div>
+
+          <div class="playbook-word-library-note playbook-preview-note">
+            This is a live model only. Nothing is scored or recorded here; actual responses belong in Execution Quality.
           </div>
         </aside>
 
@@ -9636,6 +9831,126 @@ function currentPlaybookDocument(){
   return playbookDocuments.find(item=>item.id===selectedPlaybookDocumentId) || null;
 }
 
+
+function playbookPreviewSourceDocument(){
+  const selected=currentPlaybookDocument();
+  if(!selected)return null;
+
+  const title=$('#playbookDraftTitle');
+  const editor=$('#playbookDocumentEditor');
+
+  return {
+    ...selected,
+    name:title?.value?.trim() || selected.name || 'Untitled Playbook',
+    documentHtml:editor ? editor.innerHTML : (selected.documentHtml||'')
+  };
+}
+
+function playbookStructuredPreviewItems(documentHtml){
+  const host=document.createElement('div');
+  host.innerHTML=String(documentHtml||'');
+
+  const items=[];
+  [...host.children].forEach(node=>{
+    const tag=node.tagName?.toLowerCase();
+
+    if(['h1','h2','h3'].includes(tag)){
+      const label=(node.textContent||'').trim();
+      if(label)items.push({type:'section',label,level:tag==='h3'?3:2});
+      return;
+    }
+
+    if(node.matches?.('[data-playbook-node="rule"], .pb-doc-rule')){
+      const clone=node.cloneNode(true);
+      clone.querySelectorAll('.pb-doc-label').forEach(label=>label.remove());
+      const label=(clone.textContent||'').trim();
+      if(label)items.push({type:'check',label});
+      return;
+    }
+
+    if(node.matches?.('[data-playbook-node="checklist-link"]')){
+      const clone=node.cloneNode(true);
+      clone.querySelectorAll('.pb-doc-label').forEach(label=>label.remove());
+      const label=(clone.textContent||'').trim() || 'Linked checklist';
+      items.push({type:'checklist',label});
+      return;
+    }
+
+    if(node.matches?.('[data-playbook-node="reflection-link"]')){
+      const clone=node.cloneNode(true);
+      clone.querySelectorAll('.pb-doc-label').forEach(label=>label.remove());
+      const label=(clone.textContent||'').trim() || 'Linked reflection';
+      items.push({type:'reflection',label});
+      return;
+    }
+
+    // Rules can also contain nested list items.
+    if(node.matches?.('ul,ol')){
+      [...node.querySelectorAll(':scope > li')].forEach(li=>{
+        const label=(li.textContent||'').trim();
+        if(label)items.push({type:'check',label});
+      });
+    }
+  });
+
+  return items;
+}
+
+function renderPlaybookExecutionPreview(){
+  const body=$('#playbookExecutionPreviewBody');
+  const title=$('#playbookPreviewTitle');
+  const meta=$('#playbookPreviewMeta');
+  const selector=$('#playbookPreviewDocumentSelect');
+  if(!body||!title||!meta||!selector)return;
+
+  const source=playbookPreviewSourceDocument();
+
+  selector.innerHTML=playbookDocuments.length
+    ? playbookDocuments.map(item=>{
+        const current=item.id===selectedPlaybookDocumentId;
+        const label=current
+          ? ($('#playbookDraftTitle')?.value?.trim() || item.name || 'Untitled Playbook')
+          : (item.name||'Untitled Playbook');
+        return `<option value="${escapeHtml(item.id)}" ${current?'selected':''}>${escapeHtml(label)}</option>`;
+      }).join('')
+    : '<option value="">No playbook</option>';
+
+  if(!source){
+    title.textContent='No Playbook';
+    meta.textContent='Preview only';
+    body.innerHTML='<div class="playbook-preview-empty">Create a Playbook to start modeling its Execution Quality structure.</div>';
+    return;
+  }
+
+  title.textContent=source.name||'Untitled Playbook';
+  const items=playbookStructuredPreviewItems(source.documentHtml);
+  const checkCount=items.filter(item=>item.type==='check').length;
+  const linkedCount=items.filter(item=>item.type==='checklist'||item.type==='reflection').length;
+  meta.textContent=`Preview only · ${checkCount} direct check${checkCount===1?'':'s'} · ${linkedCount} linked instrument${linkedCount===1?'':'s'}`;
+
+  const meaningful=items.some(item=>item.type!=='section');
+  if(!meaningful){
+    body.innerHTML='<div class="playbook-preview-empty">Insert a Rule, linked Checklist, linked Reflection, or a list of rules to see the Execution Quality model form here.</div>';
+    return;
+  }
+
+  body.innerHTML=items.map(item=>{
+    if(item.type==='section'){
+      return `<div class="playbook-preview-section ${item.level===3?'level-3':''}">${escapeHtml(item.label)}</div>`;
+    }
+    if(item.type==='check'){
+      return `<div class="playbook-preview-check"><span class="playbook-preview-checkbox" aria-hidden="true"></span><span>${escapeHtml(item.label)}</span></div>`;
+    }
+    if(item.type==='checklist'){
+      return `<div class="playbook-preview-linked"><b>LINKED CHECKLIST</b><span>${escapeHtml(item.label)}</span></div>`;
+    }
+    if(item.type==='reflection'){
+      return `<div class="playbook-preview-reflection"><b>LINKED REFLECTION</b><span>${escapeHtml(item.label)}</span></div>`;
+    }
+    return '';
+  }).join('');
+}
+
 function playbookDocumentSummary(documentItem){
   const state=String(documentItem?.instrumentState||'active');
   const updated=documentItem?.updatedAt?new Date(documentItem.updatedAt):null;
@@ -9697,8 +10012,8 @@ function renderPlaybookWorkspace(){
     createPlaybookDocument({silent:true});
     return;
   }
-  renderPlaybookLibraryDraft();
   renderPlaybookDocumentEditor();
+  renderPlaybookExecutionPreview();
 }
 
 function createPlaybookDocument({silent=false,source=null}={}){
@@ -9722,9 +10037,9 @@ function createPlaybookDocument({silent=false,source=null}={}){
   playbookDocuments.unshift(created);
   selectedPlaybookDocumentId=created.id;
   persistPlaybookDocuments();
-  renderPlaybookLibraryDraft();
   renderPlaybookDocumentEditor();
-  requestAnimationFrame(()=>{$('#playbookDraftTitle')?.focus();$('#playbookDraftTitle')?.select()});
+  renderPlaybookExecutionPreview();
+  requestAnimation(()=>{$('#playbookDraftTitle')?.focus();$('#playbookDraftTitle')?.select()});
   if(!silent)showStatus('New Playbook created');
 }
 
@@ -9747,7 +10062,7 @@ function savePlaybookDocument({quiet=false}={}){
   if(!validation.valid){if(!quiet)alert(validation.errors.join('\n'));return}
   playbookDocuments=playbookDocuments.map(item=>item.id===next.id?next:item);
   persistPlaybookDocuments();
-  renderPlaybookLibraryDraft();
+  renderPlaybookExecutionPreview();
   $('#playbookDraftSaveState').textContent='Saved';
   if(!quiet)showStatus('Playbook saved');
 }
@@ -9764,8 +10079,8 @@ function selectPlaybookDocument(id){
   if(currentPlaybookDocument())savePlaybookDocument({quiet:true});
   selectedPlaybookDocumentId=id;
   persistPlaybookDocuments();
-  renderPlaybookLibraryDraft();
   renderPlaybookDocumentEditor();
+  renderPlaybookExecutionPreview();
 }
 
 function deletePlaybookDocument(){
@@ -9776,7 +10091,7 @@ function deletePlaybookDocument(){
   selectedPlaybookDocumentId=playbookDocuments[0]?.id||null;
   persistPlaybookDocuments();
   if(!playbookDocuments.length)createPlaybookDocument({silent:true});
-  else{renderPlaybookLibraryDraft();renderPlaybookDocumentEditor()}
+  else{renderPlaybookDocumentEditor();renderPlaybookExecutionPreview()}
   showStatus('Playbook deleted from the document library');
 }
 
@@ -9809,6 +10124,7 @@ function applyPlaybookCommand(command,value=null){
   if(!editor)return;
   document.execCommand(command,false,value);
   updatePlaybookWordCount();
+  renderPlaybookExecutionPreview();
   schedulePlaybookDocumentSave();
 }
 
@@ -9817,6 +10133,7 @@ function insertPlaybookHtml(markup){
   if(!editor)return;
   document.execCommand('insertHTML',false,markup);
   updatePlaybookWordCount();
+  renderPlaybookExecutionPreview();
   schedulePlaybookDocumentSave();
 }
 
@@ -9856,13 +10173,17 @@ function initPlaybookWorkspace(){
     if(button)selectPlaybookDocument(button.dataset.playbookDocumentId);
   });
 
+  $('#playbookPreviewDocumentSelect')?.addEventListener('change',event=>{
+    if(event.target.value)selectPlaybookDocument(event.target.value);
+  });
+
   $$('[data-playbook-ribbon]').forEach(button=>button.addEventListener('click',()=>setPlaybookRibbonTab(button.dataset.playbookRibbon)));
   $$('[data-playbook-command]').forEach(button=>button.addEventListener('click',()=>applyPlaybookCommand(button.dataset.playbookCommand)));
   $('#playbookBlockStyle')?.addEventListener('change',event=>{applyPlaybookCommand('formatBlock',event.target.value);event.target.value='p'});
   $$('[data-playbook-insert]').forEach(button=>button.addEventListener('click',()=>insertPlaybookElement(button.dataset.playbookInsert)));
 
   ['#playbookDraftTitle','#playbookDraftDescription','#playbookDraftTags','#playbookDraftState','#playbookDocumentEditor'].forEach(selector=>{
-    $(selector)?.addEventListener('input',()=>{updatePlaybookWordCount();schedulePlaybookDocumentSave()});
+    $(selector)?.addEventListener('input',()=>{updatePlaybookWordCount();renderPlaybookExecutionPreview();schedulePlaybookDocumentSave()});
     $(selector)?.addEventListener('change',schedulePlaybookDocumentSave);
   });
 
