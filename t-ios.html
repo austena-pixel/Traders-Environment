@@ -4053,6 +4053,71 @@ body.playbook-preview-resizing *{
 .playbook-word-ribbon-panel{display:none;min-height:74px;padding:8px 10px;align-items:stretch;gap:8px;overflow-x:auto}
 .playbook-word-ribbon-panel.active{display:flex}
 .playbook-word-tool-group{display:flex;flex-direction:column;justify-content:space-between;gap:5px;padding:0 9px 2px 0;border-right:1px solid #d6d9de;flex:0 0 auto}
+
+/* Styles ribbon: use compact scrollable tool groups instead of one very long row. */
+.playbook-word-ribbon-panel[data-playbook-ribbon-panel="styles"].active,
+.playbook-word-ribbon-panel[data-ti-ribbon-panel="styles"].active{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  align-items:stretch;
+  gap:7px;
+  max-height:176px;
+  overflow-x:hidden;
+  overflow-y:auto;
+  padding:8px 10px 9px;
+  scrollbar-width:thin;
+}
+.playbook-word-ribbon-panel[data-playbook-ribbon-panel="styles"]>.playbook-word-tool-group,
+.playbook-word-ribbon-panel[data-ti-ribbon-panel="styles"]>.playbook-word-tool-group{
+  min-width:0;
+  padding:6px 7px 5px;
+  border:1px solid #d8dde4;
+  border-radius:7px;
+  background:#f8f9fb;
+}
+.playbook-word-ribbon-panel[data-playbook-ribbon-panel="styles"] .playbook-word-tool-row,
+.playbook-word-ribbon-panel[data-ti-ribbon-panel="styles"] .playbook-word-tool-row{
+  min-width:0;
+  width:100%;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding-bottom:3px;
+  scroll-snap-type:x proximity;
+  overscroll-behavior-x:contain;
+  scrollbar-width:thin;
+}
+.playbook-word-ribbon-panel[data-playbook-ribbon-panel="styles"] .playbook-word-tool-row>*,
+.playbook-word-ribbon-panel[data-ti-ribbon-panel="styles"] .playbook-word-tool-row>*{
+  flex:0 0 auto;
+  scroll-snap-align:start;
+}
+.playbook-word-ribbon-panel[data-playbook-ribbon-panel="styles"]>.playbook-word-tool-group:first-child,
+.playbook-word-ribbon-panel[data-ti-ribbon-panel="styles"]>.playbook-word-tool-group:first-child{
+  grid-column:span 2;
+}
+.playbook-word-ribbon-panel[data-playbook-ribbon-panel="styles"] .playbook-word-tool-label,
+.playbook-word-ribbon-panel[data-ti-ribbon-panel="styles"] .playbook-word-tool-label{
+  text-align:left;
+  padding-left:2px;
+}
+@media(max-width:980px){
+  .playbook-word-ribbon-panel[data-playbook-ribbon-panel="styles"].active,
+  .playbook-word-ribbon-panel[data-ti-ribbon-panel="styles"].active{
+    grid-template-columns:repeat(2,minmax(150px,1fr));
+    max-height:188px;
+  }
+}
+@media(max-width:620px){
+  .playbook-word-ribbon-panel[data-playbook-ribbon-panel="styles"].active,
+  .playbook-word-ribbon-panel[data-ti-ribbon-panel="styles"].active{
+    grid-template-columns:1fr;
+    max-height:210px;
+  }
+  .playbook-word-ribbon-panel[data-playbook-ribbon-panel="styles"]>.playbook-word-tool-group:first-child,
+  .playbook-word-ribbon-panel[data-ti-ribbon-panel="styles"]>.playbook-word-tool-group:first-child{
+    grid-column:auto;
+  }
+}
 .playbook-word-tool-label{order:2;color:#6d7681;font-size:8px;text-align:center}
 .playbook-word-tool-row{display:flex;align-items:center;gap:4px}
 .playbook-word-tool-btn,.playbook-word-insert-btn{min-width:34px;min-height:31px;border:1px solid transparent;border-radius:5px;background:transparent;color:#202a36;padding:5px 8px;font-size:10px}
