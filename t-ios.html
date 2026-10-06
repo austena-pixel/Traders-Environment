@@ -4054,68 +4054,133 @@ body.playbook-preview-resizing *{
 .playbook-word-ribbon-panel.active{display:flex}
 .playbook-word-tool-group{display:flex;flex-direction:column;justify-content:space-between;gap:5px;padding:0 9px 2px 0;border-right:1px solid #d6d9de;flex:0 0 auto}
 
-/* Styles ribbon: use compact scrollable tool groups instead of one very long row. */
+/* Styles ribbon: sketch layout.
+   List Layout stays visible on the left; six compact category buttons choose
+   what appears in the central display; Selection stays visible on the right. */
 .playbook-word-ribbon-panel[data-playbook-ribbon-panel="styles"].active,
 .playbook-word-ribbon-panel[data-ti-ribbon-panel="styles"].active{
+  --styles-ribbon-height:88px;
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  grid-template-columns:minmax(345px,390px) 182px minmax(300px,1fr) 205px;
   align-items:stretch;
-  gap:7px;
-  max-height:176px;
-  overflow-x:hidden;
-  overflow-y:auto;
-  padding:8px 10px 9px;
+  gap:8px;
+  min-height:calc(var(--styles-ribbon-height) + 16px);
+  max-height:none;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding:8px 10px;
   scrollbar-width:thin;
 }
-.playbook-word-ribbon-panel[data-playbook-ribbon-panel="styles"]>.playbook-word-tool-group,
-.playbook-word-ribbon-panel[data-ti-ribbon-panel="styles"]>.playbook-word-tool-group{
+.playbook-style-layout-group,
+.playbook-style-selection-group{
+  height:var(--styles-ribbon-height);
   min-width:0;
-  padding:6px 7px 5px;
+  padding:5px 8px 4px;
   border:1px solid #d8dde4;
   border-radius:7px;
   background:#f8f9fb;
+  box-sizing:border-box;
 }
-.playbook-word-ribbon-panel[data-playbook-ribbon-panel="styles"] .playbook-word-tool-row,
-.playbook-word-ribbon-panel[data-ti-ribbon-panel="styles"] .playbook-word-tool-row{
-  min-width:0;
+.playbook-style-layout-group .playbook-word-tool-row{
   width:100%;
+  min-width:0;
   overflow-x:auto;
   overflow-y:hidden;
-  padding-bottom:3px;
-  scroll-snap-type:x proximity;
-  overscroll-behavior-x:contain;
+  padding-bottom:2px;
   scrollbar-width:thin;
 }
-.playbook-word-ribbon-panel[data-playbook-ribbon-panel="styles"] .playbook-word-tool-row>*,
-.playbook-word-ribbon-panel[data-ti-ribbon-panel="styles"] .playbook-word-tool-row>*{
-  flex:0 0 auto;
-  scroll-snap-align:start;
+.playbook-style-layout-group .playbook-word-tool-row>*{flex:0 0 auto}
+.playbook-style-category-menu{
+  height:var(--styles-ribbon-height);
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-template-rows:repeat(3,minmax(0,1fr));
+  gap:4px;
+  min-width:0;
+  padding:5px;
+  border:1px solid #d8dde4;
+  border-radius:7px;
+  background:#f8f9fb;
+  box-sizing:border-box;
 }
-.playbook-word-ribbon-panel[data-playbook-ribbon-panel="styles"]>.playbook-word-tool-group:first-child,
-.playbook-word-ribbon-panel[data-ti-ribbon-panel="styles"]>.playbook-word-tool-group:first-child{
-  grid-column:span 2;
+.playbook-style-category-btn{
+  min-width:0;
+  min-height:0;
+  padding:3px 6px;
+  border:1px solid #c8ced6;
+  border-radius:6px;
+  background:#fff;
+  color:#354151;
+  font-size:8px;
+  font-weight:800;
+  line-height:1.1;
+  cursor:pointer;
+  white-space:nowrap;
 }
-.playbook-word-ribbon-panel[data-playbook-ribbon-panel="styles"] .playbook-word-tool-label,
-.playbook-word-ribbon-panel[data-ti-ribbon-panel="styles"] .playbook-word-tool-label{
-  text-align:left;
-  padding-left:2px;
+.playbook-style-category-btn:hover{border-color:#8fb5dd;background:#edf5fd}
+.playbook-style-category-btn.active{
+  border-color:#2b72b8;
+  background:#e6f2ff;
+  color:#155c9c;
+  box-shadow:0 0 0 1px rgba(43,114,184,.1) inset;
 }
-@media(max-width:980px){
+.playbook-style-category-display{
+  height:var(--styles-ribbon-height);
+  min-width:300px;
+  padding:7px 9px 6px;
+  border:1px solid #d8dde4;
+  border-radius:7px;
+  background:#fff;
+  box-sizing:border-box;
+  overflow:hidden;
+}
+.playbook-style-category-panel{
+  display:none;
+  height:100%;
+  min-width:0;
+}
+.playbook-style-category-panel.active{
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  gap:5px;
+}
+.playbook-style-display-title{
+  color:#6d7681;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.25px;
+}
+.playbook-style-category-panel .playbook-word-tool-row{
+  width:100%;
+  min-width:0;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding-bottom:2px;
+  scrollbar-width:thin;
+}
+.playbook-style-category-panel .playbook-word-tool-row>*{flex:0 0 auto}
+.playbook-style-category-panel[data-style-panel="colors"] .playbook-word-tool-row{
+  align-items:flex-start;
+}
+.playbook-style-category-panel[data-style-panel="reset"]{
+  justify-content:center;
+  align-items:flex-start;
+}
+.playbook-style-selection-group{
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+}
+.playbook-style-selection-group .playbook-style-help{
+  max-width:none;
+  overflow:auto;
+  padding:5px 4px;
+}
+@media(max-width:900px){
   .playbook-word-ribbon-panel[data-playbook-ribbon-panel="styles"].active,
   .playbook-word-ribbon-panel[data-ti-ribbon-panel="styles"].active{
-    grid-template-columns:repeat(2,minmax(150px,1fr));
-    max-height:188px;
-  }
-}
-@media(max-width:620px){
-  .playbook-word-ribbon-panel[data-playbook-ribbon-panel="styles"].active,
-  .playbook-word-ribbon-panel[data-ti-ribbon-panel="styles"].active{
-    grid-template-columns:1fr;
-    max-height:210px;
-  }
-  .playbook-word-ribbon-panel[data-playbook-ribbon-panel="styles"]>.playbook-word-tool-group:first-child,
-  .playbook-word-ribbon-panel[data-ti-ribbon-panel="styles"]>.playbook-word-tool-group:first-child{
-    grid-column:auto;
+    grid-template-columns:345px 182px 300px 205px;
   }
 }
 .playbook-word-tool-label{order:2;color:#6d7681;font-size:8px;text-align:center}
@@ -6638,7 +6703,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             </div>
 
             <div class="playbook-word-ribbon-panel" data-playbook-ribbon-panel="styles">
-              <div class="playbook-word-tool-group">
+              <div class="playbook-word-tool-group playbook-style-layout-group">
                 <span class="playbook-word-tool-label">List Layout</span>
                 <div class="playbook-word-tool-row">
                   <button type="button" class="playbook-list-style-btn" data-playbook-list-layout="vertical" title="Standard vertical list">
@@ -6664,81 +6729,78 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
                 </div>
               </div>
 
-              <div class="playbook-word-tool-group">
-                <span class="playbook-word-tool-label">Alignment</span>
-                <div class="playbook-word-tool-row">
-                  <button type="button" class="playbook-style-option-btn" data-playbook-style-align="left">Left</button>
-                  <button type="button" class="playbook-style-option-btn" data-playbook-style-align="center">Center</button>
-                  <button type="button" class="playbook-style-option-btn" data-playbook-style-align="right">Right</button>
-                </div>
+              <div class="playbook-style-category-menu" aria-label="Style tools">
+                <button type="button" class="playbook-style-category-btn active" data-playbook-style-category="alignment">Alignment</button>
+                <button type="button" class="playbook-style-category-btn" data-playbook-style-category="presets">Presets</button>
+                <button type="button" class="playbook-style-category-btn" data-playbook-style-category="spacing">Spacing</button>
+                <button type="button" class="playbook-style-category-btn" data-playbook-style-category="colors">Colors</button>
+                <button type="button" class="playbook-style-category-btn" data-playbook-style-category="borders">Borders</button>
+                <button type="button" class="playbook-style-category-btn" data-playbook-style-category="reset">Reset</button>
               </div>
 
-              <div class="playbook-word-tool-group">
-                <span class="playbook-word-tool-label">Spacing</span>
-                <div class="playbook-word-tool-row">
-                  <button type="button" class="playbook-style-option-btn" data-playbook-style-spacing="compact">Compact</button>
-                  <button type="button" class="playbook-style-option-btn" data-playbook-style-spacing="normal">Normal</button>
-                  <button type="button" class="playbook-style-option-btn" data-playbook-style-spacing="relaxed">Relaxed</button>
-                </div>
-              </div>
-
-              <div class="playbook-word-tool-group">
-                <span class="playbook-word-tool-label">Borders</span>
-                <div class="playbook-word-tool-row">
-                  <button type="button" class="playbook-style-option-btn" data-playbook-style-border="default">Default</button>
-                  <button type="button" class="playbook-style-option-btn" data-playbook-style-border="none">None</button>
-                  <button type="button" class="playbook-style-option-btn" data-playbook-style-border="thin">Thin</button>
-                  <button type="button" class="playbook-style-option-btn" data-playbook-style-border="strong">Strong</button>
-                </div>
-              </div>
-
-              <div class="playbook-word-tool-group">
-                <span class="playbook-word-tool-label">Presets</span>
-                <div class="playbook-word-tool-row">
-                  <button type="button" class="playbook-style-option-btn" data-playbook-style-preset="plain">Plain</button>
-                  <button type="button" class="playbook-style-option-btn" data-playbook-style-preset="card">Card</button>
-                  <button type="button" class="playbook-style-option-btn" data-playbook-style-preset="highlight">Highlight</button>
-                  <button type="button" class="playbook-style-option-btn" data-playbook-style-preset="minimal">Minimal</button>
-                </div>
-              </div>
-
-              <div class="playbook-word-tool-group">
-                <span class="playbook-word-tool-label">Colors</span>
-                <div class="playbook-word-tool-row">
-                  <div class="playbook-style-color-grid">
-                    <label class="playbook-style-color-control">
-                      <input type="color" id="playbookStyleColorBackground" data-playbook-style-color="background" value="#f7f9fb" aria-label="Style fill color">
-                      <span>Fill</span>
-                    </label>
-                    <label class="playbook-style-color-control">
-                      <input type="color" id="playbookStyleColorBorder" data-playbook-style-color="border" value="#ccd5df" aria-label="Style border color">
-                      <span>Border</span>
-                    </label>
-                    <label class="playbook-style-color-control">
-                      <input type="color" id="playbookStyleColorText" data-playbook-style-color="text" value="#20242a" aria-label="Style text color">
-                      <span>Text</span>
-                    </label>
-                    <label class="playbook-style-color-control">
-                      <input type="color" id="playbookStyleColorAccent" data-playbook-style-color="accent" value="#536170" aria-label="Style accent color">
-                      <span>Accent</span>
-                    </label>
+              <div class="playbook-style-category-display" aria-live="polite">
+                <div class="playbook-style-category-panel active" data-style-panel="alignment" data-playbook-style-category-panel="alignment">
+                  <span class="playbook-style-display-title">Alignment</span>
+                  <div class="playbook-word-tool-row">
+                    <button type="button" class="playbook-style-option-btn" data-playbook-style-align="left">Left</button>
+                    <button type="button" class="playbook-style-option-btn" data-playbook-style-align="center">Center</button>
+                    <button type="button" class="playbook-style-option-btn" data-playbook-style-align="right">Right</button>
                   </div>
-                  <button type="button" class="playbook-style-color-reset" id="playbookStyleColorReset" title="Restore the original Playbook theme colors">Default Colors</button>
+                </div>
+
+                <div class="playbook-style-category-panel" data-style-panel="spacing" data-playbook-style-category-panel="spacing">
+                  <span class="playbook-style-display-title">Spacing</span>
+                  <div class="playbook-word-tool-row">
+                    <button type="button" class="playbook-style-option-btn" data-playbook-style-spacing="compact">Compact</button>
+                    <button type="button" class="playbook-style-option-btn" data-playbook-style-spacing="normal">Normal</button>
+                    <button type="button" class="playbook-style-option-btn" data-playbook-style-spacing="relaxed">Relaxed</button>
+                  </div>
+                </div>
+
+                <div class="playbook-style-category-panel" data-style-panel="borders" data-playbook-style-category-panel="borders">
+                  <span class="playbook-style-display-title">Borders</span>
+                  <div class="playbook-word-tool-row">
+                    <button type="button" class="playbook-style-option-btn" data-playbook-style-border="default">Default</button>
+                    <button type="button" class="playbook-style-option-btn" data-playbook-style-border="none">None</button>
+                    <button type="button" class="playbook-style-option-btn" data-playbook-style-border="thin">Thin</button>
+                    <button type="button" class="playbook-style-option-btn" data-playbook-style-border="strong">Strong</button>
+                  </div>
+                </div>
+
+                <div class="playbook-style-category-panel" data-style-panel="presets" data-playbook-style-category-panel="presets">
+                  <span class="playbook-style-display-title">Presets</span>
+                  <div class="playbook-word-tool-row">
+                    <button type="button" class="playbook-style-option-btn" data-playbook-style-preset="plain">Plain</button>
+                    <button type="button" class="playbook-style-option-btn" data-playbook-style-preset="card">Card</button>
+                    <button type="button" class="playbook-style-option-btn" data-playbook-style-preset="highlight">Highlight</button>
+                    <button type="button" class="playbook-style-option-btn" data-playbook-style-preset="minimal">Minimal</button>
+                  </div>
+                </div>
+
+                <div class="playbook-style-category-panel" data-style-panel="colors" data-playbook-style-category-panel="colors">
+                  <span class="playbook-style-display-title">Colors</span>
+                  <div class="playbook-word-tool-row">
+                    <div class="playbook-style-color-grid">
+                      <label class="playbook-style-color-control"><input type="color" id="playbookStyleColorBackground" data-playbook-style-color="background" value="#f7f9fb" aria-label="Style fill color"><span>Fill</span></label>
+                      <label class="playbook-style-color-control"><input type="color" id="playbookStyleColorBorder" data-playbook-style-color="border" value="#ccd5df" aria-label="Style border color"><span>Border</span></label>
+                      <label class="playbook-style-color-control"><input type="color" id="playbookStyleColorText" data-playbook-style-color="text" value="#20242a" aria-label="Style text color"><span>Text</span></label>
+                      <label class="playbook-style-color-control"><input type="color" id="playbookStyleColorAccent" data-playbook-style-color="accent" value="#536170" aria-label="Style accent color"><span>Accent</span></label>
+                    </div>
+                    <button type="button" class="playbook-style-color-reset" id="playbookStyleColorReset" title="Restore the original Playbook theme colors">Default Colors</button>
+                  </div>
+                </div>
+
+                <div class="playbook-style-category-panel" data-style-panel="reset" data-playbook-style-category-panel="reset">
+                  <span class="playbook-style-display-title">Reset</span>
+                  <div class="playbook-word-tool-row">
+                    <button type="button" class="playbook-style-option-btn wide" id="playbookStyleResetSelected">Reset Selected</button>
+                  </div>
                 </div>
               </div>
 
-              <div class="playbook-word-tool-group">
-                <span class="playbook-word-tool-label">Reset</span>
-                <div class="playbook-word-tool-row">
-                  <button type="button" class="playbook-style-option-btn wide" id="playbookStyleResetSelected">Reset Selected</button>
-                </div>
-              </div>
-
-              <div class="playbook-word-tool-group">
+              <div class="playbook-word-tool-group playbook-style-selection-group">
                 <span class="playbook-word-tool-label">Selection</span>
-                <div class="playbook-style-help" id="playbookStyleSelectionHelp">
-                  Place the cursor inside a list or Either / Or group, then style that selected structure.
-                </div>
+                <div class="playbook-style-help" id="playbookStyleSelectionHelp">Place the cursor inside a list or Either / Or group, then style that selected structure.</div>
               </div>
             </div>
 
@@ -13778,6 +13840,17 @@ function insertPlaybookElement(kind){
   if(templates[kind])insertPlaybookHtml(templates[kind]);
 }
 
+function setPlaybookStyleCategory(name){
+  const allowed=new Set(['alignment','spacing','borders','presets','colors','reset']);
+  const next=allowed.has(name)?name:'alignment';
+  $('[data-playbook-style-category]').forEach(button=>{
+    button.classList.toggle('active',button.dataset.playbookStyleCategory===next);
+  });
+  $('[data-playbook-style-category-panel]').forEach(panel=>{
+    panel.classList.toggle('active',panel.dataset.playbookStyleCategoryPanel===next);
+  });
+}
+
 function setPlaybookRibbonTab(name){
   $$('[data-playbook-ribbon]').forEach(button=>{
     const active=button.dataset.playbookRibbon===name;
@@ -13836,8 +13909,9 @@ function initPlaybookWorkspace(){
   $('#playbookCanvasZoomIn')?.addEventListener('click',()=>setPlaybookCanvasZoom(playbookCanvasZoom+.1));
   $('#playbookCanvasZoomReset')?.addEventListener('click',()=>setPlaybookCanvasZoom(1));
 
-  $$('[data-playbook-ribbon]').forEach(button=>button.addEventListener('click',()=>setPlaybookRibbonTab(button.dataset.playbookRibbon)));
-  $$('[data-playbook-command]').forEach(button=>button.addEventListener('click',()=>applyPlaybookCommand(button.dataset.playbookCommand)));
+  $('[data-playbook-ribbon]').forEach(button=>button.addEventListener('click',()=>setPlaybookRibbonTab(button.dataset.playbookRibbon)));
+  $('[data-playbook-style-category]').forEach(button=>button.addEventListener('click',()=>setPlaybookStyleCategory(button.dataset.playbookStyleCategory)));
+  $('[data-playbook-command]').forEach(button=>button.addEventListener('click',()=>applyPlaybookCommand(button.dataset.playbookCommand)));
   $('#playbookBlockStyle')?.addEventListener('change',event=>{applyPlaybookCommand('formatBlock',event.target.value);event.target.value='p'});
   $$('[data-playbook-insert]').forEach(button=>button.addEventListener('click',()=>insertPlaybookElement(button.dataset.playbookInsert)));
   $$('button[data-playbook-list-layout]').forEach(button=>button.addEventListener('click',()=>{
@@ -14116,7 +14190,7 @@ function secondaryWorkspaceHtml(kind){
           </div>
 
           <div class="playbook-word-ribbon-panel" data-ti-ribbon-panel="styles">
-            <div class="playbook-word-tool-group">
+            <div class="playbook-word-tool-group playbook-style-layout-group">
               <span class="playbook-word-tool-label">List Layout</span>
               <div class="playbook-word-tool-row">
                 ${['vertical','row','columns-2','columns-3','squares'].map((layout,index)=>`
@@ -14126,59 +14200,72 @@ function secondaryWorkspaceHtml(kind){
                   </button>`).join('')}
               </div>
             </div>
-            <div class="playbook-word-tool-group">
-              <span class="playbook-word-tool-label">Alignment</span>
-              <div class="playbook-word-tool-row">
-                <button type="button" class="playbook-style-option-btn" data-ti-style-align="left">Left</button>
-                <button type="button" class="playbook-style-option-btn" data-ti-style-align="center">Center</button>
-                <button type="button" class="playbook-style-option-btn" data-ti-style-align="right">Right</button>
-              </div>
+
+            <div class="playbook-style-category-menu" aria-label="Style tools">
+              <button type="button" class="playbook-style-category-btn active" data-ti-style-category="alignment">Alignment</button>
+              <button type="button" class="playbook-style-category-btn" data-ti-style-category="presets">Presets</button>
+              <button type="button" class="playbook-style-category-btn" data-ti-style-category="spacing">Spacing</button>
+              <button type="button" class="playbook-style-category-btn" data-ti-style-category="colors">Colors</button>
+              <button type="button" class="playbook-style-category-btn" data-ti-style-category="borders">Borders</button>
+              <button type="button" class="playbook-style-category-btn" data-ti-style-category="reset">Reset</button>
             </div>
-            <div class="playbook-word-tool-group">
-              <span class="playbook-word-tool-label">Spacing</span>
-              <div class="playbook-word-tool-row">
-                <button type="button" class="playbook-style-option-btn" data-ti-style-spacing="compact">Compact</button>
-                <button type="button" class="playbook-style-option-btn" data-ti-style-spacing="normal">Normal</button>
-                <button type="button" class="playbook-style-option-btn" data-ti-style-spacing="relaxed">Relaxed</button>
-              </div>
-            </div>
-            <div class="playbook-word-tool-group">
-              <span class="playbook-word-tool-label">Borders</span>
-              <div class="playbook-word-tool-row">
-                <button type="button" class="playbook-style-option-btn" data-ti-style-border="default">Default</button>
-                <button type="button" class="playbook-style-option-btn" data-ti-style-border="none">None</button>
-                <button type="button" class="playbook-style-option-btn" data-ti-style-border="thin">Thin</button>
-                <button type="button" class="playbook-style-option-btn" data-ti-style-border="strong">Strong</button>
-              </div>
-            </div>
-            <div class="playbook-word-tool-group">
-              <span class="playbook-word-tool-label">Presets</span>
-              <div class="playbook-word-tool-row">
-                <button type="button" class="playbook-style-option-btn" data-ti-style-preset="plain">Plain</button>
-                <button type="button" class="playbook-style-option-btn" data-ti-style-preset="card">Card</button>
-                <button type="button" class="playbook-style-option-btn" data-ti-style-preset="highlight">Highlight</button>
-                <button type="button" class="playbook-style-option-btn" data-ti-style-preset="minimal">Minimal</button>
-              </div>
-            </div>
-            <div class="playbook-word-tool-group">
-              <span class="playbook-word-tool-label">Colors</span>
-              <div class="playbook-word-tool-row">
-                <div class="playbook-style-color-grid">
-                  <label class="playbook-style-color-control"><input type="color" data-ti-style-color="background" value="#f7f9fb"><span>Fill</span></label>
-                  <label class="playbook-style-color-control"><input type="color" data-ti-style-color="border" value="#ccd5df"><span>Border</span></label>
-                  <label class="playbook-style-color-control"><input type="color" data-ti-style-color="text" value="#20242a"><span>Text</span></label>
-                  <label class="playbook-style-color-control"><input type="color" data-ti-style-color="accent" value="#536170"><span>Accent</span></label>
+
+            <div class="playbook-style-category-display" aria-live="polite">
+              <div class="playbook-style-category-panel active" data-style-panel="alignment" data-ti-style-category-panel="alignment">
+                <span class="playbook-style-display-title">Alignment</span>
+                <div class="playbook-word-tool-row">
+                  <button type="button" class="playbook-style-option-btn" data-ti-style-align="left">Left</button>
+                  <button type="button" class="playbook-style-option-btn" data-ti-style-align="center">Center</button>
+                  <button type="button" class="playbook-style-option-btn" data-ti-style-align="right">Right</button>
                 </div>
-                <button type="button" class="playbook-style-color-reset" data-ti-action="default-colors">Default Colors</button>
+              </div>
+              <div class="playbook-style-category-panel" data-style-panel="spacing" data-ti-style-category-panel="spacing">
+                <span class="playbook-style-display-title">Spacing</span>
+                <div class="playbook-word-tool-row">
+                  <button type="button" class="playbook-style-option-btn" data-ti-style-spacing="compact">Compact</button>
+                  <button type="button" class="playbook-style-option-btn" data-ti-style-spacing="normal">Normal</button>
+                  <button type="button" class="playbook-style-option-btn" data-ti-style-spacing="relaxed">Relaxed</button>
+                </div>
+              </div>
+              <div class="playbook-style-category-panel" data-style-panel="borders" data-ti-style-category-panel="borders">
+                <span class="playbook-style-display-title">Borders</span>
+                <div class="playbook-word-tool-row">
+                  <button type="button" class="playbook-style-option-btn" data-ti-style-border="default">Default</button>
+                  <button type="button" class="playbook-style-option-btn" data-ti-style-border="none">None</button>
+                  <button type="button" class="playbook-style-option-btn" data-ti-style-border="thin">Thin</button>
+                  <button type="button" class="playbook-style-option-btn" data-ti-style-border="strong">Strong</button>
+                </div>
+              </div>
+              <div class="playbook-style-category-panel" data-style-panel="presets" data-ti-style-category-panel="presets">
+                <span class="playbook-style-display-title">Presets</span>
+                <div class="playbook-word-tool-row">
+                  <button type="button" class="playbook-style-option-btn" data-ti-style-preset="plain">Plain</button>
+                  <button type="button" class="playbook-style-option-btn" data-ti-style-preset="card">Card</button>
+                  <button type="button" class="playbook-style-option-btn" data-ti-style-preset="highlight">Highlight</button>
+                  <button type="button" class="playbook-style-option-btn" data-ti-style-preset="minimal">Minimal</button>
+                </div>
+              </div>
+              <div class="playbook-style-category-panel" data-style-panel="colors" data-ti-style-category-panel="colors">
+                <span class="playbook-style-display-title">Colors</span>
+                <div class="playbook-word-tool-row">
+                  <div class="playbook-style-color-grid">
+                    <label class="playbook-style-color-control"><input type="color" data-ti-style-color="background" value="#f7f9fb"><span>Fill</span></label>
+                    <label class="playbook-style-color-control"><input type="color" data-ti-style-color="border" value="#ccd5df"><span>Border</span></label>
+                    <label class="playbook-style-color-control"><input type="color" data-ti-style-color="text" value="#20242a"><span>Text</span></label>
+                    <label class="playbook-style-color-control"><input type="color" data-ti-style-color="accent" value="#536170"><span>Accent</span></label>
+                  </div>
+                  <button type="button" class="playbook-style-color-reset" data-ti-action="default-colors">Default Colors</button>
+                </div>
+              </div>
+              <div class="playbook-style-category-panel" data-style-panel="reset" data-ti-style-category-panel="reset">
+                <span class="playbook-style-display-title">Reset</span>
+                <div class="playbook-word-tool-row">
+                  <button type="button" class="playbook-style-option-btn wide" data-ti-action="reset-style">Reset Selected</button>
+                </div>
               </div>
             </div>
-            <div class="playbook-word-tool-group">
-              <span class="playbook-word-tool-label">Reset</span>
-              <div class="playbook-word-tool-row">
-                <button type="button" class="playbook-style-option-btn wide" data-ti-action="reset-style">Reset Selected</button>
-              </div>
-            </div>
-            <div class="playbook-word-tool-group">
+
+            <div class="playbook-word-tool-group playbook-style-selection-group">
               <span class="playbook-word-tool-label">Selection</span>
               <div class="playbook-style-help" data-ti-style-help>Place the cursor inside a list or Either / Or group, then style that selected structure.</div>
             </div>
@@ -14547,6 +14634,17 @@ function applySecondaryCommand(kind,command,value=null){
   else document.execCommand(command,false,null);
   secondaryRememberSelection(kind);renderSecondaryPreview(kind);scheduleSecondarySave(kind);
 }
+function setSecondaryStyleCategory(kind,name){
+  const allowed=new Set(['alignment','spacing','borders','presets','colors','reset']);
+  const next=allowed.has(name)?name:'alignment';
+  secondaryFindAll(kind,'[data-ti-style-category]').forEach(button=>{
+    button.classList.toggle('active',button.dataset.tiStyleCategory===next);
+  });
+  secondaryFindAll(kind,'[data-ti-style-category-panel]').forEach(panel=>{
+    panel.classList.toggle('active',panel.dataset.tiStyleCategoryPanel===next);
+  });
+}
+
 function setSecondaryRibbon(kind,name){
   secondaryFindAll(kind,'[data-ti-ribbon]').forEach(btn=>btn.classList.toggle('active',btn.dataset.tiRibbon===name));
   secondaryFindAll(kind,'[data-ti-ribbon-panel]').forEach(panel=>panel.classList.toggle('active',panel.dataset.tiRibbonPanel===name));
@@ -14607,6 +14705,12 @@ function initSecondaryWorkspace(kind){
     const builder=event.target.closest('[data-ti-builder-switch]');
     if(builder){
       switchTechnicalInstrumentBuilder(builder.dataset.tiBuilderSwitch);
+      return;
+    }
+
+    const styleCategory=event.target.closest('[data-ti-style-category]');
+    if(styleCategory){
+      setSecondaryStyleCategory(kind,styleCategory.dataset.tiStyleCategory);
       return;
     }
 
