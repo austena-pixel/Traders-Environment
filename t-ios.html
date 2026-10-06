@@ -3484,6 +3484,63 @@ textarea{resize:vertical;min-height:90px}
   }
 }
 
+
+
+
+/* =====================================================
+   TECHNICAL INSTRUMENTS — PLAYBOOK WORD WORKSPACE
+===================================================== */
+.playbook-word-page-head{margin-bottom:12px}
+.playbook-word-shell{display:grid;grid-template-columns:238px minmax(0,1fr);min-height:720px;border:1px solid #202a38;border-radius:16px;overflow:hidden;background:#11161d}
+.playbook-word-library{min-width:0;padding:14px;border-right:1px solid #26303c;background:#0c1117}
+.playbook-word-library-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.playbook-word-library-head span{display:block;color:#73849a;font-size:8px;font-weight:850;letter-spacing:.7px}
+.playbook-word-library-head strong{display:block;margin-top:3px;font-size:13px}
+.playbook-word-mini-btn{width:34px;height:34px;border:1px solid #314158;border-radius:9px;background:#111b27;color:#dce8f7;font-size:20px}
+.playbook-word-search{width:100%;min-height:36px;margin-bottom:10px;border:1px solid #263449;border-radius:9px;background:#090e14;color:#eef4fb;padding:0 10px;outline:none}
+.playbook-word-search:focus{border-color:#609be9}
+.playbook-word-library-list{display:grid;gap:7px;max-height:560px;overflow:auto;padding-right:2px}
+.playbook-word-library-item{width:100%;display:block;text-align:left;border:1px solid transparent;border-radius:10px;background:transparent;color:#d4dde8;padding:10px}
+.playbook-word-library-item:hover{background:#111923;border-color:#202e40}
+.playbook-word-library-item.active{background:#122033;border-color:#355b88}
+.playbook-word-library-item strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+.playbook-word-library-item small{display:block;margin-top:4px;color:#76879b;font-size:8px;text-transform:uppercase;letter-spacing:.45px}
+.playbook-word-library-empty{padding:18px 8px;color:#738196;font-size:10px;line-height:1.6;text-align:center}
+.playbook-word-library-note{margin-top:12px;padding-top:11px;border-top:1px solid #1d2734;color:#6f8094;font-size:9px;line-height:1.55}
+.playbook-word-main{min-width:0;display:flex;flex-direction:column;background:#252930}
+.playbook-word-ribbon{position:relative;z-index:2;border-bottom:1px solid #c7cbd0;background:#f5f6f8;color:#1b2430}
+.playbook-word-tabs{display:flex;gap:2px;padding:5px 10px 0;border-bottom:1px solid #d4d7dc}
+.playbook-word-tab{min-height:31px;padding:0 13px;border:0;border-bottom:2px solid transparent;background:transparent;color:#3a4654;font-size:10px;font-weight:700}
+.playbook-word-tab.active{color:#175ea9;border-bottom-color:#175ea9}
+.playbook-word-ribbon-panel{display:none;min-height:74px;padding:8px 10px;align-items:stretch;gap:8px;overflow-x:auto}
+.playbook-word-ribbon-panel.active{display:flex}
+.playbook-word-tool-group{display:flex;flex-direction:column;justify-content:space-between;gap:5px;padding:0 9px 2px 0;border-right:1px solid #d6d9de;flex:0 0 auto}
+.playbook-word-tool-label{order:2;color:#6d7681;font-size:8px;text-align:center}
+.playbook-word-tool-row{display:flex;align-items:center;gap:4px}
+.playbook-word-tool-btn,.playbook-word-insert-btn{min-width:34px;min-height:31px;border:1px solid transparent;border-radius:5px;background:transparent;color:#202a36;padding:5px 8px;font-size:10px}
+.playbook-word-tool-btn:hover,.playbook-word-insert-btn:hover{border-color:#c8ced6;background:#e7edf5}
+.playbook-word-tool-btn.strong{font-weight:900}.playbook-word-tool-btn.italic{font-style:italic}.playbook-word-tool-btn.underline{text-decoration:underline}
+.playbook-word-style-select{min-width:120px;height:31px;border:1px solid #c8ced6;border-radius:5px;background:#fff;color:#202a36;padding:0 7px;font-size:10px}
+.playbook-word-properties{display:grid;grid-template-columns:minmax(220px,1.5fr) minmax(180px,1fr) 130px auto;gap:8px;width:100%;align-items:end}
+.playbook-word-properties label span{display:block;margin-bottom:4px;color:#5d6875;font-size:8px;font-weight:750}
+.playbook-word-properties input,.playbook-word-properties select{width:100%;height:34px;border:1px solid #c8ced6;border-radius:5px;background:#fff;color:#202a36;padding:0 8px;font-size:10px}
+.playbook-word-property-actions{display:flex;gap:5px;align-items:center}.playbook-word-property-actions .btn{min-height:34px;border-color:#c4cad2;background:#fff;color:#26313d}
+.playbook-word-document-stage{flex:1;min-width:0;padding:28px 24px 40px;overflow:auto;background:#2b2f36}
+.playbook-word-page{width:min(820px,100%);min-height:940px;margin:0 auto;padding:62px 72px 80px;background:#fff;color:#15191f;box-shadow:0 2px 13px rgba(0,0,0,.28)}
+.playbook-word-title-input{width:100%;border:0;outline:0;background:transparent;color:#111827;font-family:Georgia,'Times New Roman',serif;font-size:27px;font-weight:700;line-height:1.25;padding:0}
+.playbook-word-title-rule{height:1px;margin:14px 0 24px;background:#d9dde3}
+.playbook-word-editor{min-height:720px;outline:0;color:#20242a;font-family:Calibri,'Segoe UI',Arial,sans-serif;font-size:15px;line-height:1.62}
+.playbook-word-editor:empty::before{content:attr(data-placeholder);color:#a0a6ae;pointer-events:none}
+.playbook-word-editor h1{font-size:26px;margin:28px 0 12px}.playbook-word-editor h2{font-size:21px;margin:25px 0 10px}.playbook-word-editor h3{font-size:17px;margin:22px 0 8px}.playbook-word-editor p{margin:0 0 12px}
+.playbook-word-editor blockquote{margin:16px 0;padding:8px 14px;border-left:3px solid #9da7b4;color:#4b5563;background:#f6f7f8}
+.playbook-word-editor .pb-doc-rule,.playbook-word-editor .pb-doc-note,.playbook-word-editor .pb-doc-link{margin:14px 0;padding:12px 14px;border-radius:4px}
+.playbook-word-editor .pb-doc-rule{border-left:4px solid #2f6db3;background:#eef5fd}.playbook-word-editor .pb-doc-note{border-left:4px solid #8993a0;background:#f4f5f7}.playbook-word-editor .pb-doc-link{border:1px dashed #7f8da0;background:#f8f9fb}
+.playbook-word-editor .pb-doc-label{display:block;margin-bottom:5px;color:#526170;font-size:10px;font-weight:800;letter-spacing:.6px}
+.playbook-word-statusbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:7px 12px;border-top:1px solid #1d242e;background:#171b21;color:#8f9aaa;font-size:8px}
+.playbook-word-statusbar span:first-child{color:#bcd4f3}
+@media(max-width:1050px){.playbook-word-shell{grid-template-columns:200px minmax(0,1fr)}.playbook-word-page{padding:50px 52px 70px}.playbook-word-properties{grid-template-columns:1fr 1fr}}
+@media(max-width:820px){.playbook-word-shell{grid-template-columns:1fr}.playbook-word-library{border-right:0;border-bottom:1px solid #26303c}.playbook-word-library-list{max-height:170px;grid-template-columns:repeat(2,minmax(0,1fr))}.playbook-word-document-stage{padding:16px 10px 26px}.playbook-word-page{min-height:760px;padding:34px 24px 50px}.playbook-word-properties{grid-template-columns:1fr}}
+@media(max-width:520px){.playbook-word-library-list{grid-template-columns:1fr}.playbook-word-page{padding:28px 18px 42px}.playbook-word-title-input{font-size:23px}.playbook-word-ribbon-panel{min-height:68px}}
 </style>
 <style id="hios-product-brand-icons">
 /* Product marks use the same symbols and accents as the H-IOS sidebar. */
@@ -4350,200 +4407,155 @@ textarea{resize:vertical;min-height:90px}
 
 
     <section class="page" id="page-playbook">
-      <header class="page-head">
+      <header class="page-head playbook-word-page-head">
         <div>
-          <h1>Playbook</h1>
-          <p>Build your trading playbook your way. Once activated, T·IOS turns your own rules into a strict review checklist.</p>
+          <h1>Playbooks</h1>
+          <p>Build and organize your trading methodology like a document. Technical Instruments defines the plan; measurement stays in Execution Quality.</p>
         </div>
         <div class="top-actions">
-          <button class="btn" id="edgeNewPlaybookBtn">+ New Playbook</button>
-          <button class="btn" id="edgeEditPlaybookBtn">Edit Playbook</button>
-          <button class="btn primary" id="edgeSaveTopBtn">Save Review</button>
+          <button class="btn" type="button" id="playbookDraftNewBtn">+ New Playbook</button>
+          <button class="btn primary" type="button" id="playbookDraftSaveBtn">Save</button>
         </div>
       </header>
 
-      <section class="playbook-control-bar">
-        <div class="playbook-control-copy">
-          <span class="playbook-kicker">ACTIVE PLAYBOOK</span>
-          <strong id="edgeActivePlaybookName">No playbook yet</strong>
-          <small id="edgeActivePlaybookDescription">Create a playbook from a blank canvas. T·IOS will only enforce the rules you decide belong in it.</small>
-        </div>
-        <div class="playbook-control-actions">
-          <select id="edgePlaybookSelect" aria-label="Active playbook">
-            <option value="">No playbook</option>
-          </select>
-          <span class="playbook-status-pill" id="edgePlaybookStatus">Not configured</span>
-        </div>
-      </section>
-
-      <div class="playbook-library-strip" id="edgePlaybookLibraryList" aria-label="Saved playbooks"></div>
-
-      <section class="edge-summary">
-        <div class="metric">
-          <div class="label">Reviewed Trades</div>
-          <div class="value neutral" id="edgeReviewedCount">0</div>
-          <div class="sub">Playbook reviews completed</div>
-        </div>
-        <div class="metric">
-          <div class="label">Average Playbook Match</div>
-          <div class="value neutral" id="edgeAvgScore">—</div>
-          <div class="sub">Across reviewed trades</div>
-        </div>
-        <div class="metric">
-          <div class="label">Perfect Matches</div>
-          <div class="value neutral" id="edgeAPlusCount">0</div>
-          <div class="sub">Every required rule followed</div>
-        </div>
-        <div class="metric">
-          <div class="label">Unreviewed Trades</div>
-          <div class="value neutral" id="edgeUnreviewedCount">0</div>
-          <div class="sub">Still awaiting validation</div>
-        </div>
-      </section>
-
-      <div class="edge-layout">
-        <aside class="panel edge-browser">
-          <div class="edge-browser-head">
-            <h3>Trades</h3>
-            <span class="pager-text" id="edgeTradeCount">0 trades</span>
+      <section class="playbook-word-shell">
+        <aside class="playbook-word-library">
+          <div class="playbook-word-library-head">
+            <div>
+              <span>PLAYBOOK LIBRARY</span>
+              <strong>Your documents</strong>
+            </div>
+            <button class="playbook-word-mini-btn" type="button" id="playbookLibraryNewBtn" title="Create playbook" aria-label="Create playbook">+</button>
           </div>
 
-          <div class="edge-filters">
-            <input type="text" id="edgeSearch" placeholder="Search instrument or setup">
-            <select id="edgeStatusFilter">
-              <option value="">All</option>
-              <option value="reviewed">Reviewed</option>
-              <option value="unreviewed">Unreviewed</option>
-              <option value="aplus">Perfect</option>
-              <option value="a">1 miss</option>
-              <option value="b">2+ misses</option>
-            </select>
-          </div>
+          <input class="playbook-word-search" id="playbookLibrarySearch" type="search" placeholder="Search playbooks">
 
-          <div class="edge-trade-list" id="edgeTradeList">
-            <div class="empty-state">No trades recorded yet.</div>
-          </div>
+          <div class="playbook-word-library-list" id="playbookLibraryList"></div>
 
-          <div class="edge-help">
-            <strong>Principle:</strong> creation is flexible; execution is strict. T·IOS scores only the rules you marked as <b>Required</b>. Reference items can be recorded without reducing the score.
+          <div class="playbook-word-library-note">
+            Playbooks are definitions only. No score, adherence result or trade measurement is created here.
           </div>
         </aside>
 
-        <section class="panel edge-editor">
-          <div class="edge-empty" id="edgeEmptyState">
-            Create a playbook, then select a trade to compare what happened against the exact rules you defined.
-          </div>
+        <div class="playbook-word-main">
+          <div class="playbook-word-ribbon" aria-label="Playbook editor ribbon">
+            <div class="playbook-word-tabs" role="tablist" aria-label="Editor tools">
+              <button class="playbook-word-tab active" type="button" data-playbook-ribbon="home" role="tab" aria-selected="true">Home</button>
+              <button class="playbook-word-tab" type="button" data-playbook-ribbon="insert" role="tab" aria-selected="false">Insert</button>
+              <button class="playbook-word-tab" type="button" data-playbook-ribbon="playbook" role="tab" aria-selected="false">Playbook</button>
+            </div>
 
-          <div class="edge-editor-content hidden" id="edgeEditorContent">
-            <div class="edge-trade-header">
-              <div class="edge-trade-header-top">
-                <div>
-                  <h3 id="edgeSelectedTitle">—</h3>
-                  <p id="edgeSelectedSubtitle">—</p>
+            <div class="playbook-word-ribbon-panel active" data-playbook-ribbon-panel="home">
+              <div class="playbook-word-tool-group">
+                <span class="playbook-word-tool-label">History</span>
+                <div class="playbook-word-tool-row">
+                  <button type="button" class="playbook-word-tool-btn" data-playbook-command="undo" title="Undo">↶</button>
+                  <button type="button" class="playbook-word-tool-btn" data-playbook-command="redo" title="Redo">↷</button>
                 </div>
-                <div class="edge-trade-header-actions">
-                  <span class="grade-badge grade-none" id="edgeHeaderGrade">Unreviewed</span>
-                  <button class="edge-focus-review-btn" type="button" id="edgeFocusReviewBtn" title="Expand the playbook review area">⤢ Focus Review</button>
+              </div>
+
+              <div class="playbook-word-tool-group">
+                <span class="playbook-word-tool-label">Structure</span>
+                <select class="playbook-word-style-select" id="playbookBlockStyle" aria-label="Text style">
+                  <option value="p">Normal</option>
+                  <option value="h1">Heading 1</option>
+                  <option value="h2">Heading 2</option>
+                  <option value="h3">Heading 3</option>
+                  <option value="blockquote">Quote</option>
+                </select>
+              </div>
+
+              <div class="playbook-word-tool-group">
+                <span class="playbook-word-tool-label">Formatting</span>
+                <div class="playbook-word-tool-row">
+                  <button type="button" class="playbook-word-tool-btn strong" data-playbook-command="bold" title="Bold">B</button>
+                  <button type="button" class="playbook-word-tool-btn italic" data-playbook-command="italic" title="Italic">I</button>
+                  <button type="button" class="playbook-word-tool-btn underline" data-playbook-command="underline" title="Underline">U</button>
+                  <button type="button" class="playbook-word-tool-btn" data-playbook-command="removeFormat" title="Clear formatting">Tx</button>
                 </div>
               </div>
 
-              <div class="edge-trade-kpis">
-                <span class="edge-mini-kpi" id="edgeSelectedPnl">P&amp;L: —</span>
-                <span class="edge-mini-kpi" id="edgeSelectedReturn">Return: —</span>
-                <span class="edge-mini-kpi" id="edgeSelectedSetup">Setup: —</span>
+              <div class="playbook-word-tool-group">
+                <span class="playbook-word-tool-label">Paragraph</span>
+                <div class="playbook-word-tool-row">
+                  <button type="button" class="playbook-word-tool-btn" data-playbook-command="insertUnorderedList" title="Bullets">•≡</button>
+                  <button type="button" class="playbook-word-tool-btn" data-playbook-command="insertOrderedList" title="Numbered list">1≡</button>
+                  <button type="button" class="playbook-word-tool-btn" data-playbook-command="justifyLeft" title="Align left">≡</button>
+                  <button type="button" class="playbook-word-tool-btn" data-playbook-command="justifyCenter" title="Align center">≣</button>
+                </div>
               </div>
             </div>
 
-            <div class="trade-playbook-row">
-              <div>
-                <span class="playbook-kicker">PLAYBOOK USED FOR THIS TRADE</span>
-                <strong id="edgeTradePlaybookLabel">—</strong>
-                <small>The selected playbook version is preserved for this trade review.</small>
+            <div class="playbook-word-ribbon-panel" data-playbook-ribbon-panel="insert">
+              <div class="playbook-word-tool-group">
+                <span class="playbook-word-tool-label">Document</span>
+                <div class="playbook-word-tool-row">
+                  <button type="button" class="playbook-word-insert-btn" data-playbook-insert="section">+ Section</button>
+                  <button type="button" class="playbook-word-insert-btn" data-playbook-insert="rule">+ Rule</button>
+                  <button type="button" class="playbook-word-insert-btn" data-playbook-insert="note">+ Note</button>
+                  <button type="button" class="playbook-word-insert-btn" data-playbook-insert="divider">Divider</button>
+                </div>
               </div>
-              <select id="edgeTradePlaybookSelect" aria-label="Playbook used for this trade"></select>
+
+              <div class="playbook-word-tool-group">
+                <span class="playbook-word-tool-label">Technical Instruments</span>
+                <div class="playbook-word-tool-row">
+                  <button type="button" class="playbook-word-insert-btn" data-playbook-insert="checklist">Link Checklist</button>
+                  <button type="button" class="playbook-word-insert-btn" data-playbook-insert="reflection">Link Reflection</button>
+                </div>
+              </div>
             </div>
 
-            <div class="edge-score-board">
-              <div class="edge-score-card">
-                <span>Live Playbook Match</span>
-                <strong id="edgeLiveScore">0.0%</strong>
-              </div>
-              <div class="edge-score-card">
-                <span>Technical Rating</span>
-                <strong id="edgeLiveRating">—</strong>
-              </div>
-            </div>
-
-            <div class="plan-flow" id="edgeDynamicPlanFlow">
-              Create a playbook to define the sequence you want to follow.
-            </div>
-
-            <div id="edgeDynamicCriteria"></div>
-
-            <div class="edge-section">
-              <div class="field">
-                <label>Technical Review Notes</label>
-                <textarea class="edge-review-notes" id="edgeReviewNotes" placeholder="What confirmed the playbook? What was missed? What should be reinforced next time?"></textarea>
-              </div>
-
-              <div class="edge-help">
-                <strong>Strict review:</strong> Required criteria follow the logic you set for each subsection: ALL must match, or ANY ONE alternative can match. Reference items are recorded for context but do not reduce the score.
-              </div>
-
-              <div class="edge-actions">
-                <button class="btn danger" type="button" id="edgeDeleteReviewBtn">Delete Review</button>
-                <button class="btn primary" type="button" id="edgeSaveReviewBtn">Save Review</button>
+            <div class="playbook-word-ribbon-panel" data-playbook-ribbon-panel="playbook">
+              <div class="playbook-word-properties">
+                <label>
+                  <span>Description</span>
+                  <input id="playbookDraftDescription" type="text" placeholder="What opportunity or method does this playbook define?">
+                </label>
+                <label>
+                  <span>Tags</span>
+                  <input id="playbookDraftTags" type="text" placeholder="trend, resistance, london">
+                </label>
+                <label>
+                  <span>Status</span>
+                  <select id="playbookDraftState">
+                    <option value="active">Active</option>
+                    <option value="draft">Draft</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                </label>
+                <div class="playbook-word-property-actions">
+                  <button class="btn" type="button" id="playbookDraftDuplicateBtn">Duplicate</button>
+                  <button class="btn danger" type="button" id="playbookDraftDeleteBtn">Delete</button>
+                </div>
               </div>
             </div>
           </div>
-        </section>
-      </div>
 
-      <div class="playbook-builder-modal" id="edgePlaybookModal" aria-hidden="true">
-        <div class="playbook-builder-shell">
-          <div class="playbook-builder-head">
-            <div>
-              <span class="playbook-kicker">PLAYBOOK BUILDER</span>
-              <h3 id="edgeBuilderTitle">Create Playbook</h3>
-              <p>Start blank. Add only the stages and rules that belong to your own trading method.</p>
-            </div>
-            <button class="modal-close" type="button" id="edgeBuilderClose" aria-label="Close">×</button>
+          <div class="playbook-word-document-stage">
+            <article class="playbook-word-page" aria-label="Playbook document">
+              <input class="playbook-word-title-input" id="playbookDraftTitle" type="text" value="Untitled Playbook" aria-label="Playbook title">
+              <div class="playbook-word-title-rule"></div>
+
+              <div
+                class="playbook-word-editor"
+                id="playbookDocumentEditor"
+                contenteditable="true"
+                role="textbox"
+                aria-multiline="true"
+                spellcheck="true"
+                data-placeholder="Start writing your trading playbook..."
+              ></div>
+            </article>
           </div>
 
-          <div class="playbook-builder-basics">
-            <div class="field">
-              <label>Playbook name</label>
-              <input id="edgeBuilderName" type="text" placeholder="e.g. London Continuation">
-            </div>
-            <div class="field">
-              <label>Purpose / description <span style="color:var(--muted)">(optional)</span></label>
-              <textarea id="edgeBuilderDescription" placeholder="What kind of opportunity is this playbook designed to capture?"></textarea>
-            </div>
-          </div>
-
-          <div class="playbook-builder-guide">
-            <strong>Build it in your own language.</strong>
-            <span>Start with several sections so the playbook is easy to organize. Each section can have a main Heading plus up to 4 nested Subheadings (5 levels total), for example: Market Context → Structure → Setup → Trigger → Entry. Add as many sections as you need. Required criteria can be enforced as ALL-required or ANY-ONE alternatives per subsection; Reference items are informational.</span>
-          </div>
-
-          <div class="playbook-builder-sections" id="edgeBuilderSections"></div>
-
-          <div class="playbook-builder-add-row">
-            <button class="btn" type="button" id="edgeAddSectionBtn">+ Add Step</button>
-          </div>
-
-          <div class="playbook-builder-foot">
-            <label class="playbook-active-choice">
-              <input type="checkbox" id="edgeBuilderSetActive" checked>
-              <span>Use this as my active/default playbook</span>
-            </label>
-            <div class="edge-actions">
-              <button class="btn" type="button" id="edgeBuilderCancel">Cancel</button>
-              <button class="btn primary" type="button" id="edgeBuilderSave">Save Playbook</button>
-            </div>
+          <div class="playbook-word-statusbar">
+            <span id="playbookDraftSaveState">Ready</span>
+            <span>Technical Instrument · definition only</span>
+            <span id="playbookWordCount">0 words</span>
           </div>
         </div>
-      </div>
+      </section>
     </section>
 
 
@@ -6690,7 +6702,7 @@ if(page==='journal'){
   }
 
   if(page==='playbook'){
-    renderEdgePlaybook();
+    renderPlaybookWorkspace();
   }
 
   if(page==='statistics'){
@@ -9478,6 +9490,326 @@ $('#statsMonthInput').addEventListener('change',e=>{
 });
 
 
+
+/* =========================
+   TECHNICAL INSTRUMENTS / PLAYBOOK DOCUMENT WORKSPACE
+========================= */
+
+const PLAYBOOK_DOCUMENT_STORE_PREFIX='tios_playbook_documents_v1';
+let playbookDocuments=[];
+let selectedPlaybookDocumentId=null;
+let playbookDocumentStoreKey=null;
+let playbookDocumentSaveTimer=null;
+let playbookWorkspaceInitialized=false;
+
+function playbookDocumentKey(){
+  const userId=currentUser?.id || 'anonymous';
+  const accountId=tradingAccount?.id || 'default';
+  return `${PLAYBOOK_DOCUMENT_STORE_PREFIX}:${userId}:${accountId}`;
+}
+
+function playbookModule(){
+  return window.TIOS?.technicalInstruments?.playbooks || null;
+}
+
+function normalizePlaybookDocument(raw={}){
+  const module=playbookModule();
+  const base=module?.create
+    ? module.create(raw)
+    : {
+        id:raw.id || ('playbook_'+Date.now()),
+        name:String(raw.name||'Untitled Playbook'),
+        description:String(raw.description||''),
+        checklistIds:Array.isArray(raw.checklistIds)?raw.checklistIds:[],
+        reflectionStructureIds:Array.isArray(raw.reflectionStructureIds)?raw.reflectionStructureIds:[],
+        tags:Array.isArray(raw.tags)?raw.tags:[],
+        instrumentState:String(raw.instrumentState||'active'),
+        createdAt:raw.createdAt || new Date().toISOString(),
+        updatedAt:new Date().toISOString()
+      };
+
+  base.name=String(raw.name||base.name||'Untitled Playbook').trim() || 'Untitled Playbook';
+  base.description=String(raw.description||base.description||'');
+  base.documentHtml=String(raw.documentHtml||base.documentHtml||'');
+  base.tags=Array.isArray(raw.tags)?raw.tags:base.tags||[];
+  base.instrumentState=String(raw.instrumentState||base.instrumentState||'active');
+  base.createdAt=raw.createdAt || base.createdAt || new Date().toISOString();
+  base.updatedAt=raw.updatedAt || base.updatedAt || new Date().toISOString();
+  return base;
+}
+
+function loadPlaybookDocuments(){
+  const key=playbookDocumentKey();
+  if(playbookDocumentStoreKey===key) return;
+  playbookDocumentStoreKey=key;
+  let stored=[];
+  try{
+    const parsed=JSON.parse(localStorage.getItem(key)||'[]');
+    stored=Array.isArray(parsed)?parsed:[];
+  }catch(error){
+    console.warn('Could not read Playbook document library',error);
+  }
+  playbookDocuments=stored.map(normalizePlaybookDocument);
+  selectedPlaybookDocumentId=localStorage.getItem(key+':selected') || playbookDocuments[0]?.id || null;
+  if(selectedPlaybookDocumentId&&!playbookDocuments.some(item=>item.id===selectedPlaybookDocumentId)){
+    selectedPlaybookDocumentId=playbookDocuments[0]?.id || null;
+  }
+}
+
+function persistPlaybookDocuments(){
+  if(!playbookDocumentStoreKey) playbookDocumentStoreKey=playbookDocumentKey();
+  localStorage.setItem(playbookDocumentStoreKey,JSON.stringify(playbookDocuments));
+  if(selectedPlaybookDocumentId)localStorage.setItem(playbookDocumentStoreKey+':selected',selectedPlaybookDocumentId);
+}
+
+function currentPlaybookDocument(){
+  return playbookDocuments.find(item=>item.id===selectedPlaybookDocumentId) || null;
+}
+
+function playbookDocumentSummary(documentItem){
+  const state=String(documentItem?.instrumentState||'active');
+  const updated=documentItem?.updatedAt?new Date(documentItem.updatedAt):null;
+  const when=updated&&!Number.isNaN(updated.getTime())
+    ? updated.toLocaleDateString(undefined,{month:'short',day:'numeric'})
+    : 'New';
+  return `${state} · ${when}`;
+}
+
+function renderPlaybookLibraryDraft(){
+  const list=$('#playbookLibraryList');
+  if(!list)return;
+  const query=($('#playbookLibrarySearch')?.value||'').trim().toLowerCase();
+  const visible=playbookDocuments.filter(item=>{
+    if(!query)return true;
+    return [item.name,item.description,(item.tags||[]).join(' ')].join(' ').toLowerCase().includes(query);
+  });
+  if(!visible.length){
+    list.innerHTML='<div class="playbook-word-library-empty">No matching playbooks.<br>Create one to start defining your trading method.</div>';
+    return;
+  }
+  list.innerHTML=visible.map(item=>`
+    <button class="playbook-word-library-item ${item.id===selectedPlaybookDocumentId?'active':''}" type="button" data-playbook-document-id="${escapeHtml(item.id)}">
+      <strong>${escapeHtml(item.name||'Untitled Playbook')}</strong>
+      <small>${escapeHtml(playbookDocumentSummary(item))}</small>
+    </button>
+  `).join('');
+}
+
+function renderPlaybookDocumentEditor(){
+  const title=$('#playbookDraftTitle');
+  const editor=$('#playbookDocumentEditor');
+  const description=$('#playbookDraftDescription');
+  const tags=$('#playbookDraftTags');
+  const state=$('#playbookDraftState');
+  if(!title||!editor||!description||!tags||!state)return;
+
+  const item=currentPlaybookDocument();
+  if(!item){
+    title.value='Untitled Playbook'; editor.innerHTML=''; description.value=''; tags.value=''; state.value='active';
+    $('#playbookDraftSaveState').textContent='Create a playbook to begin';
+    updatePlaybookWordCount();
+    return;
+  }
+  title.value=item.name||'Untitled Playbook';
+  editor.innerHTML=item.documentHtml||'';
+  description.value=item.description||'';
+  tags.value=(item.tags||[]).join(', ');
+  state.value=['active','draft','archived'].includes(item.instrumentState)?item.instrumentState:'active';
+  $('#playbookDraftSaveState').textContent='Saved';
+  updatePlaybookWordCount();
+}
+
+function renderPlaybookWorkspace(){
+  if(!$('#page-playbook')||!$('#playbookDocumentEditor'))return;
+  initPlaybookWorkspace();
+  loadPlaybookDocuments();
+  if(!playbookDocuments.length){
+    createPlaybookDocument({silent:true});
+    return;
+  }
+  renderPlaybookLibraryDraft();
+  renderPlaybookDocumentEditor();
+}
+
+function createPlaybookDocument({silent=false,source=null}={}){
+  loadPlaybookDocuments();
+  const module=playbookModule();
+  const now=new Date().toISOString();
+  const input=source
+    ? {...source,id:null,name:(source.name||'Untitled Playbook')+' Copy',createdAt:now,updatedAt:now}
+    : {
+        name:'Untitled Playbook',
+        description:'',
+        documentHtml:'<h2>Trading Method</h2><p>Describe the opportunity, context or idea this playbook is designed to capture.</p><h2>Rules</h2><p>Start defining your trading rules here.</p>',
+        tags:[],
+        instrumentState:'draft'
+      };
+  const created=module?.create?module.create(input):normalizePlaybookDocument(input);
+  created.documentHtml=String(input.documentHtml||created.documentHtml||'');
+  created.name=String(input.name||created.name||'Untitled Playbook');
+  created.instrumentState=String(input.instrumentState||created.instrumentState||'draft');
+  created.createdAt=now; created.updatedAt=now;
+  playbookDocuments.unshift(created);
+  selectedPlaybookDocumentId=created.id;
+  persistPlaybookDocuments();
+  renderPlaybookLibraryDraft();
+  renderPlaybookDocumentEditor();
+  requestAnimationFrame(()=>{$('#playbookDraftTitle')?.focus();$('#playbookDraftTitle')?.select()});
+  if(!silent)showStatus('New Playbook created');
+}
+
+function collectPlaybookDocumentFromEditor(){
+  const item=currentPlaybookDocument();
+  if(!item)return null;
+  const title=String($('#playbookDraftTitle')?.value||'').trim() || 'Untitled Playbook';
+  const description=String($('#playbookDraftDescription')?.value||'').trim();
+  const tags=String($('#playbookDraftTags')?.value||'').split(',').map(tag=>tag.trim()).filter(Boolean);
+  const instrumentState=String($('#playbookDraftState')?.value||'active');
+  const documentHtml=String($('#playbookDocumentEditor')?.innerHTML||'');
+  return {...item,name:title,description,tags:[...new Set(tags)],instrumentState,documentHtml,updatedAt:new Date().toISOString()};
+}
+
+function savePlaybookDocument({quiet=false}={}){
+  const next=collectPlaybookDocumentFromEditor();
+  if(!next)return;
+  const module=playbookModule();
+  const validation=module?.validate?module.validate(next):{valid:true,errors:[]};
+  if(!validation.valid){if(!quiet)alert(validation.errors.join('\n'));return}
+  playbookDocuments=playbookDocuments.map(item=>item.id===next.id?next:item);
+  persistPlaybookDocuments();
+  renderPlaybookLibraryDraft();
+  $('#playbookDraftSaveState').textContent='Saved';
+  if(!quiet)showStatus('Playbook saved');
+}
+
+function schedulePlaybookDocumentSave(){
+  const state=$('#playbookDraftSaveState');
+  if(state)state.textContent='Saving…';
+  clearTimeout(playbookDocumentSaveTimer);
+  playbookDocumentSaveTimer=setTimeout(()=>savePlaybookDocument({quiet:true}),650);
+}
+
+function selectPlaybookDocument(id){
+  if(!playbookDocuments.some(item=>item.id===id))return;
+  if(currentPlaybookDocument())savePlaybookDocument({quiet:true});
+  selectedPlaybookDocumentId=id;
+  persistPlaybookDocuments();
+  renderPlaybookLibraryDraft();
+  renderPlaybookDocumentEditor();
+}
+
+function deletePlaybookDocument(){
+  const item=currentPlaybookDocument();
+  if(!item)return;
+  if(!confirm(`Delete "${item.name}" from this Playbook library? This does not delete historical trade reviews.`))return;
+  playbookDocuments=playbookDocuments.filter(documentItem=>documentItem.id!==item.id);
+  selectedPlaybookDocumentId=playbookDocuments[0]?.id||null;
+  persistPlaybookDocuments();
+  if(!playbookDocuments.length)createPlaybookDocument({silent:true});
+  else{renderPlaybookLibraryDraft();renderPlaybookDocumentEditor()}
+  showStatus('Playbook deleted from the document library');
+}
+
+function duplicatePlaybookDocument(){
+  const item=currentPlaybookDocument();
+  if(!item)return;
+  savePlaybookDocument({quiet:true});
+  createPlaybookDocument({source:item});
+  showStatus('Playbook duplicated');
+}
+
+function updatePlaybookWordCount(){
+  const editor=$('#playbookDocumentEditor');
+  const target=$('#playbookWordCount');
+  if(!editor||!target)return;
+  const content=(editor.textContent||'').trim();
+  const words=content?content.split(/\s+/).filter(Boolean).length:0;
+  target.textContent=`${words} word${words===1?'':'s'}`;
+}
+
+function focusPlaybookEditor(){
+  const editor=$('#playbookDocumentEditor');
+  if(!editor)return null;
+  editor.focus();
+  return editor;
+}
+
+function applyPlaybookCommand(command,value=null){
+  const editor=focusPlaybookEditor();
+  if(!editor)return;
+  document.execCommand(command,false,value);
+  updatePlaybookWordCount();
+  schedulePlaybookDocumentSave();
+}
+
+function insertPlaybookHtml(markup){
+  const editor=focusPlaybookEditor();
+  if(!editor)return;
+  document.execCommand('insertHTML',false,markup);
+  updatePlaybookWordCount();
+  schedulePlaybookDocumentSave();
+}
+
+function insertPlaybookElement(kind){
+  const templates={
+    section:'<h2>New Section</h2><p>Define this part of your trading method.</p>',
+    rule:'<div class="pb-doc-rule" data-playbook-node="rule"><span class="pb-doc-label">RULE</span><p>Define the trading rule here.</p></div><p><br></p>',
+    note:'<div class="pb-doc-note" data-playbook-node="note"><span class="pb-doc-label">NOTE</span><p>Add context, explanation or reference information.</p></div><p><br></p>',
+    divider:'<hr><p><br></p>',
+    checklist:'<div class="pb-doc-link" data-playbook-node="checklist-link"><span class="pb-doc-label">LINKED CHECKLIST</span><p>Type the checklist name here. This reference will later connect to the separate Checklists library.</p></div><p><br></p>',
+    reflection:'<div class="pb-doc-link" data-playbook-node="reflection-link"><span class="pb-doc-label">LINKED REFLECTION</span><p>Type the reflection structure name here. This reference will later connect to the separate Reflections library.</p></div><p><br></p>'
+  };
+  if(templates[kind])insertPlaybookHtml(templates[kind]);
+}
+
+function setPlaybookRibbonTab(name){
+  $$('[data-playbook-ribbon]').forEach(button=>{
+    const active=button.dataset.playbookRibbon===name;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-selected',active?'true':'false');
+  });
+  $$('[data-playbook-ribbon-panel]').forEach(panel=>panel.classList.toggle('active',panel.dataset.playbookRibbonPanel===name));
+}
+
+function initPlaybookWorkspace(){
+  if(playbookWorkspaceInitialized||!$('#playbookDocumentEditor'))return;
+  playbookWorkspaceInitialized=true;
+
+  $('#playbookDraftNewBtn')?.addEventListener('click',()=>createPlaybookDocument());
+  $('#playbookLibraryNewBtn')?.addEventListener('click',()=>createPlaybookDocument());
+  $('#playbookDraftSaveBtn')?.addEventListener('click',()=>savePlaybookDocument());
+  $('#playbookDraftDuplicateBtn')?.addEventListener('click',duplicatePlaybookDocument);
+  $('#playbookDraftDeleteBtn')?.addEventListener('click',deletePlaybookDocument);
+  $('#playbookLibrarySearch')?.addEventListener('input',renderPlaybookLibraryDraft);
+  $('#playbookLibraryList')?.addEventListener('click',event=>{
+    const button=event.target.closest('[data-playbook-document-id]');
+    if(button)selectPlaybookDocument(button.dataset.playbookDocumentId);
+  });
+
+  $$('[data-playbook-ribbon]').forEach(button=>button.addEventListener('click',()=>setPlaybookRibbonTab(button.dataset.playbookRibbon)));
+  $$('[data-playbook-command]').forEach(button=>button.addEventListener('click',()=>applyPlaybookCommand(button.dataset.playbookCommand)));
+  $('#playbookBlockStyle')?.addEventListener('change',event=>{applyPlaybookCommand('formatBlock',event.target.value);event.target.value='p'});
+  $$('[data-playbook-insert]').forEach(button=>button.addEventListener('click',()=>insertPlaybookElement(button.dataset.playbookInsert)));
+
+  ['#playbookDraftTitle','#playbookDraftDescription','#playbookDraftTags','#playbookDraftState','#playbookDocumentEditor'].forEach(selector=>{
+    $(selector)?.addEventListener('input',()=>{updatePlaybookWordCount();schedulePlaybookDocumentSave()});
+    $(selector)?.addEventListener('change',schedulePlaybookDocumentSave);
+  });
+
+  $('#playbookDocumentEditor')?.addEventListener('paste',event=>{
+    event.preventDefault();
+    const plain=event.clipboardData?.getData('text/plain')||'';
+    document.execCommand('insertText',false,plain);
+  });
+
+  $('#playbookDocumentEditor')?.addEventListener('keydown',event=>{
+    if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='s'){
+      event.preventDefault();
+      savePlaybookDocument();
+    }
+  });
+}
+
 /* =========================
    EDGE / FLEXIBLE PLAYBOOK SYSTEM
    Creation is user-defined. Review is strict against the rules the user marks Required.
@@ -10263,6 +10595,10 @@ function renderSelectedEdgeTrade(){
   loadEdgeReviewIntoEditor(trade);
 }
 function renderEdgePlaybook(){
+  if(!$('#edgeTradeList')){
+    renderPlaybookWorkspace();
+    return;
+  }
   renderPlaybookLibrary(); renderEdgeSummary(); renderEdgeTradeList(); renderSelectedEdgeTrade();
 }
 
@@ -10599,14 +10935,14 @@ async function savePlaybookFromBuilder(){
 }
 
 
-$('#edgeReviewNotes').addEventListener('input',()=>{
+$('#edgeReviewNotes')?.addEventListener('input',()=>{
   if(reviewForTrade(selectedEdgeTradeId)){
     $('#edgeSaveReviewBtn').textContent='Update Review';
     $('#edgeSaveTopBtn').textContent='Update Review';
   }
 });
 
-$('#edgeDynamicCriteria').addEventListener('change',event=>{
+$('#edgeDynamicCriteria')?.addEventListener('change',event=>{
   if(!event.target.classList.contains('edge-check-input'))return;
   updatePlaybookBranchOutcomes();
   updateEdgeLiveScore();
@@ -10616,8 +10952,8 @@ $('#edgeDynamicCriteria').addEventListener('change',event=>{
     $('#edgeSaveTopBtn').textContent='Update Review';
   }
 });
-$('#edgeSearch').addEventListener('input',renderEdgeTradeList); $('#edgeStatusFilter').addEventListener('change',renderEdgeTradeList);
-$('#edgePlaybookSelect').addEventListener('change',()=>{if($('#edgePlaybookSelect').value)setActivePlaybook($('#edgePlaybookSelect').value)});
+$('#edgeSearch')?.addEventListener('input',renderEdgeTradeList); $('#edgeStatusFilter')?.addEventListener('change',renderEdgeTradeList);
+$('#edgePlaybookSelect')?.addEventListener('change',()=>{if($('#edgePlaybookSelect').value)setActivePlaybook($('#edgePlaybookSelect').value)});
 $('#edgePlaybookLibraryList')?.addEventListener('click',event=>{
   const button=event.target.closest('[data-playbook-library-id]');
   if(button)setActivePlaybook(button.dataset.playbookLibraryId);
@@ -10637,16 +10973,16 @@ document.addEventListener('keydown',event=>{
   if($('#page-playbook')?.classList.contains('playbook-focus-mode')&&!$('#edgePlaybookModal')?.classList.contains('show'))setEdgeFocusMode(false);
 });
 
-$('#edgeTradePlaybookSelect').addEventListener('change',()=>{
+$('#edgeTradePlaybookSelect')?.addEventListener('change',()=>{
   if(!selectedEdgeTradeId)return; const value=$('#edgeTradePlaybookSelect').value; if(!value)return;
   const review=reviewForTrade(selectedEdgeTradeId); if(review&&!confirm('This trade already has a saved review. Switching playbooks will replace its criteria the next time you save. Continue?')){renderSelectedEdgeTrade();return}
   const [id,version]=value.split('|'); assignPlaybookToTrade(selectedEdgeTradeId,id,Number(version)); renderSelectedEdgeTrade();
 });
-$('#edgeNewPlaybookBtn').addEventListener('click',()=>openPlaybookBuilder());
-$('#edgeEditPlaybookBtn').addEventListener('click',()=>{const pb=activePlaybook(); if(pb)openPlaybookBuilder(pb.id)});
-$('#edgeBuilderClose').addEventListener('click',closePlaybookBuilder); $('#edgeBuilderCancel').addEventListener('click',closePlaybookBuilder); $('#edgeBuilderSave').addEventListener('click',savePlaybookFromBuilder);
-$('#edgeAddSectionBtn').addEventListener('click',()=>{const index=$$('[data-builder-section]').length;$('#edgeBuilderSections').insertAdjacentHTML('beforeend',builderSectionTemplate({},index));refreshBuilderStepLabels()});
-$('#edgeBuilderSections').addEventListener('click',async event=>{
+$('#edgeNewPlaybookBtn')?.addEventListener('click',()=>openPlaybookBuilder());
+$('#edgeEditPlaybookBtn')?.addEventListener('click',()=>{const pb=activePlaybook(); if(pb)openPlaybookBuilder(pb.id)});
+$('#edgeBuilderClose')?.addEventListener('click',closePlaybookBuilder); $('#edgeBuilderCancel')?.addEventListener('click',closePlaybookBuilder); $('#edgeBuilderSave')?.addEventListener('click',savePlaybookFromBuilder);
+$('#edgeAddSectionBtn')?.addEventListener('click',()=>{const index=$$('[data-builder-section]').length;$('#edgeBuilderSections').insertAdjacentHTML('beforeend',builderSectionTemplate({},index));refreshBuilderStepLabels()});
+$('#edgeBuilderSections')?.addEventListener('click',async event=>{
   const section=event.target.closest('[data-builder-section]'); if(!section)return;
   if(event.target.matches('[data-add-subheading]')){
     const stack=section.querySelector('.playbook-heading-stack');
@@ -10717,9 +11053,9 @@ $('#edgeBuilderSections').addEventListener('click',async event=>{
   else if(event.target.matches('[data-step-up]')&&section.previousElementSibling){section.parentNode.insertBefore(section,section.previousElementSibling);refreshBuilderStepLabels()}
   else if(event.target.matches('[data-step-down]')&&section.nextElementSibling){section.parentNode.insertBefore(section.nextElementSibling,section);refreshBuilderStepLabels()}
 });
-$('#edgePlaybookModal').addEventListener('click',event=>{if(event.target.id==='edgePlaybookModal')closePlaybookBuilder()});
+$('#edgePlaybookModal')?.addEventListener('click',event=>{if(event.target.id==='edgePlaybookModal')closePlaybookBuilder()});
 
-$('#edgeBuilderSections').addEventListener('change',async event=>{
+$('#edgeBuilderSections')?.addEventListener('change',async event=>{
   if(!event.target.matches('[data-rule-image-input]'))return;
   const input=event.target;
   const file=input.files?.[0];
@@ -10794,7 +11130,7 @@ document.addEventListener('click',event=>{
 });
 
 $('#edgeRefreshBtn')?.addEventListener('click',async()=>{await loadTrades();await loadEdgeData();renderEdgePlaybook();renderJournal();showStatus('Edge data refreshed')});
-$('#edgeSaveReviewBtn').addEventListener('click',saveEdgeReview); $('#edgeSaveTopBtn').addEventListener('click',saveEdgeReview); $('#edgeDeleteReviewBtn').addEventListener('click',deleteEdgeReview);
+$('#edgeSaveReviewBtn')?.addEventListener('click',saveEdgeReview); $('#edgeSaveTopBtn')?.addEventListener('click',saveEdgeReview); $('#edgeDeleteReviewBtn')?.addEventListener('click',deleteEdgeReview);
 
 /* =========================
    PSYCHOLOGY / SESSION SYSTEM
@@ -12309,7 +12645,7 @@ function renderAll(){
   renderDashboard();
   renderJournal();
   renderPsychology();
-  renderEdgePlaybook();
+  renderPlaybookWorkspace();
   renderExecution();
   renderStatistics();
 
