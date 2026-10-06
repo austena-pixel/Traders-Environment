@@ -7760,8 +7760,17 @@ function navigate(page){
   });
 
   const executionWorkspace=page==='execution';
+  const playbookWorkspace=page==='playbook';
   document.body.classList.toggle('execution-workspace',executionWorkspace);
-  document.body.classList.toggle('playbook-workspace',page==='playbook');
+  document.body.classList.toggle('playbook-workspace',playbookWorkspace);
+
+  if(playbookWorkspace){
+    closeSidebarMobile();
+    if(window.matchMedia('(min-width: 861px)').matches){
+      setTiosDesktopSidebarCollapsed(true);
+    }
+  }
+
   if(executionWorkspace){
     window.scrollTo(0,0);
   }
