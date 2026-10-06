@@ -4570,6 +4570,18 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
   padding:0 9px;
   font-size:10px;
 }
+.execution-map-control-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;align-items:center}
+.execution-map-view-btn{min-height:36px;padding:0 10px;border:1px solid #355273;border-radius:8px;background:#101b28;color:#b8d3ef;font-size:9px;font-weight:850;cursor:pointer;transition:transform .15s ease,border-color .15s ease,background .15s ease,color .15s ease}
+.execution-map-view-btn:hover:not(:disabled){transform:translateY(-1px);border-color:#5d88b6;background:#16273b;color:#fff}
+.execution-map-view-btn:disabled{opacity:.42;cursor:not-allowed}
+.execution-map-control.checklist .execution-map-view-btn{border-color:#315d4a;background:#0f2119;color:#9edbbb}
+.execution-map-control.psych .execution-map-view-btn{border-color:#5b406d;background:#1d1426;color:#d7b4e9}
+.execution-instrument-section.is-focused{animation:executionInstrumentFocus 1.25s ease}
+@keyframes executionInstrumentFocus{
+  0%{box-shadow:0 0 0 1px rgba(105,168,255,0);background:transparent}
+  35%{box-shadow:0 0 0 1px rgba(105,168,255,.42),0 0 28px rgba(70,130,210,.12);background:rgba(60,110,170,.045)}
+  100%{box-shadow:0 0 0 1px rgba(105,168,255,0);background:transparent}
+}
 .execution-map-state strong{
   display:block;
   color:#c7d8ea;
@@ -6553,15 +6565,21 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           <select id="executionMapPlaybookSelect" aria-label="Playbook to map"></select>
         </label>
 
-        <label class="execution-map-control">
+        <div class="execution-map-control checklist">
           <span>Checklist</span>
-          <select id="executionMapChecklistSelect" aria-label="Checklist to map"></select>
-        </label>
+          <div class="execution-map-control-row">
+            <select id="executionMapChecklistSelect" aria-label="Checklist to map"></select>
+            <button class="execution-map-view-btn" type="button" id="executionMapChecklistViewBtn">View</button>
+          </div>
+        </div>
 
-        <label class="execution-map-control">
-          <span>Psychological Review</span>
-          <select id="executionMapPsychSelect" aria-label="Psychological Review to map"></select>
-        </label>
+        <div class="execution-map-control psych">
+          <span>Psychological Reflection</span>
+          <div class="execution-map-control-row">
+            <select id="executionMapPsychSelect" aria-label="Psychological Reflection to map"></select>
+            <button class="execution-map-view-btn" type="button" id="executionMapPsychViewBtn">View</button>
+          </div>
+        </div>
 
         <div class="execution-map-state">
           <span>MAPPING STATUS</span>
@@ -10554,6 +10572,9 @@ function executionMappingTrade(){
 }
 
 function renderExecutionMappingControls(){
+  loadSecondaryDocuments('checklist',{refresh:true});
+  loadSecondaryDocuments('psych',{refresh:true});
+
   const tradeSelect=$('#executionMapTradeSelect');
   const playbookSelect=$('#executionMapPlaybookSelect');
   const checklistSelect=$('#executionMapChecklistSelect');
@@ -10580,11 +10601,19 @@ function renderExecutionMappingControls(){
   checklistSelect.innerHTML=checklistState.docs.length
     ? checklistState.docs.map(item=>`<option value="${escapeHtml(item.id)}" ${item.id===checklist?.id?'selected':''}>${escapeHtml(item.name||'Untitled Checklist')}</option>`).join('')
     : '<option value="">No Checklists</option>';
+  const checklistLabel=checklistSelect.closest('.execution-map-control')?.querySelector(':scope > span');
+  if(checklistLabel)checklistLabel.textContent='Checklist'+(checklistState.docs.length?` (${checklistState.docs.length})`:'');
+  const checklistView=$('#executionMapChecklistViewBtn');
+  if(checklistView)checklistView.disabled=!checklist;
 
   const psychState=secondaryState('psych');
   psychSelect.innerHTML=psychState.docs.length
-    ? psychState.docs.map(item=>`<option value="${escapeHtml(item.id)}" ${item.id===psych?.id?'selected':''}>${escapeHtml(item.name||'Untitled Psychological Review')}</option>`).join('')
-    : '<option value="">No Psychological Reviews</option>';
+    ? psychState.docs.map(item=>`<option value="${escapeHtml(item.id)}" ${item.id===psych?.id?'selected':''}>${escapeHtml(item.name||'Untitled Psychological Reflection')}</option>`).join('')
+    : '<option value="">No Psychological Reflections</option>';
+  const psychLabel=psychSelect.closest('.execution-map-control')?.querySelector(':scope > span');
+  if(psychLabel)psychLabel.textContent='Psychological Reflection'+(psychState.docs.length?` (${psychState.docs.length})`:'');
+  const psychView=$('#executionMapPsychViewBtn');
+  if(psychView)psychView.disabled=!psych;
 }
 
 function renderExecutionMappingTradeContext(){
@@ -10817,23 +10846,23 @@ function renderExecutionMappingForm(){
     : '<div class="execution-secondary-empty">No Playbook is available yet.</div>';
 
   body.innerHTML=`
-    <section class="execution-instrument-section playbook">
+    <section class="execution-instrument-section playbook" data-execution-instrument-section="playbook">
       <div class="execution-instrument-section-head">
         <div><span>PLAYBOOK MAPPING</span><strong>${escapeHtml(playbook?.name||'No Playbook selected')}</strong><small>Planned trading method and measurable execution conditions.</small></div>
         <span class="execution-instrument-badge">PLAYBOOK</span>
       </div>
       ${playbookHtml}
     </section>
-    <section class="execution-instrument-section checklist">
+    <section class="execution-instrument-section checklist" data-execution-instrument-section="checklist">
       <div class="execution-instrument-section-head">
         <div><span>CHECKLIST MAPPING</span><strong>${escapeHtml(checklist?.name||'No Checklist selected')}</strong><small>Reusable checklist conditions are mapped independently from the Playbook.</small></div>
         <span class="execution-instrument-badge">CHECKLIST</span>
       </div>
       ${renderExecutionSecondaryItems('checklist',checklist)}
     </section>
-    <section class="execution-instrument-section psych">
+    <section class="execution-instrument-section psych" data-execution-instrument-section="psych">
       <div class="execution-instrument-section-head">
-        <div><span>PSYCHOLOGICAL REVIEW MAPPING</span><strong>${escapeHtml(psych?.name||'No Psychological Review selected')}</strong><small>Psychological prompts and responses remain separate from technical execution scoring.</small></div>
+        <div><span>PSYCHOLOGICAL REFLECTION MAPPING</span><strong>${escapeHtml(psych?.name||'No Psychological Reflection selected')}</strong><small>Psychological prompts and responses remain separate from technical execution scoring.</small></div>
         <span class="execution-instrument-badge">PSYCHOLOGY</span>
       </div>
       ${renderExecutionSecondaryItems('psych',psych)}
@@ -10869,6 +10898,18 @@ function resetExecutionMappingInputs(){
   updateExecutionMappingScore();
 }
 
+function viewExecutionInstrumentSection(kind,{smooth=true}={}){
+  const body=$('#executionMapFormBody');
+  const section=body?.querySelector(`[data-execution-instrument-section="${kind}"]`);
+  if(!body||!section)return;
+  body.querySelectorAll('.execution-instrument-section.is-focused').forEach(item=>item.classList.remove('is-focused'));
+  section.scrollIntoView({behavior:smooth?'smooth':'auto',block:'start',inline:'nearest'});
+  section.classList.remove('is-focused');
+  void section.offsetWidth;
+  section.classList.add('is-focused');
+  setTimeout(()=>section.classList.remove('is-focused'),1300);
+}
+
 function initExecutionMappingWorkspace(){
   if(executionMappingInitialized)return;
   executionMappingInitialized=true;
@@ -10890,6 +10931,11 @@ function initExecutionMappingWorkspace(){
     executionMappingReturnPage='checklists';
     renderExecutionMappingControls();
     renderExecutionMappingForm();
+    requestAnimationFrame(()=>viewExecutionInstrumentSection('checklist'));
+  });
+  $('#executionMapChecklistViewBtn')?.addEventListener('click',()=>{
+    executionMappingReturnPage='checklists';
+    viewExecutionInstrumentSection('checklist');
   });
 
   $('#executionMapPsychSelect')?.addEventListener('change',event=>{
@@ -10897,6 +10943,11 @@ function initExecutionMappingWorkspace(){
     executionMappingReturnPage='reflections';
     renderExecutionMappingControls();
     renderExecutionMappingForm();
+    requestAnimationFrame(()=>viewExecutionInstrumentSection('psych'));
+  });
+  $('#executionMapPsychViewBtn')?.addEventListener('click',()=>{
+    executionMappingReturnPage='reflections';
+    viewExecutionInstrumentSection('psych');
   });
 
   $('#executionMapFormBody')?.addEventListener('change',event=>{
@@ -13451,10 +13502,10 @@ function secondaryNormalizeDoc(kind,raw={}){
     updatedAt:String(raw.updatedAt||now)
   };
 }
-function loadSecondaryDocuments(kind){
+function loadSecondaryDocuments(kind,{refresh=false}={}){
   const state=secondaryState(kind);
   const key=secondaryStoreKey(kind);
-  if(state.storeKey===key)return;
+  if(state.storeKey===key&&!refresh)return;
   state.storeKey=key;
   let stored=[];
   try{
