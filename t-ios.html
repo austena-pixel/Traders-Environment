@@ -4183,6 +4183,13 @@ body.playbook-preview-resizing *{
     grid-template-columns:345px 182px 300px 205px;
   }
 }
+.instrument-template-panel{min-height:92px!important;overflow:hidden!important}
+.instrument-template-grid{display:flex;align-items:stretch;gap:8px;width:100%;min-width:0;overflow-x:auto;overflow-y:hidden;padding:1px 2px 4px;scrollbar-width:thin}
+.instrument-template-card{flex:0 0 220px;min-height:72px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;padding:9px 11px;border:1px solid #cbd3dc;border-radius:8px;background:#fff;color:#26313d;text-align:left;cursor:pointer;transition:border-color .16s ease,background .16s ease,transform .16s ease}
+.instrument-template-card:hover{border-color:#7faad3;background:#edf5fd;transform:translateY(-1px)}
+.instrument-template-card strong{font-size:10px;line-height:1.25}
+.instrument-template-card span{font-size:8px;line-height:1.35;color:#647282}
+.instrument-template-card small{margin-top:2px;font-size:7px;font-weight:800;letter-spacing:.35px;color:#2b72b8;text-transform:uppercase}
 .playbook-word-tool-label{order:2;color:#6d7681;font-size:8px;text-align:center}
 .playbook-word-tool-row{display:flex;align-items:center;gap:4px}
 .playbook-word-tool-btn,.playbook-word-insert-btn{min-width:34px;min-height:31px;border:1px solid transparent;border-radius:5px;background:transparent;color:#202a36;padding:5px 8px;font-size:10px}
@@ -6728,6 +6735,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               <button class="playbook-word-tab active" type="button" data-playbook-ribbon="home" role="tab" aria-selected="true">Home</button>
               <button class="playbook-word-tab" type="button" data-playbook-ribbon="insert" role="tab" aria-selected="false">Insert</button>
               <button class="playbook-word-tab" type="button" data-playbook-ribbon="styles" role="tab" aria-selected="false">Styles</button>
+              <button class="playbook-word-tab" type="button" data-playbook-ribbon="templates" role="tab" aria-selected="false">Templates</button>
             </div>
 
             <div class="playbook-word-ribbon-panel active" data-playbook-ribbon-panel="home">
@@ -6899,6 +6907,14 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               <div class="playbook-word-tool-group playbook-style-selection-group">
                 <span class="playbook-word-tool-label">Selection</span>
                 <div class="playbook-style-help" id="playbookStyleSelectionHelp">Place the cursor inside a list or Either / Or group, then style that selected structure.</div>
+              </div>
+            </div>
+
+            <div class="playbook-word-ribbon-panel instrument-template-panel" data-playbook-ribbon-panel="templates">
+              <div class="instrument-template-grid" aria-label="Playbook default templates">
+                <button type="button" class="instrument-template-card" data-playbook-template="edge-framework"><strong>Edge Framework</strong><span>Market context, setup, entry, risk and exit structure.</span><small>Insert Playbook template</small></button>
+                <button type="button" class="instrument-template-card" data-playbook-template="setup-checklist"><strong>Setup Checklist</strong><span>A structured conditions list with market-context choice.</span><small>Insert Playbook template</small></button>
+                <button type="button" class="instrument-template-card" data-playbook-template="minimal-plan"><strong>Minimal Plan</strong><span>A simple thesis, entry, risk and exit framework.</span><small>Insert Playbook template</small></button>
               </div>
             </div>
 
@@ -13985,6 +14001,14 @@ function previewCurrentPlaybookInExecutionQuality(){
   navigate('execution');
 }
 
+function applyPlaybookDefaultTemplate(id){
+  const template=technicalInstrumentTemplate('playbook',id);if(!template)return;
+  insertPlaybookHtml(template.html+'<p><br></p>');
+  ensurePlaybookBlockControls();
+  syncPlaybookLiveModel();
+  schedulePlaybookDocumentSave();
+  showStatus(template.name+' template inserted');
+}
 function insertPlaybookElement(kind){
   if(kind==='image'){openInstrumentImagePicker('playbook');return}
   if(kind==='image-field'){openInstrumentImageFieldModal('playbook');return}
@@ -14081,6 +14105,7 @@ function initPlaybookWorkspace(){
   $$('[data-playbook-command]').forEach(button=>button.addEventListener('click',()=>applyPlaybookCommand(button.dataset.playbookCommand)));
   $('#playbookBlockStyle')?.addEventListener('change',event=>{applyPlaybookCommand('formatBlock',event.target.value);event.target.value='p'});
   $$('[data-playbook-insert]').forEach(button=>button.addEventListener('click',()=>insertPlaybookElement(button.dataset.playbookInsert)));
+  $$('[data-playbook-template]').forEach(button=>button.addEventListener('click',()=>applyPlaybookDefaultTemplate(button.dataset.playbookTemplate)));
   $$('button[data-playbook-list-layout]').forEach(button=>button.addEventListener('click',()=>{
     applyPlaybookListLayout(button.dataset.playbookListLayout);
   }));
@@ -14241,6 +14266,29 @@ function currentSecondaryDocument(kind){
   return state.docs.find(item=>item.id===state.selectedId)||null;
 }
 
+const TECHNICAL_INSTRUMENT_DEFAULT_TEMPLATES=Object.freeze({
+  playbook:[
+    {id:'edge-framework',name:'Edge Framework',description:'Market context, setup, entry, risk and exit structure.',html:`<h2>Market Context</h2><div class="pb-doc-choice" data-playbook-node="choice"><span class="pb-doc-label">EITHER / OR</span><span class="pb-doc-choice-title" data-choice-title>Market Context</span><div class="pb-doc-choice-options"><div class="pb-doc-choice-option"><span class="pb-doc-choice-dot"></span><span data-choice-option>Balance</span></div><div class="pb-doc-choice-option"><span class="pb-doc-choice-dot"></span><span data-choice-option>Imbalance</span></div></div></div><h2>Setup Conditions</h2><ul><li>Define the first setup condition.</li><li>Define the second setup condition.</li><li>Define the confirmation condition.</li></ul><h2>Entry</h2><p>Define the exact entry trigger.</p><h2>Risk</h2><p>Define invalidation, stop placement and risk limits.</p><h2>Exit</h2><p>Define target and exit conditions.</p>`},
+    {id:'setup-checklist',name:'Setup Checklist',description:'A structured conditions list with market-context choice.',html:`<h2>Setup Checklist</h2><div class="pb-doc-choice" data-playbook-node="choice"><span class="pb-doc-label">EITHER / OR</span><span class="pb-doc-choice-title" data-choice-title>Market Context</span><div class="pb-doc-choice-options"><div class="pb-doc-choice-option"><span class="pb-doc-choice-dot"></span><span data-choice-option>Balance</span></div><div class="pb-doc-choice-option"><span class="pb-doc-choice-dot"></span><span data-choice-option>Imbalance</span></div></div></div><ol><li>Location is valid.</li><li>Structure confirms the setup.</li><li>Entry trigger is present.</li><li>Risk is acceptable.</li></ol>`},
+    {id:'minimal-plan',name:'Minimal Plan',description:'A simple thesis, entry, risk and exit framework.',html:`<h2>Trade Thesis</h2><p>What opportunity is being expressed?</p><h2>Entry</h2><p>What must happen before entry?</p><h2>Risk</h2><p>What invalidates the idea?</p><h2>Exit</h2><p>How will the trade be managed and closed?</p>`}
+  ],
+  checklist:[
+    {id:'session-rules',name:'Session Rules',description:'Reusable rules for when and how you are allowed to trade.',html:`<h2>Session Rules</h2><ul><li>Define the allowed trading session.</li><li>Define when trading must stop.</li><li>Define the maximum number of attempts.</li></ul>`},
+    {id:'risk-rules',name:'Risk Rules',description:'Position sizing, daily loss and exposure controls.',html:`<h2>Risk Rules</h2><ul><li>Define maximum risk per trade.</li><li>Define maximum daily loss.</li><li>Define maximum simultaneous exposure.</li></ul>`},
+    {id:'execution-rules',name:'Execution Rules',description:'Rules that protect entry discipline and trade management.',html:`<h2>Execution Rules</h2><ol><li>Wait for the defined confirmation.</li><li>Enter only at the planned location.</li><li>Do not widen the stop after entry.</li><li>Manage the trade according to the plan.</li></ol>`}
+  ],
+  psych:[
+    {id:'post-trade-reflection',name:'Post-Trade Reflection',description:'A concise reflection structure after an executed trade.',html:`<h2>Post-Trade Reflection</h2><div class="pb-doc-note" data-playbook-node="psych-prompt"><span class="pb-doc-label">REVIEW PROMPT</span><p>What was I thinking immediately before entry?</p></div><div class="pb-doc-note" data-playbook-node="psych-prompt"><span class="pb-doc-label">REVIEW PROMPT</span><p>Did my behaviour change after the trade moved for or against me?</p></div><div class="pb-doc-note" data-playbook-node="psych-prompt"><span class="pb-doc-label">REVIEW PROMPT</span><p>What should I repeat or change next time?</p></div>`},
+    {id:'emotional-state',name:'Emotional State',description:'Prompts for emotional state before, during and after execution.',html:`<h2>Emotional State</h2><div class="pb-doc-note" data-playbook-node="psych-prompt"><span class="pb-doc-label">REVIEW PROMPT</span><p>How did I feel before the trade?</p></div><div class="pb-doc-note" data-playbook-node="psych-prompt"><span class="pb-doc-label">REVIEW PROMPT</span><p>What emotions appeared during the trade?</p></div><div class="pb-doc-note" data-playbook-node="psych-prompt"><span class="pb-doc-label">REVIEW PROMPT</span><p>How did the outcome affect my next decision?</p></div>`},
+    {id:'decision-review',name:'Decision Review',description:'Review the quality of the decision separately from the outcome.',html:`<h2>Decision Review</h2><div class="pb-doc-note" data-playbook-node="psych-prompt"><span class="pb-doc-label">REVIEW PROMPT</span><p>Was the decision based on the plan or on impulse?</p></div><div class="pb-doc-note" data-playbook-node="psych-prompt"><span class="pb-doc-label">REVIEW PROMPT</span><p>What information had the greatest influence on the decision?</p></div><div class="pb-doc-note" data-playbook-node="psych-prompt"><span class="pb-doc-label">REVIEW PROMPT</span><p>Would I make the same decision again with the same information?</p></div>`}
+  ]
+});
+function technicalInstrumentTemplate(kind,id){return (TECHNICAL_INSTRUMENT_DEFAULT_TEMPLATES[kind]||[]).find(item=>item.id===id)||null}
+function technicalInstrumentTemplateCardsHtml(kind){
+  const label=kind==='checklist'?'Rules':(kind==='psych'?'Psychological Reflection':'Playbook');
+  return (TECHNICAL_INSTRUMENT_DEFAULT_TEMPLATES[kind]||[]).map(item=>`<button type="button" class="instrument-template-card" data-ti-template="${escapeHtml(item.id)}"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.description)}</span><small>Insert ${label} template</small></button>`).join('');
+}
+
 function secondaryWorkspaceHtml(kind){
   const c=secondaryConfig(kind);
   const primaryInsert=kind==='psych'
@@ -14309,6 +14357,7 @@ function secondaryWorkspaceHtml(kind){
             <button class="playbook-word-tab active" type="button" data-ti-ribbon="home">Home</button>
             <button class="playbook-word-tab" type="button" data-ti-ribbon="insert">Insert</button>
             <button class="playbook-word-tab" type="button" data-ti-ribbon="styles">Styles</button>
+            <button class="playbook-word-tab" type="button" data-ti-ribbon="templates">Templates</button>
             <button class="playbook-word-tab" type="button" data-ti-ribbon="instrument">${c.singular}</button>
           </div>
 
@@ -14445,6 +14494,10 @@ function secondaryWorkspaceHtml(kind){
               <span class="playbook-word-tool-label">Selection</span>
               <div class="playbook-style-help" data-ti-style-help>Place the cursor inside a list or Either / Or group, then style that selected structure.</div>
             </div>
+          </div>
+
+          <div class="playbook-word-ribbon-panel instrument-template-panel" data-ti-ribbon-panel="templates">
+            <div class="instrument-template-grid" aria-label="${c.singular} default templates">${technicalInstrumentTemplateCardsHtml(kind)}</div>
           </div>
 
           <div class="playbook-word-ribbon-panel" data-ti-ribbon-panel="instrument">
@@ -14682,6 +14735,11 @@ function secondaryInsertHtml(kind,html){
   const editor=secondaryFind(kind,'[data-ti-editor]');if(!editor)return;
   editor.focus();document.execCommand('insertHTML',false,html);ensureSecondaryBlockControls(kind);renderSecondaryPreview(kind);scheduleSecondarySave(kind);
 }
+function applySecondaryDefaultTemplate(kind,id){
+  const template=technicalInstrumentTemplate(kind,id);if(!template)return;
+  secondaryInsertHtml(kind,template.html+'<p><br></p>');
+  showStatus(template.name+' template inserted');
+}
 function secondaryInsert(kind,type){
   if(type==='image'){openInstrumentImagePicker(kind);return}
   if(type==='image-field'){openInstrumentImageFieldModal(kind);return}
@@ -14911,6 +14969,7 @@ function initSecondaryWorkspace(kind){
     const tab=event.target.closest('[data-ti-ribbon]');if(tab)setSecondaryRibbon(kind,tab.dataset.tiRibbon);
     const cmd=event.target.closest('[data-ti-command]');if(cmd)applySecondaryCommand(kind,cmd.dataset.tiCommand);
     const insert=event.target.closest('[data-ti-insert]');if(insert)secondaryInsert(kind,insert.dataset.tiInsert);
+    const template=event.target.closest('[data-ti-template]');if(template){applySecondaryDefaultTemplate(kind,template.dataset.tiTemplate);return}
     const layout=event.target.closest('[data-ti-list-layout]');if(layout)applySecondaryLayout(kind,layout.dataset.tiListLayout);
     const align=event.target.closest('[data-ti-style-align]');if(align)applySecondaryVisualStyle(kind,'align',align.dataset.tiStyleAlign);
     const spacing=event.target.closest('[data-ti-style-spacing]');if(spacing)applySecondaryVisualStyle(kind,'spacing',spacing.dataset.tiStyleSpacing);
