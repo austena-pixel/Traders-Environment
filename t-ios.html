@@ -4717,6 +4717,31 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
   gap:10px;
   margin-bottom:12px;
 }
+#page-execution{position:relative}
+.execution-map-top{flex:0 0 auto;min-height:0}
+.execution-map-top[hidden]{display:none}
+.execution-map-top > .page-head{padding-right:44px}
+.execution-map-top-toggle{
+  position:absolute;
+  top:0;
+  right:0;
+  z-index:2;
+  display:grid;
+  place-items:center;
+  width:34px;
+  height:30px;
+  padding:0;
+  border:1px solid rgba(105,168,255,.58);
+  border-radius:10px;
+  background:linear-gradient(180deg,#15273b,#0c1724);
+  color:#afd7ff;
+  cursor:pointer;
+}
+.execution-map-top-toggle:hover{border-color:#78b8ff;color:#fff}
+.execution-map-top-toggle:focus-visible{outline:2px solid #78b8ff;outline-offset:3px}
+.execution-map-top-toggle svg{width:18px;height:18px}
+.execution-header-collapsed .execution-map-top-toggle svg{transform:rotate(180deg)}
+.execution-header-collapsed{padding-top:38px}
 .execution-map-state{grid-column:1/-1}
 .execution-map-control,
 .execution-map-state{
@@ -5114,6 +5139,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
   font-size:8px;
 }
 @media(min-width:861px){
+  body.execution-workspace #page-execution.active{height:100%}
   body.execution-workspace #page-execution .execution-map-controls{
     flex:0 0 auto;
   }
@@ -5121,11 +5147,20 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
     flex:1 1 auto;
     min-height:0;
     overflow:hidden;
+    grid-template-columns:minmax(220px,min(28%,310px)) minmax(0,1fr);
+    grid-template-rows:minmax(0,1fr);
+  }
+  body.execution-workspace #page-execution .execution-map-context,
+  body.execution-workspace #page-execution .execution-map-form{
+    height:100%;
+    min-width:0;
   }
 }
 @media(max-width:900px){
   .execution-map-controls{grid-template-columns:1fr 1fr}
   .execution-map-state{grid-column:1/-1}
+}
+@media(max-width:860px){
   .execution-map-layout{grid-template-columns:1fr}
 }
 @media(max-width:620px){
@@ -6896,6 +6931,10 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
 
     <section class="page" id="page-execution">
+      <button class="execution-map-top-toggle" id="executionMapTopToggle" type="button" aria-controls="executionMapTopSection" aria-expanded="true" aria-label="Hide top section" title="Hide top section">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
+      </button>
+      <div class="execution-map-top" id="executionMapTopSection">
       <header class="page-head">
         <div>
           <h1>Execution Quality</h1>
@@ -6945,6 +6984,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           <strong id="executionMapStatus">Waiting for a Playbook</strong>
         </div>
       </section>
+      </div>
 
       <div class="execution-map-layout">
         <aside class="panel execution-map-context">
@@ -10885,6 +10925,22 @@ let executionMappingActiveInstrument='playbook';
 let executionMappingReturnPage='playbook';
 let executionMappingTradeId=null;
 let executionMappingInitialized=false;
+const TIOS_EXECUTION_TOP_SECTION_KEY='tios_execution_top_section_collapsed_v1';
+
+function setExecutionTopSectionCollapsed(collapsed,{persist=true}={}){
+  const page=$('#page-execution');
+  const top=$('#executionMapTopSection');
+  const toggle=$('#executionMapTopToggle');
+  if(!page||!top||!toggle)return;
+
+  const hidden=Boolean(collapsed);
+  page.classList.toggle('execution-header-collapsed',hidden);
+  top.hidden=hidden;
+  toggle.setAttribute('aria-expanded',hidden?'false':'true');
+  toggle.setAttribute('aria-label',hidden?'Show top section':'Hide top section');
+  toggle.title=hidden?'Show top section':'Hide top section';
+  if(persist)localStorage.setItem(TIOS_EXECUTION_TOP_SECTION_KEY,hidden?'1':'0');
+}
 
 function executionMappingPlaybook(){
   loadPlaybookDocuments();
@@ -11315,6 +11371,11 @@ function viewExecutionInstrumentSection(kind){
 function initExecutionMappingWorkspace(){
   if(executionMappingInitialized)return;
   executionMappingInitialized=true;
+
+  setExecutionTopSectionCollapsed(localStorage.getItem(TIOS_EXECUTION_TOP_SECTION_KEY)==='1',{persist:false});
+  $('#executionMapTopToggle')?.addEventListener('click',()=>{
+    setExecutionTopSectionCollapsed(!$('#executionMapTopSection').hidden);
+  });
 
   $('#executionMapTradeSelect')?.addEventListener('change',event=>{
     executionMappingTradeId=event.target.value||null;
