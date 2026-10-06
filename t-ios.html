@@ -4247,6 +4247,19 @@ textarea{resize:vertical;min-height:90px}
   padding-top:0;
   border-top:0;
 }
+
+.playbook-preview-section.level-1{
+  margin-top:14px;
+  color:#f2f7fd;
+  font-size:12px;
+  font-weight:900;
+}
+.execution-map-section.level-1{
+  margin-top:16px;
+  color:#f4f8fd;
+  font-size:15px;
+  font-weight:900;
+}
 </style>
 <style id="hios-product-brand-icons">
 /* Product marks use the same symbols and accents as the H-IOS sidebar. */
@@ -9242,10 +9255,8 @@ function renderExecutionMappingForm(){
   $('#executionMapStatus').textContent='Mapped from Technical Instruments';
 
   const items=playbookStructuredPreviewItems(playbook.documentHtml||'');
-  const meaningful=items.some(item=>item.type!=='section');
-
-  if(!meaningful){
-    body.innerHTML='<div class="execution-map-empty">This Playbook has no structured execution items yet. Add Rule blocks, lists, linked Checklists, or linked Reflections under Playbooks.</div>';
+  if(!items.length){
+    body.innerHTML='<div class="execution-map-empty">This Playbook has no mapped content yet. Organize the Playbook under Technical Instruments and it will appear here.</div>';
     updateExecutionMappingScore();
     return;
   }
@@ -9253,7 +9264,7 @@ function renderExecutionMappingForm(){
   let checkIndex=0;
   body.innerHTML=items.map(item=>{
     if(item.type==='section'){
-      return `<div class="execution-map-section ${item.level===3?'level-3':''}">${escapeHtml(item.label)}</div>`;
+      return `<div class="execution-map-section ${item.level===1?'level-1':(item.level===3?'level-3':'level-2')}">${escapeHtml(item.label)}</div>`;
     }
 
     if(item.type==='check'){
@@ -10542,7 +10553,7 @@ function playbookStructuredPreviewItems(documentHtml){
 
     if(['h1','h2','h3'].includes(tag)){
       const label=cleanNodeText(node);
-      if(label)items.push({type:'section',label,level:tag==='h3'?3:2});
+      if(label)items.push({type:'section',label,level:tag==='h1'?1:(tag==='h3'?3:2)});
       return;
     }
 
@@ -10653,15 +10664,14 @@ function renderPlaybookExecutionPreview(){
   const measurableCount=checkCount+choiceCount;
   meta.textContent=`Preview only · ${measurableCount} condition${measurableCount===1?'':'s'} · ${linkedCount} linked instrument${linkedCount===1?'':'s'}`;
 
-  const meaningful=items.some(item=>item.type!=='section');
-  if(!meaningful){
-    body.innerHTML='<div class="playbook-preview-empty">Insert a Rule, linked Checklist, linked Reflection, or a list of rules to see the Execution Quality model form here.</div>';
+  if(!items.length){
+    body.innerHTML='<div class="playbook-preview-empty">Start organizing your Playbook to see the Execution Quality model form here.</div>';
     return;
   }
 
   body.innerHTML=items.map(item=>{
     if(item.type==='section'){
-      return `<div class="playbook-preview-section ${item.level===3?'level-3':''}">${escapeHtml(item.label)}</div>`;
+      return `<div class="playbook-preview-section ${item.level===1?'level-1':(item.level===3?'level-3':'level-2')}">${escapeHtml(item.label)}</div>`;
     }
     if(item.type==='check'){
       return `<div class="playbook-preview-check"><span class="playbook-preview-checkbox" aria-hidden="true"></span><span>${escapeHtml(item.label)}</span></div>`;
