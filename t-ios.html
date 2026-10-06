@@ -671,6 +671,59 @@ body.playbook-workspace .main{
   padding-left:8px;
   padding-right:8px;
 }
+
+@media(min-width:861px){
+  body.playbook-workspace{
+    overflow:hidden;
+  }
+  body.playbook-workspace .main{
+    height:100vh;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  body.playbook-workspace #page-playbook{
+    flex:1;
+    min-height:0;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  body.playbook-workspace #page-playbook .playbook-word-page-head{
+    flex:0 0 auto;
+  }
+  body.playbook-workspace #page-playbook .playbook-word-shell{
+    flex:1 1 auto;
+    min-height:0;
+    overflow:hidden;
+  }
+  body.playbook-workspace #page-playbook .playbook-word-main{
+    min-height:0;
+    height:100%;
+  }
+  body.playbook-workspace #page-playbook .playbook-word-document-stage{
+    min-height:0;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+  }
+  body.playbook-workspace #page-playbook .playbook-word-library{
+    min-height:0;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  body.playbook-workspace #page-playbook .playbook-word-library-list{
+    flex:1 1 auto;
+    min-height:0;
+    max-height:none;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+  }
+  body.playbook-workspace #page-playbook .playbook-word-library-note{
+    flex:0 0 auto;
+  }
+}
 .mobile-top{
   display:none;
   justify-content:space-between;
