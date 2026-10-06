@@ -4062,26 +4062,40 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
 .playbook-word-editor .pb-doc-label{display:block;margin-bottom:5px;color:#526170;font-size:10px;font-weight:800;letter-spacing:.6px}
 .playbook-word-editor .pb-doc-remove-btn{position:absolute;top:8px;right:8px;width:24px;height:24px;display:grid;place-items:center;padding:0;border:1px solid rgba(65,76,91,.24);border-radius:6px;background:rgba(255,255,255,.72);color:#687382;font-size:16px;font-weight:800;line-height:1;cursor:pointer}
 .playbook-word-editor .pb-doc-remove-btn:hover{border-color:#d26c73;background:#fff3f4;color:#b82935}
-.playbook-word-editor .pb-doc-preview-btn{
-  position:absolute;
-  top:8px;
-  right:38px;
-  min-height:24px;
-  padding:0 9px;
-  border:1px solid #3d7fc2;
-  border-radius:7px;
-  background:linear-gradient(135deg,#eaf6ff,#d9eaff);
-  color:#1764a6;
-  font-size:9px;
-  font-weight:850;
-  cursor:pointer;
-  box-shadow:0 2px 7px rgba(43,114,184,.12);
+.playbook-preview-head-actions{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  flex:0 0 auto;
 }
-.playbook-word-editor .pb-doc-preview-btn:hover{
-  border-color:#1764a6;
-  background:linear-gradient(135deg,#dff1ff,#cfe2ff);
+.playbook-preview-open-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:28px;
+  padding:4px 11px;
+  border:1px solid rgba(255,139,103,.58);
+  border-radius:999px;
+  background:linear-gradient(135deg,#4b1f36 0%,#6a263e 42%,#73331f 100%);
+  color:#ffd9cf;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.45px;
+  white-space:nowrap;
+  box-shadow:
+    0 4px 13px rgba(84,29,48,.22),
+    inset 0 0 0 1px rgba(255,190,142,.05);
+  transition:transform .16s ease,border-color .16s ease,filter .16s ease,box-shadow .16s ease;
+}
+.playbook-preview-open-btn:hover{
   transform:translateY(-1px);
+  border-color:#ff9d73;
+  filter:brightness(1.09);
+  box-shadow:
+    0 6px 16px rgba(105,39,49,.3),
+    0 0 12px rgba(255,111,83,.11);
 }
+.playbook-preview-open-btn:active{transform:translateY(0)}
 .playbook-word-editor .pb-doc-table-wrap{
   position:relative;
   margin:16px 0;
@@ -5926,11 +5940,16 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
               <span>EXECUTION QUALITY PREVIEW</span>
               <strong>Live model</strong>
             </div>
-            <button class="playbook-preview-autozoom" id="playbookPreviewAutoZoomBtn" type="button" aria-pressed="true" title="Toggle automatic preview expansion">
-              <span>Auto Zoom</span>
-              <span class="playbook-preview-toggle-track" aria-hidden="true"><span class="playbook-preview-toggle-thumb"></span></span>
-              <strong class="playbook-preview-autozoom-state" id="playbookPreviewAutoZoomState">ON</strong>
-            </button>
+            <div class="playbook-preview-head-actions">
+              <button class="playbook-preview-open-btn" id="playbookPreviewOpenExecutionBtn" type="button" title="Open this Playbook in Execution Quality">
+                Preview
+              </button>
+              <button class="playbook-preview-autozoom" id="playbookPreviewAutoZoomBtn" type="button" aria-pressed="true" title="Toggle automatic preview expansion">
+                <span>Auto Zoom</span>
+                <span class="playbook-preview-toggle-track" aria-hidden="true"><span class="playbook-preview-toggle-thumb"></span></span>
+                <strong class="playbook-preview-autozoom-state" id="playbookPreviewAutoZoomState">ON</strong>
+              </button>
+            </div>
           </div>
 
           <div class="playbook-save-action" id="playbookSaveAction" role="status" aria-live="polite">
@@ -11609,15 +11628,6 @@ function playbookStructuredBlockSelector(){
 function ensurePlaybookBlockControls(){
   const editor=$('#playbookDocumentEditor');if(!editor)return;
   [...editor.querySelectorAll(playbookStructuredBlockSelector())].forEach(block=>{
-    if(block.matches?.('[data-playbook-node="choice"],.pb-doc-choice')&&!block.querySelector(':scope > .pb-doc-preview-btn')){
-      const preview=document.createElement('button');
-      preview.type='button';
-      preview.className='pb-doc-preview-btn';
-      preview.setAttribute('contenteditable','false');
-      preview.title='Preview this Playbook in Execution Quality';
-      preview.textContent='Preview';
-      block.appendChild(preview);
-    }
     if(!block.querySelector(':scope > .pb-doc-remove-btn')){
       const button=document.createElement('button');
       button.type='button';
@@ -11864,7 +11874,7 @@ function playbookStructuredPreviewItems(documentHtml){
 
   function cleanNodeText(node){
     const clone=node.cloneNode(true);
-    clone.querySelectorAll?.('.pb-doc-label,.pb-doc-remove-btn,.pb-doc-preview-btn').forEach(control=>control.remove());
+    clone.querySelectorAll?.('.pb-doc-label,.pb-doc-remove-btn').forEach(control=>control.remove());
     return (clone.textContent||'').replace(/\s+/g,' ').trim();
   }
 
@@ -12573,7 +12583,6 @@ function insertPlaybookChoiceFromModal(){
   const markup=`
     <div class="pb-doc-choice" data-playbook-node="choice">
       <span class="pb-doc-label">EITHER / OR</span>
-      <button type="button" class="pb-doc-preview-btn" contenteditable="false" title="Preview this Playbook in Execution Quality">Preview</button>
       <button type="button" class="pb-doc-remove-btn" contenteditable="false" aria-label="Remove this Playbook block" title="Remove this block">×</button>
       <span class="pb-doc-choice-title" data-choice-title>${escapeHtml(title)}</span>
       <div class="pb-doc-choice-options">
@@ -12701,6 +12710,7 @@ function initPlaybookWorkspace(){
     if(event.target.value)selectPlaybookDocument(event.target.value);
   });
 
+  $('#playbookPreviewOpenExecutionBtn')?.addEventListener('click',previewCurrentPlaybookInExecutionQuality);
   $('#playbookPreviewAutoZoomBtn')?.addEventListener('click',()=>{
     setPlaybookPreviewAutoZoom(!playbookPreviewAutoZoom);
   });
@@ -12773,13 +12783,6 @@ function initPlaybookWorkspace(){
     refreshPlaybookListStyleControls();
   });
   $('#playbookDocumentEditor')?.addEventListener('click',event=>{
-    const previewButton=event.target.closest('.pb-doc-preview-btn');
-    if(previewButton){
-      event.preventDefault();
-      event.stopPropagation();
-      previewCurrentPlaybookInExecutionQuality();
-      return;
-    }
     const button=event.target.closest('.pb-doc-remove-btn');
     if(!button)return;
     event.preventDefault();event.stopPropagation();removePlaybookStructuredBlock(button);
