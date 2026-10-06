@@ -4440,10 +4440,11 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 }
 .execution-map-controls{
   display:grid;
-  grid-template-columns:minmax(180px,280px) minmax(180px,280px) minmax(220px,1fr);
+  grid-template-columns:repeat(4,minmax(160px,1fr));
   gap:10px;
   margin-bottom:12px;
 }
+.execution-map-state{grid-column:1/-1}
 .execution-map-control,
 .execution-map-state{
   border:1px solid #202d3d;
@@ -4856,6 +4857,90 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 .execution-map-information{margin-bottom:9px;padding:9px 11px;border-left:3px solid #31465f;border-radius:7px;background:#0b131d;color:#b6c5d5;font-size:10px;line-height:1.55}
 .execution-map-information.note{border-left-color:#6f8198;background:#101720}
 .execution-map-information b{display:block;margin-bottom:4px;color:#8499b1;font-size:8px;letter-spacing:.55px}
+.execution-instrument-section{
+  margin:0 0 18px;
+  padding:0 0 16px;
+  border-bottom:1px solid #263548;
+}
+.execution-instrument-section:last-child{border-bottom:0;margin-bottom:0;padding-bottom:0}
+.execution-instrument-section-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:10px;
+}
+.execution-instrument-section-head>div{min-width:0}
+.execution-instrument-section-head span{
+  display:block;
+  color:#7187a0;
+  font-size:8px;
+  font-weight:850;
+  letter-spacing:.65px;
+}
+.execution-instrument-section-head strong{
+  display:block;
+  margin-top:3px;
+  color:#eef5fd;
+  font-size:13px;
+}
+.execution-instrument-section-head small{
+  display:block;
+  margin-top:4px;
+  color:#8192a5;
+  font-size:9px;
+  line-height:1.45;
+}
+.execution-instrument-badge{
+  flex:0 0 auto;
+  padding:5px 8px;
+  border:1px solid #31455d;
+  border-radius:999px;
+  background:#101923;
+  color:#9db4cc;
+  font-size:8px;
+  font-weight:850;
+  letter-spacing:.55px;
+}
+.execution-instrument-section.checklist .execution-instrument-badge{
+  border-color:#315d4a;background:#0f2119;color:#91d6b4;
+}
+.execution-instrument-section.psych .execution-instrument-badge{
+  border-color:#5b406d;background:#1d1426;color:#d1a7e8;
+}
+.execution-psych-prompt{
+  margin-bottom:9px;
+  padding:10px;
+  border:1px solid #3d2e4d;
+  border-radius:10px;
+  background:#15101d;
+}
+.execution-psych-prompt label{
+  display:block;
+  margin-bottom:7px;
+  color:#e2d4ed;
+  font-size:10px;
+  font-weight:800;
+}
+.execution-psych-prompt textarea{
+  width:100%;
+  min-height:74px;
+  resize:vertical;
+  border:1px solid #443653;
+  border-radius:8px;
+  background:#0d0a12;
+  color:#edf2f7;
+  padding:8px;
+  outline:none;
+}
+.execution-secondary-empty{
+  padding:12px;
+  border:1px dashed #2a394b;
+  border-radius:9px;
+  color:#77899e;
+  font-size:10px;
+  line-height:1.55;
+}
 
 .playbook-preview-table-block,
 .execution-map-table-block{
@@ -6358,6 +6443,16 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           <select id="executionMapPlaybookSelect" aria-label="Playbook to map"></select>
         </label>
 
+        <label class="execution-map-control">
+          <span>Checklist</span>
+          <select id="executionMapChecklistSelect" aria-label="Checklist to map"></select>
+        </label>
+
+        <label class="execution-map-control">
+          <span>Psychological Review</span>
+          <select id="executionMapPsychSelect" aria-label="Psychological Review to map"></select>
+        </label>
+
         <div class="execution-map-state">
           <span>MAPPING STATUS</span>
           <strong id="executionMapStatus">Waiting for a Playbook</strong>
@@ -6407,8 +6502,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           <div class="execution-map-form-head">
             <div>
               <span>GENERATED FROM TECHNICAL INSTRUMENTS</span>
-              <h2 id="executionMapPlaybookTitle">No Playbook selected</h2>
-              <p id="executionMapPlaybookMeta">Build a Playbook first, then return here to confirm its Execution Quality structure.</p>
+              <h2 id="executionMapPlaybookTitle">Technical Instruments Mapping</h2>
+              <p id="executionMapPlaybookMeta">Playbook, Checklist and Psychological Review are mapped independently below.</p>
             </div>
             <span class="execution-map-badge">MODEL</span>
           </div>
@@ -10280,6 +10375,9 @@ function renderSelectedExecutionTrade(){
 }
 
 let executionMappingPlaybookId=null;
+let executionMappingChecklistId=null;
+let executionMappingPsychId=null;
+let executionMappingReturnPage='playbook';
 let executionMappingTradeId=null;
 let executionMappingInitialized=false;
 
@@ -10304,6 +10402,19 @@ function executionMappingPlaybook(){
   return first;
 }
 
+function executionMappingSecondary(kind){
+  loadSecondaryDocuments(kind);
+  const state=secondaryState(kind);
+  const selectedId=kind==='checklist'?executionMappingChecklistId:executionMappingPsychId;
+  if(selectedId&&state.docs.some(item=>item.id===selectedId)){
+    return state.docs.find(item=>item.id===selectedId);
+  }
+  const selected=currentSecondaryDocument(kind)||state.docs[0]||null;
+  if(kind==='checklist')executionMappingChecklistId=selected?.id||null;
+  else executionMappingPsychId=selected?.id||null;
+  return selected;
+}
+
 function executionMappingTrade(){
   if(
     executionMappingTradeId &&
@@ -10325,10 +10436,14 @@ function executionMappingTrade(){
 function renderExecutionMappingControls(){
   const tradeSelect=$('#executionMapTradeSelect');
   const playbookSelect=$('#executionMapPlaybookSelect');
-  if(!tradeSelect||!playbookSelect)return;
+  const checklistSelect=$('#executionMapChecklistSelect');
+  const psychSelect=$('#executionMapPsychSelect');
+  if(!tradeSelect||!playbookSelect||!checklistSelect||!psychSelect)return;
 
   const trade=executionMappingTrade();
   const playbook=executionMappingPlaybook();
+  const checklist=executionMappingSecondary('checklist');
+  const psych=executionMappingSecondary('psych');
 
   tradeSelect.innerHTML=trades.length
     ? trades.map(item=>{
@@ -10340,6 +10455,16 @@ function renderExecutionMappingControls(){
   playbookSelect.innerHTML=playbookDocuments.length
     ? playbookDocuments.map(item=>`<option value="${escapeHtml(item.id)}" ${item.id===playbook?.id?'selected':''}>${escapeHtml(item.name||'Untitled Playbook')}</option>`).join('')
     : '<option value="">No Playbooks</option>';
+
+  const checklistState=secondaryState('checklist');
+  checklistSelect.innerHTML=checklistState.docs.length
+    ? checklistState.docs.map(item=>`<option value="${escapeHtml(item.id)}" ${item.id===checklist?.id?'selected':''}>${escapeHtml(item.name||'Untitled Checklist')}</option>`).join('')
+    : '<option value="">No Checklists</option>';
+
+  const psychState=secondaryState('psych');
+  psychSelect.innerHTML=psychState.docs.length
+    ? psychState.docs.map(item=>`<option value="${escapeHtml(item.id)}" ${item.id===psych?.id?'selected':''}>${escapeHtml(item.name||'Untitled Psychological Review')}</option>`).join('')
+    : '<option value="">No Psychological Reviews</option>';
 }
 
 function renderExecutionMappingTradeContext(){
@@ -10384,33 +10509,62 @@ function renderExecutionMappingTradeContext(){
   }
 }
 
+function renderExecutionSecondaryItems(kind,doc){
+  if(!doc)return '<div class="execution-secondary-empty">No '+(kind==='checklist'?'Checklist':'Psychological Review')+' is available yet.</div>';
+  const items=playbookStructuredPreviewItems(doc.documentHtml||'');
+  if(!items.length)return '<div class="execution-secondary-empty">This instrument has no mapped content yet.</div>';
+  let index=0;
+  return items.map((item,itemIndex)=>{
+    if(item.type==='section')return `<div class="execution-map-section ${item.level===1?'level-1':(item.level===3?'level-3':'level-2')}">${escapeHtml(item.label)}</div>`;
+    if(item.type==='psych-prompt'||(kind==='psych'&&item.type==='content')){
+      return `<div class="execution-psych-prompt"><label>${escapeHtml(item.label)}</label><textarea placeholder="Psychological review response"></textarea></div>`;
+    }
+    if(item.type==='check'){
+      if(item.listGroup){
+        const previous=items[itemIndex-1];
+        if(previous?.type==='check'&&previous.listGroup===item.listGroup)return '';
+        const grouped=items.filter(candidate=>candidate.type==='check'&&candidate.listGroup===item.listGroup);
+        const layout=normalizePlaybookListLayout(item.layout);
+        const styleAttrs=playbookStyleRenderAttributes(item.colors);
+        return `<div class="execution-map-rule-layout" data-playbook-list-layout="${layout}"${styleAttrs}>${grouped.map(group=>{
+          const key=(kind==='checklist'?'checklist':'psych')+'_check_'+(++index);
+          return `<div class="execution-map-rule"><label class="execution-map-rule-main"><input type="checkbox" data-execution-${kind}-check="${key}"><span class="execution-map-rule-copy"><strong>${escapeHtml(group.label)}</strong></span></label><input class="execution-map-rule-comment" type="text" placeholder="Optional comment"></div>`;
+        }).join('')}</div>`;
+      }
+      const key=(kind==='checklist'?'checklist':'psych')+'_check_'+(++index);
+      return `<div class="execution-map-rule"><label class="execution-map-rule-main"><input type="checkbox" data-execution-${kind}-check="${key}"><span class="execution-map-rule-copy"><strong>${escapeHtml(item.label)}</strong></span></label><input class="execution-map-rule-comment" type="text" placeholder="Optional comment"></div>`;
+    }
+    if(item.type==='choice'){
+      const key=(kind==='checklist'?'checklist':'psych')+'_choice_'+(++index);
+      const layout=normalizePlaybookListLayout(item.layout);
+      const styleAttrs=playbookStyleRenderAttributes(item.colors);
+      return `<div class="execution-map-choice" data-execution-${kind}-choice-group="${key}"><div class="execution-map-choice-head"><strong>${escapeHtml(item.label)}</strong><small>Choose one</small></div><div class="execution-map-choice-options" data-playbook-list-layout="${layout}"${styleAttrs}>${item.options.map(option=>`<label><input type="radio" name="${key}" value="${escapeHtml(option)}" data-execution-${kind}-choice><span>${escapeHtml(option)}</span></label>`).join('')}</div><input class="execution-map-rule-comment" type="text" placeholder="Optional comment"></div>`;
+    }
+    if(item.type==='table'){
+      return `<div class="execution-map-table-block"><b>TABLE CONTEXT</b><div class="execution-map-table-scroll"><table class="execution-map-table">${item.rows.map((row,rowIndex)=>{const tag=item.hasHeader&&rowIndex===0?'th':'td';return '<tr>'+row.map(cell=>'<'+tag+'>'+escapeHtml(cell||'—')+'</'+tag+'>').join('')+'</tr>'}).join('')}</table></div></div>`;
+    }
+    if(item.type==='note')return `<div class="execution-map-information note"><b>NOTE</b><span>${escapeHtml(item.label)}</span></div>`;
+    if(item.type==='content')return `<div class="execution-map-information"><span>${escapeHtml(item.label)}</span></div>`;
+    if(item.type==='divider')return '<div class="execution-map-divider"></div>';
+    return '';
+  }).join('');
+}
+
 function renderExecutionMappingForm(){
   const playbook=executionMappingPlaybook();
+  const checklist=executionMappingSecondary('checklist');
+  const psych=executionMappingSecondary('psych');
   const body=$('#executionMapFormBody');
   if(!body)return;
 
-  if(!playbook){
-    $('#executionMapPlaybookTitle').textContent='No Playbook selected';
-    $('#executionMapPlaybookMeta').textContent='Build a Playbook first, then return here to confirm its Execution Quality structure.';
-    $('#executionMapStatus').textContent='Waiting for a Playbook';
-    body.innerHTML='<div class="execution-map-empty">Create a Playbook under Technical Instruments to generate an Execution Quality form here.</div>';
-    updateExecutionMappingScore();
-    return;
-  }
+  $('#executionMapPlaybookTitle').textContent='Technical Instruments Mapping';
+  $('#executionMapPlaybookMeta').textContent='Playbook, Checklist and Psychological Review remain separate structures inside Execution Quality.';
+  $('#executionMapStatus').textContent='Mapped separately from Technical Instruments';
 
-  $('#executionMapPlaybookTitle').textContent=playbook.name||'Untitled Playbook';
-  $('#executionMapPlaybookMeta').textContent='Generated directly from the current Playbook definition.';
-  $('#executionMapStatus').textContent='Mapped from Technical Instruments';
-
-  const items=playbookStructuredPreviewItems(playbook.documentHtml||'');
-  if(!items.length){
-    body.innerHTML='<div class="execution-map-empty">This Playbook has no mapped content yet. Organize the Playbook under Technical Instruments and it will appear here.</div>';
-    updateExecutionMappingScore();
-    return;
-  }
-
+  const items=playbook?playbookStructuredPreviewItems(playbook.documentHtml||''):[];
   let checkIndex=0;
-  body.innerHTML=items.map((item,itemIndex)=>{
+  const playbookHtml=playbook
+    ? (items.length?items.map((item,itemIndex)=>{
     if(item.type==='section'){
       return `<div class="execution-map-section ${item.level===1?'level-1':(item.level===3?'level-3':'level-2')}">${escapeHtml(item.label)}</div>`;
     }
@@ -10539,8 +10693,31 @@ function renderExecutionMappingForm(){
     }
 
     return '';
-  }).join('');
+  }).join(''):'<div class="execution-secondary-empty">This Playbook has no mapped content yet.</div>')
+    : '<div class="execution-secondary-empty">No Playbook is available yet.</div>';
 
+  body.innerHTML=`
+    <section class="execution-instrument-section playbook">
+      <div class="execution-instrument-section-head">
+        <div><span>PLAYBOOK MAPPING</span><strong>${escapeHtml(playbook?.name||'No Playbook selected')}</strong><small>Planned trading method and measurable execution conditions.</small></div>
+        <span class="execution-instrument-badge">PLAYBOOK</span>
+      </div>
+      ${playbookHtml}
+    </section>
+    <section class="execution-instrument-section checklist">
+      <div class="execution-instrument-section-head">
+        <div><span>CHECKLIST MAPPING</span><strong>${escapeHtml(checklist?.name||'No Checklist selected')}</strong><small>Reusable checklist conditions are mapped independently from the Playbook.</small></div>
+        <span class="execution-instrument-badge">CHECKLIST</span>
+      </div>
+      ${renderExecutionSecondaryItems('checklist',checklist)}
+    </section>
+    <section class="execution-instrument-section psych">
+      <div class="execution-instrument-section-head">
+        <div><span>PSYCHOLOGICAL REVIEW MAPPING</span><strong>${escapeHtml(psych?.name||'No Psychological Review selected')}</strong><small>Psychological prompts and responses remain separate from technical execution scoring.</small></div>
+        <span class="execution-instrument-badge">PSYCHOLOGY</span>
+      </div>
+      ${renderExecutionSecondaryItems('psych',psych)}
+    </section>`;
   updateExecutionMappingScore();
 }
 
@@ -10567,7 +10744,7 @@ function updateExecutionMappingScore(){
 }
 
 function resetExecutionMappingInputs(){
-  $('[data-execution-map-check], [data-execution-map-choice]').forEach(item=>item.checked=false);
+  $('#executionMapFormBody input[type="checkbox"], #executionMapFormBody input[type="radio"]').forEach(item=>item.checked=false);
   $('#executionMapFormBody input[type="text"], #executionMapFormBody textarea').forEach(item=>item.value='');
   updateExecutionMappingScore();
 }
@@ -10583,6 +10760,21 @@ function initExecutionMappingWorkspace(){
 
   $('#executionMapPlaybookSelect')?.addEventListener('change',event=>{
     executionMappingPlaybookId=event.target.value||null;
+    executionMappingReturnPage='playbook';
+    renderExecutionMappingControls();
+    renderExecutionMappingForm();
+  });
+
+  $('#executionMapChecklistSelect')?.addEventListener('change',event=>{
+    executionMappingChecklistId=event.target.value||null;
+    executionMappingReturnPage='checklists';
+    renderExecutionMappingControls();
+    renderExecutionMappingForm();
+  });
+
+  $('#executionMapPsychSelect')?.addEventListener('change',event=>{
+    executionMappingPsychId=event.target.value||null;
+    executionMappingReturnPage='reflections';
     renderExecutionMappingControls();
     renderExecutionMappingForm();
   });
@@ -10594,20 +10786,32 @@ function initExecutionMappingWorkspace(){
   $('#executionMapResetBtn')?.addEventListener('click',resetExecutionMappingInputs);
 
   $('#executionBackToInstrumentsBtn')?.addEventListener('click',()=>{
-    loadPlaybookDocuments();
-    const mappedPlaybook=executionMappingPlaybook();
-    if(mappedPlaybook?.id&&playbookDocuments.some(item=>item.id===mappedPlaybook.id)){
-      selectedPlaybookDocumentId=mappedPlaybook.id;
-      persistPlaybookDocuments();
+    const target=executionMappingReturnPage||'playbook';
+    if(target==='playbook'){
+      loadPlaybookDocuments();
+      const mappedPlaybook=executionMappingPlaybook();
+      if(mappedPlaybook?.id&&playbookDocuments.some(item=>item.id===mappedPlaybook.id)){
+        selectedPlaybookDocumentId=mappedPlaybook.id;
+        persistPlaybookDocuments();
+      }
+    }else{
+      const kind=target==='checklists'?'checklist':'psych';
+      loadSecondaryDocuments(kind);
+      const mapped=executionMappingSecondary(kind);
+      if(mapped?.id){secondaryState(kind).selectedId=mapped.id;persistSecondaryDocuments(kind)}
     }
-    navigate('playbook');
+    navigate(target);
   });
 
   $('#executionMapRefreshBtn')?.addEventListener('click',()=>{
     playbookDocumentStoreKey=null;
+    secondaryState('checklist').storeKey=null;
+    secondaryState('psych').storeKey=null;
     loadPlaybookDocuments();
+    loadSecondaryDocuments('checklist');
+    loadSecondaryDocuments('psych');
     renderExecutionMappingWorkspace();
-    showStatus('Execution mapping refreshed from Technical Instruments');
+    showStatus('Execution mapping refreshed from all Technical Instruments');
   });
 }
 
@@ -10615,6 +10819,8 @@ function renderExecutionMappingWorkspace(){
   if(!$('#executionMapFormBody'))return;
   initExecutionMappingWorkspace();
   loadPlaybookDocuments();
+  loadSecondaryDocuments('checklist');
+  loadSecondaryDocuments('psych');
   renderExecutionMappingControls();
   renderExecutionMappingTradeContext();
   renderExecutionMappingForm();
