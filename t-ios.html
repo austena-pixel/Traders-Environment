@@ -3947,6 +3947,54 @@ body.playbook-preview-resizing *{
 .playbook-word-tool-btn:hover,.playbook-word-insert-btn:hover{border-color:#c8ced6;background:#e7edf5}
 .playbook-word-tool-btn.strong{font-weight:900}.playbook-word-tool-btn.italic{font-style:italic}.playbook-word-tool-btn.underline{text-decoration:underline}
 .playbook-word-style-select{min-width:120px;height:31px;border:1px solid #c8ced6;border-radius:5px;background:#fff;color:#202a36;padding:0 7px;font-size:10px}
+.playbook-list-style-btn{
+  min-width:76px;
+  min-height:46px;
+  display:grid;
+  grid-template-rows:1fr auto;
+  gap:4px;
+  place-items:center;
+  padding:5px 8px;
+  border:1px solid #cbd1d8;
+  border-radius:7px;
+  background:#fff;
+  color:#26313d;
+  font-size:9px;
+  cursor:pointer;
+}
+.playbook-list-style-btn:hover{border-color:#8fb5dd;background:#edf5fd}
+.playbook-list-style-btn.active{
+  border-color:#2b72b8;
+  background:#e6f2ff;
+  color:#155c9c;
+  box-shadow:0 0 0 1px rgba(43,114,184,.1) inset;
+}
+.playbook-list-style-preview{
+  width:48px;
+  height:19px;
+  display:grid;
+  gap:3px;
+}
+.playbook-list-style-preview i{
+  display:block;
+  min-width:0;
+  min-height:0;
+  border-radius:2px;
+  background:#7d8b9b;
+}
+.playbook-list-style-preview.vertical{grid-template-columns:1fr}
+.playbook-list-style-preview.row{grid-template-columns:repeat(4,1fr)}
+.playbook-list-style-preview.columns-2{grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr)}
+.playbook-list-style-preview.columns-3{grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr)}
+.playbook-list-style-preview.squares{grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr)}
+.playbook-list-style-preview.squares i{border:1px solid #718396;background:#dce8f4}
+.playbook-style-help{
+  max-width:190px;
+  color:#687585;
+  font-size:9px;
+  line-height:1.45;
+  padding:5px 6px;
+}
 .playbook-word-properties{display:grid;grid-template-columns:minmax(220px,1.5fr) minmax(180px,1fr) 130px auto;gap:8px;width:100%;align-items:end}
 .playbook-word-properties label span{display:block;margin-bottom:4px;color:#5d6875;font-size:8px;font-weight:750}
 .playbook-word-properties input,.playbook-word-properties select{width:100%;height:34px;border:1px solid #c8ced6;border-radius:5px;background:#fff;color:#202a36;padding:0 8px;font-size:10px}
@@ -3974,6 +4022,90 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
 .playbook-word-editor .pb-doc-label{display:block;margin-bottom:5px;color:#526170;font-size:10px;font-weight:800;letter-spacing:.6px}
 .playbook-word-editor .pb-doc-remove-btn{position:absolute;top:8px;right:8px;width:24px;height:24px;display:grid;place-items:center;padding:0;border:1px solid rgba(65,76,91,.24);border-radius:6px;background:rgba(255,255,255,.72);color:#687382;font-size:16px;font-weight:800;line-height:1;cursor:pointer}
 .playbook-word-editor .pb-doc-remove-btn:hover{border-color:#d26c73;background:#fff3f4;color:#b82935}
+
+/* Playbook Styles: list layouts. Layout is visual only; UL/OL semantics remain intact. */
+.playbook-word-editor ul[data-playbook-list-layout],
+.playbook-word-editor ol[data-playbook-list-layout]{
+  margin:12px 0 16px;
+}
+.playbook-word-editor ul[data-playbook-list-layout]:not([data-playbook-list-layout="vertical"]),
+.playbook-word-editor ol[data-playbook-list-layout]:not([data-playbook-list-layout="vertical"]){
+  padding-left:0;
+  list-style:none;
+}
+.playbook-word-editor ol[data-playbook-list-layout]:not([data-playbook-list-layout="vertical"]){
+  counter-reset:pb-list-item;
+}
+.playbook-word-editor ul[data-playbook-list-layout]:not([data-playbook-list-layout="vertical"])>li,
+.playbook-word-editor ol[data-playbook-list-layout]:not([data-playbook-list-layout="vertical"])>li{
+  position:relative;
+  min-width:0;
+  padding-left:21px;
+}
+.playbook-word-editor ul[data-playbook-list-layout]:not([data-playbook-list-layout="vertical"])>li::before{
+  content:'•';
+  position:absolute;
+  left:5px;
+  top:0;
+  color:#536170;
+  font-weight:900;
+}
+.playbook-word-editor ol[data-playbook-list-layout]:not([data-playbook-list-layout="vertical"])>li{
+  counter-increment:pb-list-item;
+}
+.playbook-word-editor ol[data-playbook-list-layout]:not([data-playbook-list-layout="vertical"])>li::before{
+  content:counter(pb-list-item) '.';
+  position:absolute;
+  left:0;
+  top:0;
+  color:#536170;
+  font-size:.86em;
+  font-weight:700;
+}
+.playbook-word-editor [data-playbook-list-layout="row"]{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:flex-start;
+  gap:8px 22px;
+}
+.playbook-word-editor [data-playbook-list-layout="row"]>li{
+  flex:0 1 auto;
+  width:auto;
+}
+.playbook-word-editor [data-playbook-list-layout="columns-2"]{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  column-gap:28px;
+  row-gap:7px;
+}
+.playbook-word-editor [data-playbook-list-layout="columns-3"]{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  column-gap:22px;
+  row-gap:7px;
+}
+.playbook-word-editor [data-playbook-list-layout="squares"]{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(135px,1fr));
+  gap:9px;
+}
+.playbook-word-editor [data-playbook-list-layout="squares"]>li{
+  min-height:64px;
+  padding:11px 12px 11px 31px!important;
+  border:1px solid #ccd5df;
+  border-radius:9px;
+  background:#f7f9fb;
+  box-shadow:0 2px 7px rgba(21,36,52,.04);
+}
+.playbook-word-editor [data-playbook-list-layout="squares"]>li::before{
+  left:11px!important;
+  top:11px!important;
+}
+@media(max-width:650px){
+  .playbook-word-editor [data-playbook-list-layout="columns-3"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .playbook-word-editor [data-playbook-list-layout="columns-2"],
+  .playbook-word-editor [data-playbook-list-layout="columns-3"]{column-gap:18px}
+}
 .playbook-word-statusbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:7px 12px;border-top:1px solid #1d242e;background:#171b21;color:#8f9aaa;font-size:8px}
 .playbook-word-statusbar span:first-child{color:#bcd4f3}
 .playbook-word-status-right{display:flex;align-items:center;gap:10px;margin-left:auto}
@@ -5490,6 +5622,7 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
             <div class="playbook-word-tabs" role="tablist" aria-label="Editor tools">
               <button class="playbook-word-tab active" type="button" data-playbook-ribbon="home" role="tab" aria-selected="true">Home</button>
               <button class="playbook-word-tab" type="button" data-playbook-ribbon="insert" role="tab" aria-selected="false">Insert</button>
+              <button class="playbook-word-tab" type="button" data-playbook-ribbon="styles" role="tab" aria-selected="false">Styles</button>
               <button class="playbook-word-tab" type="button" data-playbook-ribbon="playbook" role="tab" aria-selected="false">Playbook</button>
             </div>
 
@@ -5550,6 +5683,41 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
                 <div class="playbook-word-tool-row">
                   <button type="button" class="playbook-word-insert-btn" data-playbook-insert="checklist">Link Checklist</button>
                   <button type="button" class="playbook-word-insert-btn" data-playbook-insert="reflection">Link Reflection</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="playbook-word-ribbon-panel" data-playbook-ribbon-panel="styles">
+              <div class="playbook-word-tool-group">
+                <span class="playbook-word-tool-label">List Layout</span>
+                <div class="playbook-word-tool-row">
+                  <button type="button" class="playbook-list-style-btn" data-playbook-list-layout="vertical" title="Standard vertical list">
+                    <span class="playbook-list-style-preview vertical" aria-hidden="true"><i></i><i></i><i></i></span>
+                    <span>Vertical</span>
+                  </button>
+                  <button type="button" class="playbook-list-style-btn" data-playbook-list-layout="row" title="Arrange list items across rows">
+                    <span class="playbook-list-style-preview row" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+                    <span>Row</span>
+                  </button>
+                  <button type="button" class="playbook-list-style-btn" data-playbook-list-layout="columns-2" title="Arrange list in two columns">
+                    <span class="playbook-list-style-preview columns-2" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+                    <span>2 Columns</span>
+                  </button>
+                  <button type="button" class="playbook-list-style-btn" data-playbook-list-layout="columns-3" title="Arrange list in three columns">
+                    <span class="playbook-list-style-preview columns-3" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                    <span>3 Columns</span>
+                  </button>
+                  <button type="button" class="playbook-list-style-btn" data-playbook-list-layout="squares" title="Arrange list items as square cards">
+                    <span class="playbook-list-style-preview squares" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                    <span>Squares</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="playbook-word-tool-group">
+                <span class="playbook-word-tool-label">Selection</span>
+                <div class="playbook-style-help" id="playbookStyleSelectionHelp">
+                  Place the cursor inside a list, then choose a layout.
                 </div>
               </div>
             </div>
@@ -11605,6 +11773,7 @@ function insertPlaybookHtml(markup){
 }
 
 let playbookChoiceInsertRange=null;
+let playbookEditorSelectionRange=null;
 
 function capturePlaybookEditorSelection(){
   const editor=$('#playbookDocumentEditor');
@@ -11624,6 +11793,57 @@ function restorePlaybookEditorSelection(range){
     selection.addRange(range);
     return true;
   }catch(error){return false}
+}
+
+function rememberPlaybookEditorSelection(){
+  const range=capturePlaybookEditorSelection();
+  if(range)playbookEditorSelectionRange=range;
+}
+
+function playbookListFromRange(range=playbookEditorSelectionRange){
+  const editor=$('#playbookDocumentEditor');
+  if(!editor||!range)return null;
+  let node=range.startContainer;
+  if(node?.nodeType!==1)node=node?.parentElement;
+  const list=node?.closest?.('ul,ol')||null;
+  return list&&editor.contains(list)?list:null;
+}
+
+function currentPlaybookListLayout(list=playbookListFromRange()){
+  return list?.dataset?.playbookListLayout||'vertical';
+}
+
+function refreshPlaybookListStyleControls(){
+  const list=playbookListFromRange();
+  const layout=currentPlaybookListLayout(list);
+  $$('[data-playbook-list-layout]').forEach(button=>{
+    button.classList.toggle('active',Boolean(list)&&button.dataset.playbookListLayout===layout);
+  });
+  const help=$('#playbookStyleSelectionHelp');
+  if(help){
+    help.textContent=list
+      ? `Selected list · ${list.children.length} item${list.children.length===1?'':'s'} · ${layout.replace('-', ' ')}`
+      : 'Place the cursor inside a list, then choose a layout.';
+  }
+}
+
+function applyPlaybookListLayout(layout){
+  const allowed=new Set(['vertical','row','columns-2','columns-3','squares']);
+  if(!allowed.has(layout))return;
+
+  const list=playbookListFromRange();
+  if(!list){
+    showStatus('Place the cursor inside a list first');
+    refreshPlaybookListStyleControls();
+    return;
+  }
+
+  if(layout==='vertical')list.removeAttribute('data-playbook-list-layout');
+  else list.dataset.playbookListLayout=layout;
+
+  refreshPlaybookListStyleControls();
+  syncPlaybookLiveModel();
+  restorePlaybookEditorSelection(playbookEditorSelectionRange);
 }
 
 function refreshPlaybookChoiceOptionRows(){
@@ -11743,6 +11963,7 @@ function setPlaybookRibbonTab(name){
     button.setAttribute('aria-selected',active?'true':'false');
   });
   $$('[data-playbook-ribbon-panel]').forEach(panel=>panel.classList.toggle('active',panel.dataset.playbookRibbonPanel===name));
+  if(name==='styles')refreshPlaybookListStyleControls();
 }
 
 function initPlaybookWorkspace(){
@@ -11787,6 +12008,9 @@ function initPlaybookWorkspace(){
   $$('[data-playbook-command]').forEach(button=>button.addEventListener('click',()=>applyPlaybookCommand(button.dataset.playbookCommand)));
   $('#playbookBlockStyle')?.addEventListener('change',event=>{applyPlaybookCommand('formatBlock',event.target.value);event.target.value='p'});
   $$('[data-playbook-insert]').forEach(button=>button.addEventListener('click',()=>insertPlaybookElement(button.dataset.playbookInsert)));
+  $$('[data-playbook-list-layout]').forEach(button=>button.addEventListener('click',()=>{
+    applyPlaybookListLayout(button.dataset.playbookListLayout);
+  }));
 
   $('#playbookChoiceAddOptionBtn')?.addEventListener('click',()=>{
     if($$('[data-playbook-choice-option-input]').length<8)addPlaybookChoiceOptionInput('');
@@ -11810,7 +12034,18 @@ function initPlaybookWorkspace(){
     $(selector)?.addEventListener('change',syncPlaybookLiveModel);
   });
 
-  $('#playbookDocumentEditor')?.addEventListener('input',syncPlaybookLiveModel);
+  $('#playbookDocumentEditor')?.addEventListener('input',()=>{
+    rememberPlaybookEditorSelection();
+    syncPlaybookLiveModel();
+  });
+  $('#playbookDocumentEditor')?.addEventListener('mouseup',()=>{
+    rememberPlaybookEditorSelection();
+    refreshPlaybookListStyleControls();
+  });
+  $('#playbookDocumentEditor')?.addEventListener('keyup',()=>{
+    rememberPlaybookEditorSelection();
+    refreshPlaybookListStyleControls();
+  });
   $('#playbookDocumentEditor')?.addEventListener('click',event=>{
     const button=event.target.closest('.pb-doc-remove-btn');
     if(!button)return;
