@@ -13141,6 +13141,7 @@ function persistPlaybookDocuments(){
   if(!playbookDocumentStoreKey) playbookDocumentStoreKey=playbookDocumentKey();
   localStorage.setItem(playbookDocumentStoreKey,JSON.stringify(playbookDocuments));
   if(selectedPlaybookDocumentId)localStorage.setItem(playbookDocumentStoreKey+':selected',selectedPlaybookDocumentId);
+  else localStorage.removeItem(playbookDocumentStoreKey+':selected');
 }
 
 function currentPlaybookDocument(){
@@ -13503,8 +13504,12 @@ function renderPlaybookDocumentEditor(){
   refreshPlaybookListStyleControls();
 
   const item=currentPlaybookDocument();
+  [title,description,tags,state,$('#playbookDraftSaveBtn'),$('#playbookDraftDuplicateBtn'),$('#playbookDraftDeleteBtn'),$('#playbookDraftDeleteTopBtn')].forEach(control=>{if(control)control.disabled=!item});
+  title.placeholder=item?'Untitled Playbook':'No Playbook selected';
+  editor.contentEditable=item?'true':'false';
+  editor.dataset.placeholder=item?'Start writing your trading playbook...':'Click + New Playbook to start.';
   if(!item){
-    title.value='Untitled Playbook'; editor.innerHTML=''; description.value=''; tags.value=''; state.value='active';
+    title.value=''; editor.innerHTML=''; description.value=''; tags.value=''; state.value='active';
     $('#playbookDraftSaveState').textContent='Create a playbook to begin';
     updatePlaybookWordCount();
     return;
@@ -13526,7 +13531,7 @@ function renderPlaybookWorkspace(){
   loadPlaybookDocuments();
   applyPlaybookPreviewLayout();
   applyPlaybookCanvasLayout();
-  if(!playbookDocuments.length){
+  if(!playbookDocuments.length&&!localStorage.getItem(playbookDocumentStoreKey)){
     createPlaybookDocument({silent:true});
     return;
   }
@@ -13605,16 +13610,50 @@ function selectPlaybookDocument(id){
   renderPlaybookExecutionPreview();
 }
 
+let playbookDeleteContext=null;
+function closePlaybookDeleteModal(){
+  const modal=$('#playbookDeleteModal'),context=playbookDeleteContext;
+  if(modal){modal.classList.remove('open');modal.setAttribute('aria-hidden','true')}
+  playbookDeleteContext=null;
+  const focus=context?.returnFocus;
+  if(focus?.isConnected&&!focus.disabled)focus.focus();else $('#playbookDraftNewBtn')?.focus();
+}
+function ensurePlaybookDeleteModal(){
+  if($('#playbookDeleteModal'))return;
+  const modal=document.createElement('div');modal.id='playbookDeleteModal';modal.className='modal';
+  modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.setAttribute('aria-hidden','true');modal.setAttribute('aria-labelledby','playbookDeleteTitle');
+  modal.innerHTML='<div class="modal-card playbook-choice-modal-card"><div class="modal-head"><h2 id="playbookDeleteTitle">Delete Playbook</h2><button class="close" type="button" data-playbook-delete-cancel aria-label="Close">×</button></div><div class="playbook-choice-modal-body"><p>Delete <strong id="playbookDeleteName"></strong> from your Playbook library?</p><p>Historical trade reviews will remain.</p><div class="playbook-choice-modal-actions"><span></span><div class="playbook-choice-modal-actions-right"><button class="btn" type="button" id="playbookDeleteCancel" data-playbook-delete-cancel>Cancel</button><button class="btn danger" type="button" id="playbookDeleteConfirm">Delete Playbook</button></div></div></div></div>';
+  document.body.appendChild(modal);
+  modal.addEventListener('click',event=>{if(event.target===modal||event.target.closest('[data-playbook-delete-cancel]'))closePlaybookDeleteModal()});
+  modal.addEventListener('keydown',event=>{
+    if(event.key==='Escape'){event.preventDefault();closePlaybookDeleteModal()}
+    if(event.key==='Tab'){
+      const buttons=[...modal.querySelectorAll('button:not([disabled])')],first=buttons[0],last=buttons.at(-1);
+      if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}
+      else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
+    }
+  });
+  $('#playbookDeleteConfirm').addEventListener('click',()=>{
+    const context=playbookDeleteContext;
+    if(!context||context.scope!==playbookDocumentKey()||context.id!==selectedPlaybookDocumentId){closePlaybookDeleteModal();showStatus('Select the Playbook again before deleting it.');return}
+    if(!playbookDocuments.some(item=>item.id===context.id)){closePlaybookDeleteModal();return}
+    clearTimeout(playbookDocumentSaveTimer);clearTimeout(playbookEditorMutationTimer);
+    playbookDocumentSaveTimer=null;playbookEditorMutationTimer=null;
+    playbookDocuments=playbookDocuments.filter(item=>item.id!==context.id);
+    selectedPlaybookDocumentId=playbookDocuments[0]?.id||null;
+    persistPlaybookDocuments();
+    if(executionMappingPlaybookId===context.id)executionMappingPlaybookId=null;
+    hidePlaybookSaveAction();renderPlaybookDocumentEditor();renderPlaybookExecutionPreview();
+    if(executionMappingInitialized){renderExecutionMappingControls();if(executionMappingActiveInstrument==='playbook')renderExecutionMappingForm()}
+    closePlaybookDeleteModal();showStatus('Playbook deleted from the document library');
+  });
+}
 function deletePlaybookDocument(){
-  const item=currentPlaybookDocument();
-  if(!item)return;
-  if(!confirm(`Delete "${item.name}" from this Playbook library? This does not delete historical trade reviews.`))return;
-  playbookDocuments=playbookDocuments.filter(documentItem=>documentItem.id!==item.id);
-  selectedPlaybookDocumentId=playbookDocuments[0]?.id||null;
-  persistPlaybookDocuments();
-  if(!playbookDocuments.length)createPlaybookDocument({silent:true});
-  else{renderPlaybookDocumentEditor();renderPlaybookExecutionPreview()}
-  showStatus('Playbook deleted from the document library');
+  const item=currentPlaybookDocument();if(!item)return;
+  ensurePlaybookDeleteModal();
+  playbookDeleteContext={id:item.id,scope:playbookDocumentKey(),returnFocus:document.activeElement};
+  $('#playbookDeleteName').textContent=String($('#playbookDraftTitle')?.value||item.name).trim()||'Untitled Playbook';
+  const modal=$('#playbookDeleteModal');modal.classList.add('open');modal.setAttribute('aria-hidden','false');$('#playbookDeleteCancel').focus();
 }
 
 function duplicatePlaybookDocument(){
@@ -13636,7 +13675,7 @@ function updatePlaybookWordCount(){
 
 function focusPlaybookEditor(){
   const editor=$('#playbookDocumentEditor');
-  if(!editor)return null;
+  if(!editor||!currentPlaybookDocument())return null;
   editor.focus();
   return editor;
 }
@@ -13648,9 +13687,8 @@ function syncPlaybookLiveModel(){
   const next=collectPlaybookDocumentFromEditor();
   if(next){
     playbookDocuments=playbookDocuments.map(item=>item.id===next.id?next:item);
+    schedulePlaybookDocumentSave();
   }
-
-  schedulePlaybookDocumentSave();
 }
 
 function observePlaybookEditor(){
@@ -14319,6 +14357,7 @@ function applyPlaybookDefaultTemplate(id){
   showStatus(template.name+' template inserted');
 }
 function insertPlaybookElement(kind){
+  if(!currentPlaybookDocument()){showStatus('Create a Playbook first.');return}
   if(kind==='image'){openInstrumentImagePicker('playbook');return}
   if(kind==='image-field'){openInstrumentImageFieldModal('playbook');return}
   if(kind==='choice'){
