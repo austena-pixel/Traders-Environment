@@ -11008,21 +11008,22 @@ function setExecutionTopSectionCollapsed(collapsed,{persist=true}={}){
 
 function executionMappingPlaybook(){
   loadPlaybookDocuments();
+  const documents=playbookDocuments.filter(item=>!item.templateDraft);
 
   if(
     executionMappingPlaybookId &&
-    playbookDocuments.some(item=>item.id===executionMappingPlaybookId)
+    documents.some(item=>item.id===executionMappingPlaybookId)
   ){
-    return playbookDocuments.find(item=>item.id===executionMappingPlaybookId);
+    return documents.find(item=>item.id===executionMappingPlaybookId);
   }
 
   const selected=currentPlaybookDocument();
-  if(selected){
+  if(selected&&!selected.templateDraft){
     executionMappingPlaybookId=selected.id;
     return selected;
   }
 
-  const first=playbookDocuments[0]||null;
+  const first=documents[0]||null;
   executionMappingPlaybookId=first?.id||null;
   return first;
 }
@@ -11030,11 +11031,13 @@ function executionMappingPlaybook(){
 function executionMappingSecondary(kind){
   loadSecondaryDocuments(kind);
   const state=secondaryState(kind);
+  const documents=state.docs.filter(item=>!item.templateDraft);
   const selectedId=kind==='checklist'?executionMappingChecklistId:executionMappingPsychId;
-  if(selectedId&&state.docs.some(item=>item.id===selectedId)){
-    return state.docs.find(item=>item.id===selectedId);
+  if(selectedId&&documents.some(item=>item.id===selectedId)){
+    return documents.find(item=>item.id===selectedId);
   }
-  const selected=currentSecondaryDocument(kind)||state.docs[0]||null;
+  const current=currentSecondaryDocument(kind);
+  const selected=(current&&!current.templateDraft?current:null)||documents[0]||null;
   if(kind==='checklist')executionMappingChecklistId=selected?.id||null;
   else executionMappingPsychId=selected?.id||null;
   return selected;
@@ -11080,28 +11083,29 @@ function renderExecutionMappingControls(){
       }).join('')
     : '<option value="">No trades</option>';
 
-  playbookSelect.innerHTML=playbookDocuments.length
-    ? playbookDocuments.map(item=>`<option value="${escapeHtml(item.id)}" ${item.id===playbook?.id?'selected':''}>${escapeHtml(item.name||'Untitled Playbook')}</option>`).join('')
+  const savedPlaybooks=playbookDocuments.filter(item=>!item.templateDraft);
+  playbookSelect.innerHTML=savedPlaybooks.length
+    ? savedPlaybooks.map(item=>`<option value="${escapeHtml(item.id)}" ${item.id===playbook?.id?'selected':''}>${escapeHtml(item.name||'Untitled Playbook')}</option>`).join('')
     : '<option value="">No Playbooks</option>';
 
-  const checklistState=secondaryState('checklist');
-  checklistSelect.innerHTML=checklistState.docs.length
-    ? checklistState.docs.map(item=>`<option value="${escapeHtml(item.id)}" ${item.id===checklist?.id?'selected':''}>${escapeHtml(item.name||'Untitled Rules')}</option>`).join('')
+  const savedRules=secondaryState('checklist').docs.filter(item=>!item.templateDraft);
+  checklistSelect.innerHTML=savedRules.length
+    ? savedRules.map(item=>`<option value="${escapeHtml(item.id)}" ${item.id===checklist?.id?'selected':''}>${escapeHtml(item.name||'Untitled Rules')}</option>`).join('')
     : '<option value="">No Rules</option>';
   const checklistLabel=checklistSelect.closest('.execution-map-control')?.querySelector(':scope > span');
-  if(checklistLabel)checklistLabel.textContent='Rules'+(checklistState.docs.length?` (${checklistState.docs.length})`:'');
+  if(checklistLabel)checklistLabel.textContent='Rules'+(savedRules.length?` (${savedRules.length})`:'');
   const playbookView=$('#executionMapPlaybookViewBtn');
   if(playbookView)playbookView.disabled=!playbook;
 
   const checklistView=$('#executionMapChecklistViewBtn');
   if(checklistView)checklistView.disabled=!checklist;
 
-  const psychState=secondaryState('psych');
-  psychSelect.innerHTML=psychState.docs.length
-    ? psychState.docs.map(item=>`<option value="${escapeHtml(item.id)}" ${item.id===psych?.id?'selected':''}>${escapeHtml(item.name||'Untitled Psychological Reflection')}</option>`).join('')
+  const savedReflections=secondaryState('psych').docs.filter(item=>!item.templateDraft);
+  psychSelect.innerHTML=savedReflections.length
+    ? savedReflections.map(item=>`<option value="${escapeHtml(item.id)}" ${item.id===psych?.id?'selected':''}>${escapeHtml(item.name||'Untitled Psychological Reflection')}</option>`).join('')
     : '<option value="">No Psychological Reflections</option>';
   const psychLabel=psychSelect.closest('.execution-map-control')?.querySelector(':scope > span');
-  if(psychLabel)psychLabel.textContent='Psychological Reflection'+(psychState.docs.length?` (${psychState.docs.length})`:'');
+  if(psychLabel)psychLabel.textContent='Psychological Reflection'+(savedReflections.length?` (${savedReflections.length})`:'');
   const psychView=$('#executionMapPsychViewBtn');
   if(psychView)psychView.disabled=!psych;
 
@@ -12968,9 +12972,9 @@ const INSTRUMENT_DEFAULT_TEMPLATES={
 };
 function instrumentTemplateGalleryHtml(kind){
   const label=kind==='playbook'?'Playbook':secondaryConfig(kind).singular;
-  return `<div class="ti-template-intro"><b>${label} templates</b><span>Create a document from a layout, or insert a reusable section.</span></div><div class="ti-template-gallery" role="group" aria-label="Default ${label} templates">${(INSTRUMENT_DEFAULT_TEMPLATES[kind]||[]).map(template=>{
-    const inserts=template.variant==='insert',action=inserts?'Insert section':'Create document';
-    return `<button type="button" class="ti-template-card" data-instrument-template="${template.id}" data-instrument-template-kind="${kind}" aria-label="${inserts?'Insert '+template.name+' into '+label:'Create '+label+' from '+template.name}"><span class="ti-template-sketch" data-template-preview="${inserts?'sections':template.variant}" aria-hidden="true"><i></i><i></i><i></i><i></i></span><strong>${template.name}</strong><small>${template.description}</small><span class="ti-template-action">${action}</span></button>`;
+  return `<div class="ti-template-intro"><b>${label} templates</b><span>Start a template draft, or insert a reusable section.</span></div><div class="ti-template-gallery" role="group" aria-label="Default ${label} templates">${(INSTRUMENT_DEFAULT_TEMPLATES[kind]||[]).map(template=>{
+    const inserts=template.variant==='insert',action=inserts?'Insert section':'Start draft';
+    return `<button type="button" class="ti-template-card" data-instrument-template="${template.id}" data-instrument-template-kind="${kind}" aria-label="${inserts?'Insert '+template.name+' into '+label:'Start '+label+' draft from '+template.name}"><span class="ti-template-sketch" data-template-preview="${inserts?'sections':template.variant}" aria-hidden="true"><i></i><i></i><i></i><i></i></span><strong>${template.name}</strong><small>${template.description}</small><span class="ti-template-action">${action}</span></button>`;
   }).join('')}</div>`;
 }
 function instrumentTemplateDocumentHtml(kind,template){
@@ -13013,13 +13017,13 @@ function createInstrumentFromTemplate(kind,templateId){
   const documentHtml=instrumentTemplateDocumentHtml(kind,template);if(!documentHtml)return;
   if(kind==='playbook'){
     clearTimeout(playbookDocumentSaveTimer);savePlaybookDocument({quiet:true});
-    createPlaybookDocument({silent:true,template:{name:template.name,documentHtml}});
+    createPlaybookDocument({silent:true,template:{id:template.id,name:template.name,documentHtml}});
   }else{
     clearTimeout(secondaryState(kind).saveTimer);saveSecondaryDocument(kind,{quiet:true});
-    createSecondaryDocument(kind,{silent:true,template:{name:template.name,documentHtml}});
+    createSecondaryDocument(kind,{silent:true,template:{id:template.id,name:template.name,documentHtml}});
     const title=secondaryFind(kind,'[data-ti-title]');title?.focus();title?.select();
   }
-  showStatus('Created '+template.name+' from template');
+  showStatus('Template draft ready. Click Save to use it in Execution Quality.');
 }
 function applyInstrumentTemplate(kind,templateId){
   const template=technicalInstrumentTemplate(kind,templateId);if(!template)return;
@@ -13027,6 +13031,29 @@ function applyInstrumentTemplate(kind,templateId){
     if(kind==='playbook')applyPlaybookDefaultTemplate(templateId);
     else applySecondaryDefaultTemplate(kind,templateId);
   }else createInstrumentFromTemplate(kind,templateId);
+}
+
+function instrumentTemplateContentSignature(html){
+  const host=document.createElement('div');host.innerHTML=String(html||'');
+  host.querySelectorAll('.pb-doc-remove-btn').forEach(button=>button.remove());
+  host.querySelectorAll('[data-ti-image-field-patterns]').forEach(field=>{
+    try{field.dataset.tiImageFieldPatterns=JSON.stringify(JSON.parse(field.dataset.tiImageFieldPatterns).map((pattern,index)=>({...pattern,id:String(index)})))}catch(error){}
+  });
+  const read=node=>{
+    if(node.nodeType===3)return node.textContent.trim()?node.textContent.replace(/\s+/g,' '):null;
+    if(node.nodeType!==1)return null;
+    const attrs=[...node.attributes].filter(attr=>!['data-ti-image-field-id','data-ti-image-pattern-id'].includes(attr.name)).map(attr=>[attr.name,attr.value]).sort((a,b)=>a[0].localeCompare(b[0]));
+    return [node.tagName,attrs,[...node.childNodes].map(read).filter(value=>value!==null)];
+  };
+  return JSON.stringify([...host.childNodes].map(read).filter(value=>value!==null));
+}
+function instrumentTemplateDocumentState(kind,raw){
+  if(typeof raw.templateDraft==='boolean')return {templateDraft:raw.templateDraft,templateId:String(raw.templateId||'')};
+  // Earlier template creation stored untouched defaults as documents. Keep their
+  // content available as drafts; customized documents retain their saved status.
+  const template=(INSTRUMENT_DEFAULT_TEMPLATES[kind]||[]).find(item=>item.variant!=='insert'&&item.name===raw.name);
+  const untouched=template&&!raw.description&&!(raw.tags||[]).length&&instrumentTemplateContentSignature(raw.documentHtml)===instrumentTemplateContentSignature(instrumentTemplateDocumentHtml(kind,template));
+  return {templateDraft:Boolean(untouched),templateId:untouched?template.id:''};
 }
 
 function normalizePlaybookDocument(raw={}){
@@ -13052,6 +13079,7 @@ function normalizePlaybookDocument(raw={}){
   base.instrumentState=String(raw.instrumentState||base.instrumentState||'active');
   base.createdAt=raw.createdAt || base.createdAt || new Date().toISOString();
   base.updatedAt=raw.updatedAt || base.updatedAt || new Date().toISOString();
+  Object.assign(base,instrumentTemplateDocumentState('playbook',raw));
   return base;
 }
 
@@ -13071,7 +13099,7 @@ function loadPlaybookDocuments(){
   if(selectedPlaybookDocumentId&&!playbookDocuments.some(item=>item.id===selectedPlaybookDocumentId)){
     selectedPlaybookDocumentId=playbookDocuments[0]?.id || null;
   }
-  if(stored.some((item,index)=>item.documentHtml!==playbookDocuments[index].documentHtml))persistPlaybookDocuments();
+  if(stored.some((item,index)=>item.documentHtml!==playbookDocuments[index].documentHtml||item.templateDraft!==playbookDocuments[index].templateDraft))persistPlaybookDocuments();
 }
 
 function persistPlaybookDocuments(){
@@ -13434,7 +13462,7 @@ function renderPlaybookDocumentEditor(){
   description.value=item.description||'';
   tags.value=(item.tags||[]).join(', ');
   state.value=['active','draft','archived'].includes(item.instrumentState)?item.instrumentState:'active';
-  $('#playbookDraftSaveState').textContent='Saved';
+  $('#playbookDraftSaveState').textContent=item.templateDraft?'Template draft · click Save to use in Execution Quality':'Saved';
   updatePlaybookWordCount();
 }
 
@@ -13469,6 +13497,8 @@ function createPlaybookDocument({silent=false,source=null,template=null}={}){
   created.documentHtml=String(input.documentHtml||created.documentHtml||'');
   created.name=String(input.name||created.name||'Untitled Playbook');
   created.instrumentState=String(input.instrumentState||created.instrumentState||'draft');
+  created.templateDraft=Boolean(template)||source?.templateDraft===true;
+  created.templateId=template?.id||source?.templateId||'';
   created.createdAt=now; created.updatedAt=now;
   playbookDocuments.unshift(created);
   selectedPlaybookDocumentId=created.id;
@@ -13496,10 +13526,11 @@ function savePlaybookDocument({quiet=false}={}){
   const module=playbookModule();
   const validation=module?.validate?module.validate(next):{valid:true,errors:[]};
   if(!validation.valid){if(!quiet)alert(validation.errors.join('\n'));return}
+  if(!quiet)next.templateDraft=false;
   playbookDocuments=playbookDocuments.map(item=>item.id===next.id?next:item);
   persistPlaybookDocuments();
   renderPlaybookExecutionPreview();
-  $('#playbookDraftSaveState').textContent='Saved';
+  $('#playbookDraftSaveState').textContent=next.templateDraft?'Draft autosaved · click Save to use in Execution Quality':'Saved';
   if(!quiet)showPlaybookSaveAction();
 }
 
@@ -14091,6 +14122,7 @@ function insertPlaybookTableFromModal(){
 }
 
 function previewCurrentPlaybookInExecutionQuality(){
+  if(currentPlaybookDocument()?.templateDraft){showStatus('Save this Playbook before opening Execution Quality.');return}
   if(selectedPlaybookDocumentId)executionMappingPlaybookId=selectedPlaybookDocumentId;
   executionMappingActiveInstrument='playbook';
   clearTimeout(playbookDocumentSaveTimer);
@@ -14333,6 +14365,7 @@ function secondaryNormalizeDoc(kind,raw={}){
   const config=secondaryConfig(kind);
   const now=new Date().toISOString();
   return {
+    ...instrumentTemplateDocumentState(kind,raw),
     id:String(raw.id||secondaryMakeId(kind)),
     name:String(raw.name||('Untitled '+config.singular)),
     description:String(raw.description||''),
@@ -14356,7 +14389,7 @@ function loadSecondaryDocuments(kind,{refresh=false}={}){
   state.docs=stored.map(item=>secondaryNormalizeDoc(kind,item));
   state.selectedId=localStorage.getItem(key+':selected')||state.docs[0]?.id||null;
   if(state.selectedId&&!state.docs.some(item=>item.id===state.selectedId))state.selectedId=state.docs[0]?.id||null;
-  if(stored.some((item,index)=>item.documentHtml!==state.docs[index].documentHtml))persistSecondaryDocuments(kind);
+  if(stored.some((item,index)=>item.documentHtml!==state.docs[index].documentHtml||item.templateDraft!==state.docs[index].templateDraft))persistSecondaryDocuments(kind);
 }
 function persistSecondaryDocuments(kind){
   const state=secondaryState(kind);
@@ -14634,6 +14667,8 @@ function createSecondaryDocument(kind,{silent=false,template=null}={}){
     name:template?.name||('Untitled '+config.singular),
     description:'',
     documentHtml:template?.documentHtml||config.defaultHtml,
+    templateDraft:Boolean(template),
+    templateId:template?.id||'',
     tags:[],
     instrumentState:'draft',
     createdAt:now
@@ -14660,11 +14695,12 @@ function collectSecondaryDocument(kind){
 }
 function saveSecondaryDocument(kind,{quiet=false}={}){
   const next=collectSecondaryDocument(kind); if(!next)return;
+  if(!quiet)next.templateDraft=false;
   const state=secondaryState(kind);
   state.docs=state.docs.map(item=>item.id===next.id?next:item);
   persistSecondaryDocuments(kind);
   renderSecondaryPreview(kind);
-  const saveState=secondaryFind(kind,'[data-ti-save-state]'); if(saveState)saveState.textContent='Saved';
+  const saveState=secondaryFind(kind,'[data-ti-save-state]'); if(saveState)saveState.textContent=next.templateDraft?'Draft autosaved · click Save to use in Execution Quality':'Saved';
   if(!quiet)showStatus(secondaryConfig(kind).singular+' saved');
 }
 function scheduleSecondarySave(kind){
@@ -14947,7 +14983,7 @@ function renderSecondaryDocument(kind){
   hydratePlaybookImages(editor);
   const words=(editor.innerText||'').trim().split(/\s+/).filter(Boolean).length;
   secondaryFind(kind,'[data-ti-word-count]').textContent=words+' words';
-  secondaryFind(kind,'[data-ti-save-state]').textContent='Saved';
+  secondaryFind(kind,'[data-ti-save-state]').textContent=doc.templateDraft?'Template draft · click Save to use in Execution Quality':'Saved';
   renderSecondaryPreview(kind);
 }
 
@@ -15012,6 +15048,7 @@ function beginSecondaryCanvasResize(kind,event,axis){
 }
 
 function previewSecondaryInExecution(kind){
+  if(currentSecondaryDocument(kind)?.templateDraft){showStatus('Save this document before opening Execution Quality.');return}
   saveSecondaryDocument(kind,{quiet:true});
   if(kind==='checklist')executionMappingChecklistId=secondaryState(kind).selectedId;
   else executionMappingPsychId=secondaryState(kind).selectedId;

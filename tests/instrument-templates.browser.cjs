@@ -7,9 +7,9 @@ const http=require('node:http');
 const {chromium}=require('playwright');
 const root=path.resolve(process.argv[2]||path.join(__dirname,'..'));
 const configs={
-  playbook:{page:'#page-playbook',editor:'#playbookDocumentEditor',prefix:'data-playbook',preview:'#playbookExecutionPreviewBody',title:'#playbookDraftTitle',open:'#playbookPreviewOpenExecutionBtn',picker:'#playbookPreviewDocumentSelect'},
-  checklist:{page:'#page-checklists',editor:'[data-ti-editor]',prefix:'data-ti',preview:'[data-ti-preview-body]',title:'[data-ti-title]',open:'[data-ti-action="preview"]',picker:'[data-ti-preview-select]'},
-  psych:{page:'#page-reflections',editor:'[data-ti-editor]',prefix:'data-ti',preview:'[data-ti-preview-body]',title:'[data-ti-title]',open:'[data-ti-action="preview"]',picker:'[data-ti-preview-select]'}
+  playbook:{page:'#page-playbook',editor:'#playbookDocumentEditor',prefix:'data-playbook',preview:'#playbookExecutionPreviewBody',title:'#playbookDraftTitle',open:'#playbookPreviewOpenExecutionBtn',picker:'#playbookPreviewDocumentSelect',save:'#playbookDraftSaveBtn',executionPicker:'#executionMapPlaybookSelect'},
+  checklist:{page:'#page-checklists',editor:'[data-ti-editor]',prefix:'data-ti',preview:'[data-ti-preview-body]',title:'[data-ti-title]',open:'[data-ti-action="preview"]',picker:'[data-ti-preview-select]',save:'[data-ti-action="save"]',executionPicker:'#executionMapChecklistSelect'},
+  psych:{page:'#page-reflections',editor:'[data-ti-editor]',prefix:'data-ti',preview:'[data-ti-preview-body]',title:'[data-ti-title]',open:'[data-ti-action="preview"]',picker:'[data-ti-preview-select]',save:'[data-ti-action="save"]',executionPicker:'#executionMapPsychSelect'}
 };
 const templateIds={
   playbook:['playbook-simple','playbook-sections','playbook-cards','playbook-patterns'],
@@ -81,6 +81,10 @@ async function run(){
         assert.ok(after.find(doc=>doc.id===previousId).documentHtml.includes(marker));
         assert.equal(await active(kind).locator(configs[kind].title).inputValue(),name);
         assert.equal(after.find(doc=>doc.id===nextId).name,name);assert.ok(await model(kind).textContent());
+        assert.equal(after.find(doc=>doc.id===nextId).templateDraft,true);assert.equal(after.find(doc=>doc.id===nextId).templateId,id);
+        await page.evaluate(()=>renderExecutionMappingControls());
+        assert.equal(await page.locator(configs[kind].executionPicker+' option[value="'+nextId+'"]').count(),0);
+        await active(kind).locator(configs[kind].open).click();assert.equal(await active(kind).evaluate(el=>el.classList.contains('active')),true,'Preview cannot implicitly save a template draft');
         if(index===0){assert.equal(await editor(kind).locator('h2').count(),1);assert.equal(await editor(kind).locator('p').count(),1)}
         if(index===1){
           assert.ok(await editor(kind).locator('h3').count()>=3);
@@ -102,7 +106,10 @@ async function run(){
           const checkboxes=model(kind).locator('input[type="checkbox"]');await checkboxes.first().check();await checkboxes.last().check();assert.equal(await checkboxes.first().isChecked(),true);assert.equal(await checkboxes.last().isChecked(),true);
           assert.equal(await fields.locator('input').count(),0);
         }
+        await active(kind).locator(configs[kind].save).click();
+        assert.equal((await docs(kind)).find(doc=>doc.id===nextId).templateDraft,false);
         await active(kind).locator(configs[kind].open).click();
+        assert.equal(await page.locator(configs[kind].executionPicker+' option[value="'+nextId+'"]').count(),1);
         const mapped=page.locator('#executionMapFormBody [data-execution-instrument-section="'+kind+'"]');
         assert.equal(await page.locator('#executionMapFormBody [data-execution-instrument-section]').count(),1);
         if(index===1&&kind==='psych')assert.equal(await mapped.locator('.execution-psych-prompt textarea').count(),4); // Three prompts plus the introductory content.
@@ -113,7 +120,7 @@ async function run(){
         }
         await page.locator('#executionBackToInstrumentsBtn').click();
         await templateTab(kind).click();
-        pass(id+' creates an independent saved document, preserves pending edits, updates Live Model and maps separately');
+        pass(id+' stays a draft until explicit Save, preserves pending edits, updates Live Model and then maps separately');
       }
       // Retain the section insertion workflow added on main while this work was paused.
       for(const [index,id] of insertTemplateIds[kind].entries()){
@@ -169,6 +176,56 @@ async function run(){
     }
     await screenshot('psych-templates-mobile');
     pass('Templates fits the compact desktop ribbon and scrolls on a phone for all three builders');
+    await page.setViewportSize({width:1700,height:1150});
+    for(const kind of Object.keys(configs)){
+      // A template draft survives edits, autosave, builder switching and reload,
+      // including a renamed draft, without appearing in Execution Quality.
+      await switchBuilder(kind);const draftId=await currentId(kind);
+      await active(kind).locator(configs[kind].title).fill('My unsaved '+kind+' design');
+      await editor(kind).evaluate(el=>{const p=document.createElement('p');p.textContent='Draft work to preserve';el.appendChild(p);el.dispatchEvent(new Event('input',{bubbles:true}))});
+      await page.waitForFunction(({scope,id})=>JSON.parse(localStorage.getItem(scope)||'[]').some(doc=>doc.id===id&&doc.documentHtml.includes('Draft work to preserve')),{scope:await page.evaluate(kind=>instrumentImageScope(kind),kind),id:draftId});
+      await switchBuilder(kind==='playbook'?'psych':'playbook');await switchBuilder(kind);assert.equal(await currentId(kind),draftId);
+      await page.reload({waitUntil:'load'});await switchBuilder(kind);
+      assert.equal(await currentId(kind),draftId);assert.ok((await editor(kind).textContent()).includes('Draft work to preserve'));assert.equal((await docs(kind)).find(doc=>doc.id===draftId).templateDraft,true);
+      await page.evaluate(()=>navigate('execution'));
+      assert.equal(await page.locator(configs[kind].executionPicker+' option[value="'+draftId+'"]').count(),0);
+      await page.evaluate(({kind,id})=>{if(kind==='playbook')executionMappingPlaybookId=id;else if(kind==='checklist')executionMappingChecklistId=id;else executionMappingPsychId=id;renderExecutionMappingWorkspace()},{kind,id:draftId});
+      assert.equal(await page.locator(configs[kind].executionPicker+' option[value="'+draftId+'"]').count(),0,'A stale mapping ID cannot expose a draft');
+      await switchBuilder(kind);await active(kind).locator(configs[kind].save).click();
+      await page.reload({waitUntil:'load'});await switchBuilder(kind);await active(kind).locator(configs[kind].open).click();
+      assert.equal(await page.locator(configs[kind].executionPicker+' option[value="'+draftId+'"]').count(),1);
+      pass(kind+' renamed draft survives autosave, switching and reload; only manual Save makes it available in Execution Quality');
+      // Seed the exact previous release format, which had no template metadata.
+      const legacy=await page.evaluate(kind=>{
+        const defaults=INSTRUMENT_DEFAULT_TEMPLATES[kind].filter(item=>item.variant!=='insert');
+        const docs=defaults.map((template,index)=>({id:'legacy_'+kind+'_'+index,name:template.name,documentHtml:instrumentTemplateDocumentHtml(kind,template),description:'',tags:[],instrumentState:'draft'}));
+        const card=docs[2];
+        docs.push({...card,id:'legacy_'+kind+'_edited',documentHtml:card.documentHtml+'<p>My actual trading conditions</p>'});
+        docs.push({...card,id:'legacy_'+kind+'_renamed',name:'My custom trading system'});
+        docs.push({...card,id:'legacy_'+kind+'_colors',documentHtml:card.documentHtml.replace(/data-playbook-color-border="[^"]+"/,'data-playbook-color-border="#123456"')});
+        docs.push({...card,id:'legacy_'+kind+'_confirmed',templateDraft:false,templateId:defaults[2].id});
+        const host=document.createElement('div');host.innerHTML=docs[3].documentHtml;host.querySelectorAll('.pb-doc-remove-btn').forEach(button=>button.setAttribute('contenteditable','false'));docs[3].documentHtml=host.innerHTML;
+        localStorage.setItem(instrumentImageScope(kind),JSON.stringify(docs));localStorage.setItem(instrumentImageScope(kind)+':selected',docs[0].id);
+        return docs;
+      },kind);
+      await page.reload({waitUntil:'load'});await switchBuilder(kind);
+      const migrated=await docs(kind);assert.equal(migrated.length,legacy.length);
+      for(const previous of legacy){const stored=migrated.find(doc=>doc.id===previous.id);assert.equal(stored.documentHtml,previous.documentHtml);assert.equal(stored.templateDraft,!previous.id.match(/_(edited|renamed|colors|confirmed)$/))}
+      await page.evaluate(()=>navigate('execution'));
+      assert.deepEqual(await page.locator(configs[kind].executionPicker+' option').evaluateAll(nodes=>nodes.map(el=>el.value)),legacy.slice(4).map(doc=>doc.id));
+      if(kind!=='playbook')assert.ok((await page.locator(configs[kind].executionPicker).evaluate(el=>el.closest('.execution-map-control').querySelector(':scope > span').textContent)).includes('(4)'));
+      await page.evaluate(({kind,documents})=>{localStorage.setItem(instrumentImageScope(kind),JSON.stringify(documents));localStorage.setItem(instrumentImageScope(kind)+':selected',documents[0].id)},{kind,documents:migrated.slice(0,4)});
+      await page.reload({waitUntil:'load'});await page.evaluate(()=>{setLoggedInUI(true);navigate('execution')});
+      assert.deepEqual(await page.locator(configs[kind].executionPicker+' option').evaluateAll(nodes=>nodes.map(el=>el.value)),['']);
+      assert.equal(await page.locator(configs[kind].executionPicker).evaluate(el=>el.closest('.execution-map-control').querySelector('button').disabled),true);
+      assert.equal(await page.evaluate(kind=>kind==='playbook'?executionMappingPlaybook():executionMappingSecondary(kind),kind),null);
+      await page.evaluate(({kind,documents})=>{localStorage.setItem(instrumentImageScope(kind),JSON.stringify(documents));localStorage.setItem(instrumentImageScope(kind)+':selected',documents[0].id)},{kind,documents:migrated});
+      await page.reload({waitUntil:'load'});
+      await switchBuilder(kind);await active(kind).locator(configs[kind].save).click();
+      await page.reload({waitUntil:'load'});await switchBuilder(kind);await active(kind).locator(configs[kind].open).click();
+      assert.equal(await page.locator(configs[kind].executionPicker+' option[value="'+legacy[0].id+'"]').count(),1);
+      pass(kind+' legacy untouched templates become drafts without deletion; custom / confirmed documents stay listed and Save restores a migrated draft');
+    }
     assert.deepEqual(errors,[]);pass('No browser console or JavaScript errors');
     console.log(checks+' instrument-template browser checks passed');
   }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve))}
