@@ -76,7 +76,7 @@ async function run(){
 
       await select(kind,'[data-playbook-node="rule"]',undefined,null,true);await page.keyboard.press('Enter');await page.keyboard.type('An ordinary explanation after this rule.');
       assert.equal(await editor(kind).locator('[data-playbook-node="rule"]').textContent(),'Wait for confirmation.');
-      const ordinary=editor(kind).locator('p').filter({hasText:'An ordinary explanation after this rule.'});assert.equal(await ordinary.getAttribute('data-playbook-node'),null);
+      const ordinary=editor(kind).locator(':scope > p').filter({hasText:'An ordinary explanation after this rule.'});assert.equal(await ordinary.getAttribute('data-playbook-node'),null);
       assert.equal(await model(kind).locator('.playbook-preview-check').count(),1);
       pass(kind+' returns to ordinary writing after Enter at the end of a function');
 
@@ -92,21 +92,46 @@ async function run(){
       await select(kind,'#heading-source');await apply(kind,'h2');assert.equal(await editor(kind).locator('h2').textContent(),'A market view');
       pass(kind+' styles highlighted paragraphs together, updates Live Model immediately, and creates headings from prose');
 
-      await append(kind,'<p id="choice-title">Market context: 4H</p><p id="choice-a">Balance</p><p id="choice-b">Imbalance</p>');
-      await select(kind,'#choice-title','#choice-b');await apply(kind,'choice');
-      assert.equal(await page.locator('[data-text-choice-title]').inputValue(),'Market context: 4H');assert.equal(await page.locator('[data-text-choice-options]').inputValue(),'Balance\nImbalance');
-      await page.locator('[data-text-choice-options]').fill('Balance\nBalance');await page.locator('[data-secondary-confirm]').click();assert.ok((await page.locator('[data-secondary-error]').textContent()).includes('different'));
-      await page.locator('[data-text-choice-options]').fill('Balance\nImbalance');await page.locator('[data-secondary-confirm]').click();
+      await append(kind,'<p id="single-option">One existing line</p><p id="duplicate-a">Same wording</p><p id="duplicate-b">Same wording</p>');
+      for(const [first,last] of [['#single-option','#single-option'],['#duplicate-a','#duplicate-b']]){
+        await select(kind,first,last);const unchanged=await editor(kind).innerHTML();await apply(kind,'choice');
+        assert.equal(await editor(kind).innerHTML(),unchanged);assert.equal(await page.locator('#secondaryInstrumentModal.open').count(),0);assert.equal(await editor(kind).locator('[data-playbook-node="choice"]').count(),0);
+      }
+      pass(kind+' rejects insufficient / duplicate choices without a dialog, invented options, or document edits');
+      await append(kind,'<p id="all-choice-a"><b>Alpha</b></p><p id="all-choice-b">Beta</p><p id="all-choice-c">Gamma</p>');
+      await select(kind,'#all-choice-a','#all-choice-c');await apply(kind,'choice');
+      assert.deepEqual(await editor(kind).locator('[data-choice-option]').allTextContents(),['Alpha','Beta','Gamma']);
+      assert.equal(await editor(kind).locator('[data-choice-title]').count(),0);assert.equal(await model(kind).locator('.playbook-preview-choice > b').count(),0);
+      assert.equal(await model(kind).locator('.playbook-preview-choice-text b').textContent(),'Alpha');
+      await apply(kind,'p');assert.equal(await editor(kind).locator('[data-playbook-node="choice"]').count(),0);
+      pass(kind+' assigns every selected line, including the first, as an option and keeps its existing formatting');
+
+      await append(kind,'<div id="legacy-choice" class="pb-doc-choice" data-playbook-node="choice"><b data-choice-title>User written title</b><div class="pb-doc-choice-options"><div class="pb-doc-choice-option"><span data-choice-option>Original A</span></div><div class="pb-doc-choice-option"><span data-choice-option>Original B</span></div></div></div>');
+      await select(kind,'#legacy-choice');const legacy=await editor(kind).locator('#legacy-choice').evaluate(el=>el.outerHTML);await apply(kind,'choice');
+      assert.equal(await editor(kind).locator('#legacy-choice').evaluate(el=>el.outerHTML),legacy);assert.equal(await model(kind).locator('.playbook-preview-choice > b').textContent(),'User written title');
+      await apply(kind,'p');assert.equal(await editor(kind).locator('[data-choice-title]').count(),0);assert.ok((await editor(kind).textContent()).includes('User written title'));
+      pass(kind+' preserves already written titles and choices when their existing function is reassigned');
+
+      await append(kind,'<p id="choice-title">Market context: 4H</p><p id="choice-a"><b>Balance</b></p><p id="choice-b">Imbalance</p>');
+      await select(kind,'#choice-a','#choice-b');await apply(kind,'choice');
+      assert.equal(await page.locator('#secondaryInstrumentModal.open').count(),0);
+      assert.equal(await editor(kind).locator('#choice-title').textContent(),'Market context: 4H');
       const choice=editor(kind).locator('[data-playbook-node="choice"]');assert.equal(await choice.count(),1);assert.deepEqual(await choice.locator('[data-choice-option]').allTextContents(),['Balance','Imbalance']);
+      assert.equal(await choice.locator('[data-choice-title]').count(),0);assert.equal(await choice.locator('[data-choice-option] b').textContent(),'Balance');
+      const item=await page.evaluate(kind=>playbookStructuredPreviewItems(instrumentImageEditor(kind).innerHTML).find(item=>item.type==='choice'),kind);assert.equal(item.label,'');assert.deepEqual(item.options,['Balance','Imbalance']);
       const surface=await choice.evaluate(el=>({background:getComputedStyle(el).backgroundColor,border:getComputedStyle(el).borderLeftWidth,layout:getComputedStyle(el.querySelector('.pb-doc-choice-options')).display}));
       assert.deepEqual(surface,{background:'rgba(0, 0, 0, 0)',border:'0px',layout:'block'});
+      assert.equal(await model(kind).locator('.playbook-preview-choice > b').count(),0);
       await apply(kind,'p');assert.equal(await editor(kind).locator('[data-playbook-node="choice"]').count(),0);assert.equal(await model(kind).locator('.playbook-preview-choice').count(),0);
-      const candidates=editor(kind).locator(':scope > p').filter({hasText:/Market context: 4H|^Balance$|^Imbalance$/});
+      const candidates=editor(kind).locator(':scope > p').filter({hasText:/^Balance$|^Imbalance$/});
       await candidates.evaluateAll(nodes=>nodes.forEach((node,index)=>node.id='rechoice-'+index));
-      await select(kind,'#rechoice-0','#rechoice-2');await apply(kind,'choice');await page.locator('[data-secondary-confirm]').click();
+      await select(kind,'#rechoice-0','#rechoice-1');await apply(kind,'choice');
       await active(kind).locator('['+attribute(kind,'command')+'="undo"]').click();assert.equal(await editor(kind).locator('[data-playbook-node="choice"]').count(),0);
       await active(kind).locator('['+attribute(kind,'command')+'="redo"]').click();assert.equal(await editor(kind).locator('[data-playbook-node="choice"]').count(),1);
-      pass(kind+' turns selected lines into unboxed Either / Or, validates distinct options, and can remove the function without losing its text');
+      await select(kind,'[data-playbook-node="choice"]');await active(kind).locator('['+attribute(kind,'ribbon')+'="styles"]').click();await active(kind).locator('['+attribute(kind,'list-layout')+'="columns-2"]').click();
+      await style(kind,'alignment','center');await style(kind,'borders','strong');await style(kind,'presets','card');await color(kind,'border','#2457bf');
+      assert.equal(await model(kind).locator('.playbook-preview-choice-options[data-playbook-list-layout="columns-2"][data-playbook-preset="card"]').count(),1);
+      pass(kind+' applies Either / Or immediately to the two selected lines, keeps the surrounding heading, and supports removal / Undo / Redo / Styles');
 
       await append(kind,'<p id="list-a"><b>Condition one</b></p><p id="list-b">Condition two</p><p id="list-c">Condition three</p><p id="prompt-source">What influenced my decision?</p><p id="note-source">This is guidance, not a condition.</p>');
       await select(kind,'#list-a','#list-c');await apply(kind,'ul');assert.equal(await editor(kind).locator('ul > li').count(),3);assert.equal(await editor(kind).locator('ul > li b').textContent(),'Condition one');
@@ -120,8 +145,10 @@ async function run(){
       await select(kind,'#note-source');await apply(kind,'note');assert.equal(await model(kind).locator('.playbook-preview-note-block').count(),1);
       await select(kind,'[data-playbook-node="choice"] .pb-doc-choice-option:last-child [data-choice-option]',undefined,null,true);await page.keyboard.press('Enter');await page.keyboard.type('Explanation after the choices.');
       assert.equal(await editor(kind).locator('[data-playbook-node="choice"]').textContent().then(text=>text.includes('Explanation after')),false);
-      const plainAfterChoice=editor(kind).locator('p').filter({hasText:'Explanation after the choices.'});assert.equal(await plainAfterChoice.getAttribute('data-playbook-node'),null);
+      const plainAfterChoice=editor(kind).locator(':scope > p').filter({hasText:'Explanation after the choices.'});assert.equal(await plainAfterChoice.getAttribute('data-playbook-node'),null);
       await select(kind,'ul > li:last-child',undefined,null,true);await page.keyboard.press('Enter');await page.keyboard.press('Enter');await page.keyboard.type('Explanation after the list.');
+      const parsed=await page.evaluate(kind=>playbookStructuredPreviewItems(instrumentImageEditor(kind).innerHTML),kind);
+      assert.ok(parsed.some(item=>item.type==='content'&&item.label==='Explanation after the choices.'));assert.deepEqual(parsed.filter(item=>item.type==='check').map(item=>item.label),['Wait for confirmation.','Condition one','Condition two','Condition three']);
       assert.equal(await editor(kind).locator('ul li').count(),3);assert.equal(await editor(kind).locator('p').filter({hasText:'Explanation after the list.'}).getAttribute('data-playbook-node'),null);
       pass(kind+' preserves list layouts with all Styles, inline formatting, and explicit Note / Reflection prompt functions');
 
@@ -138,12 +165,14 @@ async function run(){
       await switchBuilder(kind==='playbook'?'checklist':'playbook');await switchBuilder(kind);assert.equal(await editor(kind).locator('#plain-b').getAttribute('data-playbook-color-border'),'#2457bf');
       await page.reload({waitUntil:'load'});await switchBuilder(kind);assert.equal(await page.evaluate(kind=>instrumentImageDocumentId(kind),kind),id);
       assert.equal(await editor(kind).locator('ul').getAttribute('data-playbook-preset'),'card');assert.equal(await editor(kind).locator('#plain-b').getAttribute('data-playbook-preset'),'card');
+      assert.equal(await editor(kind).locator('[data-choice-title]').count(),0);assert.equal(await editor(kind).locator('.pb-doc-choice-options').getAttribute('data-playbook-list-layout'),'columns-2');
       await screenshot(kind+'-writing');
       await active(kind).locator(configs[kind].open).click();
       const mapped=page.locator('#executionMapFormBody [data-execution-instrument-section="'+kind+'"]');
       assert.equal(await mapped.locator('.execution-map-information[data-playbook-preset="card"]').count(),1);
       assert.equal(await mapped.locator('[data-playbook-list-layout="columns-3"][data-playbook-border="strong"][data-playbook-color-border="#2457bf"]').count(),1);
       assert.equal(await mapped.locator('.execution-psych-prompt textarea').count(),1,'Only explicit prompts create responses; ordinary prose stays informational');
+      assert.equal(await mapped.locator('.execution-map-choice-head > strong').count(),0);assert.equal(await mapped.locator('.execution-map-choice-options b').textContent(),'Balance');assert.equal(await mapped.locator('.execution-map-choice-options').getAttribute('data-playbook-preset'),'card');
       const radios=mapped.locator('input[type="radio"]');assert.equal(await radios.count(),2);await radios.first().check();await radios.last().check();assert.equal(await radios.first().isChecked(),false);
       assert.equal(await mapped.locator('input[type="checkbox"]').count(),4);
       assert.equal(await page.locator('#executionMapFormBody [data-execution-instrument-section]').count(),1);
