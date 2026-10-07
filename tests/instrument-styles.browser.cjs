@@ -40,12 +40,16 @@ async function select(kind, selector) {
 }
 async function styles(kind) { await active(kind).locator('[' + configs[kind].ribbon + '="styles"]').click(); }
 async function setStyle(kind, property, value) {
+  await styles(kind);
+  const category={align:'alignment',spacing:'spacing',border:'borders',preset:'presets'}[property];
+  await active(kind).locator('['+configs[kind].prefix+'-style-category="'+category+'"]').click();
   const button = styleButton(kind, property, value);
   assert.equal(await button.isEnabled(), true, kind + ' has an active style target');
   await button.click();
   assert.match(await button.getAttribute('class'), /\bactive\b/);
 }
 async function colors(kind, values) {
+  await styles(kind);await active(kind).locator('['+configs[kind].prefix+'-style-category="colors"]').click();
   for (const [key, value] of Object.entries(values)) {
     const input = active(kind).locator('[' + configs[kind].prefix + '-style-color="' + key + '"]');
     // Move focus to the actual color input before its native picker event.
@@ -201,17 +205,20 @@ async function run() {
       await verifyCombined(kind,'#style-choice .pb-doc-choice-options','.playbook-preview-choice-options');passed(kind+' ordered-list and Either / Or styling');
       await verifyExecution(kind,'columns-3',true);await styles(kind);
 
-      await select(kind,'#unselected');assert.equal(await styleButton(kind,'align','center').isEnabled(),false);
+      await select(kind,'#unselected');assert.equal(await styleButton(kind,'align','center').isEnabled(),true);
       await active(kind).locator(configs[kind].editor).evaluate(editor=>{
         const range=document.createRange();range.setStart(editor.querySelector('#style-ul li').firstChild,0);range.setEnd(editor.querySelector('#style-ol li').firstChild,1);const s=window.getSelection();s.removeAllRanges();s.addRange(range);document.dispatchEvent(new Event('selectionchange'));
       });
-      assert.equal(await styleButton(kind,'align','center').isEnabled(),false);passed(kind+' invalid and cross-structure selection disables tools');
+      assert.equal(await styleButton(kind,'align','center').isEnabled(),true);passed(kind+' paragraphs and highlighted text across groups enable Styles');
+      await active(kind).locator(kind==='playbook'?'#playbookDraftTitle':'[data-ti-title]').focus();
+      assert.equal(await styleButton(kind,'align','center').isEnabled(),false);
       const untouched=await active(kind).locator(configs[kind].editor).evaluate(el=>el.innerHTML);
       await page.evaluate(kind=>{if(kind==='playbook')applyPlaybookVisualStyle('align','right');else applySecondaryVisualStyle(kind,'align','right')},kind);
       assert.equal(await active(kind).locator(configs[kind].editor).evaluate(el=>el.innerHTML),untouched,'Invalid selection cannot alter the last valid target');
 
       await select(kind,'#style-ul li');
       const choiceBefore=await active(kind).locator('#style-choice .pb-doc-choice-options').evaluate(el=>el.outerHTML);
+      await active(kind).locator('['+configs[kind].prefix+'-style-category="reset"]').click();
       await active(kind).locator(kind==='playbook'?'#playbookStyleResetSelected':'[data-ti-action="reset-style"]').click();
       const reset=await active(kind).locator('#style-ul').evaluate(el=>({data:{...el.dataset},style:el.getAttribute('style')}));
       assert.deepEqual(reset.data,{});assert.ok(!reset.style||!reset.style.includes('--pb-style'));
@@ -220,6 +227,7 @@ async function run() {
       for(const [property,value] of Object.entries({align:'left',spacing:'normal',border:'default',preset:'plain'}))assert.match(await styleButton(kind,property,value).getAttribute('class'),/\bactive\b/);
       passed(kind+' Reset Selected affects only its target');
       await select(kind,'#style-choice [data-choice-option]');
+      await active(kind).locator('['+configs[kind].prefix+'-style-category="colors"]').click();
       await active(kind).locator(kind==='playbook'?'#playbookStyleColorReset':'[data-ti-action="default-colors"]').click();
       await setStyle(kind,'border','default');await setStyle(kind,'preset','minimal');
       const minimal=await presentation(active(kind).locator(configs[kind].editor).locator('#style-choice .pb-doc-choice-options'));

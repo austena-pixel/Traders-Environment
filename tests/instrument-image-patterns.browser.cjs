@@ -66,10 +66,10 @@ async function run(){
     await page.goto('http://127.0.0.1:'+server.address().port+'/t-ios.html',{waitUntil:'load'});
     for(const kind of Object.keys(configs)){
       await switchBuilder(kind);
-      assert.deepEqual(await editor(kind).locator('h2').allTextContents(),[expectedDefaults[kind][0]]);
-      assert.deepEqual(await editor(kind).locator('p').allTextContents(),[expectedDefaults[kind][1]]);
+      assert.deepEqual(await editor(kind).locator('h2').allTextContents(),[]);
+      assert.deepEqual(await editor(kind).locator('p').allTextContents(),['']);
       await screenshot(kind+'-default');
-      pass(kind+' starts with one heading and role-specific guidance');
+      pass(kind+' starts with a blank ordinary writing paragraph');
     }
     for(const kind of ['playbook','checklist']){
       await page.evaluate(kind=>{

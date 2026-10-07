@@ -55,7 +55,7 @@ async function run(){
       assert.equal(await active(kind).locator('.playbook-word-main .playbook-word-ribbon').count(),1);
       assert.equal(await active(kind).locator('.playbook-word-page .playbook-word-editor').count(),1);
       assert.equal(await active(kind).locator('.playbook-execution-preview .playbook-preview-body').count(),1);
-      assert.equal(await editor(kind).locator('h2').textContent(),labels[kind]);
+      assert.equal(await editor(kind).textContent(),'');assert.equal(await editor(kind).locator('p').count(),1);
       await active(kind).locator('['+configs[kind].prefix+'-ribbon="insert"]').click();
       for(const type of ['section','choice','note','table','image-field','image'])assert.equal(await active(kind).locator('['+configs[kind].prefix+'-insert="'+type+'"]').isVisible(),true);
       if(kind==='checklist')assert.equal(await active(kind).locator('[data-ti-insert="rule"]').isVisible(),true);
@@ -113,7 +113,7 @@ async function run(){
         assert.equal(await page.locator(configs[kind].executionPicker+' option[value="'+nextId+'"]').count(),1);
         const mapped=page.locator('#executionMapFormBody [data-execution-instrument-section="'+kind+'"]');
         assert.equal(await page.locator('#executionMapFormBody [data-execution-instrument-section]').count(),1);
-        if(index===1&&kind==='psych')assert.equal(await mapped.locator('.execution-psych-prompt textarea').count(),4); // Three prompts plus the introductory content.
+        if(index===1&&kind==='psych')assert.equal(await mapped.locator('.execution-psych-prompt textarea').count(),3); // Introductory prose is informational; only explicit prompts produce responses.
         if(index===2){const styled=mapped.locator('[data-playbook-list-layout="columns-2"]');assert.equal(await styled.getAttribute('data-playbook-preset'),'card');assert.equal(await styled.getAttribute('data-playbook-border'),'thin')}
         if(index===3){
           const radios=mapped.locator('input[type="radio"]');await radios.first().check();await radios.last().check();assert.equal(await radios.first().isChecked(),false);
