@@ -4371,6 +4371,14 @@ body.playbook-canvas-resizing,body.playbook-canvas-resizing *{user-select:none!i
 .playbook-word-editor .ti-image-field{background:#f7fafc;border-color:#9aafc0;color:#253b4e;padding-right:42px}
 .playbook-word-editor .ti-image-field-meta span{border-color:#bdcedb}
 .playbook-word-editor .ti-image-field-placeholder small,.playbook-word-editor .ti-image-field-related{color:#5a748b}
+.playbook-word-editor .ti-picture-selected{outline:2px solid #3b82f6;outline-offset:3px}
+.playbook-word-editor [data-ti-function-heading]{margin:18px 0 10px;font-weight:800}
+.playbook-word-editor [data-ti-function-heading="h1"]{font-size:24px}
+.playbook-word-editor [data-ti-function-heading="h2"]{font-size:19px}
+.playbook-word-editor [data-ti-function-heading="h3"]{font-size:15px}
+.pb-doc-choice-option>[data-choice-option]:has(.ti-reference-image,.ti-image-field){flex:1;min-width:0}
+[data-playbook-align="center"] .ti-reference-image{margin-left:auto;margin-right:auto}
+[data-playbook-align="right"] .ti-reference-image{margin-left:auto;margin-right:0}
 .ti-image-field-modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .ti-image-field-modal-note{margin:0 0 16px;color:#8fa4ba;font-size:11px;line-height:1.5}
 .ti-image-field-selection-note{margin:10px 0 6px;font-size:10px;color:#91b1cc}
@@ -6775,7 +6783,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
                     <option value="psych-prompt">Reflection prompt</option>
                     <option value="blockquote">Quote</option>
                   </select>
-                  <button type="button" class="playbook-word-tool-btn" data-instrument-back-to-text disabled title="Remove the selected function; keep its text and formatting">Back to text</button>
+                  <button type="button" class="playbook-word-tool-btn" data-instrument-back-to-text disabled title="Remove the selected function; keep its text, pictures and formatting">Back to text</button>
                 </div>
               </div>
 
@@ -11154,7 +11162,7 @@ function renderExecutionMappingTradeContext(){
 
 function renderExecutionSecondaryItems(kind,doc){
   if(!doc)return '<div class="execution-secondary-empty">No '+(kind==='checklist'?'Rules are':'Psychological Reflection is')+' available yet.</div>';
-  const items=playbookStructuredPreviewItems(doc.documentHtml||'');
+  const items=playbookStructuredPreviewItems(doc.documentHtml||'',{kind,area:'execution'});
   if(!items.length)return '<div class="execution-secondary-empty">This instrument has no mapped content yet.</div>';
   let index=0;
   return items.map((item,itemIndex)=>{
@@ -11173,17 +11181,17 @@ function renderExecutionSecondaryItems(kind,doc){
         const styleAttrs=playbookStyleRenderAttributes(item.colors,item.style);
         return `<div class="execution-map-rule-layout" data-playbook-list-layout="${layout}"${styleAttrs}>${grouped.map(group=>{
           const key=(kind==='checklist'?'checklist':'psych')+'_check_'+(++index);
-          return `<div class="execution-map-rule"><label class="execution-map-rule-main"><input type="checkbox" data-execution-${kind}-check="${key}"><span class="execution-map-rule-copy"><strong>${(group.html||escapeHtml(group.label))}</strong></span></label><input class="execution-map-rule-comment" type="text" placeholder="Optional comment"></div>`;
+          return `<div class="execution-map-rule"><label class="execution-map-rule-main"><input type="checkbox" aria-label="${escapeHtml(group.label||'Picture condition')}" data-execution-${kind}-check="${key}"><span class="execution-map-rule-copy"><strong>${(group.html||escapeHtml(group.label))}</strong></span></label><input class="execution-map-rule-comment" type="text" placeholder="Optional comment"></div>`;
         }).join('')}</div>`;
       }
       const key=(kind==='checklist'?'checklist':'psych')+'_check_'+(++index);
-      return `<div class="execution-map-rule"><label class="execution-map-rule-main"><input type="checkbox" data-execution-${kind}-check="${key}"><span class="execution-map-rule-copy"><strong>${(item.html||escapeHtml(item.label))}</strong></span></label><input class="execution-map-rule-comment" type="text" placeholder="Optional comment"></div>`;
+      return `<div class="execution-map-rule"><label class="execution-map-rule-main"><input type="checkbox" aria-label="${escapeHtml(item.label||'Picture condition')}" data-execution-${kind}-check="${key}"><span class="execution-map-rule-copy"><strong>${(item.html||escapeHtml(item.label))}</strong></span></label><input class="execution-map-rule-comment" type="text" placeholder="Optional comment"></div>`;
     }
     if(item.type==='choice'){
       const key=(kind==='checklist'?'checklist':'psych')+'_choice_'+(++index);
       const layout=normalizePlaybookListLayout(item.layout);
       const styleAttrs=playbookStyleRenderAttributes(item.colors,item.style);
-      return `<div class="execution-map-choice" data-execution-${kind}-choice-group="${key}"><div class="execution-map-choice-head">${item.label?'<strong>'+escapeHtml(item.label)+'</strong>':''}<small>Choose one</small></div><div class="execution-map-choice-options" data-playbook-list-layout="${layout}"${styleAttrs}>${item.options.map((option,optionIndex)=>`<label><input type="radio" name="${key}" value="${escapeHtml(option)}" data-execution-${kind}-choice><span>${item.optionHtml?.[optionIndex]||escapeHtml(option)}</span></label>`).join('')}</div><input class="execution-map-rule-comment" type="text" placeholder="Optional comment"></div>`;
+      return `<div class="execution-map-choice" data-execution-${kind}-choice-group="${key}"><div class="execution-map-choice-head">${item.label?'<strong>'+escapeHtml(item.label)+'</strong>':''}<small>Choose one</small></div><div class="execution-map-choice-options" data-playbook-list-layout="${layout}"${styleAttrs}>${item.options.map((option,optionIndex)=>`<label><input type="radio" name="${key}" value="${escapeHtml(item.optionValues?.[optionIndex]||option)}" aria-label="${escapeHtml(option||'Picture option '+(optionIndex+1))}" data-execution-${kind}-choice><span>${item.optionHtml?.[optionIndex]||escapeHtml(option)}</span></label>`).join('')}</div><input class="execution-map-rule-comment" type="text" placeholder="Optional comment"></div>`;
     }
     if(item.type==='table'){
       return `<div class="execution-map-table-block"><b>TABLE CONTEXT</b><div class="execution-map-table-scroll"><table class="execution-map-table">${item.rows.map((row,rowIndex)=>{const tag=item.hasHeader&&rowIndex===0?'th':'td';return '<tr>'+row.map(cell=>'<'+tag+'>'+escapeHtml(cell||'—')+'</'+tag+'>').join('')+'</tr>'}).join('')}</table></div></div>`;
@@ -11206,7 +11214,7 @@ function renderExecutionMappingForm(){
     ? executionMappingActiveInstrument
     : 'playbook';
   executionMappingActiveInstrument=activeInstrument;
-  const items=playbook?playbookStructuredPreviewItems(playbook.documentHtml||''):[];
+  const items=playbook?playbookStructuredPreviewItems(playbook.documentHtml||'',{kind:'playbook',area:'execution'}):[];
   let checkIndex=0;
   const playbookHtml=playbook
     ? (items.length?items.map((item,itemIndex)=>{
@@ -11232,7 +11240,7 @@ function renderExecutionMappingForm(){
               return `
                 <div class="execution-map-rule">
                   <label class="execution-map-rule-main">
-                    <input type="checkbox" data-execution-map-check="${key}">
+                    <input type="checkbox" aria-label="${escapeHtml(groupItem.label||'Picture condition')}" data-execution-map-check="${key}">
                     <span class="execution-map-rule-copy">
                       <strong>${(groupItem.html||escapeHtml(groupItem.label))}</strong>
                     </span>
@@ -11249,7 +11257,7 @@ function renderExecutionMappingForm(){
       return `
         <div class="execution-map-rule">
           <label class="execution-map-rule-main">
-            <input type="checkbox" data-execution-map-check="${key}">
+            <input type="checkbox" aria-label="${escapeHtml(item.label||'Picture condition')}" data-execution-map-check="${key}">
             <span class="execution-map-rule-copy">
               <strong>${(item.html||escapeHtml(item.label))}</strong>
             </span>
@@ -11272,7 +11280,7 @@ function renderExecutionMappingForm(){
           <div class="execution-map-choice-options" data-playbook-list-layout="${layout}"${styleAttrs}>
             ${item.options.map((option,index)=>`
               <label>
-                <input type="radio" name="${key}" value="${escapeHtml(option)}" data-execution-map-choice>
+                <input type="radio" name="${key}" value="${escapeHtml(item.optionValues?.[index]||option)}" aria-label="${escapeHtml(option||'Picture option '+(index+1))}" data-execution-map-choice>
                 <span>${item.optionHtml?.[index]||escapeHtml(option)}</span>
               </label>
             `).join('')}
@@ -13097,12 +13105,18 @@ function playbookPreviewSourceDocument(){
   };
 }
 
-function instrumentInlineHtml(node){
+function instrumentMediaSelector(){return '[data-playbook-node="image"],[data-playbook-node="image-field"]'}
+function instrumentMediaHtml(node,editable=false,renderContext={},root=node){
+  if(node.matches('[data-playbook-node="image-field"]'))return instrumentImageFieldHtml(instrumentImageFieldItem(node,root),editable,renderContext);
+  return instrumentReferenceImageHtml({key:node.dataset.playbookImageKey||'',width:node.dataset.playbookImageWidth,caption:(node.querySelector('figcaption')?.textContent||'').trim()},editable);
+}
+function instrumentInlineHtml(node,renderContext={},root=node){
   const clone=node.cloneNode(true);
-  clone.querySelectorAll?.('.pb-doc-label,.pb-doc-remove-btn,.pb-doc-choice-dot,[data-playbook-node="image"],[data-playbook-node="image-field"]').forEach(control=>control.remove());
+  clone.querySelectorAll?.('.pb-doc-label,.pb-doc-remove-btn,.pb-doc-choice-dot').forEach(control=>control.remove());
   const render=node=>{
     if(node.nodeType===3)return escapeHtml(node.textContent);
     if(node.nodeType!==1)return '';
+    if(node.matches(instrumentMediaSelector()))return instrumentMediaHtml(node,false,renderContext,root);
     const tag=node.tagName.toLowerCase();
     if(['script','style','iframe','object','input','button','textarea'].includes(tag))return '';
     if(tag==='br')return '<br>';
@@ -13111,7 +13125,7 @@ function instrumentInlineHtml(node){
   };
   return [...clone.childNodes].map(render).join('');
 }
-function playbookStructuredPreviewItems(documentHtml){
+function playbookStructuredPreviewItems(documentHtml,renderContext={}){
   const host=document.createElement('div');
   host.innerHTML=String(documentHtml||'');
 
@@ -13144,7 +13158,8 @@ function playbookStructuredPreviewItems(documentHtml){
     if(node.nodeType===3){const label=node.textContent.trim();if(label)items.push({type:'content',label});return}
     if(node.nodeType!==1)return;
     const tag=node.tagName?.toLowerCase();
-    const presentation={colors:playbookStyleColorsFromTarget(node),style:playbookVisualStyleFromTarget(node),html:instrumentInlineHtml(node)};
+    const presentation={colors:playbookStyleColorsFromTarget(node),style:playbookVisualStyleFromTarget(node),html:instrumentInlineHtml(node,renderContext,host)};
+    const hasMedia=Boolean(node.querySelector(instrumentMediaSelector()));
 
     if(node.matches?.('[data-playbook-node="image"]')){
       const key=node.dataset.playbookImageKey;
@@ -13159,7 +13174,7 @@ function playbookStructuredPreviewItems(documentHtml){
 
     if(node.matches?.('[data-playbook-node="rule"], .pb-doc-rule')){
       const label=cleanNodeText(node);
-      if(label)items.push({type:'check',label,listGroup:'rule_'+(++listGroupIndex),layout:'vertical',...presentation});
+      if(label||hasMedia)items.push({type:'check',label,listGroup:'rule_'+(++listGroupIndex),layout:'vertical',...presentation});
       return;
     }
 
@@ -13169,10 +13184,11 @@ function playbookStructuredPreviewItems(documentHtml){
       const layout=normalizePlaybookListLayout(optionsHost?.dataset?.playbookListLayout);
       const colors=playbookStyleColorsFromTarget(optionsHost);
       const style=playbookVisualStyleFromTarget(optionsHost);
-      const optionNodes=[...node.querySelectorAll('[data-choice-option]')].filter(option=>option.textContent.trim());
-      const options=optionNodes.map(option=>option.textContent.replace(/\s+/g,' ').trim());
-      const optionHtml=optionNodes.map(instrumentInlineHtml);
-      if(options.length)items.push({type:'choice',label:title,options,optionHtml,layout,colors,style});
+      const optionNodes=[...node.querySelectorAll('[data-choice-option]')].filter(option=>cleanNodeText(option)||option.querySelector(instrumentMediaSelector()));
+      const options=optionNodes.map(cleanNodeText);
+      const optionHtml=optionNodes.map(option=>instrumentInlineHtml(option,renderContext,host));
+      const optionValues=optionNodes.map((option,index)=>option.dataset.tiChoiceOptionId||options[index]||'picture_option_'+(index+1));
+      if(options.length)items.push({type:'choice',label:title,options,optionHtml,optionValues,layout,colors,style});
       return;
     }
 
@@ -13190,13 +13206,13 @@ function playbookStructuredPreviewItems(documentHtml){
 
     if(node.matches?.('[data-playbook-node="psych-prompt"]')){
       const label=cleanNodeText(node);
-      if(label)items.push({type:'psych-prompt',label,...presentation});
+      if(label||hasMedia)items.push({type:'psych-prompt',label,...presentation});
       return;
     }
 
     if(node.matches?.('[data-playbook-node="note"], .pb-doc-note')){
       const label=cleanNodeText(node);
-      if(label)items.push({type:'note',label,...presentation});
+      if(label||hasMedia)items.push({type:'note',label,...presentation});
       return;
     }
 
@@ -13206,9 +13222,10 @@ function playbookStructuredPreviewItems(documentHtml){
       return;
     }
 
-    if(['h1','h2','h3'].includes(tag)){
+    if(['h1','h2','h3'].includes(tag)||node.matches('[data-ti-function-heading]')){
       const label=cleanNodeText(node);
-      if(label)items.push({type:'section',label,...presentation,level:tag==='h1'?1:(tag==='h3'?3:2)});
+      const heading=node.dataset.tiFunctionHeading||tag;
+      if(label||hasMedia)items.push({type:'section',label,...presentation,level:heading==='h1'?1:(heading==='h3'?3:2)});
       return;
     }
 
@@ -13231,10 +13248,10 @@ function playbookStructuredPreviewItems(documentHtml){
         }
 
         const label=cleanNodeText(li);
-        if(label)items.push({
+        if(label||li.querySelector(instrumentMediaSelector()))items.push({
           type:'check',
           label,
-          html:instrumentInlineHtml(li),
+          html:instrumentInlineHtml(li,renderContext,host),
           listGroup,
           layout,
           colors,
@@ -13247,13 +13264,13 @@ function playbookStructuredPreviewItems(documentHtml){
 
     if(node.matches?.('blockquote')){
       const label=cleanNodeText(node);
-      if(label)items.push({type:'note',label,...presentation});
+      if(label||hasMedia)items.push({type:'note',label,...presentation});
       return;
     }
 
-    if(node.matches?.('p')){
+    if(node.matches?.('p,[data-ti-text-block]')){
       const label=cleanNodeText(node);
-      if(label)items.push({type:'content',label,...presentation});
+      if(label||hasMedia)items.push({type:'content',label,...presentation});
       return;
     }
 
@@ -13768,6 +13785,7 @@ function instrumentWritingChanged(kind){
   }else{
     ensureSecondaryBlockControls(kind);renderSecondaryPreview(kind);scheduleSecondarySave(kind);refreshSecondaryStyleControls(kind);
   }
+  hydratePlaybookImages(instrumentWritingContext(kind).editor);
 }
 function instrumentClippedRange(range,node){
   if(!range.intersectsNode(node))return null;
@@ -13786,28 +13804,33 @@ function instrumentWritingUnits(editor,range){
   }
   return [...editor.childNodes].filter(node=>{
     const clipped=instrumentClippedRange(range,node);
-    return clipped&&!clipped.collapsed&&(clipped.toString().trim()||clipped.cloneContents().querySelector?.('br'));
+    return clipped&&!clipped.collapsed&&(clipped.toString().trim()||clipped.cloneContents().querySelector?.('br,'+instrumentMediaSelector()));
   });
 }
 function instrumentFunctionUnits(editor,range){
   const units=instrumentWritingUnits(editor,range);
-  // Pictures and tables retain their own editors; text conversion cannot consume them.
-  return units.some(node=>node.nodeType===1&&(node.matches('[data-playbook-node="image"],[data-playbook-node="image-field"],table,.pb-doc-table-wrap')||node.querySelector('table,[data-playbook-node="image"],[data-playbook-node="image-field"]')))?[]:units;
+  // Table cells have their own editing boundaries; pictures are normal function content.
+  return units.some(node=>node.nodeType===1&&(node.matches('table,.pb-doc-table-wrap')||node.querySelector('table')))?[]:units;
 }
 function refreshInstrumentFunctionControls(kind){
   const {editor,range}=instrumentWritingContext(kind),units=instrumentFunctionUnits(editor,range),page=editor?.closest('.page');
   const select=page?.querySelector('#playbookBlockStyle,[data-ti-block-style]');if(select)select.disabled=!units.length;
   const back=page?.querySelector('[data-instrument-back-to-text]');
-  if(back)back.disabled=!units.some(node=>node.nodeType===1&&node.matches('ul,ol,h1,h2,h3,blockquote,[data-playbook-node],.pb-doc-choice'));
+  if(back)back.disabled=!units.some(node=>node.nodeType===1&&!node.matches(instrumentMediaSelector())&&node.matches('ul,ol,h1,h2,h3,blockquote,[data-playbook-node],.pb-doc-choice,[data-ti-function-heading]'));
+  editor?.querySelectorAll(instrumentMediaSelector()).forEach(picture=>{
+    const selected=Boolean(range&&editor.contains(range.commonAncestorContainer)&&range.intersectsNode(picture)&&(!range.collapsed||picture.contains(range.startContainer)));
+    picture.classList.toggle('ti-picture-selected',selected);
+  });
 }
 function instrumentTextLines(fragment){
   const host=document.createElement('div');host.append(fragment.cloneNode(true));
   host.querySelectorAll('.pb-doc-label,.pb-doc-remove-btn,.pb-doc-choice-dot').forEach(node=>node.remove());
   const lines=[];let html='';
-  const flush=()=>{const value=html.trim();if(value){const probe=document.createElement('div');probe.innerHTML=value;if(probe.textContent.trim())lines.push(value)}html=''};
+  const flush=()=>{const value=html.trim();if(value){const probe=document.createElement('div');probe.innerHTML=value;if(probe.textContent.trim()||probe.querySelector(instrumentMediaSelector()))lines.push(value)}html=''};
   const visit=node=>{
     if(node.nodeType===3){html+=escapeHtml(node.textContent);return}
     if(node.nodeType!==1)return;
+    if(node.matches(instrumentMediaSelector())){flush();lines.push(instrumentMediaHtml(node,true,{},host));return}
     if(node.tagName==='BR'){flush();return}
     const block=node.matches('p,div,h1,h2,h3,blockquote,li,ul,ol,[data-choice-title],[data-choice-option]');
     if(block){flush();[...node.childNodes].forEach(visit);flush()}
@@ -13818,7 +13841,7 @@ function instrumentTextLines(fragment){
 function instrumentSelectedFunctionContent(editor,range,units){
   const first=units[0],last=units.at(-1),lines=[];
   let before='',after='';
-  const isStructure=node=>node.nodeType===1&&node.matches('ul,ol,[data-playbook-node],.pb-doc-choice');
+  const isStructure=node=>node.nodeType===1&&(node.matches('ul,ol,[data-playbook-node],.pb-doc-choice,[data-ti-function-heading]')||node.querySelector(instrumentMediaSelector()));
   const remainder=(unit,side)=>{
     if(unit.nodeType!==1||range.collapsed||isStructure(unit)||!unit.contains(side==='before'?range.startContainer:range.endContainer))return '';
     const part=document.createRange();part.selectNodeContents(unit);
@@ -13828,6 +13851,7 @@ function instrumentSelectedFunctionContent(editor,range,units){
   };
   before=remainder(first,'before');after=remainder(last,'after');
   units.forEach(unit=>{
+    if(unit.matches?.(instrumentMediaSelector())){lines.push(instrumentMediaHtml(unit,true,{},editor));return}
     const part=range.collapsed||isStructure(unit)?document.createRange():instrumentClippedRange(range,unit);
     if(range.collapsed||isStructure(unit))part.selectNodeContents(unit);
     if(part)lines.push(...instrumentTextLines(part.cloneContents()));
@@ -13835,24 +13859,38 @@ function instrumentSelectedFunctionContent(editor,range,units){
   return {before,after,lines};
 }
 function instrumentFunctionHtml(type,lines,attrs){
-  if(type==='choice')return '<div class="pb-doc-choice" data-playbook-node="choice"><div class="pb-doc-choice-options"'+attrs+'>'+lines.map(line=>'<div class="pb-doc-choice-option"><span class="pb-doc-choice-dot" contenteditable="false"></span><span data-choice-option>'+line+'</span></div>').join('')+'</div></div>';
+  const hasMedia=line=>{const node=document.createElement('div');node.innerHTML=line;return Boolean(node.querySelector(instrumentMediaSelector()))};
+  if(type==='choice')return '<div class="pb-doc-choice" data-playbook-node="choice"><div class="pb-doc-choice-options"'+attrs+'>'+lines.map(line=>{
+    const picture=hasMedia(line),tag=picture?'div':'span',id=picture?' data-ti-choice-option-id="option_'+makeInstrumentImageFieldId()+'"':'';
+    return '<div class="pb-doc-choice-option"><span class="pb-doc-choice-dot" contenteditable="false"></span><'+tag+' data-choice-option'+id+'>'+line+'</'+tag+'></div>';
+  }).join('')+'</div></div>';
   if(type==='ul'||type==='ol')return '<'+type+attrs+'>'+lines.map(line=>'<li>'+line+'</li>').join('')+'</'+type+'>';
   const tag=['h1','h2','h3','blockquote'].includes(type)?type:'p';
   const semantic=['rule','note','psych-prompt'].includes(type)?' data-playbook-node="'+type+'"':'';
-  return lines.map(line=>'<'+tag+' data-ti-text-block="1"'+semantic+attrs+'>'+line+'</'+tag+'>').join('');
+  return lines.map(line=>{
+    const picture=hasMedia(line),heading=picture&&['h1','h2','h3'].includes(tag);
+    const block=picture&&tag!=='blockquote'?'div':tag;
+    const role=heading?' data-ti-function-heading="'+tag+'" role="heading" aria-level="'+tag.slice(1)+'"':'';
+    return '<'+block+' data-ti-text-block="1"'+semantic+role+attrs+'>'+line+'</'+block+'>';
+  }).join('');
 }
 function applyInstrumentFunction(kind,type){
   if(!['p','h1','h2','h3','rule','choice','ul','ol','note','psych-prompt','blockquote'].includes(type))return;
   const {editor,range}=instrumentWritingContext(kind),units=instrumentFunctionUnits(editor,range);
   if(!editor?.closest('.page.active'))return;
-  if(!units.length){showStatus('Select text on the writing page first.');return}
+  if(!units.length){showStatus('Select text or pictures on the writing page first.');return}
   if(type==='choice'&&units.length===1&&units[0].matches?.('[data-playbook-node="choice"],.pb-doc-choice')){instrumentRestoreRange(kind,range);return}
   const content=instrumentSelectedFunctionContent(editor,range,units);
-  if(!content.lines.length){showStatus('Write or select some text first.');return}
+  if(!content.lines.length){showStatus('Write or select some text or pictures first.');return}
   if(type==='choice'){
-    const text=content.lines.map(line=>{const node=document.createElement('div');node.innerHTML=line;return node.textContent.replace(/\s+/g,' ').trim()});
+    const text=content.lines.map(line=>{
+      const node=document.createElement('div');node.innerHTML=line;
+      const pictures=[...node.querySelectorAll(instrumentMediaSelector())].map(picture=>picture.dataset.playbookImageKey||picture.dataset.tiImageFieldId);
+      node.querySelectorAll(instrumentMediaSelector()).forEach(picture=>picture.remove());
+      return JSON.stringify([node.textContent.replace(/\s+/g,' ').trim(),pictures]);
+    });
     if(text.length<2||new Set(text).size!==text.length){
-      showStatus('Select at least two different text lines for Either / Or.');instrumentRestoreRange(kind,range);return;
+      showStatus('Select at least two different text lines or pictures for Either / Or.');instrumentRestoreRange(kind,range);return;
     }
   }
   const target=instrumentStyleTargetFromRange(editor,range);
@@ -13861,7 +13899,7 @@ function applyInstrumentFunction(kind,type){
   const markup=instrumentFunctionHtml(type,content.lines,attrs),host=document.createElement('div');host.innerHTML=markup;
   const anchor='function-'+Date.now().toString(36);
   [...host.children].forEach(node=>node.dataset.tiFunctionAnchor=anchor);
-  const controls=units.flatMap(node=>node.querySelectorAll?[...node.querySelectorAll('[contenteditable="false"]')]:[]);
+  const controls=units.flatMap(node=>node.querySelectorAll?[...(node.matches('[contenteditable="false"]')?[node]:[]),...node.querySelectorAll('[contenteditable="false"]')]:[]);
   controls.forEach(node=>node.contentEditable='true');
   // Native editing merges into the first block. Start from a plain boundary so
   // replacing a legacy group cannot retain its semantic wrapper or attributes.
@@ -13896,7 +13934,7 @@ function initInstrumentWriting(kind){
     const selection=window.getSelection(),range=selection?.rangeCount?selection.getRangeAt(0):null;
     if(!range?.collapsed||!editor.contains(range.commonAncestorContainer))return;
     const element=range.startContainer.nodeType===1?range.startContainer:range.startContainer.parentElement;
-    const block=element.closest('[data-playbook-node="rule"],[data-playbook-node="note"],[data-playbook-node="psych-prompt"],[data-playbook-node="choice"],h1,h2,h3');
+    const block=element.closest('[data-playbook-node="rule"],[data-playbook-node="note"],[data-playbook-node="psych-prompt"],[data-playbook-node="choice"],[data-ti-function-heading],h1,h2,h3');
     if(!block||!editor.contains(block))return;
     const tail=range.cloneRange();tail.setEnd(block,block.childNodes.length);
     const remaining=tail.cloneContents();remaining.querySelectorAll('.pb-doc-remove-btn,.pb-doc-label,.pb-doc-choice-dot').forEach(node=>node.remove());
@@ -13913,7 +13951,12 @@ function instrumentStyleTargetsFromRange(editor,range){
   if(!editor||!range||!editor.contains(range.commonAncestorContainer))return [];
   const targetFor=node=>{
     const element=node?.nodeType===1?node:node?.parentElement;
-    if(!element||element.closest('[contenteditable="false"],.ti-reference-image,.ti-image-field,table'))return null;
+    if(!element)return null;
+    if(element.closest(instrumentMediaSelector())){
+      const choice=element.closest('[data-playbook-node="choice"],.pb-doc-choice');
+      return choice?.querySelector('.pb-doc-choice-options')||element.closest('ul,ol,[data-ti-text-block]');
+    }
+    if(element.closest('[contenteditable="false"],table'))return null;
     const choice=element.closest('[data-playbook-node="choice"],.pb-doc-choice');
     if(choice&&editor.contains(choice))return choice.querySelector('.pb-doc-choice-options');
     const list=element.closest('ul,ol');if(list&&editor.contains(list))return list;
@@ -14643,7 +14686,7 @@ function secondaryWorkspaceHtml(kind){
                   <option value="">Apply a function…</option><option value="p">Plain text / Remove function</option><option value="h1">Heading 1</option><option value="h2">Heading 2</option><option value="h3">Heading 3</option>
                   <option value="rule">Rule / Check</option><option value="choice">Either / Or</option><option value="ul">Bulleted conditions</option><option value="ol">Numbered conditions</option><option value="note">Note</option><option value="psych-prompt">Reflection prompt</option><option value="blockquote">Quote</option>
                 </select>
-                <button class="playbook-word-tool-btn" type="button" data-instrument-back-to-text disabled title="Remove the selected function; keep its text and formatting">Back to text</button>
+                <button class="playbook-word-tool-btn" type="button" data-instrument-back-to-text disabled title="Remove the selected function; keep its text, pictures and formatting">Back to text</button>
               </div>
             </div>
             <div class="playbook-word-tool-group">
@@ -15059,7 +15102,7 @@ function renderSecondaryPreview(kind){
   const title=secondaryFind(kind,'[data-ti-preview-title]');if(title)title.textContent=doc?.name||'Untitled';
   if(!doc){body.innerHTML='<div class="playbook-preview-empty">Create an instrument first.</div>';return}
   const sourceHtml=secondaryFind(kind,'[data-ti-editor]')?.innerHTML||doc.documentHtml||'';
-  const items=playbookStructuredPreviewItems(sourceHtml);
+  const items=playbookStructuredPreviewItems(sourceHtml,{kind,area:'preview'});
   const meta=secondaryFind(kind,'[data-ti-preview-meta]');
   if(meta){
     const measurable=kind==='psych'?items.filter(x=>x.type==='psych-prompt'||x.type==='choice'||x.type==='check').length:items.filter(x=>x.type==='check'||x.type==='choice').length;
@@ -15311,7 +15354,8 @@ function instrumentReferenceImageHtml(item,editable=false){
   const caption=String(item.caption||'');
   const tools=editable?`<div class="ti-reference-image-tools" contenteditable="false"><b>Reference image</b><button type="button" data-ti-reference-size="-10" aria-label="Make image narrower">−</button><span data-ti-reference-width-label>${width}%</span><button type="button" data-ti-reference-size="10" aria-label="Make image wider">+</button></div><button type="button" class="pb-doc-remove-btn" contenteditable="false" aria-label="Remove reference image" title="Remove reference image">×</button>`:'';
   const captionHtml=editable||caption?`<figcaption${editable?' contenteditable="true" data-placeholder="Add a caption…" aria-label="Image caption"':''}>${escapeHtml(caption)}</figcaption>`:'';
-  return `<figure class="ti-reference-image" data-playbook-node="image" data-playbook-image-key="${escapeHtml(item.key)}" data-playbook-image-width="${width}" style="width:${width}%" contenteditable="false">${tools}<img data-ti-reference-image data-ti-reference-open alt="${escapeHtml(caption||'Reference image')}" tabindex="0" role="button" aria-label="Open reference image"><span class="ti-reference-image-status">Loading image…</span>${captionHtml}${editable?'<button type="button" class="ti-reference-image-resize" data-ti-reference-resize aria-label="Resize reference image" title="Drag to resize; arrow keys adjust width"></button>':''}</figure>`;
+  const interaction=editable?'aria-label="Select picture" title="Click to select; Shift-click to select more; double-click to view."':'aria-label="Open reference image"';
+  return `<figure class="ti-reference-image" data-playbook-node="image" data-playbook-image-key="${escapeHtml(item.key)}" data-playbook-image-width="${width}" style="width:${width}%" contenteditable="false">${tools}<img data-ti-reference-image data-ti-reference-open alt="${escapeHtml(caption||'Reference image')}" tabindex="0" role="button" ${interaction}><span class="ti-reference-image-status">Loading image…</span>${captionHtml}${editable?'<button type="button" class="ti-reference-image-resize" data-ti-reference-resize aria-label="Resize reference image" title="Drag to resize; arrow keys adjust width"></button>':''}</figure>`;
 }
 
 const INSTRUMENT_IMAGE_FIELD_STAGES={context:'Context / bias',structure:'Market structure',entry:'Entry / execution',exit:'Exit / management',reflection:'Reflection',other:'Other'};
@@ -15606,6 +15650,7 @@ function serializeInstrumentDocument(editor){
   if(!editor)return '';
   refreshInstrumentImageFieldRelations(editor);
   const clone=editor.cloneNode(true);
+  clone.querySelectorAll('.ti-picture-selected').forEach(picture=>picture.classList.remove('ti-picture-selected'));
   clone.querySelectorAll('[data-playbook-node="image"]').forEach(figure=>{
     figure.removeAttribute('data-playbook-image-hydrated');
     figure.removeAttribute('data-playbook-image-src');
@@ -15718,9 +15763,11 @@ function initInstrumentImageEditor(kind){
     document.body.dataset.referenceImageViewerReady='1';
     const openImage=event=>{
       const image=event.target.closest('[data-ti-reference-open]');
+      if(event.defaultPrevented||event.type==='click'&&image?.closest('#playbookDocumentEditor,[data-ti-editor],.execution-map-rule-main,.execution-map-choice-options label'))return;
       if(image?.getAttribute('src')){event.preventDefault();openPlaybookImageViewer(image.src,image.alt)}
     };
     document.addEventListener('click',openImage);
+    document.addEventListener('dblclick',openImage);
     document.addEventListener('keydown',event=>{if(['Enter',' '].includes(event.key)&&event.target.matches('[data-ti-reference-open]'))openImage(event)});
   }
   editor.addEventListener('input',event=>{
@@ -15735,6 +15782,9 @@ function initInstrumentImageEditor(kind){
     if(size){event.preventDefault();setInstrumentReferenceWidth(kind,size.closest('figure'),Number(size.closest('figure').dataset.playbookImageWidth)+Number(size.dataset.tiReferenceSize));return}
   });
   editor.addEventListener('keydown',event=>{
+    if(event.key===' '&&event.target.matches('[data-ti-reference-open]')){
+      event.preventDefault();selectInstrumentPicture(kind,event.target.closest(instrumentMediaSelector()),event.shiftKey);return;
+    }
     const handle=event.target.closest('[data-ti-reference-resize]');
     if(handle&&['ArrowLeft','ArrowRight'].includes(event.key)){
       event.preventDefault();const figure=handle.closest('figure');
@@ -15742,7 +15792,14 @@ function initInstrumentImageEditor(kind){
     }
   });
   editor.addEventListener('pointerdown',event=>{
-    const handle=event.target.closest('[data-ti-reference-resize]');if(!handle)return;
+    const handle=event.target.closest('[data-ti-reference-resize]');
+    if(!handle){
+      const picture=event.target.closest(instrumentMediaSelector());
+      if(picture&&!event.target.closest('button,input,select,textarea,figcaption')){
+        event.preventDefault();selectInstrumentPicture(kind,picture,event.shiftKey);
+      }
+      return;
+    }
     event.preventDefault();
     const figure=handle.closest('figure'),startWidth=normalizeInstrumentImageWidth(figure.dataset.playbookImageWidth);
     const availableWidth=figure.getBoundingClientRect().width/(startWidth/100),startX=event.clientX,pointerId=event.pointerId;
@@ -15755,6 +15812,17 @@ function initInstrumentImageEditor(kind){
     };
     window.addEventListener('pointermove',move);window.addEventListener('pointerup',finish);window.addEventListener('pointercancel',finish);
   });
+}
+
+function selectInstrumentPicture(kind,picture,extend=false){
+  const {editor,range:previous}=instrumentWritingContext(kind);if(!picture||!editor?.contains(picture))return;
+  const range=document.createRange();range.selectNode(picture);
+  if(extend&&previous&&!previous.collapsed&&editor.contains(previous.commonAncestorContainer)){
+    if(previous.compareBoundaryPoints(Range.START_TO_START,range)<0)range.setStart(previous.startContainer,previous.startOffset);
+    if(previous.compareBoundaryPoints(Range.END_TO_END,range)>0)range.setEnd(previous.endContainer,previous.endOffset);
+  }
+  instrumentRestoreRange(kind,range);
+  refreshInstrumentFunctionControls(kind);
 }
 
 async function compressPlaybookDemoImage(file,{maxSide=1400,quality=.82,mimeType='image/jpeg'}={}){
@@ -15818,7 +15886,13 @@ async function hydratePlaybookImages(root=document){
       }
 
       if(node.matches('[data-playbook-node="image"]')){
-        const image=node.querySelector('[data-ti-reference-image]');if(image)image.src=record.dataUrl;
+        const image=node.querySelector('[data-ti-reference-image]');
+        if(image){
+          image.src=record.dataUrl;
+          if(node.closest('.execution-map-rule-main,.execution-map-choice-options label')){
+            image.setAttribute('aria-label','Select picture condition');image.title='Click to select; double-click to view.';
+          }
+        }
         const status=node.querySelector('.ti-reference-image-status');if(status)status.hidden=true;
         return;
       }
