@@ -5649,7 +5649,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 }
 
 /* Writing is plain by default; functions add meaning without imposing a card. */
-.playbook-word-style-select:disabled{opacity:.5}
+.playbook-word-style-select:disabled,[data-instrument-back-to-text]:disabled{opacity:.5}
 .playbook-word-editor .pb-doc-rule,.playbook-word-editor .pb-doc-note,.playbook-word-editor .pb-doc-choice,.playbook-word-editor .pb-doc-link{padding:0;margin:12px 0;border:0;border-radius:0;background:transparent;box-shadow:none}
 .playbook-word-editor .pb-doc-label{display:none}
 .playbook-word-editor .pb-doc-choice-title{font-weight:600;margin-bottom:4px}
@@ -6790,20 +6790,23 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
               <div class="playbook-word-tool-group">
                 <span class="playbook-word-tool-label">Functions</span>
-                <select class="playbook-word-style-select" id="playbookBlockStyle" aria-label="Apply function to selected text" title="Highlight text, then choose its function">
-                  <option value="">Apply a function…</option>
-                  <option value="p">Paragraph / Remove function</option>
-                  <option value="h1">Heading 1</option>
-                  <option value="h2">Heading 2</option>
-                  <option value="h3">Heading 3</option>
-                  <option value="rule">Rule / Check</option>
-                  <option value="choice">Either / Or</option>
-                  <option value="ul">Bulleted conditions</option>
-                  <option value="ol">Numbered conditions</option>
-                  <option value="note">Note</option>
-                  <option value="psych-prompt">Reflection prompt</option>
-                  <option value="blockquote">Quote</option>
-                </select>
+                <div class="playbook-word-tool-row">
+                  <select class="playbook-word-style-select" id="playbookBlockStyle" aria-label="Apply function to selected text" title="Highlight text, then choose its function">
+                    <option value="">Apply a function…</option>
+                    <option value="p">Plain text / Remove function</option>
+                    <option value="h1">Heading 1</option>
+                    <option value="h2">Heading 2</option>
+                    <option value="h3">Heading 3</option>
+                    <option value="rule">Rule / Check</option>
+                    <option value="choice">Either / Or</option>
+                    <option value="ul">Bulleted conditions</option>
+                    <option value="ol">Numbered conditions</option>
+                    <option value="note">Note</option>
+                    <option value="psych-prompt">Reflection prompt</option>
+                    <option value="blockquote">Quote</option>
+                  </select>
+                  <button type="button" class="playbook-word-tool-btn" data-instrument-back-to-text disabled title="Remove the selected function; keep its text and formatting">Back to text</button>
+                </div>
               </div>
 
               <div class="playbook-word-tool-group">
@@ -13819,6 +13822,12 @@ function instrumentFunctionUnits(editor,range){
   // Pictures and tables retain their own editors; text conversion cannot consume them.
   return units.some(node=>node.nodeType===1&&(node.matches('[data-playbook-node="image"],[data-playbook-node="image-field"],table,.pb-doc-table-wrap')||node.querySelector('table,[data-playbook-node="image"],[data-playbook-node="image-field"]')))?[]:units;
 }
+function refreshInstrumentFunctionControls(kind){
+  const {editor,range}=instrumentWritingContext(kind),units=instrumentFunctionUnits(editor,range),page=editor?.closest('.page');
+  const select=page?.querySelector('#playbookBlockStyle,[data-ti-block-style]');if(select)select.disabled=!units.length;
+  const back=page?.querySelector('[data-instrument-back-to-text]');
+  if(back)back.disabled=!units.some(node=>node.nodeType===1&&node.matches('ul,ol,h1,h2,h3,blockquote,[data-playbook-node],.pb-doc-choice'));
+}
 function instrumentTextLines(fragment){
   const host=document.createElement('div');host.append(fragment.cloneNode(true));
   host.querySelectorAll('.pb-doc-label,.pb-doc-remove-btn,.pb-doc-choice-dot').forEach(node=>node.remove());
@@ -13837,7 +13846,7 @@ function instrumentTextLines(fragment){
 function instrumentSelectedFunctionContent(editor,range,units){
   const first=units[0],last=units.at(-1),lines=[];
   let before='',after='';
-  const isStructure=node=>node.nodeType===1&&node.matches('ul,ol,[data-playbook-node]');
+  const isStructure=node=>node.nodeType===1&&node.matches('ul,ol,[data-playbook-node],.pb-doc-choice');
   const remainder=(unit,side)=>{
     if(unit.nodeType!==1||range.collapsed||isStructure(unit)||!unit.contains(side==='before'?range.startContainer:range.endContainer))return '';
     const part=document.createRange();part.selectNodeContents(unit);
@@ -13907,6 +13916,7 @@ function normalizeInstrumentWritingBlocks(editor){
 }
 function initInstrumentWriting(kind){
   const {editor}=instrumentWritingContext(kind);if(!editor)return;
+  editor.closest('.page')?.querySelector('[data-instrument-back-to-text]')?.addEventListener('click',()=>applyInstrumentFunction(kind,'p'));
   editor.addEventListener('focus',()=>document.execCommand('defaultParagraphSeparator',false,'p'));
   editor.addEventListener('input',()=>normalizeInstrumentWritingBlocks(editor));
   editor.addEventListener('keydown',event=>{
@@ -14124,7 +14134,7 @@ function playbookStyleTargetLabel(target){
 
 function refreshPlaybookListStyleControls(){
   const editor=$('#playbookDocumentEditor'),targets=instrumentStyleTargetsFromRange(editor,playbookEditorSelectionRange),target=targets[0];
-  const functionSelect=$('#playbookBlockStyle');if(functionSelect)functionSelect.disabled=!instrumentFunctionUnits(editor,playbookEditorSelectionRange).length;
+  refreshInstrumentFunctionControls('playbook');
   refreshInstrumentStyleControls(targets,{
     buttons:attribute=>$$('button['+attribute+']'),prefix:'data-playbook',
     help:$('#playbookStyleSelectionHelp'),colors:$$('[data-playbook-style-color]'),
@@ -14655,10 +14665,13 @@ function secondaryWorkspaceHtml(kind){
             </div>
             <div class="playbook-word-tool-group">
               <span class="playbook-word-tool-label">Functions</span>
-              <select class="playbook-word-style-select" data-ti-block-style aria-label="Apply function to selected text" title="Highlight text, then choose its function">
-                <option value="">Apply a function…</option><option value="p">Paragraph / Remove function</option><option value="h1">Heading 1</option><option value="h2">Heading 2</option><option value="h3">Heading 3</option>
-                <option value="rule">Rule / Check</option><option value="choice">Either / Or</option><option value="ul">Bulleted conditions</option><option value="ol">Numbered conditions</option><option value="note">Note</option><option value="psych-prompt">Reflection prompt</option><option value="blockquote">Quote</option>
-              </select>
+              <div class="playbook-word-tool-row">
+                <select class="playbook-word-style-select" data-ti-block-style aria-label="Apply function to selected text" title="Highlight text, then choose its function">
+                  <option value="">Apply a function…</option><option value="p">Plain text / Remove function</option><option value="h1">Heading 1</option><option value="h2">Heading 2</option><option value="h3">Heading 3</option>
+                  <option value="rule">Rule / Check</option><option value="choice">Either / Or</option><option value="ul">Bulleted conditions</option><option value="ol">Numbered conditions</option><option value="note">Note</option><option value="psych-prompt">Reflection prompt</option><option value="blockquote">Quote</option>
+                </select>
+                <button class="playbook-word-tool-btn" type="button" data-instrument-back-to-text disabled title="Remove the selected function; keep its text and formatting">Back to text</button>
+              </div>
             </div>
             <div class="playbook-word-tool-group">
               <span class="playbook-word-tool-label">Formatting</span>
@@ -14919,7 +14932,7 @@ function secondaryStyleTarget(kind){
 }
 function refreshSecondaryStyleControls(kind){
   const {editor,range}=instrumentWritingContext(kind),targets=instrumentStyleTargetsFromRange(editor,range);
-  const functionSelect=secondaryFind(kind,'[data-ti-block-style]');if(functionSelect)functionSelect.disabled=!instrumentFunctionUnits(editor,range).length;
+  refreshInstrumentFunctionControls(kind);
   refreshInstrumentStyleControls(targets,{
     buttons:attribute=>secondaryFindAll(kind,'button['+attribute+']'),prefix:'data-ti',
     help:secondaryFind(kind,'[data-ti-style-help]'),colors:secondaryFindAll(kind,'[data-ti-style-color]'),

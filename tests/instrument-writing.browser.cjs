@@ -29,6 +29,12 @@ async function apply(kind,value){
   // Keyboard-style ribbon focus intentionally takes focus away from the editor.
   await control.focus();await control.selectOption(value);
 }
+async function backToText(kind,keyboard=false){
+  await active(kind).locator('['+attribute(kind,'ribbon')+'="home"]').click();
+  const button=active(kind).locator('[data-instrument-back-to-text]');assert.equal(await button.isEnabled(),true);
+  if(keyboard){await button.focus();await page.keyboard.press('Enter')}else await button.click();
+  assert.equal(await button.isDisabled(),true);
+}
 async function style(kind,category,value){
   await active(kind).locator('['+attribute(kind,'ribbon')+'="styles"]').click();
   await active(kind).locator('['+attribute(kind,'style-category')+'="'+category+'"]').click();
@@ -61,6 +67,7 @@ async function run(){
       await switchBuilder(kind);assert.equal(await editor(kind).textContent(),'');
       assert.ok((await active(kind).locator('['+attribute(kind,'ribbon-panel')+'="home"]').textContent()).includes('Functions'));
       await editor(kind).click();await page.keyboard.type('Context before. Wait for confirmation. Context after.');
+      assert.equal(await active(kind).locator('[data-instrument-back-to-text]').isDisabled(),true);
       assert.equal((await page.evaluate(kind=>playbookStructuredPreviewItems(instrumentImageEditor(kind).innerHTML),kind)).every(item=>item.type==='content'),true);
       assert.equal(await model(kind).locator('.playbook-preview-checkbox,.ti-preview-prompt').count(),0);
       pass(kind+' opens as a normal blank writing page and typing creates unscored prose');
@@ -103,14 +110,35 @@ async function run(){
       assert.deepEqual(await editor(kind).locator('[data-choice-option]').allTextContents(),['Alpha','Beta','Gamma']);
       assert.equal(await editor(kind).locator('[data-choice-title]').count(),0);assert.equal(await model(kind).locator('.playbook-preview-choice > b').count(),0);
       assert.equal(await model(kind).locator('.playbook-preview-choice-text b').textContent(),'Alpha');
-      await apply(kind,'p');assert.equal(await editor(kind).locator('[data-playbook-node="choice"]').count(),0);
+      await backToText(kind);assert.equal(await editor(kind).locator('[data-playbook-node="choice"]').count(),0);
       pass(kind+' assigns every selected line, including the first, as an option and keeps its existing formatting');
 
       await append(kind,'<div id="legacy-choice" class="pb-doc-choice" data-playbook-node="choice"><b data-choice-title>User written title</b><div class="pb-doc-choice-options"><div class="pb-doc-choice-option"><span data-choice-option>Original A</span></div><div class="pb-doc-choice-option"><span data-choice-option>Original B</span></div></div></div>');
       await select(kind,'#legacy-choice');const legacy=await editor(kind).locator('#legacy-choice').evaluate(el=>el.outerHTML);await apply(kind,'choice');
       assert.equal(await editor(kind).locator('#legacy-choice').evaluate(el=>el.outerHTML),legacy);assert.equal(await model(kind).locator('.playbook-preview-choice > b').textContent(),'User written title');
-      await apply(kind,'p');assert.equal(await editor(kind).locator('[data-choice-title]').count(),0);assert.ok((await editor(kind).textContent()).includes('User written title'));
+      await backToText(kind,true);assert.equal(await editor(kind).locator('[data-choice-title]').count(),0);assert.ok((await editor(kind).textContent()).includes('User written title'));
       pass(kind+' preserves already written titles and choices when their existing function is reassigned');
+
+      await append(kind,'<p id="restore-neighbor">Neighboring writing stays unchanged.</p><div id="restore-choice" class="pb-doc-choice" data-playbook-node="choice"><span class="pb-doc-choice-title" data-choice-title>Moment of entry:</span><div class="pb-doc-choice-options" data-playbook-list-layout="columns-3" data-playbook-align="center" data-playbook-border="strong" data-playbook-color-border="#2457bf">'+['<b>Breakout</b>','1st','2nd','3rd','4th'].map(text=>'<div class="pb-doc-choice-option"><span class="pb-doc-choice-dot" contenteditable="false"></span><span data-choice-option>'+text+'</span></div>').join('')+'</div></div>');
+      const neighbor=await editor(kind).locator('#restore-neighbor').evaluate(el=>el.outerHTML);
+      await select(kind,'#restore-choice [data-choice-option]',undefined,null,true);await backToText(kind);
+      const restored=['Moment of entry:','Breakout','1st','2nd','3rd','4th'];
+      const plainRestored=editor(kind).locator(':scope > p').filter({hasText:/^(Moment of entry:|Breakout|1st|2nd|3rd|4th)$/});
+      assert.deepEqual(await plainRestored.allTextContents(),restored);assert.equal(await plainRestored.locator('[data-choice-option],.pb-doc-choice-dot').count(),0);
+      assert.equal(await plainRestored.locator('b').textContent(),'Breakout');assert.equal(await plainRestored.locator('[data-playbook-node]').count(),0);
+      assert.equal(await editor(kind).locator('#restore-neighbor').evaluate(el=>el.outerHTML),neighbor);assert.equal(await model(kind).locator('.playbook-preview-choice').count(),0);
+      assert.deepEqual(await page.evaluate(({kind,restored})=>playbookStructuredPreviewItems(instrumentImageEditor(kind).innerHTML).filter(item=>restored.includes(item.label)).map(item=>item.type),{kind,restored}),Array(6).fill('content'));
+      assert.equal(await plainRestored.filter({hasText:/^Breakout$/}).getAttribute('data-playbook-color-border'),'#2457bf');assert.equal(await plainRestored.filter({hasText:/^Breakout$/}).getAttribute('data-playbook-list-layout'),null);
+      await active(kind).locator('['+attribute(kind,'command')+'="undo"]').click();assert.equal(await editor(kind).locator('#restore-choice [data-choice-option]').count(),5);
+      await active(kind).locator('['+attribute(kind,'command')+'="redo"]').click();assert.deepEqual(await plainRestored.allTextContents(),restored);
+      pass(kind+' Back to text removes a five-option group from its caret, keeps every line / formatting / neighboring content, updates Live Model, and supports Undo / Redo');
+
+      for(const type of ['h3','rule','note','psych-prompt','blockquote','ul','ol']){
+        const text='Return '+type+' to ordinary writing.';await append(kind,'<p id="restore-function">'+text+'</p>');await select(kind,'#restore-function');await apply(kind,type);await backToText(kind,true);
+        const plain=editor(kind).locator(':scope > p').filter({hasText:text});assert.equal(await plain.count(),1);assert.equal(await plain.getAttribute('data-playbook-node'),null);
+        assert.equal(await page.evaluate(({kind,text})=>playbookStructuredPreviewItems(instrumentImageEditor(kind).innerHTML).find(item=>item.label===text)?.type,{kind,text}),'content');
+      }
+      pass(kind+' Back to text also removes Heading / Rule / Note / Reflection prompt / Quote / numbered and bulleted list functions with keyboard activation');
 
       await append(kind,'<p id="choice-title">Market context: 4H</p><p id="choice-a"><b>Balance</b></p><p id="choice-b">Imbalance</p>');
       await select(kind,'#choice-a','#choice-b');await apply(kind,'choice');
@@ -122,7 +150,7 @@ async function run(){
       const surface=await choice.evaluate(el=>({background:getComputedStyle(el).backgroundColor,border:getComputedStyle(el).borderLeftWidth,layout:getComputedStyle(el.querySelector('.pb-doc-choice-options')).display}));
       assert.deepEqual(surface,{background:'rgba(0, 0, 0, 0)',border:'0px',layout:'block'});
       assert.equal(await model(kind).locator('.playbook-preview-choice > b').count(),0);
-      await apply(kind,'p');assert.equal(await editor(kind).locator('[data-playbook-node="choice"]').count(),0);assert.equal(await model(kind).locator('.playbook-preview-choice').count(),0);
+      await backToText(kind);assert.equal(await editor(kind).locator('[data-playbook-node="choice"]').count(),0);assert.equal(await model(kind).locator('.playbook-preview-choice').count(),0);
       const candidates=editor(kind).locator(':scope > p').filter({hasText:/^Balance$|^Imbalance$/});
       await candidates.evaluateAll(nodes=>nodes.forEach((node,index)=>node.id='rechoice-'+index));
       await select(kind,'#rechoice-0','#rechoice-1');await apply(kind,'choice');
@@ -158,6 +186,7 @@ async function run(){
       assert.equal(await editor(kind).locator('#plain-b').getAttribute('data-playbook-preset'),'card');assert.equal(await editor(kind).locator('ul').getAttribute('data-playbook-list-layout'),'columns-3');
       await active(kind).locator(configs[kind].title).focus();assert.equal(await reset.isDisabled(),true);
       await active(kind).locator('['+attribute(kind,'ribbon')+'="home"]').click();assert.equal(await active(kind).locator(configs[kind].functions).isDisabled(),true);
+      assert.equal(await active(kind).locator('[data-instrument-back-to-text]').isDisabled(),true);
       pass(kind+' Reset affects only selected content and leaving the editor disables functions and styles');
 
       await active(kind).locator(configs[kind].save).click();
@@ -166,6 +195,7 @@ async function run(){
       await page.reload({waitUntil:'load'});await switchBuilder(kind);assert.equal(await page.evaluate(kind=>instrumentImageDocumentId(kind),kind),id);
       assert.equal(await editor(kind).locator('ul').getAttribute('data-playbook-preset'),'card');assert.equal(await editor(kind).locator('#plain-b').getAttribute('data-playbook-preset'),'card');
       assert.equal(await editor(kind).locator('[data-choice-title]').count(),0);assert.equal(await editor(kind).locator('.pb-doc-choice-options').getAttribute('data-playbook-list-layout'),'columns-2');
+      assert.deepEqual(await plainRestored.allTextContents(),restored);
       await screenshot(kind+'-writing');
       await active(kind).locator(configs[kind].open).click();
       const mapped=page.locator('#executionMapFormBody [data-execution-instrument-section="'+kind+'"]');
@@ -175,6 +205,8 @@ async function run(){
       assert.equal(await mapped.locator('.execution-map-choice-head > strong').count(),0);assert.equal(await mapped.locator('.execution-map-choice-options b').textContent(),'Balance');assert.equal(await mapped.locator('.execution-map-choice-options').getAttribute('data-playbook-preset'),'card');
       const radios=mapped.locator('input[type="radio"]');assert.equal(await radios.count(),2);await radios.first().check();await radios.last().check();assert.equal(await radios.first().isChecked(),false);
       assert.equal(await mapped.locator('input[type="checkbox"]').count(),4);
+      const restoredMapped=mapped.locator('.execution-map-information > span').filter({hasText:/^(Moment of entry:|Breakout|1st|2nd|3rd|4th)$/});assert.deepEqual(await restoredMapped.allTextContents(),restored);
+      assert.equal(await restoredMapped.locator('input').count(),0);
       assert.equal(await page.locator('#executionMapFormBody [data-execution-instrument-section]').count(),1);
       await page.locator('#executionBackToInstrumentsBtn').click();
       snapshots[kind]=await page.evaluate(kind=>instrumentImageEditor(kind).innerHTML,kind);
@@ -183,6 +215,7 @@ async function run(){
     for(const kind of Object.keys(configs)){await switchBuilder(kind);assert.equal(await editor(kind).innerHTML(),snapshots[kind])}
     await page.setViewportSize({width:390,height:844});await switchBuilder('psych');await active('psych').locator('[data-ti-ribbon="home"]').click();
     const functions=active('psych').locator(configs.psych.functions);await editor('psych').locator('h2').click();assert.equal(await functions.isEnabled(),true);await functions.scrollIntoViewIfNeeded();const box=await functions.boundingBox();assert.ok(box.x>=0&&box.x+box.width<=390);
+    const back=active('psych').locator('[data-instrument-back-to-text]');assert.equal(await back.isEnabled(),true);await back.scrollIntoViewIfNeeded();const backBox=await back.boundingBox();assert.ok(backBox.x>=0&&backBox.x+backBox.width<=390);
     await screenshot('writing-mobile');pass('Document stores remain separate and Home Functions stays usable on a phone');
     assert.deepEqual(errors,[]);pass('Browser console and JavaScript remain error-free');console.log('Completed '+checks+' writing checks');
   }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve))}
