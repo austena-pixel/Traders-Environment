@@ -13033,27 +13033,19 @@ function applyInstrumentTemplate(kind,templateId){
   }else createInstrumentFromTemplate(kind,templateId);
 }
 
-function instrumentTemplateContentSignature(html){
-  const host=document.createElement('div');host.innerHTML=String(html||'');
-  host.querySelectorAll('.pb-doc-remove-btn').forEach(button=>button.remove());
-  host.querySelectorAll('[data-ti-image-field-patterns]').forEach(field=>{
-    try{field.dataset.tiImageFieldPatterns=JSON.stringify(JSON.parse(field.dataset.tiImageFieldPatterns).map((pattern,index)=>({...pattern,id:String(index)})))}catch(error){}
-  });
-  const read=node=>{
-    if(node.nodeType===3)return node.textContent.trim()?node.textContent.replace(/\s+/g,' '):null;
-    if(node.nodeType!==1)return null;
-    const attrs=[...node.attributes].filter(attr=>!['data-ti-image-field-id','data-ti-image-pattern-id'].includes(attr.name)).map(attr=>[attr.name,attr.value]).sort((a,b)=>a[0].localeCompare(b[0]));
-    return [node.tagName,attrs,[...node.childNodes].map(read).filter(value=>value!==null)];
-  };
-  return JSON.stringify([...host.childNodes].map(read).filter(value=>value!==null));
-}
 function instrumentTemplateDocumentState(kind,raw){
-  if(typeof raw.templateDraft==='boolean')return {templateDraft:raw.templateDraft,templateId:String(raw.templateId||'')};
-  // Earlier template creation stored untouched defaults as documents. Keep their
-  // content available as drafts; customized documents retain their saved status.
-  const template=(INSTRUMENT_DEFAULT_TEMPLATES[kind]||[]).find(item=>item.variant!=='insert'&&item.name===raw.name);
-  const untouched=template&&!raw.description&&!(raw.tags||[]).length&&instrumentTemplateContentSignature(raw.documentHtml)===instrumentTemplateContentSignature(instrumentTemplateDocumentHtml(kind,template));
-  return {templateDraft:Boolean(untouched),templateId:untouched?template.id:''};
+  const templates=(INSTRUMENT_DEFAULT_TEMPLATES[kind]||[]).filter(item=>item.variant!=='insert');
+  const origin=templates.find(item=>item.id===raw.templateId);
+  const namedTemplate=templates.find(item=>item.name.toLowerCase()===String(raw.name||'').trim().toLowerCase());
+  // The previous release recorded a manual Save as false + a template ID.
+  // A false flag without that ID could instead have come from its migration.
+  const previouslyConfirmed=typeof raw.templateSaveConfirmed!=='boolean'&&raw.templateDraft===false&&Boolean(origin);
+  const confirmed=raw.templateSaveConfirmed===true||previouslyConfirmed;
+  return {
+    templateDraft:!confirmed&&(raw.templateDraft===true||Boolean(origin||namedTemplate)),
+    templateId:String(origin?.id||namedTemplate?.id||raw.templateId||''),
+    templateSaveConfirmed:confirmed
+  };
 }
 
 function normalizePlaybookDocument(raw={}){
@@ -13099,7 +13091,7 @@ function loadPlaybookDocuments(){
   if(selectedPlaybookDocumentId&&!playbookDocuments.some(item=>item.id===selectedPlaybookDocumentId)){
     selectedPlaybookDocumentId=playbookDocuments[0]?.id || null;
   }
-  if(stored.some((item,index)=>item.documentHtml!==playbookDocuments[index].documentHtml||item.templateDraft!==playbookDocuments[index].templateDraft))persistPlaybookDocuments();
+  if(stored.some((item,index)=>item.documentHtml!==playbookDocuments[index].documentHtml||item.templateDraft!==playbookDocuments[index].templateDraft||item.templateSaveConfirmed!==playbookDocuments[index].templateSaveConfirmed||item.templateId!==playbookDocuments[index].templateId))persistPlaybookDocuments();
 }
 
 function persistPlaybookDocuments(){
@@ -13497,8 +13489,9 @@ function createPlaybookDocument({silent=false,source=null,template=null}={}){
   created.documentHtml=String(input.documentHtml||created.documentHtml||'');
   created.name=String(input.name||created.name||'Untitled Playbook');
   created.instrumentState=String(input.instrumentState||created.instrumentState||'draft');
-  created.templateDraft=Boolean(template)||source?.templateDraft===true;
+  created.templateDraft=Boolean(template)||Boolean(source?.templateId)||source?.templateDraft===true;
   created.templateId=template?.id||source?.templateId||'';
+  created.templateSaveConfirmed=false;
   created.createdAt=now; created.updatedAt=now;
   playbookDocuments.unshift(created);
   selectedPlaybookDocumentId=created.id;
@@ -13526,7 +13519,7 @@ function savePlaybookDocument({quiet=false}={}){
   const module=playbookModule();
   const validation=module?.validate?module.validate(next):{valid:true,errors:[]};
   if(!validation.valid){if(!quiet)alert(validation.errors.join('\n'));return}
-  if(!quiet)next.templateDraft=false;
+  if(!quiet){next.templateDraft=false;next.templateSaveConfirmed=true}
   playbookDocuments=playbookDocuments.map(item=>item.id===next.id?next:item);
   persistPlaybookDocuments();
   renderPlaybookExecutionPreview();
@@ -14389,7 +14382,7 @@ function loadSecondaryDocuments(kind,{refresh=false}={}){
   state.docs=stored.map(item=>secondaryNormalizeDoc(kind,item));
   state.selectedId=localStorage.getItem(key+':selected')||state.docs[0]?.id||null;
   if(state.selectedId&&!state.docs.some(item=>item.id===state.selectedId))state.selectedId=state.docs[0]?.id||null;
-  if(stored.some((item,index)=>item.documentHtml!==state.docs[index].documentHtml||item.templateDraft!==state.docs[index].templateDraft))persistSecondaryDocuments(kind);
+  if(stored.some((item,index)=>item.documentHtml!==state.docs[index].documentHtml||item.templateDraft!==state.docs[index].templateDraft||item.templateSaveConfirmed!==state.docs[index].templateSaveConfirmed||item.templateId!==state.docs[index].templateId))persistSecondaryDocuments(kind);
 }
 function persistSecondaryDocuments(kind){
   const state=secondaryState(kind);
@@ -14669,6 +14662,7 @@ function createSecondaryDocument(kind,{silent=false,template=null}={}){
     documentHtml:template?.documentHtml||config.defaultHtml,
     templateDraft:Boolean(template),
     templateId:template?.id||'',
+    templateSaveConfirmed:false,
     tags:[],
     instrumentState:'draft',
     createdAt:now
@@ -14695,7 +14689,7 @@ function collectSecondaryDocument(kind){
 }
 function saveSecondaryDocument(kind,{quiet=false}={}){
   const next=collectSecondaryDocument(kind); if(!next)return;
-  if(!quiet)next.templateDraft=false;
+  if(!quiet){next.templateDraft=false;next.templateSaveConfirmed=true}
   const state=secondaryState(kind);
   state.docs=state.docs.map(item=>item.id===next.id?next:item);
   persistSecondaryDocuments(kind);

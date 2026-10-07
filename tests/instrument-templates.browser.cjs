@@ -81,7 +81,7 @@ async function run(){
         assert.ok(after.find(doc=>doc.id===previousId).documentHtml.includes(marker));
         assert.equal(await active(kind).locator(configs[kind].title).inputValue(),name);
         assert.equal(after.find(doc=>doc.id===nextId).name,name);assert.ok(await model(kind).textContent());
-        assert.equal(after.find(doc=>doc.id===nextId).templateDraft,true);assert.equal(after.find(doc=>doc.id===nextId).templateId,id);
+        assert.equal(after.find(doc=>doc.id===nextId).templateDraft,true);assert.equal(after.find(doc=>doc.id===nextId).templateId,id);assert.equal(after.find(doc=>doc.id===nextId).templateSaveConfirmed,false);
         await page.evaluate(()=>renderExecutionMappingControls());
         assert.equal(await page.locator(configs[kind].executionPicker+' option[value="'+nextId+'"]').count(),0);
         await active(kind).locator(configs[kind].open).click();assert.equal(await active(kind).evaluate(el=>el.classList.contains('active')),true,'Preview cannot implicitly save a template draft');
@@ -108,6 +108,7 @@ async function run(){
         }
         await active(kind).locator(configs[kind].save).click();
         assert.equal((await docs(kind)).find(doc=>doc.id===nextId).templateDraft,false);
+        assert.equal((await docs(kind)).find(doc=>doc.id===nextId).templateSaveConfirmed,true);
         await active(kind).locator(configs[kind].open).click();
         assert.equal(await page.locator(configs[kind].executionPicker+' option[value="'+nextId+'"]').count(),1);
         const mapped=page.locator('#executionMapFormBody [data-execution-instrument-section="'+kind+'"]');
@@ -201,19 +202,24 @@ async function run(){
         const docs=defaults.map((template,index)=>({id:'legacy_'+kind+'_'+index,name:template.name,documentHtml:instrumentTemplateDocumentHtml(kind,template),description:'',tags:[],instrumentState:'draft'}));
         const card=docs[2];
         docs.push({...card,id:'legacy_'+kind+'_edited',documentHtml:card.documentHtml+'<p>My actual trading conditions</p>'});
-        docs.push({...card,id:'legacy_'+kind+'_renamed',name:'My custom trading system'});
+        docs.push({...card,id:'legacy_'+kind+'_renamed',name:'My custom trading system',templateDraft:false,templateId:''});
         docs.push({...card,id:'legacy_'+kind+'_colors',documentHtml:card.documentHtml.replace(/data-playbook-color-border="[^"]+"/,'data-playbook-color-border="#123456"')});
         docs.push({...card,id:'legacy_'+kind+'_confirmed',templateDraft:false,templateId:defaults[2].id});
+        docs.push({...card,id:'legacy_'+kind+'_firstfix',templateDraft:false,templateId:'',documentHtml:card.documentHtml+'<p>Edited before Save</p>'});
+        const serialized=document.createElement('div');serialized.innerHTML=card.documentHtml;serialized.querySelector('[data-playbook-color-border]').style.setProperty('--pb-style-border',serialized.querySelector('[data-playbook-color-border]').dataset.playbookColorBorder);
+        docs.push({...card,id:'legacy_'+kind+'_serialized',documentHtml:serialized.innerHTML});
+        docs.push({...card,id:'legacy_'+kind+'_description',description:'Started editing before Save',tags:['pending']});
+        docs.push({...card,id:'legacy_'+kind+'_saved',templateDraft:false,templateId:defaults[2].id,templateSaveConfirmed:true});
         const host=document.createElement('div');host.innerHTML=docs[3].documentHtml;host.querySelectorAll('.pb-doc-remove-btn').forEach(button=>button.setAttribute('contenteditable','false'));docs[3].documentHtml=host.innerHTML;
         localStorage.setItem(instrumentImageScope(kind),JSON.stringify(docs));localStorage.setItem(instrumentImageScope(kind)+':selected',docs[0].id);
         return docs;
       },kind);
       await page.reload({waitUntil:'load'});await switchBuilder(kind);
       const migrated=await docs(kind);assert.equal(migrated.length,legacy.length);
-      for(const previous of legacy){const stored=migrated.find(doc=>doc.id===previous.id);assert.equal(stored.documentHtml,previous.documentHtml);assert.equal(stored.templateDraft,!previous.id.match(/_(edited|renamed|colors|confirmed)$/))}
+      for(const previous of legacy){const stored=migrated.find(doc=>doc.id===previous.id);assert.equal(stored.documentHtml,previous.documentHtml);assert.equal(stored.templateDraft,!previous.id.match(/_(renamed|confirmed|saved)$/));assert.equal(stored.templateSaveConfirmed,Boolean(previous.id.match(/_(confirmed|saved)$/)))}
       await page.evaluate(()=>navigate('execution'));
-      assert.deepEqual(await page.locator(configs[kind].executionPicker+' option').evaluateAll(nodes=>nodes.map(el=>el.value)),legacy.slice(4).map(doc=>doc.id));
-      if(kind!=='playbook')assert.ok((await page.locator(configs[kind].executionPicker).evaluate(el=>el.closest('.execution-map-control').querySelector(':scope > span').textContent)).includes('(4)'));
+      assert.deepEqual(await page.locator(configs[kind].executionPicker+' option').evaluateAll(nodes=>nodes.map(el=>el.value)),legacy.filter(doc=>doc.id.match(/_(renamed|confirmed|saved)$/)).map(doc=>doc.id));
+      if(kind!=='playbook')assert.ok((await page.locator(configs[kind].executionPicker).evaluate(el=>el.closest('.execution-map-control').querySelector(':scope > span').textContent)).includes('(3)'));
       await page.evaluate(({kind,documents})=>{localStorage.setItem(instrumentImageScope(kind),JSON.stringify(documents));localStorage.setItem(instrumentImageScope(kind)+':selected',documents[0].id)},{kind,documents:migrated.slice(0,4)});
       await page.reload({waitUntil:'load'});await page.evaluate(()=>{setLoggedInUI(true);navigate('execution')});
       assert.deepEqual(await page.locator(configs[kind].executionPicker+' option').evaluateAll(nodes=>nodes.map(el=>el.value)),['']);
@@ -224,7 +230,7 @@ async function run(){
       await switchBuilder(kind);await active(kind).locator(configs[kind].save).click();
       await page.reload({waitUntil:'load'});await switchBuilder(kind);await active(kind).locator(configs[kind].open).click();
       assert.equal(await page.locator(configs[kind].executionPicker+' option[value="'+legacy[0].id+'"]').count(),1);
-      pass(kind+' legacy untouched templates become drafts without deletion; custom / confirmed documents stay listed and Save restores a migrated draft');
+      pass(kind+' old autosaved / misclassified template copies stay drafts; named documents and explicit Save confirmations remain listed');
     }
     assert.deepEqual(errors,[]);pass('No browser console or JavaScript errors');
     console.log(checks+' instrument-template browser checks passed');
