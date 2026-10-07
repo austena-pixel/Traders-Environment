@@ -4773,9 +4773,11 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 }
 .execution-map-controls{
   display:grid;
-  grid-template-columns:repeat(4,minmax(160px,1fr));
-  gap:10px;
-  margin-bottom:12px;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+  width:100%;
+  min-width:0;
+  margin:0;
 }
 #page-execution{position:relative}
 .execution-map-top{flex:0 0 auto;min-height:0}
@@ -4802,16 +4804,14 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 .execution-map-top-toggle svg{width:18px;height:18px}
 .execution-header-collapsed .execution-map-top-toggle svg{transform:rotate(180deg)}
 .execution-header-collapsed{padding-top:38px}
-.execution-map-state{grid-column:1/-1}
-.execution-map-control,
-.execution-map-state{
+.execution-map-control{
+  min-width:0;
   border:1px solid #202d3d;
   border-radius:12px;
   background:#0b1119;
   padding:10px;
 }
-.execution-map-control>span,
-.execution-map-state>span{
+.execution-map-control>span{
   display:block;
   margin-bottom:5px;
   color:#73859b;
@@ -4821,6 +4821,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 }
 .execution-map-control select{
   width:100%;
+  min-width:0;
   min-height:36px;
   border:1px solid #29384d;
   border-radius:8px;
@@ -4845,11 +4846,6 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
   35%{box-shadow:0 0 0 1px rgba(105,168,255,.42),0 0 28px rgba(70,130,210,.12);background:rgba(60,110,170,.045)}
   100%{box-shadow:0 0 0 1px rgba(105,168,255,0);background:transparent}
 }
-.execution-map-state strong{
-  display:block;
-  color:#c7d8ea;
-  font-size:11px;
-}
 .execution-map-layout{
   display:grid;
   grid-template-columns:minmax(250px,310px) minmax(0,1fr);
@@ -4865,8 +4861,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
   overflow-y:auto;
   overscroll-behavior:contain;
 }
-.execution-map-context-head>span,
-.execution-map-form-head>div>span{
+.execution-map-context>.execution-map-control{display:block;margin-bottom:14px}
+.execution-map-context-head>span{
   display:block;
   color:#7c93ad;
   font-size:8px;
@@ -4976,30 +4972,9 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
   align-items:flex-start;
   justify-content:space-between;
   gap:12px;
-  padding:15px 16px;
+  padding:10px;
   border-bottom:1px solid #1f2a38;
   background:#0c121a;
-}
-.execution-map-form-head h2{
-  margin:5px 0 0;
-  font-size:18px;
-}
-.execution-map-form-head p{
-  margin:5px 0 0;
-  color:#7f8fa3;
-  font-size:9px;
-  line-height:1.45;
-}
-.execution-map-badge{
-  flex:0 0 auto;
-  padding:5px 8px;
-  border:1px solid #315073;
-  border-radius:999px;
-  background:#0d1928;
-  color:#9cc8f8;
-  font-size:8px;
-  font-weight:850;
-  letter-spacing:.55px;
 }
 .execution-map-form-body{
   flex:1 1 auto;
@@ -5200,9 +5175,6 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 }
 @media(min-width:861px){
   body.execution-workspace #page-execution.active{height:100%}
-  body.execution-workspace #page-execution .execution-map-controls{
-    flex:0 0 auto;
-  }
   body.execution-workspace #page-execution .execution-map-layout{
     flex:1 1 auto;
     min-height:0;
@@ -5218,14 +5190,12 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 }
 @media(max-width:900px){
   .execution-map-controls{grid-template-columns:1fr 1fr}
-  .execution-map-state{grid-column:1/-1}
 }
 @media(max-width:860px){
   .execution-map-layout{grid-template-columns:1fr}
 }
 @media(max-width:620px){
   .execution-map-controls{grid-template-columns:1fr}
-  .execution-map-state{grid-column:auto}
   .execution-map-context-grid{grid-template-columns:1fr}
   .execution-map-rule-layout[data-playbook-list-layout="columns-2"],
   .execution-map-rule-layout[data-playbook-list-layout="columns-3"],
@@ -7053,45 +7023,14 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
         </div>
       </header>
 
-      <section class="execution-map-controls">
-        <label class="execution-map-control">
-          <span>Trade</span>
-          <select id="executionMapTradeSelect" aria-label="Trade to review"></select>
-        </label>
-
-        <div class="execution-map-control playbook" data-execution-map-instrument="playbook">
-          <span>Playbook</span>
-          <div class="execution-map-control-row">
-            <select id="executionMapPlaybookSelect" aria-label="Playbook to map"></select>
-            <button class="execution-map-view-btn" type="button" id="executionMapPlaybookViewBtn">View</button>
-          </div>
-        </div>
-
-        <div class="execution-map-control checklist" data-execution-map-instrument="checklist">
-          <span>Rules</span>
-          <div class="execution-map-control-row">
-            <select id="executionMapChecklistSelect" aria-label="Rules to map"></select>
-            <button class="execution-map-view-btn" type="button" id="executionMapChecklistViewBtn">View</button>
-          </div>
-        </div>
-
-        <div class="execution-map-control psych" data-execution-map-instrument="psych">
-          <span>Psychological Reflection</span>
-          <div class="execution-map-control-row">
-            <select id="executionMapPsychSelect" aria-label="Psychological Reflection to map"></select>
-            <button class="execution-map-view-btn" type="button" id="executionMapPsychViewBtn">View</button>
-          </div>
-        </div>
-
-        <div class="execution-map-state">
-          <span>MAPPING STATUS</span>
-          <strong id="executionMapStatus">Waiting for a Playbook</strong>
-        </div>
-      </section>
       </div>
 
       <div class="execution-map-layout">
         <aside class="panel execution-map-context">
+          <label class="execution-map-control">
+            <span>Trade</span>
+            <select id="executionMapTradeSelect" aria-label="Trade to review"></select>
+          </label>
           <div class="execution-map-context-head">
             <span>TRADE CONTEXT</span>
             <strong id="executionMapTradeTitle">No trade selected</strong>
@@ -7131,12 +7070,29 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
         <section class="panel execution-map-form">
           <div class="execution-map-form-head">
-            <div>
-              <span>GENERATED FROM TECHNICAL INSTRUMENTS</span>
-              <h2 id="executionMapPlaybookTitle">Playbook Mapping</h2>
-              <p id="executionMapPlaybookMeta">Only the selected Technical Instrument is shown here.</p>
+            <div class="execution-map-controls" role="group" aria-label="Technical Instruments to map">
+              <div class="execution-map-control playbook" data-execution-map-instrument="playbook">
+                <span>Playbook</span>
+                <div class="execution-map-control-row">
+                  <select id="executionMapPlaybookSelect" aria-label="Playbook to map"></select>
+                  <button class="execution-map-view-btn" type="button" id="executionMapPlaybookViewBtn">View</button>
+                </div>
+              </div>
+              <div class="execution-map-control checklist" data-execution-map-instrument="checklist">
+                <span>Rules</span>
+                <div class="execution-map-control-row">
+                  <select id="executionMapChecklistSelect" aria-label="Rules to map"></select>
+                  <button class="execution-map-view-btn" type="button" id="executionMapChecklistViewBtn">View</button>
+                </div>
+              </div>
+              <div class="execution-map-control psych" data-execution-map-instrument="psych">
+                <span>Psychological Reflection</span>
+                <div class="execution-map-control-row">
+                  <select id="executionMapPsychSelect" aria-label="Psychological Reflection to map"></select>
+                  <button class="execution-map-view-btn" type="button" id="executionMapPsychViewBtn">View</button>
+                </div>
+              </div>
             </div>
-            <span class="execution-map-badge">MODEL</span>
           </div>
 
           <div class="execution-map-form-body" id="executionMapFormBody">
@@ -11250,28 +11206,6 @@ function renderExecutionMappingForm(){
     ? executionMappingActiveInstrument
     : 'playbook';
   executionMappingActiveInstrument=activeInstrument;
-  const activeCopy={
-    playbook:{
-      title:'Playbook Mapping',
-      meta:'Showing only the selected Playbook structure in Execution Quality.',
-      status:'Viewing Playbook mapping'
-    },
-    checklist:{
-      title:'Rules Mapping',
-      meta:'Showing only the selected Rules structure in Execution Quality.',
-      status:'Viewing Rules mapping'
-    },
-    psych:{
-      title:'Psychological Reflection Mapping',
-      meta:'Showing only the selected Psychological Reflection structure in Execution Quality.',
-      status:'Viewing Psychological Reflection mapping'
-    }
-  }[activeInstrument];
-
-  $('#executionMapPlaybookTitle').textContent=activeCopy.title;
-  $('#executionMapPlaybookMeta').textContent=activeCopy.meta;
-  $('#executionMapStatus').textContent=activeCopy.status;
-
   const items=playbook?playbookStructuredPreviewItems(playbook.documentHtml||''):[];
   let checkIndex=0;
   const playbookHtml=playbook
