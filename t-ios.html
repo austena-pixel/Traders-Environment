@@ -15344,12 +15344,12 @@ function instrumentImageFieldPatternsHtml(item,editable,{kind='playbook',area='p
   if(selection==='capture')return '';
   const instruction=selection==='choice'?'Choose one pattern':'Check each applicable pattern';
   const name='ti_image_pattern_'+area+'_'+kind+'_'+item.id;
-  const patterns=normalizeInstrumentImagePatterns(item.patterns).map(pattern=>{
+  const patterns=normalizeInstrumentImagePatterns(item.patterns).map((pattern,index)=>{
     const tag=editable?'div':'label';
-    const control=editable?'<span aria-hidden="true">'+(selection==='choice'?'○':'□')+'</span>':`<input type="${selection==='choice'?'radio':'checkbox'}" name="${escapeHtml(name)}" value="${escapeHtml(pattern.id)}" data-ti-image-pattern-response>`;
+    const control=editable?'<span aria-hidden="true">'+(selection==='choice'?'○':'□')+'</span>':`<input type="${selection==='choice'?'radio':'checkbox'}" name="${escapeHtml(name)}" value="${escapeHtml(pattern.id)}" aria-label="${escapeHtml(pattern.label||'Pattern '+(index+1))}" data-ti-image-pattern-response>`;
     return `<${tag} class="ti-image-pattern" data-ti-image-pattern-id="${escapeHtml(pattern.id)}">${instrumentImagePatternPictureHtml(pattern)}<span class="ti-image-pattern-label">${control}<span>${escapeHtml(pattern.label)}</span></span></${tag}>`;
   }).join('');
-  return `<div class="ti-image-field-selection-note">${instruction}</div><div class="ti-image-field-patterns" role="group" aria-label="${escapeHtml(item.label+': '+instruction)}">${patterns}</div>`;
+  return `<div class="ti-image-field-selection-note">${instruction}</div><div class="ti-image-field-patterns" role="group" aria-label="${escapeHtml((item.label?item.label+': ':'')+instruction)}">${patterns}</div>`;
 }
 // Keep trial selections during a Live Model refresh; responses stay out of saved design HTML.
 function captureInstrumentImagePatternResponses(root,documentId){
@@ -15363,19 +15363,24 @@ function restoreInstrumentImagePatternResponses(root,documentId,responses){
     input.checked=responses.has(JSON.stringify([input.closest('[data-ti-image-field-id]').dataset.tiImageFieldId,input.value]));
   });
 }
+// An unnamed field stays unnamed in the document; numbered labels only identify relationship choices.
+function instrumentImageFieldDisplayName(node,root){
+  if(!node)return 'Unavailable image field';
+  return node.dataset.tiImageFieldLabel||'Picture field '+([...root.querySelectorAll('[data-playbook-node="image-field"]')].indexOf(node)+1);
+}
 function instrumentImageFieldItem(node,root){
   const related=node.dataset.tiImageFieldRelated||'';
   const parent=related?[...root.querySelectorAll('[data-playbook-node="image-field"]')].find(field=>field.dataset.tiImageFieldId===related):null;
   return {
     id:node.dataset.tiImageFieldId||'',
-    label:node.dataset.tiImageFieldLabel||'Image / Screenshot',
+    label:node.dataset.tiImageFieldLabel||'',
     timeframe:node.dataset.tiImageFieldTimeframe||'',
     stage:normalizeInstrumentImageFieldStage(node.dataset.tiImageFieldStage),
     prompt:node.dataset.tiImageFieldPrompt||'',
     selection:normalizeInstrumentImageFieldSelection(node.dataset.tiImageFieldSelection),
     patterns:normalizeInstrumentImagePatterns(node.dataset.tiImageFieldPatterns),
     related,
-    relatedLabel:related?(parent?.dataset.tiImageFieldLabel||'Unavailable image field'):''
+    relatedLabel:related?instrumentImageFieldDisplayName(parent,root):''
   };
 }
 function instrumentImageFieldHtml(item,editable=false,renderContext={}){
@@ -15385,10 +15390,11 @@ function instrumentImageFieldHtml(item,editable=false,renderContext={}){
   const tools=editable?'<button class="ti-image-field-edit" type="button" data-ti-image-field-edit>Edit field</button>':'';
   const remove=editable?'<button class="pb-doc-remove-btn" type="button" aria-label="Remove image field" title="Remove image field">×</button>':'';
   const timeframe=item.timeframe?'<span>'+escapeHtml(item.timeframe)+'</span>':'';
+  const stageLabel=stage==='other'?'':'<span>'+INSTRUMENT_IMAGE_FIELD_STAGES[stage]+'</span>';
   return `<div class="ti-image-field" data-playbook-node="image-field" data-ti-image-field-id="${escapeHtml(item.id)}" data-ti-image-field-label="${escapeHtml(item.label)}" data-ti-image-field-timeframe="${escapeHtml(item.timeframe||'')}" data-ti-image-field-stage="${stage}" data-ti-image-field-prompt="${escapeHtml(item.prompt||'')}" data-ti-image-field-related="${escapeHtml(item.related||'')}" data-ti-image-field-selection="${selection}" data-ti-image-field-patterns="${escapeHtml(JSON.stringify(patterns))}" contenteditable="false">
     ${remove}
     <div class="ti-image-field-head"><strong class="ti-image-field-name">${escapeHtml(item.label)}</strong>${tools}</div>
-    <div class="ti-image-field-meta">${timeframe}<span>${INSTRUMENT_IMAGE_FIELD_STAGES[stage]}</span></div>
+    ${timeframe||stageLabel?'<div class="ti-image-field-meta">'+timeframe+stageLabel+'</div>':''}
     ${item.prompt?'<div class="ti-image-field-prompt">'+escapeHtml(item.prompt)+'</div>':''}
     ${selection==='capture'?'<div class="ti-image-field-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8" cy="8" r="1.5"/><path d="m3 17 5-5 4 4 4-6 5 7"/></svg><span>Trade picture goes here<small>Designed here · filled per trade later in Journal</small></span></div>':instrumentImageFieldPatternsHtml({...item,selection,patterns},editable,renderContext)}
     <small class="ti-image-field-related" data-ti-image-field-related-label${item.related?'':' hidden'}>${item.related?'Related to: '+escapeHtml(item.relatedLabel||'Unavailable image field'):''}</small>
@@ -15427,7 +15433,7 @@ function closeInstrumentImageFieldModal({restore=true,keepMedia=false}={}){
   }
 }
 function instrumentImagePatternDesignRowHtml(pattern){
-  return `<div class="ti-image-pattern-design-row" data-image-pattern-row="${escapeHtml(pattern.id)}">${instrumentImagePatternPictureHtml(pattern)}<div><label class="playbook-choice-field"><span>Pattern name</span><input data-image-pattern-label maxlength="120" value="${escapeHtml(pattern.label)}" placeholder="e.g. Pattern 1"></label><div class="ti-image-pattern-design-actions"><button class="btn" type="button" data-image-pattern-upload>${pattern.imageKey?'Replace picture':'Add picture'}</button><button class="btn" type="button" data-image-pattern-clear${pattern.imageKey?'':' hidden'}>Remove picture</button><button class="btn" type="button" data-image-pattern-remove>Remove pattern</button></div><input type="file" data-image-pattern-file accept="image/png,image/jpeg,image/webp,image/gif" hidden></div></div>`;
+  return `<div class="ti-image-pattern-design-row" data-image-pattern-row="${escapeHtml(pattern.id)}">${instrumentImagePatternPictureHtml(pattern)}<div><label class="playbook-choice-field"><span>Pattern name (optional)</span><input data-image-pattern-label maxlength="120" value="${escapeHtml(pattern.label)}" placeholder="e.g. Pattern 1"></label><div class="ti-image-pattern-design-actions"><button class="btn" type="button" data-image-pattern-upload>${pattern.imageKey?'Replace picture':'Add picture'}</button><button class="btn" type="button" data-image-pattern-clear${pattern.imageKey?'':' hidden'}>Remove picture</button><button class="btn" type="button" data-image-pattern-remove>Remove pattern</button></div><input type="file" data-image-pattern-file accept="image/png,image/jpeg,image/webp,image/gif" hidden></div></div>`;
 }
 function appendInstrumentImagePatternDesignRow(pattern){
   const host=$('#instrumentImageFieldForm [data-image-pattern-rows]');
@@ -15443,7 +15449,7 @@ function syncInstrumentImagePatternDesign(){
     :'Each pattern can be checked independently.';
   if(selection!=='capture'&&!context.patterns.length){
     for(let i=1;i<=2;i++){
-      const pattern={id:makeInstrumentImageFieldId(),label:'Pattern '+i,imageKey:''};
+      const pattern={id:makeInstrumentImageFieldId(),label:'',imageKey:''};
       context.patterns.push(pattern);appendInstrumentImagePatternDesignRow(pattern);
     }
   }
@@ -15509,7 +15515,7 @@ function ensureInstrumentImageFieldModal(){
   form.addEventListener('click',event=>{
     const context=instrumentImageFieldModalContext;if(!context)return;
     if(event.target.closest('[data-image-pattern-add]')){
-      const pattern={id:makeInstrumentImageFieldId(),label:'Pattern '+(context.patterns.length+1),imageKey:''};
+      const pattern={id:makeInstrumentImageFieldId(),label:'',imageKey:''};
       context.patterns.push(pattern);appendInstrumentImagePatternDesignRow(pattern);
       form.querySelector('[data-image-pattern-rows]').lastElementChild.querySelector('[data-image-pattern-label]').focus();return;
     }
@@ -15537,15 +15543,15 @@ function openInstrumentImageFieldModal(kind,field=null){
   const fields=[...context.editor.querySelectorAll('[data-playbook-node="image-field"]')].filter(node=>node!==field);
   const options=fields.map(node=>{
     const value=instrumentImageFieldItem(node,context.editor);
-    return '<option value="'+escapeHtml(value.id)+'">'+escapeHtml(value.label+(value.timeframe?' · '+value.timeframe:''))+'</option>';
+    return '<option value="'+escapeHtml(value.id)+'">'+escapeHtml(instrumentImageFieldDisplayName(node,context.editor)+(value.timeframe?' · '+value.timeframe:''))+'</option>';
   }).join('');
   $('#instrumentImageFieldTitle').textContent=field?'Edit Image Field':'Design Image Field';
   $('#instrumentImageFieldForm').innerHTML=`
-    <p class="ti-image-field-modal-note">Define a picture field or a group of representative patterns. Trade pictures and responses will be recorded later in Journal.</p>
-    <label class="playbook-choice-field"><span>Field name</span><input name="label" maxlength="120" required placeholder="e.g. 4H balance / imbalance" value="${escapeHtml(item.label)}"></label>
+    <p class="ti-image-field-modal-note">Insert a picture field without entering any details. Names and context are optional and can be added later. Trade pictures and responses will be recorded in Journal.</p>
+    <label class="playbook-choice-field"><span>Field name (optional)</span><input name="label" maxlength="120" placeholder="e.g. 4H balance / imbalance" value="${escapeHtml(item.label)}"></label>
     <div class="ti-image-field-modal-grid">
       <label class="playbook-choice-field"><span>Timeframe (optional)</span><input name="timeframe" maxlength="30" placeholder="e.g. 4H, 30min, 5min" value="${escapeHtml(item.timeframe)}"></label>
-      <label class="playbook-choice-field"><span>Trading stage</span><select name="stage">${Object.entries(INSTRUMENT_IMAGE_FIELD_STAGES).map(([value,label])=>'<option value="'+value+'">'+label+'</option>').join('')}</select></label>
+      <label class="playbook-choice-field"><span>Trading stage (optional)</span><select name="stage">${Object.entries(INSTRUMENT_IMAGE_FIELD_STAGES).map(([value,label])=>'<option value="'+value+'">'+(value==='other'?'None':label)+'</option>').join('')}</select></label>
     </div>
     <label class="playbook-choice-field"><span>What should the picture show? (optional)</span><textarea name="prompt" maxlength="1200" placeholder="Describe the analysis, entry or exit condition to capture.">${escapeHtml(item.prompt)}</textarea></label>
     <label class="playbook-choice-field"><span>Selection</span><select name="selection">${Object.entries(INSTRUMENT_IMAGE_FIELD_SELECTIONS).map(([value,label])=>'<option value="'+value+'">'+label+'</option>').join('')}</select></label>
@@ -15567,11 +15573,9 @@ function saveInstrumentImageFieldFromModal(event){
   if(context.pendingUploads)return;
   const item={id:context.fieldId,label:form.elements.label.value.trim(),timeframe:form.elements.timeframe.value.trim(),stage:normalizeInstrumentImageFieldStage(form.elements.stage.value),prompt:form.elements.prompt.value.trim(),related:form.elements.related.value,selection:normalizeInstrumentImageFieldSelection(form.elements.selection.value),patterns:normalizeInstrumentImagePatterns(context.patterns).map(pattern=>({...pattern,label:pattern.label.trim()}))};
   const error=form.querySelector('[data-image-field-error]');
-  if(!item.label){error.textContent='Enter a field name.';form.elements.label.focus();return}
   if(item.selection!=='capture'){
     const minimum=item.selection==='choice'?2:1;
     if(item.patterns.length<minimum){error.textContent='Add at least '+minimum+' pattern'+(minimum===1?'':'s')+'.';return}
-    if(item.patterns.some(pattern=>!pattern.label)){error.textContent='Enter a name for each pattern.';return}
   }
   const fields=[...context.editor.querySelectorAll('[data-playbook-node="image-field"]')];
   const parent=fields.find(node=>node.dataset.tiImageFieldId===item.related);
@@ -15581,7 +15585,7 @@ function saveInstrumentImageFieldFromModal(event){
     if(seen.has(related)){error.textContent='Choose a related field that does not create a loop.';return}
     seen.add(related);related=fields.find(node=>node.dataset.tiImageFieldId===related)?.dataset.tiImageFieldRelated||'';
   }
-  item.relatedLabel=parent?.dataset.tiImageFieldLabel||'';
+  item.relatedLabel=item.related?instrumentImageFieldDisplayName(parent,context.editor):'';
   const host=document.createElement('div');host.innerHTML=instrumentImageFieldHtml(item,true);const block=host.firstElementChild;
   if(context.field)context.field.replaceWith(block);
   else if(context.anchor)context.anchor.after(block);

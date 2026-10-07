@@ -129,15 +129,35 @@ async function run(){
       await field(kind,choiceId).locator('[data-ti-image-field-edit]').click();await rows().last().locator('[data-image-pattern-remove]').click();
       await form().locator('[type="submit"]').click();assert.match(await form().locator('[data-image-field-error]').textContent(),/at least 2/);
       await form().locator('[data-image-pattern-add]').click();await rows().last().locator('[data-image-pattern-label]').fill('   ');
-      await form().locator('[type="submit"]').click();assert.match(await form().locator('[data-image-field-error]').textContent(),/name for each pattern/);
       await page.keyboard.press('Escape');assert.deepEqual(JSON.parse(await field(kind,choiceId).getAttribute('data-ti-image-field-patterns')),patterns);
       await field(kind,choiceId).locator('[data-ti-image-field-edit]').click();await form().locator('[name="selection"]').selectOption('capture');await form().locator('[type="submit"]').click();
       assert.equal(await model(kind,choiceId).locator('input').count(),0);assert.equal(await model(kind,choiceId).locator('.ti-image-field-placeholder').count(),1);
       await field(kind,choiceId).locator('[data-ti-image-field-edit]').click();await form().locator('[name="selection"]').selectOption('choice');await form().locator('[type="submit"]').click();
       assert.deepEqual(JSON.parse(await field(kind,choiceId).getAttribute('data-ti-image-field-patterns')),patterns);
       pass(kind+' validation, cancellation and mode changes preserve saved pattern definitions and images');
+      await model(kind,choiceId).locator('input[type="radio"]').first().check();
+      const anonymous=[];
+      for(const selection of ['choice','check']){
+        await openDesign(kind,selection,'');
+        assert.deepEqual(await rows().locator('[data-image-pattern-label]').evaluateAll(inputs=>inputs.map(input=>input.value)),['','']);
+        assert.equal(await form().locator('[required]').count(),0);
+        await upload(0,picture);await upload(1,picture);
+        const id=await page.evaluate(()=>instrumentImageFieldModalContext.fieldId);
+        await form().locator('[type="submit"]').click();
+        const savedPatterns=JSON.parse(await field(kind,id).getAttribute('data-ti-image-field-patterns'));
+        assert.equal(await field(kind,id).getAttribute('data-ti-image-field-label'),'');assert.deepEqual(savedPatterns.map(pattern=>pattern.label),['','']);
+        assert.ok(savedPatterns.every(pattern=>pattern.imageKey));assert.equal(new Set(savedPatterns.map(pattern=>pattern.id)).size,2);
+        await model(kind,id).locator('img[src]').nth(1).waitFor();
+        const controls=model(kind,id).locator('input');assert.deepEqual(await controls.evaluateAll(inputs=>inputs.map(input=>input.getAttribute('aria-label'))),['Pattern 1','Pattern 2']);
+        await model(kind,id).locator('img').nth(0).click();await model(kind,id).locator('img').nth(1).click();
+        assert.equal(await controls.first().isChecked(),selection==='check');assert.equal(await controls.last().isChecked(),true);
+        assert.equal(await model(kind,choiceId).locator('input[type="radio"]').first().isChecked(),true,'Unnamed groups do not share responses with named fields');
+        anonymous.push({id,selection,patterns:savedPatterns});
+      }
+      pass(kind+' representative pictures need no field or pattern names, while Choice and Check retain independent controls');
       await waitSaved(kind);const html=await savedHtml(kind);
       for(const pattern of patterns){assert.ok(html.includes(pattern.id));assert.ok(html.includes(pattern.imageKey))}
+      for(const item of anonymous)for(const pattern of item.patterns){assert.ok(html.includes(pattern.id));assert.ok(html.includes(pattern.imageKey))}
       assert.ok(html.includes('data-ti-image-field-selection="choice"'));assert.equal(html.includes('data:image/'),false);
       await active(kind).locator(configs[kind].save).click();const docId=await page.evaluate(kind=>instrumentImageDocumentId(kind),kind);
       await active(kind).locator(configs[kind].create).click();assert.equal(await editor(kind).locator('[data-playbook-node="image-field"]').count(),0);
@@ -146,6 +166,14 @@ async function run(){
       assert.deepEqual(JSON.parse(await field(kind,choiceId).getAttribute('data-ti-image-field-patterns')),patterns);
       assert.equal(await field(kind,checkId).getAttribute('data-ti-image-field-selection'),'check');
       await field(kind,choiceId).locator('img[src]').nth(1).waitFor();await model(kind,choiceId).locator('img[src]').nth(1).waitFor();
+      for(const item of anonymous){
+        assert.equal(await field(kind,item.id).getAttribute('data-ti-image-field-label'),'');assert.equal(await field(kind,item.id).getAttribute('data-ti-image-field-selection'),item.selection);
+        assert.deepEqual(JSON.parse(await field(kind,item.id).getAttribute('data-ti-image-field-patterns')),item.patterns);
+        assert.equal(await model(kind,item.id).locator('.ti-image-field-name').textContent(),'');await model(kind,item.id).locator('img[src]').nth(1).waitFor();
+        await field(kind,item.id).locator('[data-ti-image-field-edit]').click();assert.equal(await form().locator('[name="label"]').inputValue(),'');
+        assert.deepEqual(await rows().locator('[data-image-pattern-label]').evaluateAll(inputs=>inputs.map(input=>input.value)),['','']);await page.keyboard.press('Escape');
+      }
+      pass(kind+' unnamed representative pictures retain empty labels, stable IDs and images through save, reload and editing');
       pass(kind+' autosave, manual Save, document/builder switching and reload keep modes, identities and picture keys');
       await active(kind).locator(kind==='playbook'?'#playbookPreviewOpenExecutionBtn':'[data-ti-action="preview"]').click();
       const mapped=page.locator('#executionMapFormBody [data-execution-instrument-section="'+kind+'"]');
@@ -153,6 +181,13 @@ async function run(){
       const mappedChoice=mapped.locator('[data-ti-image-field-id="'+choiceId+'"]');await mappedChoice.locator('img[src]').nth(1).waitFor();
       assert.ok(await mappedChoice.locator('input[type="radio"]').first().evaluate(el=>el.getBoundingClientRect().width<=20),'Pattern controls retain their compact size inside the generated form');
       const scoreBefore=await page.locator('#executionMapScore').textContent();
+      for(const item of anonymous){
+        const mappedAnonymous=mapped.locator('[data-ti-image-field-id="'+item.id+'"]');
+        assert.equal(await mappedAnonymous.getAttribute('data-ti-image-field-label'),'');await mappedAnonymous.locator('img[src]').nth(1).waitFor();
+        assert.deepEqual(await mappedAnonymous.locator('.ti-image-pattern-label').allTextContents(),['','']);
+        await mappedAnonymous.locator('img').nth(0).click();await mappedAnonymous.locator('img').nth(1).click();
+        assert.equal(await mappedAnonymous.locator('input').first().isChecked(),item.selection==='check');assert.equal(await mappedAnonymous.locator('input').last().isChecked(),true);
+      }
       await mappedChoice.locator('input[type="radio"]').first().check();await mappedChoice.locator('input[type="radio"]').last().check();
       assert.equal(await mappedChoice.locator('input[type="radio"]').first().isChecked(),false);
       const mappedChecks=mapped.locator('[data-ti-image-field-id="'+checkId+'"] input[type="checkbox"]');await mappedChecks.nth(0).check();await mappedChecks.nth(1).check();
