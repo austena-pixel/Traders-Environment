@@ -2231,6 +2231,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 }
 </style>
 
+<link rel="stylesheet" href="hios-intelligence.css">
 </head>
 <body>
 
@@ -2471,105 +2472,24 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
         </div>
       </section>
 
-      <section class="hios-intelligence">
+      <section class="hios-intelligence" aria-label="Priority intelligence and intelligence development">
         <div class="hios-intelligence-main">
           <div class="hios-intelligence-copy">
-            <div class="hios-intelligence-kicker">H·IOS Intelligence</div>
-            <h2>What currently needs your attention?</h2>
-            <p id="hiosIntelligenceSummary">H·IOS is connecting goals, deadlines and specialized intelligence to determine what deserves attention now.</p>
+            <div class="hios-intelligence-kicker">Priority Intelligence</div>
+            <h2>Your attention today</h2>
+            <p id="hiosPriorityTasks" class="hios-priority-tasks">Loading today’s priorities.</p>
+            <p id="hiosIntelligenceSummary">Review your calendar for upcoming commitments.</p>
           </div>
-
-          <!-- Section A: self-running H·IOS operations animation loop. -->
-          <div class="hios-op-loop" id="hiosOperationLoop" aria-label="H·IOS operations overview">
-            <div class="hios-op-scenes">
-
-              <article class="hios-op-scene active" data-op-scene="0">
-                <div class="hios-op-copy">
-                  <div class="hios-op-kicker">Connected Intelligence</div>
-                  <h3>One ecosystem. Shared context.</h3>
-                  <p>Combines signals from Goals-IOS, Traders-IOS and Students-IOS so priorities reflect the whole system — not one isolated product.</p>
-                </div>
-                <div class="hios-op-visual">
-                  <div class="op-network">
-                    <div class="op-network-inputs"><div class="op-chip">Goals-IOS</div><div class="op-chip">Traders-IOS</div><div class="op-chip">Students-IOS</div></div>
-                    <div class="op-hub">H·IOS</div>
-                    <div class="op-network-outputs"><div class="op-chip">Focus</div><div class="op-chip">Calendar</div><div class="op-chip">Progress</div></div>
-                    <div class="op-network-lines"><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="r1"></i><i class="r2"></i></div>
-                  </div>
-                </div>
-              </article>
-
-              <article class="hios-op-scene" data-op-scene="1">
-                <div class="hios-op-copy">
-                  <div class="hios-op-kicker">Goal Intelligence</div>
-                  <h3>From direction to daily action.</h3>
-                  <p>Goals-IOS converts long-term goals into aligned milestones, weekly priorities and concrete daily execution.</p>
-                </div>
-                <div class="hios-op-visual">
-                  <div class="op-goal-flow">
-                    <div class="op-stage"><b>Yearly</b><span>Direction</span></div>
-                    <div class="op-stage"><b>Monthly</b><span>Milestones</span></div>
-                    <div class="op-stage"><b>Weekly</b><span>Priorities</span></div>
-                    <div class="op-stage"><b>Daily</b><span>Action</span></div>
-                  </div>
-                </div>
-              </article>
-
-              <article class="hios-op-scene" data-op-scene="2">
-                <div class="hios-op-copy">
-                  <div class="hios-op-kicker">Priority Intelligence</div>
-                  <h3>Know what matters now.</h3>
-                  <p>Ranks attention using urgency, importance, deadlines, progress and signals from connected intelligence systems.</p>
-                </div>
-                <div class="hios-op-visual">
-                  <div class="op-priority-wrap">
-                    <div class="op-ranks">
-                      <div class="op-rank"><b>1</b><i></i><small>Act now</small></div>
-                      <div class="op-rank"><b>2</b><i></i><small>Next</small></div>
-                      <div class="op-rank"><b>3</b><i></i><small>Maintain</small></div>
-                    </div>
-                    <div class="op-priority-engine">RANK<br>&amp;<br>ALIGN</div>
-                  </div>
-                </div>
-              </article>
-
-              <article class="hios-op-scene" data-op-scene="3">
-                <div class="hios-op-copy">
-                  <div class="hios-op-kicker">Intelligence Calendar</div>
-                  <h3>One timeline for commitments.</h3>
-                  <p>Coordinates dated goals, tests, reviews and milestones so important commitments are visible in one place.</p>
-                </div>
-                <div class="hios-op-visual">
-                  <div class="op-calendar-demo">
-                    <div class="op-calendar-inputs"><div class="op-calendar-item">Goal milestone</div><div class="op-calendar-item">Assessment</div><div class="op-calendar-item">Trading review</div></div>
-                    <div class="op-calendar-grid"><i></i><i class="hot"></i><i></i><i></i><i></i><i></i><i class="hot"></i><i></i><i></i><i></i><i></i><i class="hot"></i></div>
-                  </div>
-                </div>
-              </article>
-
-              <article class="hios-op-scene" data-op-scene="4">
-                <div class="hios-op-copy">
-                  <div class="hios-op-kicker">Adaptive Feedback</div>
-                  <h3>The system learns from outcomes.</h3>
-                  <p>Tracks execution and progress, then feeds what happened back into goals, priorities and the next recommended action.</p>
-                </div>
-                <div class="hios-op-visual">
-                  <div class="op-feedback">
-                    <div class="op-feedback-ring"></div>
-                    <div class="op-feedback-center">H·IOS<br>LOOP</div>
-                    <span class="op-feedback-label plan">PLAN</span><span class="op-feedback-label execute">EXECUTE</span><span class="op-feedback-label measure">MEASURE</span><span class="op-feedback-label adapt">ADAPT</span>
-                  </div>
-                </div>
-              </article>
-
+          <div class="hios-development">
+            <div class="hios-development-head">
+              <h3>Intelligence Development</h3>
+              <button class="hios-intel-notifications" id="hiosIntelligenceNotifications" type="button" aria-label="Intelligence notifications, no unread updates" aria-haspopup="dialog">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+                <span class="hios-intel-unread" id="hiosIntelligenceUnread" hidden></span>
+              </button>
             </div>
-            <div class="hios-op-dots" role="tablist" aria-label="H·IOS operation scenes">
-              <button class="hios-op-dot active" type="button" aria-label="Connected Intelligence" data-op-dot="0"></button>
-              <button class="hios-op-dot" type="button" aria-label="Goal Intelligence" data-op-dot="1"></button>
-              <button class="hios-op-dot" type="button" aria-label="Priority Intelligence" data-op-dot="2"></button>
-              <button class="hios-op-dot" type="button" aria-label="Intelligence Calendar" data-op-dot="3"></button>
-              <button class="hios-op-dot" type="button" aria-label="Adaptive Feedback" data-op-dot="4"></button>
-            </div>
+            <div class="hios-domain-grid" id="hiosDomainGrid"></div>
+            <div class="hios-development-note">Each domain develops independently through reliable evidence. Select a domain to inspect its development.</div>
           </div>
         </div>
       </section>
@@ -2638,6 +2558,14 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   </div>
 </section>
 
+
+<dialog class="hios-intel-drawer" id="hiosIntelligenceDialog" aria-labelledby="hiosIntelligenceTitle">
+  <div class="hios-intel-drawer-head">
+    <div><small id="hiosIntelligenceProduct"></small><h2 id="hiosIntelligenceTitle">Intelligence Development</h2></div>
+    <button class="hios-drawer-close" id="hiosIntelligenceClose" type="button" aria-label="Close intelligence details" autofocus>×</button>
+  </div>
+  <div class="hios-intel-drawer-body" id="hiosIntelligenceBody"></div>
+</dialog>
 
 <!-- =========================================================
      ADD PRODUCT MODAL
@@ -2756,6 +2684,8 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 
 <script src="core/evidence-contract.js"></script>
 <script src="hios-connection-layer.js"></script>
+<script src="core/intelligence-development.js"></script>
+<script src="hios-intelligence.js"></script>
 <script>
 /* SAME SUPABASE AUTH PROJECT USED BY Traders-IOS */
 const SUPABASE_URL = "https://tmxosoyqflmwqzjgnkez.supabase.co";
@@ -3268,6 +3198,7 @@ function renderProductManager(){
         `;
       }).join('');
   }
+  window.HIOSIntelligenceUI.refresh();
 }
 
 function openProductModal(){
@@ -3622,6 +3553,10 @@ function renderHiosIntelligence(){
   const overdue=dated.filter(item=>item.date<today);
   const next=upcoming[0]||null;
 
+  const priorities=document.getElementById('hiosPriorityTasks');
+  if(priorities)priorities.textContent=active.length
+    ? `${active.length} active task${active.length===1?'':'s'} today${high.length?` · ${high.length} high priority`:''}.`
+    : 'No unfinished daily tasks for today.';
   const summary=document.getElementById('hiosIntelligenceSummary');
   const activeMetric=document.getElementById('hiosMetricActiveGoals');
   const highMetric=document.getElementById('hiosMetricHighPriority');
@@ -3635,24 +3570,20 @@ function renderHiosIntelligence(){
   if(!summary)return;
 
   if(!goals.length&&!manualEvents.length){
-    summary.textContent='H·IOS is waiting for dated commitments. Click any calendar day to add a due date, test, assessment, milestone or other important date.';
+    summary.textContent='No dated commitments recorded. Select a calendar day to add one.';
     return;
   }
 
   const pieces=[];
 
   if(overdue.length){
-    pieces.push(`${overdue.length} dated commitment${overdue.length===1?' is':'s are'} overdue and should be reviewed.`);
+    pieces.push(`${overdue.length} overdue commitment${overdue.length===1?'':'s'} to review.`);
   }
 
   if(next){
-    pieces.push(`Your next dated commitment is “${next.item.title}” on ${next.date.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}.`);
+    pieces.push(`Next: “${next.item.title}” · ${next.date.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}.`);
   }else{
     pieces.push('No upcoming dated commitment is currently recorded.');
-  }
-
-  if(!overdue.length&&next){
-    pieces.unshift('Your current ecosystem evidence is organized around the next scheduled commitment.');
   }
 
   summary.textContent=pieces.join(' ');
@@ -4018,7 +3949,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
        NO window.location.href = "h-ios.html"
        NO redirect at all.
        We reveal the goals/default H·IOS page in this exact same file. */
-    showApp();
+    showApp(data.user);
 
   }catch(err){
     console.error(err);
@@ -4050,7 +3981,8 @@ document.getElementById('forgotLink').addEventListener('click', async (e) => {
   }
 });
 
-function showApp(){
+function showApp(user){
+  if(user?.id)window.HIOSIntelligenceUI.setSessionUser(user.id);
   authScreen.classList.add('hidden');
   appScreen.classList.remove('hidden');
   renderProductManager();
@@ -4089,6 +4021,7 @@ function setNotice(message,type){
 ========================================================= */
 
 function showLoginScreen(){
+  window.HIOSIntelligenceUI.setSessionUser(null);
   appScreen.classList.add('hidden');
   authScreen.classList.remove('hidden');
 }
@@ -4104,7 +4037,7 @@ async function restoreExistingSession(){
     }
 
     if(data?.session?.user){
-      showApp();
+      showApp(data.session.user);
       return;
     }
 
@@ -4124,7 +4057,7 @@ db.auth.onAuthStateChange((event, session) => {
      event === 'INITIAL_SESSION') &&
     session?.user
   ){
-    showApp();
+    showApp(session.user);
   }
 
   if(event === 'SIGNED_OUT'){
@@ -4134,64 +4067,6 @@ db.auth.onAuthStateChange((event, session) => {
 
 /* This is what fixes refresh + returning from Goals-IOS/Traders-IOS. */
 restoreExistingSession();
-
-
-/* =========================================================
-   H·IOS SECTION A — OPERATIONS ANIMATION LOOP
-   Rotates through distinct operation scenes rather than
-   repeating one continuous visual. The loop is intentionally
-   lightweight: HTML/CSS/JS only, no external video asset.
-========================================================= */
-(function initHiosOperationLoop(){
-  const root = document.getElementById('hiosOperationLoop');
-  if(!root) return;
-
-  const scenes = [...root.querySelectorAll('[data-op-scene]')];
-  const dots = [...root.querySelectorAll('[data-op-dot]')];
-  if(!scenes.length) return;
-
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const SCENE_MS = 4200;
-  let current = 0;
-  let timer = null;
-
-  function showScene(index, restart=true){
-    current = (index + scenes.length) % scenes.length;
-    scenes.forEach((scene,i)=>scene.classList.toggle('active',i===current));
-    dots.forEach((dot,i)=>dot.classList.toggle('active',i===current));
-
-    if(restart && !reducedMotion){
-      clearInterval(timer);
-      timer = setInterval(()=>showScene(current+1,false),SCENE_MS);
-    }
-  }
-
-  dots.forEach((dot,i)=>dot.addEventListener('click',()=>showScene(i,true)));
-
-  root.addEventListener('mouseenter',()=>{ if(timer) clearInterval(timer); });
-  root.addEventListener('mouseleave',()=>{
-    if(!reducedMotion){
-      clearInterval(timer);
-      timer = setInterval(()=>showScene(current+1,false),SCENE_MS);
-    }
-  });
-
-  document.addEventListener('visibilitychange',()=>{
-    if(document.hidden){
-      clearInterval(timer);
-    }else if(!reducedMotion){
-      clearInterval(timer);
-      timer = setInterval(()=>showScene(current+1,false),SCENE_MS);
-    }
-  });
-
-  showScene(0,false);
-  if(!reducedMotion){
-    timer = setInterval(()=>showScene(current+1,false),SCENE_MS);
-  }
-})();
-
-
 
 
 </script>

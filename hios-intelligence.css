@@ -1,0 +1,88 @@
+/* Incremental intelligence header. The existing calendar/sidebar layout stays in place. */
+.hios-top-row > .hios-intelligence{display:block!important;min-width:0;min-height:0!important}
+.hios-top-row > .hios-intelligence .hios-intelligence-main{
+  display:grid!important;grid-template-columns:minmax(210px,.9fr) minmax(0,2.4fr);
+  align-items:center;gap:22px;min-height:148px;padding:12px 18px!important;
+}
+.hios-intelligence-copy h2{font-size:18px;line-height:1.25}
+.hios-intelligence-copy p{font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+.hios-intelligence-copy .hios-priority-tasks{color:#d8e6f7;margin-top:9px}
+.hios-development{min-width:0;border-left:1px solid #293449;padding-left:20px;position:relative;z-index:3}
+.hios-development-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}
+.hios-development-head h3{margin:0;color:#e6edf7;font-size:12px;font-weight:750}
+.hios-intel-notifications{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:28px;min-width:28px;padding:5px 7px;color:#a8b8cf;background:#0c1420;border:1px solid #2c384a;border-radius:9px;cursor:pointer}
+.hios-intel-notifications svg{width:15px;height:15px}
+.hios-intel-notifications [hidden]{display:none}
+.hios-intel-unread{min-width:15px;border-radius:6px;background:#a6c7fa;color:#091323;padding:1px 4px;font-size:10px;font-weight:750}
+.hios-domain-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.hios-domain{display:flex;flex-direction:column;align-items:stretch;gap:4px;min-width:0;text-align:left;padding:8px 10px;border:1px solid #2b3545;border-radius:11px;background:rgba(8,15,25,.48);color:#dce6f5;cursor:pointer;transition:border-color .16s,background .16s}
+.hios-domain:hover{border-color:rgb(var(--intel-accent)/.5);background:rgb(var(--intel-accent)/.06)}
+.hios-domain-product{display:flex;align-items:center;justify-content:space-between;font-size:9px;color:rgb(var(--intel-accent));font-weight:800;letter-spacing:.04em}
+.hios-domain-product span:last-child{font-size:14px;color:#7a8da8;font-weight:400}
+.hios-domain-name{font-size:11px;line-height:1.4;min-height:31px;font-weight:650}
+.hios-domain-level{font-size:10px;line-height:1.4;color:#c4d0e1}
+.hios-level-segments{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;margin:2px 0}
+.hios-level-segments i{height:4px;border-radius:2px;background:#253246;border:1px solid #344055}
+.hios-level-segments i.established{background:rgb(var(--intel-accent));border-color:rgb(var(--intel-accent))}
+.hios-domain-status{color:#98a7bd;font-size:9px;line-height:1.4}
+.hios-development-note{font-size:9px;color:#96a5ba;margin-top:6px;line-height:1.4}
+.hios-domain:focus-visible,.hios-intel-notifications:focus-visible,.hios-drawer-close:focus-visible,.hios-intel-drawer summary:focus-visible{outline:2px solid #95b9f2;outline-offset:3px}
+.hios-intel-drawer{position:fixed;inset:0 0 0 auto;margin:0;width:min(620px,100%);max-width:100%;height:100dvh;max-height:100dvh;padding:0;border:0;border-left:1px solid #344057;color:#e2e9f3;background:#0e141e;box-shadow:-20px 0 80px #0006;overflow:hidden}
+.hios-intel-drawer[open]{display:flex;flex-direction:column;animation:hiosDrawerIn .18s ease-out}
+.hios-intel-drawer::backdrop{background:rgba(3,6,11,.68);backdrop-filter:blur(3px)}
+.hios-intel-drawer-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:23px 24px 19px;border-bottom:1px solid #283347;flex:0 0 auto}
+.hios-intel-drawer-head small{font-size:10px;color:#a4bde1;font-weight:750;letter-spacing:.05em}
+.hios-intel-drawer-head h2{font-size:21px;line-height:1.3;margin:7px 0 0;overflow-wrap:anywhere}
+.hios-drawer-close{flex:0 0 auto;width:34px;height:34px;border:1px solid #344057;border-radius:10px;background:#151f2d;color:#d5deed;font-size:21px;cursor:pointer}
+.hios-intel-drawer-body{padding:20px 24px 28px;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#344359 transparent;min-height:0}
+.hios-intel-drawer-body section+section{margin-top:23px;padding-top:21px;border-top:1px solid #253044}
+.hios-intel-drawer-body h3{margin:0 0 10px;font-size:13px;color:#e2eaf7}
+.hios-intel-drawer-body p{font-size:12px;line-height:1.65;color:#aebbd0;margin:8px 0;overflow-wrap:anywhere}
+.hios-intel-drawer-body .hios-level-segments{margin:13px 0 10px}
+.hios-intel-drawer-body .hios-level-segments i{height:6px}
+.hios-intel-label{display:inline-block;font-size:10px;line-height:1.5;padding:4px 8px;border-radius:7px;border:1px solid #36435a;color:#c0cce0;background:#182233}
+.hios-intel-label.available{color:#a9e3ca;background:#143127;border-color:#315b4b}
+.hios-intel-label.preliminary{color:#ead4a4;background:#30281c;border-color:#594d35}
+.hios-intel-label.suspended{color:#f3b6bf;background:#301e27;border-color:#643746}
+.hios-intel-drawer details{margin-top:14px}
+.hios-intel-drawer summary{font-size:12px;color:#c8d9f3;cursor:pointer;padding:7px 0}
+.hios-maturity-stages{list-style:none;padding:0;margin:11px 0 0;display:grid;gap:10px}
+.hios-maturity-stages li{display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;padding:8px;border-radius:9px}
+.hios-maturity-stages li.current{background:#19283d;outline:1px solid #3b5475}
+.hios-maturity-stages .stage-index{display:grid;place-items:center;align-self:start;width:26px;height:26px;border:1px solid #344258;border-radius:8px;color:#9db3d2;font-size:11px}
+.hios-maturity-stages b{font-size:12px;font-weight:650}
+.hios-maturity-stages p{font-size:11px;margin:4px 0 0}
+.hios-evidence-facts{margin:12px 0;display:grid;grid-template-columns:1fr auto;gap:10px 20px;font-size:12px}
+.hios-evidence-facts dt{color:#aebbd0}.hios-evidence-facts dd{margin:0;text-align:right;color:#d2dcec}
+.hios-source-records{list-style:none;padding:0;margin:12px 0}
+.hios-source-records li{padding:9px 0;border-top:1px solid #263145;font-size:11px;color:#bac8dd;overflow-wrap:anywhere}
+.hios-source-records small{display:block;margin-top:4px;color:#99a9bf;font-size:10px}
+.hios-capability-row{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;padding:12px 0;border-bottom:1px solid #243044;font-size:12px}
+.hios-capability-row b{font-weight:600;line-height:1.5;min-width:0}.hios-capability-row .hios-intel-label{max-width:46%;flex:0 0 auto;text-align:center}
+.hios-intel-empty{padding:20px 16px;border:1px solid #2e3b50;border-radius:12px;background:#131d2b}
+.hios-intel-empty h3{margin:0 0 8px;font-size:14px}
+.hios-intel-events{list-style:none;padding:0;margin:0}
+.hios-intel-events li{padding:16px 0;border-bottom:1px solid #29354a}
+.hios-intel-events b{font-size:13px}.hios-intel-events time{font-size:10px;color:#9aadca}
+@keyframes hiosDrawerIn{from{transform:translateX(18px);opacity:.75}to{transform:none;opacity:1}}
+@media(max-width:1220px) and (min-width:951px){
+  .hios-top-row > .hios-intelligence .hios-intelligence-main{grid-template-columns:minmax(190px,.9fr) minmax(0,2.1fr);gap:16px}
+  .hios-domain-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .hios-domain{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:5px 8px;padding:9px}
+  .hios-domain-product{grid-column:1/-1}.hios-domain-name{grid-row:2/4;min-height:0}
+  .hios-domain-status{grid-column:1/-1}
+}
+@media(max-width:950px){
+  .hios-top-row > .hios-intelligence .hios-intelligence-main{grid-template-columns:1fr!important;gap:17px;min-height:0;padding:16px!important}
+  .hios-development{border-left:0;border-top:1px solid #293449;padding:15px 0 0}
+  .hios-domain-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  #appScreen .main,#appScreen .app,.hios-top-row{min-width:0}
+}
+@media(max-width:640px){
+  .hios-domain-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .hios-domain-name{min-height:30px}.hios-domain{padding:10px}
+  .hios-intel-drawer-head{padding:20px 18px 16px}.hios-intel-drawer-body{padding:18px}
+  .hios-intel-drawer-head h2{font-size:19px}
+  .hios-evidence-facts{gap:12px;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+}
+@media(prefers-reduced-motion:reduce){.hios-domain{transition:none}.hios-intel-drawer[open]{animation:none}}
