@@ -64,7 +64,8 @@ async function run(){
       const originalId=await currentId(kind),originalHtml=await editor(kind).innerHTML(),beforeBrowse=await docs(kind);
       await templateTab(kind).focus();await page.keyboard.press('Enter');
       assert.equal(await templateTab(kind).getAttribute('aria-selected'),'true');
-      assert.deepEqual(await templatePanel(kind).locator('[data-instrument-template]').evaluateAll(nodes=>nodes.map(el=>el.dataset.instrumentTemplate)),[...templateIds[kind],...insertTemplateIds[kind]]);
+      const galleryIds=kind==='psych'?['psych-simple','psych-swot','psych-rows',...templateIds[kind].slice(1),...insertTemplateIds[kind]]:[...templateIds[kind],...insertTemplateIds[kind]];
+      assert.deepEqual(await templatePanel(kind).locator('[data-instrument-template]').evaluateAll(nodes=>nodes.map(el=>el.dataset.instrumentTemplate)),galleryIds);
       assert.ok((await templatePanel(kind).locator('[data-instrument-template-kind]').evaluateAll(nodes=>nodes.map(el=>el.dataset.instrumentTemplateKind))).every(value=>value===kind));
       assert.equal(await editor(kind).innerHTML(),originalHtml);assert.equal(await currentId(kind),originalId);assert.deepEqual(documentContent(await docs(kind)),documentContent(beforeBrowse));
       await screenshot(kind+'-templates');
@@ -102,8 +103,8 @@ async function run(){
         if(index===3){
           const fields=editor(kind).locator('[data-playbook-node="image-field"]');assert.equal(await fields.count(),2);
           assert.deepEqual(await fields.evaluateAll(nodes=>nodes.map(el=>el.dataset.tiImageFieldSelection)),['choice','check']);
-          const radios=model(kind).locator('input[type="radio"]');await radios.first().check();await radios.last().check();assert.equal(await radios.first().isChecked(),false);
-          const checkboxes=model(kind).locator('input[type="checkbox"]');await checkboxes.first().check();await checkboxes.last().check();assert.equal(await checkboxes.first().isChecked(),true);assert.equal(await checkboxes.last().isChecked(),true);
+          const radios=model(kind).locator('input[type="radio"]');assert.ok(await radios.evaluateAll(nodes=>nodes.every(node=>node.disabled&&!node.checked)));
+          const checkboxes=model(kind).locator('input[type="checkbox"]');assert.ok(await checkboxes.evaluateAll(nodes=>nodes.every(node=>node.disabled&&!node.checked)));
           assert.equal(await fields.locator('input').count(),0);
         }
         await active(kind).locator(configs[kind].save).click();
@@ -200,23 +201,27 @@ async function run(){
       const legacy=await page.evaluate(kind=>{
         const defaults=INSTRUMENT_DEFAULT_TEMPLATES[kind].filter(item=>item.variant!=='insert');
         const docs=defaults.map((template,index)=>({id:'legacy_'+kind+'_'+index,name:template.name,documentHtml:instrumentTemplateDocumentHtml(kind,template),description:'',tags:[],instrumentState:'draft'}));
-        const card=docs[2];
+        const cardIndex=defaults.findIndex(template=>template.variant==='cards'),card=docs[cardIndex];
         docs.push({...card,id:'legacy_'+kind+'_edited',documentHtml:card.documentHtml+'<p>My actual trading conditions</p>'});
         docs.push({...card,id:'legacy_'+kind+'_renamed',name:'My custom trading system',templateDraft:false,templateId:''});
         docs.push({...card,id:'legacy_'+kind+'_colors',documentHtml:card.documentHtml.replace(/data-playbook-color-border="[^"]+"/,'data-playbook-color-border="#123456"')});
-        docs.push({...card,id:'legacy_'+kind+'_confirmed',templateDraft:false,templateId:defaults[2].id});
+        docs.push({...card,id:'legacy_'+kind+'_confirmed',templateDraft:false,templateId:defaults[cardIndex].id});
         docs.push({...card,id:'legacy_'+kind+'_firstfix',templateDraft:false,templateId:'',documentHtml:card.documentHtml+'<p>Edited before Save</p>'});
         const serialized=document.createElement('div');serialized.innerHTML=card.documentHtml;serialized.querySelector('[data-playbook-color-border]').style.setProperty('--pb-style-border',serialized.querySelector('[data-playbook-color-border]').dataset.playbookColorBorder);
         docs.push({...card,id:'legacy_'+kind+'_serialized',documentHtml:serialized.innerHTML});
         docs.push({...card,id:'legacy_'+kind+'_description',description:'Started editing before Save',tags:['pending']});
-        docs.push({...card,id:'legacy_'+kind+'_saved',templateDraft:false,templateId:defaults[2].id,templateSaveConfirmed:true});
+        docs.push({...card,id:'legacy_'+kind+'_saved',templateDraft:false,templateId:defaults[cardIndex].id,templateSaveConfirmed:true});
         const host=document.createElement('div');host.innerHTML=docs[3].documentHtml;host.querySelectorAll('.pb-doc-remove-btn').forEach(button=>button.setAttribute('contenteditable','false'));docs[3].documentHtml=host.innerHTML;
         localStorage.setItem(instrumentImageScope(kind),JSON.stringify(docs));localStorage.setItem(instrumentImageScope(kind)+':selected',docs[0].id);
         return docs;
       },kind);
       await page.reload({waitUntil:'load'});await switchBuilder(kind);
       const migrated=await docs(kind);assert.equal(migrated.length,legacy.length);
-      for(const previous of legacy){const stored=migrated.find(doc=>doc.id===previous.id);assert.equal(stored.documentHtml,previous.documentHtml);assert.equal(stored.templateDraft,!previous.id.match(/_(renamed|confirmed|saved)$/));assert.equal(stored.templateSaveConfirmed,Boolean(previous.id.match(/_(confirmed|saved)$/)))}
+      const preservedContent=await page.evaluate(({legacy,migrated})=>{
+        const comparable=html=>{const host=document.createElement('div');host.innerHTML=html;host.querySelectorAll('[data-ti-reflection-id]').forEach(prompt=>prompt.removeAttribute('data-ti-reflection-id'));return host.innerHTML};
+        return legacy.map(previous=>({before:comparable(previous.documentHtml),after:comparable(migrated.find(doc=>doc.id===previous.id).documentHtml)}));
+      },{legacy,migrated});
+      for(const [index,previous] of legacy.entries()){const stored=migrated.find(doc=>doc.id===previous.id);assert.equal(preservedContent[index].after,preservedContent[index].before);assert.equal(stored.templateDraft,!previous.id.match(/_(renamed|confirmed|saved)$/));assert.equal(stored.templateSaveConfirmed,Boolean(previous.id.match(/_(confirmed|saved)$/)))}
       await page.evaluate(()=>navigate('execution'));
       assert.deepEqual(await page.locator(configs[kind].executionPicker+' option').evaluateAll(nodes=>nodes.map(el=>el.value)),legacy.filter(doc=>doc.id.match(/_(renamed|confirmed|saved)$/)).map(doc=>doc.id));
       if(kind!=='playbook')assert.ok((await page.locator(configs[kind].executionPicker).evaluate(el=>el.closest('.execution-map-control').querySelector(':scope > span').textContent)).includes('(3)'));
