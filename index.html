@@ -2242,7 +2242,6 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   var STORAGE_KEY = 'hios_auto_zoom_enabled_v1';
   var enabled = false;
   var activePanel = '';
-  var focusClasses = ['hios-focus-b','hios-focus-c'];
   var activeDay = null;
 
   function getLayout(){ return document.querySelector('.home-layout'); }
@@ -2250,7 +2249,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   function clearFocus(){
     var layout=getLayout();
     if(!layout)return;
-    focusClasses.forEach(function(name){layout.classList.remove(name)});
+    document.querySelectorAll('[data-home-panel]').forEach(function(panel){panel.classList.remove('hios-panel-zoomed')});
     layout.setAttribute('data-focus-panel','');
     activePanel='';
   }
@@ -2258,12 +2257,14 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   function applyFocus(panel){
     var layout=getLayout();
     if(!layout)return;
-    if(!enabled||window.innerWidth<900||!['b','c'].includes(panel)){
+    if(!enabled||window.innerWidth<951||!['b','c'].includes(panel)){
       clearFocus();
       return;
     }
-    focusClasses.forEach(function(name){layout.classList.remove(name)});
-    layout.classList.add('hios-focus-'+panel);
+    clearFocus();
+    var target=document.querySelector('[data-home-panel="'+panel+'"]');
+    if(!target)return;
+    target.classList.add('hios-panel-zoomed');
     layout.setAttribute('data-focus-panel',panel);
     activePanel=panel;
   }
@@ -2318,7 +2319,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
       event.preventDefault();
       event.stopPropagation();
       setEnabled(!enabled,true);
-      /* Do not auto-focus B when enabling. A panel zooms only while the pointer
+      /* A panel zooms only while the pointer
          is actually inside that panel. */
       clearFocus();
     });
@@ -2361,7 +2362,8 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 
     window.addEventListener('blur',function(){clearFocus();clearCalendarDay()});
     window.addEventListener('resize',function(){
-      if(window.innerWidth<900){clearFocus();clearCalendarDay()}
+      if(window.innerWidth<951)clearFocus();
+      if(window.innerWidth<900)clearCalendarDay();
     });
 
     window.hiosAutoZoom={
@@ -2445,51 +2447,27 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 <section id="appScreen" class="hidden">
   <div class="app">
     <div class="hios-top-row">
-      <!-- Section B: ecosystem controls and key counts. -->
-      <section class="top-k-panel">
-        <div class="top-k-actions">
-          <button class="chip capabilities-btn" onclick="showMessage('How H·IOS Works','This will later open a dedicated page explaining H·IOS capabilities, intelligence flow, cross-intelligence and how connected ·IOS products work together.')">How H·IOS Works</button>
-          <button class="chip top-k-signout" onclick="logout()">Sign out</button>
+      <!-- Section A: daily progress, moved from the right-hand sidebar. -->
+      <section class="top-k-panel goal-status-card" data-home-panel="b" aria-label="Daily Progress Status">
+        <div class="goal-status-head">
+          <div class="goal-status-copy">
+            <h3>Daily Progress Status</h3>
+            <div class="sub">Today’s completed tasks across active Goals-IOS categories.</div>
+          </div>
+          <button class="auto-zoom-toggle" id="autoZoomToggle" type="button" aria-pressed="false">
+            Auto Zoom <span id="autoZoomState">Off</span>
+          </button>
         </div>
-
-        <div class="hios-intelligence-metrics top-k-metrics">
-          <div class="hios-intel-metric">
-            <span>Active tasks</span>
-            <b id="hiosMetricActiveGoals">0</b>
-          </div>
-          <div class="hios-intel-metric">
-            <span>High priority</span>
-            <b id="hiosMetricHighPriority">0</b>
-          </div>
-          <div class="hios-intel-metric">
-            <span>Calendar items</span>
-            <b id="hiosMetricCalendarItems">0</b>
-          </div>
-          <div class="hios-intel-metric">
-            <span>Connected ·IOS</span>
-            <b id="hiosMetricConnected">0</b>
-          </div>
-        </div>
+        <div id="hiosGoalProgressList"></div>
       </section>
 
-      <section class="hios-intelligence" aria-label="Priority intelligence and intelligence development">
+      <section class="hios-intelligence" aria-label="Priority Intelligence">
         <div class="hios-intelligence-main">
           <div class="hios-intelligence-copy">
             <div class="hios-intelligence-kicker">Priority Intelligence</div>
             <h2>Your attention today</h2>
             <p id="hiosPriorityTasks" class="hios-priority-tasks">Loading today’s priorities.</p>
             <p id="hiosIntelligenceSummary">Review your calendar for upcoming commitments.</p>
-          </div>
-          <div class="hios-development">
-            <div class="hios-development-head">
-              <h3>Intelligence Development</h3>
-              <button class="hios-intel-notifications" id="hiosIntelligenceNotifications" type="button" aria-label="Intelligence notifications, no unread updates" aria-haspopup="dialog">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
-                <span class="hios-intel-unread" id="hiosIntelligenceUnread" hidden></span>
-              </button>
-            </div>
-            <div class="hios-domain-grid" id="hiosDomainGrid"></div>
-            <div class="hios-development-note">Each domain develops independently through reliable evidence. Select a domain to inspect its development.</div>
           </div>
         </div>
       </section>
@@ -2508,14 +2486,14 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
         </div>
       </nav>
 
-      <div class="side-foot">H·IOS family interface</div>
+      <div class="side-foot"><span>H·IOS family interface</span><button class="chip sidebar-signout" id="hiosSignOut" type="button" onclick="logout()">Sign out</button></div>
     </aside>
 
     <main class="main">
       <!-- OVERALL H·IOS INTELLIGENCE -->
       
 
-      <!-- CALENDAR + PRIORITY SIDEBAR -->
+      <!-- CALENDAR + GROUPED INTELLIGENCE DEVELOPMENT -->
       <section class="home-layout" data-focus-panel="">
         <div class="calendar-card">
           <div class="calendar-head">
@@ -2534,24 +2512,19 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
         </div>
 
         <aside class="home-sidebar">
-          <div class="card goal-status-card" data-home-panel="b">
-            <div class="goal-status-head">
-              <div class="goal-status-copy">
-                <h3>Daily Progress Status</h3>
-                <div class="sub">Today’s completed tasks across active Goals-IOS categories.</div>
-              </div>
-              <button class="auto-zoom-toggle" id="autoZoomToggle" type="button" aria-pressed="false">
-                Auto Zoom <span id="autoZoomState">Off</span>
+          <!-- Combined former B/D area: one vertical product list. -->
+          <section class="card hios-development" data-home-panel="c" aria-label="Intelligence Development">
+            <div class="hios-development-head">
+              <h3>Intelligence Development</h3>
+              <button class="hios-intel-notifications" id="hiosIntelligenceNotifications" type="button" aria-label="Intelligence notifications, no unread updates" aria-haspopup="dialog">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+                <span class="hios-intel-unread" id="hiosIntelligenceUnread" hidden></span>
               </button>
             </div>
-            <div id="hiosGoalProgressList"></div>
-          </div>
-
-          <div class="card focus-card" data-home-panel="c">
-            <h3>Today's Focus</h3>
-            <div class="sub">Today’s active Goals-IOS tasks. Completed tasks disappear automatically.</div>
-            <div class="focus-list focus-scroll" id="hiosFocusList"></div>
-          </div>
+            <p class="hios-development-intro">Independent understanding across your products.</p>
+            <div class="hios-domain-grid" id="hiosDomainGrid"></div>
+            <div class="hios-development-note">Levels require reliable evidence and validation. Select an intelligence to inspect its development.</div>
+          </section>
         </aside>
       </section>
     </main>

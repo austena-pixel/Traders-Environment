@@ -46,7 +46,13 @@ async function run(){
     assert.equal(await page.locator('.hios-domain .hios-level-segments i').count(),24);
     assert.equal(await page.locator('.hios-domain i.established').count(),0);
     assert.match(await page.locator('#hiosPriorityTasks').innerText(),/1 active task.*1 high priority/);
-    assert.match(await page.locator('#hiosFocusList').innerText(),/Review trading process/);
+    assert.equal(await page.locator('.top-k-panel #hiosGoalProgressList').count(),1);
+    assert.equal(await page.locator('.home-sidebar #hiosDomainGrid').count(),1);
+    assert.equal(await page.locator('.hios-top-row .hios-development, #hiosFocusList, .top-k-actions, .top-k-metrics').count(),0);
+    assert.equal(await page.locator('.hios-product-intelligence').count(),3);
+    assert.equal(await page.locator('[data-intelligence-product="tios"] .hios-domain').count(),2);
+    assert.equal(await page.locator('[data-intelligence-capabilities]').count(),3);
+    assert.equal(await page.locator('#hiosSignOut').isVisible(),true);
     assert.match(await page.locator('#hiosGoalProgressList').innerText(),/50%/);
     assert.equal(await page.locator('#hiosIntelligenceUnread').isVisible(),false);
     passed('real task priorities coexist with independent pending maturity and an empty unread indicator');
@@ -73,6 +79,21 @@ async function run(){
     }
     passed('all domain drawers, six stages, evidence ownership, keyboard containment and Escape focus restoration');
 
+    for(const [id,name,count] of [['tios','T-IOS',6],['gios','G-IOS',3],['hios','H-IOS',3]]){
+      await page.locator(`[data-intelligence-capabilities="${id}"]`).click();
+      assert.equal(await page.locator('#hiosIntelligenceTitle').innerText(),`${name} capabilities`);
+      assert.equal(await page.locator('.hios-capability-row').count(),count);
+      assert.equal(await page.locator('.hios-capability-row .available').count(),id==='tios'?2:1);
+      assert.equal(await page.locator('.hios-capability-row').filter({hasText:'Awaiting assessment'}).count(),id==='tios'?4:2);
+      if(id==='tios'){
+        assert.match(await page.locator('#hiosIntelligenceBody').innerText(),/Trading Edge Intelligence/);
+        assert.match(await page.locator('#hiosIntelligenceBody').innerText(),/Execution Quality Intelligence/);
+      }
+      await page.keyboard.press('Escape');
+      assert.equal(await page.evaluate(()=>document.activeElement.dataset.intelligenceCapabilities),id);
+    }
+    passed('product capability buttons list available tools and pending capabilities with both T-IOS intelligences');
+
     const month=await page.locator('#hiosCalendarMonth').innerText();
     await page.locator('#hiosNextMonth').click();assert.notEqual(await page.locator('#hiosCalendarMonth').innerText(),month);
     await page.locator('#hiosPrevMonth').click();assert.equal(await page.locator('#hiosCalendarMonth').innerText(),month);
@@ -89,9 +110,12 @@ async function run(){
     await page.locator('#autoZoomToggle').click();
     assert.equal(await page.locator('#autoZoomToggle').getAttribute('aria-pressed'),'true');
     await page.locator('[data-home-panel="b"]').hover();
-    assert.match(await page.locator('.home-layout').getAttribute('class'),/hios-focus-b/);
+    assert.equal(await page.locator('.top-k-panel').evaluate(el=>el.classList.contains('hios-panel-zoomed')),true);
+    await page.waitForFunction(()=>new DOMMatrix(getComputedStyle(document.querySelector('.top-k-panel')).transform).a>1.01);
     await page.locator('[data-home-panel="c"]').hover();
-    assert.match(await page.locator('.home-layout').getAttribute('class'),/hios-focus-c/);
+    assert.equal(await page.locator('.hios-development').evaluate(el=>el.classList.contains('hios-panel-zoomed')),true);
+    assert.equal(await page.locator('.top-k-panel').evaluate(el=>el.classList.contains('hios-panel-zoomed')),false);
+    await page.waitForFunction(()=>new DOMMatrix(getComputedStyle(document.querySelector('.hios-development')).transform).a>1.01);
     await page.locator('.calendar-day.today').hover();
     assert.equal(await page.locator('.calendar-day.today').evaluate(el=>el.classList.contains('hios-day-hover')),true);
     await page.locator('#autoZoomToggle').click();
@@ -109,18 +133,28 @@ async function run(){
     await page.locator('[data-stage-complete="qa-daily"]').click();
     await page.locator('#backToHios').click();
     await page.waitForURL('**/index.html?view=home');
-    assert.doesNotMatch(await page.locator('#hiosFocusList').innerText(),/Review trading process/);
     assert.match(await page.locator('#hiosGoalProgressList').innerText(),/100%/);
     assert.match(await page.locator('#hiosPriorityTasks').innerText(),/No unfinished daily tasks/);
-    passed('sidebar navigation to G-IOS, actual Done action and refreshed H-IOS focus/progress');
+    passed('sidebar navigation to G-IOS, actual Done action and refreshed H-IOS priorities/progress in section A');
 
     const png=async (name,fullPage=true)=>{if(output){fs.mkdirSync(output,{recursive:true});await page.screenshot({path:path.join(output,name),fullPage})}};
     for(const width of [1920,1440,1280,1024,768,390,320]){
       await page.setViewportSize({width,height:900});
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,`${width}px page overflow`);
       assert.equal(await page.locator('.hios-domain').count(),4);
-      const clipped=await page.locator('.hios-domain, .hios-development, .hios-intelligence-copy').evaluateAll(elements=>elements.filter(el=>el.scrollWidth>el.clientWidth+1).map(el=>el.className));
+      const clipped=await page.locator('.hios-domain, .hios-development, .hios-product-intelligence, .hios-product-intelligence-head, .hios-intelligence-copy, .top-k-panel').evaluateAll(elements=>elements.filter(el=>el.scrollWidth>el.clientWidth+1).map(el=>el.className));
       assert.deepEqual(clipped,[],`${width}px intelligence clipping`);
+      if(width>=951){
+        const layout=await page.evaluate(()=>{
+          const calendar=document.querySelector('.calendar-card').getBoundingClientRect();
+          const intelligence=document.querySelector('.hios-development').getBoundingClientRect();
+          const progress=document.querySelector('.top-k-panel').getBoundingClientRect();
+          return {sidebarWidth:intelligence.width,calendarRight:calendar.right,intelligenceLeft:intelligence.left,progressBottom:progress.bottom,calendarTop:calendar.top};
+        });
+        assert.equal(Math.round(layout.sidebarWidth),350,`${width}px calendar retains its sidebar allocation`);
+        assert.ok(layout.calendarRight<layout.intelligenceLeft,`${width}px intelligence beside calendar`);
+        assert.ok(layout.progressBottom<=layout.calendarTop,`${width}px progress above calendar`);
+      }
       const fill=await page.evaluate(()=>{
         const section=document.querySelector('.hios-intelligence').getBoundingClientRect();
         const main=document.querySelector('.hios-intelligence-main').getBoundingClientRect();

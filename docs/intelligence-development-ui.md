@@ -6,8 +6,18 @@ older standalone `h-ios.html` route and the internal T-IOS/G-IOS pages are uncha
 ## Implemented
 
 - Concise Priority Intelligence using the existing daily-task and dated-commitment
-  calculations. Calendar, focus, progress, product navigation and Auto Zoom retain
-  their existing logic and storage keys.
+  calculations. Calendar, daily progress and product navigation retain their
+  existing calculations and storage keys.
+- Daily Progress Status now occupies section A. Its old controls/counts have
+  been removed, with Sign out retained in the product sidebar. Auto Zoom follows
+  the moved progress panel and the intelligence panel without changing calendar
+  width. Category progress remains scrollable when many categories are active.
+- The combined former B/D sidebar contains a vertical Intelligence Development
+  list grouped by product. T-IOS holds Trading Edge and Execution Quality rows;
+  G-IOS holds Goals Intelligence; H-IOS holds Cross-Intelligence. Each product has
+  a **View available capabilities** button listing existing tools and proposed
+  advanced capabilities for its domains. The former Today's Focus panel is
+  replaced; daily-task totals remain in Priority Intelligence.
 - Four independently assessed domains, six segments (Levels 0–5), a native modal
   details drawer, evidence overview, capability presentation and transparency.
 - Explicit **Not yet assessed** states. Unknown assessment is distinct from an
@@ -110,7 +120,8 @@ HIOS_TEST_BROWSER=/path/to/chromium node tests/intelligence-development.browser.
 Browser tests require Playwright (as do the existing browser tests), simulate
 authentication, seed synthetic data only in an isolated local origin and block
 external writes. They exercise responsive rendering, modal keyboard behavior,
-source ownership, pending/expired states, genuine-event counting, cross-session
+product groups and capability lists, source ownership, pending/expired states,
+genuine-event counting, cross-session
 callbacks, calendar interactions, product navigation, G-IOS task completion and
 Auto Zoom. They do not establish live Supabase authentication or engine validity.
 

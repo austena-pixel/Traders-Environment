@@ -1,32 +1,52 @@
-/* Incremental intelligence header. The existing calendar/sidebar layout stays in place. */
+/* Daily progress in section A; intelligence grouped by product beside the calendar. */
 .hios-top-row > .hios-intelligence{display:block!important;min-width:0;min-height:0!important}
 .hios-top-row > .hios-intelligence .hios-intelligence-main{
-  display:grid!important;grid-template-columns:minmax(210px,.9fr) minmax(0,2.4fr);
-  align-items:center;gap:22px;min-height:148px;padding:12px 18px!important;
+  display:grid!important;grid-template-columns:minmax(0,1fr);
+  align-items:center;min-height:160px;padding:16px 24px!important;
 }
-.hios-intelligence-copy h2{font-size:18px;line-height:1.25}
+.hios-intelligence-copy h2{font-size:20px;line-height:1.25}
 .hios-intelligence-copy p{font-size:11px;line-height:1.5;overflow-wrap:anywhere}
 .hios-intelligence-copy .hios-priority-tasks{color:#d8e6f7;margin-top:9px}
-.hios-development{min-width:0;border-left:1px solid #293449;padding-left:20px;position:relative;z-index:3}
-.hios-development-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}
-.hios-development-head h3{margin:0;color:#e6edf7;font-size:12px;font-weight:750}
+.top-k-panel.goal-status-card{display:block!important;min-width:0;min-height:0!important;padding:12px 14px 15px!important;overflow:hidden!important}
+.top-k-panel .goal-status-head{display:block}
+.top-k-panel .goal-status-copy h3{margin:0;color:#e6edf7;font-size:12px;line-height:1.4}
+.top-k-panel .goal-status-copy .sub{font-size:10px;line-height:1.5;color:#96a5ba;margin-top:5px}
+.top-k-panel .auto-zoom-toggle{margin-top:8px;height:26px;min-width:94px;font-size:9px;padding:0 9px}
+.top-k-panel #hiosGoalProgressList{max-height:128px!important;overflow-y:auto!important;overflow-x:hidden!important;padding-right:4px;scrollbar-width:thin;scrollbar-color:#344359 transparent}
+.top-k-panel .goal-head{font-size:10px;gap:8px}
+.top-k-panel .goal-head > *{min-width:0;overflow-wrap:anywhere}
+.top-k-panel .bar{height:5px}
+.top-k-panel .alert{padding:8px;margin:9px 0 0;font-size:10px}
+.top-k-panel .alert span{font-size:10px;line-height:1.5}
+#appScreen .sidebar .side-foot{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;font-size:10px}
+.sidebar-signout{font-size:10px;padding:7px 10px;border-radius:8px}
+.home-sidebar{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto!important}
+.hios-development{min-width:0;position:relative;z-index:3}
+.hios-development-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px}
+.hios-development-head h3{margin:0;color:#e6edf7;font-size:13px;font-weight:750}
+.hios-development-intro{margin:0 0 13px;color:#98a7bd;font-size:10px;line-height:1.5}
 .hios-intel-notifications{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:28px;min-width:28px;padding:5px 7px;color:#a8b8cf;background:#0c1420;border:1px solid #2c384a;border-radius:9px;cursor:pointer}
 .hios-intel-notifications svg{width:15px;height:15px}
 .hios-intel-notifications [hidden]{display:none}
 .hios-intel-unread{min-width:15px;border-radius:6px;background:#a6c7fa;color:#091323;padding:1px 4px;font-size:10px;font-weight:750}
-.hios-domain-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-.hios-domain{display:flex;flex-direction:column;align-items:stretch;gap:4px;min-width:0;text-align:left;padding:8px 10px;border:1px solid #2b3545;border-radius:11px;background:rgba(8,15,25,.48);color:#dce6f5;cursor:pointer;transition:border-color .16s,background .16s}
+.hios-domain-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.hios-product-intelligence{min-width:0;padding:11px;border:1px solid #2b3545;border-radius:12px;background:rgba(8,15,25,.48)}
+.hios-product-intelligence-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.hios-product-intelligence-head h4{font-size:12px;line-height:1.4;color:rgb(var(--intel-accent));letter-spacing:.03em;margin:0}
+.hios-product-capabilities-button{border:1px solid rgb(var(--intel-accent)/.28);border-radius:7px;background:rgb(var(--intel-accent)/.06);color:#c8d9f1;font-size:9px;line-height:1.5;min-height:28px;padding:5px 8px;cursor:pointer}
+.hios-product-capabilities-button:hover{border-color:rgb(var(--intel-accent)/.6);background:rgb(var(--intel-accent)/.1)}
+.hios-product-intelligence-domains{display:grid;gap:7px}
+.hios-domain{display:flex;flex-direction:column;align-items:stretch;gap:5px;min-width:0;width:100%;text-align:left;padding:9px;border:1px solid #253246;border-radius:8px;background:#0e1724;color:#dce6f5;cursor:pointer;transition:border-color .16s,background .16s}
 .hios-domain:hover{border-color:rgb(var(--intel-accent)/.5);background:rgb(var(--intel-accent)/.06)}
-.hios-domain-product{display:flex;align-items:center;justify-content:space-between;font-size:9px;color:rgb(var(--intel-accent));font-weight:800;letter-spacing:.04em}
-.hios-domain-product span:last-child{font-size:14px;color:#7a8da8;font-weight:400}
-.hios-domain-name{font-size:11px;line-height:1.4;min-height:31px;font-weight:650}
+.hios-domain-name{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;font-size:11px;line-height:1.4;font-weight:650}
+.hios-domain-name > span{color:#7a8da8;font-size:13px;font-weight:400}
 .hios-domain-level{font-size:10px;line-height:1.4;color:#c4d0e1}
 .hios-level-segments{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;margin:2px 0}
-.hios-level-segments i{height:4px;border-radius:2px;background:#253246;border:1px solid #344055}
+.hios-level-segments i{height:5px;border-radius:2px;background:#253246;border:1px solid #344055}
 .hios-level-segments i.established{background:rgb(var(--intel-accent));border-color:rgb(var(--intel-accent))}
 .hios-domain-status{color:#98a7bd;font-size:9px;line-height:1.4}
-.hios-development-note{font-size:9px;color:#96a5ba;margin-top:6px;line-height:1.4}
-.hios-domain:focus-visible,.hios-intel-notifications:focus-visible,.hios-drawer-close:focus-visible,.hios-intel-drawer summary:focus-visible{outline:2px solid #95b9f2;outline-offset:3px}
+.hios-development-note{font-size:9px;color:#96a5ba;margin-top:12px;line-height:1.5}
+.hios-domain:focus-visible,.hios-product-capabilities-button:focus-visible,.sidebar-signout:focus-visible,.hios-intel-notifications:focus-visible,.hios-drawer-close:focus-visible,.hios-intel-drawer summary:focus-visible{outline:2px solid #95b9f2;outline-offset:3px}
 .hios-intel-drawer{position:fixed;inset:0 0 0 auto;margin:0;width:min(620px,100%);max-width:100%;height:100dvh;max-height:100dvh;padding:0;border:0;border-left:1px solid #344057;color:#e2e9f3;background:#0e141e;box-shadow:-20px 0 80px #0006;overflow:hidden}
 .hios-intel-drawer[open]{display:flex;flex-direction:column;animation:hiosDrawerIn .18s ease-out}
 .hios-intel-drawer::backdrop{background:rgba(3,6,11,.68);backdrop-filter:blur(3px)}
@@ -65,24 +85,28 @@
 .hios-intel-events li{padding:16px 0;border-bottom:1px solid #29354a}
 .hios-intel-events b{font-size:13px}.hios-intel-events time{font-size:10px;color:#9aadca}
 @keyframes hiosDrawerIn{from{transform:translateX(18px);opacity:.75}to{transform:none;opacity:1}}
-@media(max-width:1220px) and (min-width:951px){
-  .hios-top-row > .hios-intelligence .hios-intelligence-main{grid-template-columns:minmax(190px,.9fr) minmax(0,2.1fr);gap:16px}
-  .hios-domain-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .hios-domain{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:5px 8px;padding:9px}
-  .hios-domain-product{grid-column:1/-1}.hios-domain-name{grid-row:2/4;min-height:0}
-  .hios-domain-status{grid-column:1/-1}
+@media(min-width:951px){
+  .hios-top-row{overflow:visible!important}
+  .hios-top-row::after{display:none}
+  .top-k-panel.goal-status-card{transition:transform .2s,border-color .2s,box-shadow .2s!important;transform-origin:top left!important}
+  .top-k-panel.goal-status-card.hios-panel-zoomed{transform:scale(1.03)!important;z-index:30!important;background:#132034!important;box-shadow:0 12px 28px #0208124d}
+}
+@media(min-width:900px){
+  .home-layout.auto-zoom-enabled .hios-development[data-home-panel="c"]{transform:scale(1)!important;transform-origin:top right;transition:transform .2s,border-color .2s,box-shadow .2s}
+  .home-layout.auto-zoom-enabled .hios-development[data-home-panel="c"].hios-panel-zoomed{transform:scale(1.025)!important;z-index:30!important;border-color:#627d9f;box-shadow:0 12px 28px #0208124d}
 }
 @media(max-width:950px){
-  .hios-top-row > .hios-intelligence .hios-intelligence-main{grid-template-columns:1fr!important;gap:17px;min-height:0;padding:16px!important}
-  .hios-development{border-left:0;border-top:1px solid #293449;padding:15px 0 0}
-  .hios-domain-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .hios-top-row > .hios-intelligence .hios-intelligence-main{min-height:0;padding:16px!important}
+  .top-k-panel.goal-status-card{border:1px solid #273248;border-radius:14px;margin-bottom:12px}
+  .top-k-panel .goal-status-head{display:flex;align-items:center;flex-wrap:wrap}
+  .top-k-panel .auto-zoom-toggle{margin-top:0}
+  #appScreen .sidebar .side-foot{position:static;margin:10px 0 0;padding:0 2px}
   #appScreen .main,#appScreen .app,.hios-top-row{min-width:0}
 }
 @media(max-width:640px){
-  .hios-domain-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .hios-domain-name{min-height:30px}.hios-domain{padding:10px}
+  .hios-domain{padding:10px}
   .hios-intel-drawer-head{padding:20px 18px 16px}.hios-intel-drawer-body{padding:18px}
   .hios-intel-drawer-head h2{font-size:19px}
   .hios-evidence-facts{gap:12px;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 }
-@media(prefers-reduced-motion:reduce){.hios-domain{transition:none}.hios-intel-drawer[open]{animation:none}}
+@media(prefers-reduced-motion:reduce){.hios-domain,.hios-product-capabilities-button,.top-k-panel.goal-status-card,.home-layout.auto-zoom-enabled .hios-development[data-home-panel="c"]{transition:none!important}.hios-intel-drawer[open]{animation:none}}

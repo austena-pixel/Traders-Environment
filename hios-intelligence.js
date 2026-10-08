@@ -11,6 +11,9 @@
   const product=document.getElementById('hiosIntelligenceProduct');
   const bell=document.getElementById('hiosIntelligenceNotifications');
   const badge=document.getElementById('hiosIntelligenceUnread');
+  const products=[...new Set(model.DOMAINS.map(domain=>domain.productId))].map(id=>({
+    id,domains:model.DOMAINS.filter(domain=>domain.productId===id)
+  }));
   let state=model.emptyState(),readIds=[],view=null,opener=null,adapter=null,unsubscribe=null,epoch=0,lastDialogHtml='',lastGridHtml='',previousOverflow='';
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
   const plainObject=value=>value&&typeof value==='object'&&!Array.isArray(value);
@@ -82,6 +85,12 @@
     let markup='';
     if(view==='notifications'){
       product.textContent='H-IOS · Intelligence updates';title.textContent='Intelligence notifications';markup=renderNotifications();
+    }else if(view.startsWith('capabilities:')){
+      const group=products.find(item=>item.id===view.slice('capabilities:'.length));
+      if(!group)return;
+      product.textContent=`${group.domains[0].product} · Intelligence Development`;
+      title.textContent=`${group.domains[0].product} capabilities`;
+      markup=`<p>Available product tools and upcoming intelligence capabilities. Advanced capabilities require validated evidence and permission checks.</p>${group.domains.map(domain=>`<section class="hios-product-capabilities"><h3>${esc(domain.name)}</h3>${capabilityRows(domain)}</section>`).join('')}<p>Existing tools remain available independently of maturity. An unassessed capability is a proposal awaiting validation; subscription access is assessed separately.</p>`;
     }else{
       const domain=model.DOMAINS.find(item=>item.id===view);
       if(!domain)return;
@@ -90,15 +99,18 @@
     if(markup!==lastDialogHtml){body.innerHTML=markup;lastDialogHtml=markup}
   }
   function render(){
-    const markup=model.DOMAINS.map(domain=>{
+    const domainRow=domain=>{
       const level=model.assessedLevel(assessment(domain));
       const status=connected(domain)?(level===null?'Awaiting evidence assessment':'Validated assessment received'):'Product not connected';
-      return `<button class="hios-domain" type="button" data-intelligence-domain="${domain.id}" style="--intel-accent:${domain.accent}" aria-haspopup="dialog" aria-label="${domain.product} ${esc(domain.name)}: ${esc(levelLabel(level))}"><span class="hios-domain-product"><span>${domain.product}</span><span aria-hidden="true">↗</span></span><span class="hios-domain-name">${esc(domain.name)}</span><span class="hios-domain-level">${level===null?'Not yet assessed':`Level ${level} · ${esc(model.LEVELS[level].name)}`}</span>${segments(level)}<span class="hios-domain-status">${esc(status)}</span></button>`;
-    }).join('');
+      return `<button class="hios-domain" type="button" data-intelligence-domain="${domain.id}" style="--intel-accent:${domain.accent}" aria-haspopup="dialog" aria-label="${domain.product} ${esc(domain.name)}: ${esc(levelLabel(level))}"><span class="hios-domain-name">${esc(domain.name)}<span aria-hidden="true">↗</span></span><span class="hios-domain-level">${esc(levelLabel(level))}</span>${segments(level)}<span class="hios-domain-status">${esc(status)}</span></button>`;
+    };
+    const markup=products.map(group=>`<section class="hios-product-intelligence" data-intelligence-product="${group.id}" style="--intel-accent:${group.domains[0].accent}"><div class="hios-product-intelligence-head"><h4>${group.domains[0].product}</h4><button class="hios-product-capabilities-button" type="button" data-intelligence-capabilities="${group.id}" aria-haspopup="dialog" aria-label="${group.domains[0].product}: View available capabilities">View available capabilities</button></div><div class="hios-product-intelligence-domains">${group.domains.map(domainRow).join('')}</div></section>`).join('');
     if(lastGridHtml!==markup){
       const focused=document.activeElement?.dataset.intelligenceDomain;
+      const focusedProduct=document.activeElement?.dataset.intelligenceCapabilities;
       grid.innerHTML=markup;lastGridHtml=markup;
       if(focused&&!dialog.open)grid.querySelector(`[data-intelligence-domain="${focused}"]`)?.focus();
+      else if(focusedProduct&&!dialog.open)grid.querySelector(`[data-intelligence-capabilities="${focusedProduct}"]`)?.focus();
     }
     const unread=model.unreadEvents(state.notifications,state.userId,readIds).length;
     badge.textContent=String(unread);badge.hidden=unread===0;
@@ -117,14 +129,17 @@
     }
   }
   function close(){if(dialog.open)dialog.close()}
-  grid.addEventListener('click',event=>{const button=event.target.closest('[data-intelligence-domain]');if(button)open(button.dataset.intelligenceDomain,button)});
+  grid.addEventListener('click',event=>{
+    const button=event.target.closest('[data-intelligence-domain], [data-intelligence-capabilities]');
+    if(button)open(button.dataset.intelligenceCapabilities?`capabilities:${button.dataset.intelligenceCapabilities}`:button.dataset.intelligenceDomain,button);
+  });
   bell.addEventListener('click',()=>open('notifications',bell));
   document.getElementById('hiosIntelligenceClose').addEventListener('click',close);
   dialog.addEventListener('click',event=>{if(event.target!==dialog)return;const box=dialog.getBoundingClientRect();if(event.clientX<box.left||event.clientX>box.right||event.clientY<box.top||event.clientY>box.bottom)close()});
   dialog.addEventListener('close',()=>{
     document.documentElement.style.overflow=previousOverflow;
     const domain=view;view=null;
-    const button=domain==='notifications'?bell:grid.querySelector(`[data-intelligence-domain="${domain}"]`);
+    const button=domain==='notifications'?bell:domain?.startsWith('capabilities:')?grid.querySelector(`[data-intelligence-capabilities="${domain.slice('capabilities:'.length)}"]`):grid.querySelector(`[data-intelligence-domain="${domain}"]`);
     if(button&&document.getElementById('appScreen')?.classList.contains('hidden')===false)button.focus();
     else if(opener?.isConnected)opener.focus();opener=null;
   });
