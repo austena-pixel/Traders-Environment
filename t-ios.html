@@ -4947,6 +4947,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
   min-height:29px;
   padding:7px 9px;
 }
+#executionMapTradeSelect optgroup{font-style:normal;font-weight:800}
+#executionMapTradeSelect optgroup option{font-weight:400}
 .execution-map-context-details{
   flex:0 1 auto;
   min-height:0;
@@ -11322,9 +11324,14 @@ function renderExecutionMappingControls(){
   const psych=executionMappingSecondary('psych');
 
   tradeSelect.innerHTML=trades.length
-    ? trades.map(item=>{
-        const label=[item.trade_date,item.instrument,item.direction].filter(Boolean).join(' · ');
-        return `<option value="${escapeHtml(String(item.id))}" ${String(item.id)===String(trade?.id)?'selected':''}>${escapeHtml(label||'Trade')}</option>`;
+    ? journalDayGroups(trades).sort((a,b)=>a.date===b.date?0:a.date==='undated'?1:b.date==='undated'?-1:b.date.localeCompare(a.date)).map(group=>{
+        const day=group.date==='undated'?'Undated trades':formatDate(group.date);
+        const count=group.trades.length;
+        const options=group.trades.map(item=>{
+          const label=[item.instrument,item.direction].filter(Boolean).join(' · ');
+          return `<option value="${escapeHtml(String(item.id))}" ${String(item.id)===String(trade?.id)?'selected':''}>${escapeHtml(label||'Trade')}</option>`;
+        }).join('');
+        return `<optgroup label="${escapeHtml(day+' · '+count+' trade'+(count===1?'':'s'))}">${options}</optgroup>`;
       }).join('')
     : '<option value="">No trades</option>';
 
