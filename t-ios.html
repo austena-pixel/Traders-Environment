@@ -2583,6 +2583,15 @@ textarea{resize:vertical;min-height:90px}
   line-height:1.55;
 }
 .status-bar.show{display:block}
+.status-bar[data-instrument-selection-hint]{
+  width:max-content;
+  left:var(--selection-hint-x);
+  top:var(--selection-hint-y);
+  right:auto;
+  bottom:auto;
+  pointer-events:none;
+  box-shadow:0 8px 24px rgba(0,0,0,.24);
+}
 
 .playbook-save-action{
   position:relative;
@@ -14161,6 +14170,19 @@ function clearInstrumentSelectionGuidance(){
   if(!notice?.dataset.instrumentSelectionHint)return;
   notice.classList.remove('show');delete notice.dataset.instrumentSelectionHint;clearTimeout(showStatus.timer);
 }
+function showInstrumentSelectionGuidance(message,anchor=document.activeElement){
+  showStatus(message,5000);
+  const notice=$('#statusBar'),rect=(anchor?.target||anchor)?.getBoundingClientRect?.();
+  const pointer=anchor?.type==='pointerdown',margin=12,gap=12;
+  const x=pointer?anchor.clientX:(rect?rect.left+rect.width/2:margin);
+  const y=pointer?anchor.clientY:(rect?.bottom??margin);
+  notice.dataset.instrumentSelectionHint='1';
+  const bounds=notice.getBoundingClientRect();
+  const left=Math.max(margin,Math.min(x+gap,window.innerWidth-bounds.width-margin));
+  const below=y+gap,top=below+bounds.height<=window.innerHeight-margin?below:y-gap-bounds.height;
+  notice.style.setProperty('--selection-hint-x',left+'px');
+  notice.style.setProperty('--selection-hint-y',Math.max(margin,Math.min(top,window.innerHeight-bounds.height-margin))+'px');
+}
 function instrumentSelectionGuidance(kind,target){
   const {editor,range}=instrumentWritingContext(kind);
   if(!editor?.closest('.page.active')||!target?.closest)return null;
@@ -14195,13 +14217,15 @@ function initInstrumentSelectionGuidance(kind){
     if(editor.contains(document.activeElement)&&range&&editor.contains(range.commonAncestorContainer))instrumentRememberRange(kind,range.cloneRange());
     const hint=instrumentSelectionGuidance(kind,event.target);
     if(!hint){clearInstrumentSelectionGuidance();return}
-    if(event.type==='pointerdown'||event.detail===0){showStatus(hint.message,5000);$('#statusBar').dataset.instrumentSelectionHint='1'}
+    if(event.type==='pointerdown'||event.detail===0)showInstrumentSelectionGuidance(hint.message,event);
     if(hint.block){event.preventDefault();if(event.type==='click')event.stopImmediatePropagation()}
   };
   // Disabled controls still emit pointer events; their normal click event is suppressed.
   ribbon.addEventListener('pointerdown',inspect,true);
   ribbon.addEventListener('click',inspect,true);
   editor.addEventListener('pointerdown',clearInstrumentSelectionGuidance);
+  window.addEventListener('resize',clearInstrumentSelectionGuidance);
+  document.addEventListener('scroll',clearInstrumentSelectionGuidance,true);
 }
 function refreshInstrumentFunctionControls(kind){
   const {editor,range}=instrumentWritingContext(kind),units=instrumentFunctionUnits(editor,range),page=editor?.closest('.page');
@@ -14276,10 +14300,10 @@ function applyInstrumentFunction(kind,type){
   if(!['p','h1','h2','h3','rule','choice','ul','ol','note','psych-prompt','blockquote'].includes(type))return;
   const {editor,range}=instrumentWritingContext(kind),units=instrumentFunctionUnits(editor,range);
   if(!editor?.closest('.page.active'))return;
-  if(!units.length){showStatus(INSTRUMENT_SELECTION_GUIDANCE.functions,5000);return}
+  if(!units.length){showInstrumentSelectionGuidance(INSTRUMENT_SELECTION_GUIDANCE.functions);return}
   if(type==='choice'&&units.length===1&&units[0].matches?.('[data-playbook-node="choice"],.pb-doc-choice')){instrumentRestoreRange(kind,range);return}
   const content=instrumentSelectedFunctionContent(editor,range,units);
-  if(!content.lines.length){showStatus(INSTRUMENT_SELECTION_GUIDANCE.functions,5000);return}
+  if(!content.lines.length){showInstrumentSelectionGuidance(INSTRUMENT_SELECTION_GUIDANCE.functions);return}
   if(type==='choice'){
     const text=content.lines.map(line=>{
       const node=document.createElement('div');node.innerHTML=line;
@@ -14411,7 +14435,7 @@ function refreshInstrumentStyleControls(targets,controls){
 function applyInstrumentSelectedStyle(kind,operation,value,colorKey=null){
   const {editor,range}=instrumentWritingContext(kind),targets=instrumentStyleTargetsFromRange(editor,range);
   if(!editor?.closest('.page.active'))return;
-  if(!targets.length){showStatus(INSTRUMENT_SELECTION_GUIDANCE.styles,5000);return}
+  if(!targets.length){showInstrumentSelectionGuidance(INSTRUMENT_SELECTION_GUIDANCE.styles);return}
   if(operation==='layout'&&(!['vertical','row','columns-2','columns-3','squares'].includes(value)||!targets.every(instrumentStyleGroup)))return;
   const colorDataset={background:'playbookColorBackground',border:'playbookColorBorder',text:'playbookColorText',accent:'playbookColorAccent'};
   if(operation==='color'&&(!colorDataset[colorKey]||!normalizePlaybookStyleColor(value)))return;

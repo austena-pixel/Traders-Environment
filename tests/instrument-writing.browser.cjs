@@ -15,7 +15,16 @@ const active=kind=>page.locator(configs[kind].page),editor=kind=>active(kind).lo
 const attribute=(kind,key)=>configs[kind].prefix+'-'+key;
 async function clickDisabledControl(control){
   await control.scrollIntoViewIfNeeded();const box=await control.boundingBox();
-  await page.mouse.click(box.x+box.width/2,box.y+box.height/2);
+  const point={x:box.x+box.width/2,y:box.y+box.height/2};
+  await page.mouse.click(point.x,point.y);return point;
+}
+async function assertGuidanceNear(point){
+  const notice=page.locator('#statusBar');assert.equal(await notice.isVisible(),true);
+  assert.equal(await notice.getAttribute('data-instrument-selection-hint'),'1');
+  const box=await notice.boundingBox(),viewport=page.viewportSize();
+  assert.ok(box.x>=0&&box.y>=0&&box.x+box.width<=viewport.width&&box.y+box.height<=viewport.height,'Guidance stays inside the viewport');
+  const distanceX=Math.max(box.x-point.x,point.x-box.x-box.width,0),distanceY=Math.max(box.y-point.y,point.y-box.y-box.height,0);
+  assert.ok(distanceX<=16&&distanceY<=16,'Guidance appears beside its click or keyboard target');
 }
 async function switchBuilder(kind){await page.evaluate(kind=>{setLoggedInUI(true);switchTechnicalInstrumentBuilder(kind)},kind)}
 async function select(kind,start,end=start,substring=null,collapse=false){
@@ -73,24 +82,25 @@ async function run(){
       const untouched=await editor(kind).innerHTML(),notice=page.locator('#statusBar');
       const functionControl=active(kind).locator(configs[kind].functions);
       assert.equal(await functionControl.isDisabled(),true);
-      await clickDisabledControl(functionControl);assert.match(await notice.textContent(),/^First, highlight.*apply a function/);assert.equal(await notice.isVisible(),true);
+      await assertGuidanceNear(await clickDisabledControl(functionControl));assert.match(await notice.textContent(),/^First, highlight.*apply a function/);
       await screenshot('selection-guidance-'+kind);
       await active(kind).locator('[data-instrument-selection-functions] .playbook-word-tool-label').click();assert.match(await notice.textContent(),/highlight.*function/);
-      await clickDisabledControl(active(kind).locator('[data-instrument-reflection-function]'));assert.match(await notice.textContent(),/highlight.*Reflection/);
-      await clickDisabledControl(active(kind).locator('[data-instrument-back-to-text]'));assert.match(await notice.textContent(),/^First, select.*Back to text/);
+      await assertGuidanceNear(await clickDisabledControl(active(kind).locator('[data-instrument-reflection-function]')));assert.match(await notice.textContent(),/highlight.*Reflection/);
+      await assertGuidanceNear(await clickDisabledControl(active(kind).locator('[data-instrument-back-to-text]')));assert.match(await notice.textContent(),/^First, select.*Back to text/);
       assert.equal(await editor(kind).innerHTML(),untouched);
       pass(kind+' disabled Functions, Reflection and Back to text controls show selection guidance on real clicks without changing the document');
 
       const stylesTab=active(kind).locator('['+attribute(kind,'ribbon')+'="styles"]');
       await stylesTab.click();assert.match(await notice.textContent(),/^First, highlight text.*structure.*style/);
       assert.equal(await active(kind).locator('['+attribute(kind,'ribbon-panel')+'="styles"]').isVisible(),true);
-      await clickDisabledControl(active(kind).locator('['+attribute(kind,'style-align')+'="center"]'));assert.match(await notice.textContent(),/structure.*style/);
-      await clickDisabledControl(active(kind).locator('['+attribute(kind,'list-layout')+'="columns-2"]'));assert.match(await notice.textContent(),/^First, select a list.*layout/);
+      await assertGuidanceNear(await clickDisabledControl(active(kind).locator('['+attribute(kind,'style-align')+'="center"]')));assert.match(await notice.textContent(),/structure.*style/);
+      await assertGuidanceNear(await clickDisabledControl(active(kind).locator('['+attribute(kind,'list-layout')+'="columns-2"]')));assert.match(await notice.textContent(),/^First, select a list.*layout/);
       await active(kind).locator('['+attribute(kind,'style-category')+'="colors"]').click();
-      await clickDisabledControl(active(kind).locator('['+attribute(kind,'style-color')+'="border"]'));assert.match(await notice.textContent(),/structure.*style/);
+      await assertGuidanceNear(await clickDisabledControl(active(kind).locator('['+attribute(kind,'style-color')+'="border"]')));assert.match(await notice.textContent(),/structure.*style/);
       await stylesTab.focus();await page.keyboard.press('Enter');assert.match(await notice.textContent(),/structure.*style/);assert.equal(await notice.isVisible(),true);
+      const keyboardBox=await stylesTab.boundingBox();await assertGuidanceNear({x:keyboardBox.x+keyboardBox.width/2,y:keyboardBox.y+keyboardBox.height});
       assert.equal(await notice.getAttribute('role'),'status');assert.equal(await editor(kind).innerHTML(),untouched);
-      pass(kind+' Styles, disabled layout/color controls and keyboard tab activation explain the required selection while keeping Styles accessible');
+      pass(kind+' click and keyboard guidance appears beside Functions, Styles, layout and colors while keeping Styles accessible');
 
       await active(kind).locator('['+attribute(kind,'ribbon')+'="home"]').click();
       await active(kind).locator('['+attribute(kind,'command')+'="bold"]').click();assert.match(await notice.textContent(),/^First, highlight text to format/);
@@ -267,8 +277,20 @@ async function run(){
     await page.evaluate(()=>{secondaryFind('psych','[data-ti-title]').focus();window.getSelection().removeAllRanges();secondaryState('psych').selectionRange=null;refreshSecondaryStyleControls('psych')});
     await active('psych').locator('[data-ti-ribbon="styles"]').click();
     const popup=page.locator('#statusBar');assert.equal(await popup.isVisible(),true);
-    assert.ok(await popup.evaluate(el=>{const rect=el.getBoundingClientRect();return rect.left>=0&&rect.right<=innerWidth}));
+    const mobileTab=await active('psych').locator('[data-ti-ribbon="styles"]').boundingBox();
+    await assertGuidanceNear({x:mobileTab.x+mobileTab.width/2,y:mobileTab.y+mobileTab.height/2});
     await screenshot('selection-guidance-mobile');pass('Selection guidance wraps inside the phone viewport');
+    for(const point of [{x:8,y:8},{x:382,y:836}]){
+      await page.evaluate(point=>showInstrumentSelectionGuidance(INSTRUMENT_SELECTION_GUIDANCE.functions,{type:'pointerdown',clientX:point.x,clientY:point.y}),point);
+      await assertGuidanceNear(point);
+    }
+    await screenshot('selection-guidance-edge');
+    await page.evaluate(()=>showStatus('Saved',5000));
+    assert.equal(await popup.getAttribute('data-instrument-selection-hint'),null);
+    const savedBox=await popup.boundingBox();assert.ok(Math.abs(savedBox.x+savedBox.width-372)<1&&Math.abs(savedBox.y+savedBox.height-826)<1);
+    await page.evaluate(()=>showInstrumentSelectionGuidance(INSTRUMENT_SELECTION_GUIDANCE.styles,{type:'pointerdown',clientX:150,clientY:300}));
+    await page.evaluate(()=>document.dispatchEvent(new Event('scroll')));assert.equal(await popup.isVisible(),false);
+    pass('Guidance stays near viewport-edge clicks, dismisses on scroll and leaves Save notifications in their usual position');
     assert.deepEqual(errors,[]);pass('Browser console and JavaScript remain error-free');console.log('Completed '+checks+' writing checks');
   }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve))}
 }
