@@ -99,6 +99,21 @@ async function run(){
     await page.locator('#executionMapTradeSelect').selectOption(firstTrade);assert.equal(await responses().inputValue(),text);
     pass(kind+' selected raw text becomes a prompt without new wording; Live Model is read-only; per-trade answers save separately without scoring');
     await page.locator('#executionBackToInstrumentsBtn').click();
+    const remove=editor(kind).locator('[data-instrument-remove-reflection]');
+    assert.equal(await remove.count(),1);assert.equal(await remove.getAttribute('aria-label'),'Remove reflection box');
+    await snapshot(kind+'-remove-reflection');
+    await remove.click();
+    assert.equal(await editor(kind).locator('[data-playbook-node="psych-prompt"]').count(),0,await editor(kind).innerHTML());
+    assert.equal(await model(kind).locator('.ti-preview-prompt').count(),0);
+    assert.equal(await editor(kind).locator('#neighbor').evaluate(el=>el.outerHTML),neighbor);
+    const command=name=>active(kind).locator('['+config[kind].ribbon+'-command="'+name+'"]');
+    await command('undo').click();assert.equal(await editor(kind).locator('[data-ti-reflection-id]').getAttribute('data-ti-reflection-id'),id);
+    await command('redo').click();assert.equal(await editor(kind).locator('[data-playbook-node="psych-prompt"]').count(),0);
+    await command('undo').click();await remove.focus();await page.keyboard.press('Enter');
+    assert.equal(await editor(kind).locator('[data-playbook-node="psych-prompt"]').count(),0);
+    await command('undo').click();assert.equal(await model(kind).locator('.ti-preview-prompt').count(),1);
+    assert.equal(await model(kind).locator('[data-instrument-remove-reflection],button').count(),0);
+    pass(kind+' reflection × removes only its own box, immediately updates the read-only model, supports keyboard removal and restores the original prompt with Undo / Redo');
     await select(kind,'[data-playbook-node="psych-prompt"]',true);await ribbon(kind,'home');await active(kind).locator('[data-instrument-back-to-text]').click();
     assert.equal(await editor(kind).locator('[data-playbook-node="psych-prompt"]').count(),0);assert.ok((await editor(kind).textContent()).includes('What happened?'));
     pass(kind+' reflection prompts return to ordinary text without losing their wording');
@@ -279,6 +294,35 @@ async function run(){
   assert.ok((await editor('psych').textContent()).includes('What happened?'));assert.ok((await editor('psych').textContent()).includes('What did I learn?'));
   pass('Reset Selected and Back to text operate on the reflection group without retaining its old box styling');
 
+  const removalSnapshots={};
+  for(const kind of Object.keys(config)){
+    await open(kind);await put(kind,'<p id="removal-before"><b>Keep this text.</b></p><p id="removal-rule" data-playbook-node="rule">Keep this rule.</p><div class="ti-reflection-layout" data-playbook-node="reflection-group" data-playbook-list-layout="columns-2" data-playbook-align="center" data-playbook-preset="card"><div data-playbook-node="psych-prompt">First question</div><div data-playbook-node="psych-prompt">Second question</div></div><p id="empty-reflection" data-playbook-node="psych-prompt"><br></p><p id="removal-after">Keep this paragraph.</p>');
+    const neighbors=await editor(kind).locator('#removal-before,#removal-rule,#removal-after').evaluateAll(nodes=>nodes.map(node=>node.outerHTML));
+    const boxes=editor(kind).locator('[data-playbook-node="reflection-group"] [data-instrument-remove-reflection]');
+    await boxes.last().click();assert.equal(await boxes.count(),1);
+    assert.equal(await model(kind).locator('.ti-preview-prompt').count(),1);
+    const remainingGroup=editor(kind).locator('[data-playbook-node="reflection-group"]');
+    assert.equal(await remainingGroup.getAttribute('data-playbook-list-layout'),'columns-2');
+    assert.equal(await remainingGroup.getAttribute('data-playbook-preset'),'card');
+    assert.equal(await remainingGroup.locator(':scope > p:not([data-playbook-node])').count(),0);
+    await ribbon(kind,'home');await active(kind).locator('['+config[kind].ribbon+'-command="undo"]').click();assert.equal(await boxes.count(),2,await editor(kind).innerHTML());
+    await active(kind).locator('['+config[kind].ribbon+'-command="redo"]').click();assert.equal(await boxes.count(),1);
+    await boxes.first().click();assert.equal(await remainingGroup.count(),0);
+    await editor(kind).locator('#empty-reflection [data-instrument-remove-reflection]').click();
+    assert.equal(await editor(kind).locator('[data-playbook-node="psych-prompt"]').count(),0);
+    assert.equal(await model(kind).locator('.ti-preview-prompt,.ti-reflection-layout').count(),0);
+    assert.equal(await model(kind).locator('.playbook-preview-check').count(),1);
+    assert.deepEqual(await editor(kind).locator('#removal-before,#removal-rule,#removal-after').evaluateAll(nodes=>nodes.map(node=>node.outerHTML)),neighbors);
+    await mapped(kind);assert.equal(await responses().count(),0);assert.equal(await page.locator('#executionMapFormBody input[type="checkbox"]').count(),1);
+    await page.locator('#executionBackToInstrumentsBtn').click();removalSnapshots[kind]=await editor(kind).innerHTML();
+    pass(kind+' removes individual grouped and blank reflection boxes, clears an empty group, preserves nearby rules and saves the updated Execution Quality mapping');
+  }
+  await page.reload({waitUntil:'load'});await hydrate();
+  for(const kind of Object.keys(config)){
+    await open(kind);assert.equal(await editor(kind).innerHTML(),removalSnapshots[kind]);
+    assert.equal(await editor(kind).locator('[data-playbook-node="psych-prompt"]').count(),0);
+  }
+  pass('Reflection removals persist across builder switching and page reload, with separate document storage');
   assert.deepEqual(errors,[]);pass('No browser console or JavaScript runtime errors');
   console.log(checks+' reflection browser scenarios passed');
  }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve))}

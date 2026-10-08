@@ -5736,6 +5736,10 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 [data-ti-text-block][data-playbook-border="none"]{border:0!important;box-shadow:none!important}
 
 .ti-reflection-layout>[data-ti-text-block]{margin:0!important}
+.playbook-word-editor [data-playbook-node="psych-prompt"]:has(>[data-instrument-remove-reflection]){padding-inline-end:42px}
+.playbook-word-editor [data-playbook-node="psych-prompt"]>[data-instrument-remove-reflection]{opacity:1;pointer-events:auto;top:8px;right:8px}
+.playbook-word-editor [data-instrument-remove-reflection] svg{width:14px;height:14px}
+.playbook-word-editor [data-instrument-remove-reflection]:focus-visible{outline:2px solid #8b5cf6;outline-offset:2px}
 
 /* Advanced Styles: alignment, spacing, borders and visual presets.
    These are presentation-only and are carried into Live Model + Execution Quality. */
@@ -14342,7 +14346,18 @@ function applyInstrumentFunction(kind,type){
 }
 function normalizeInstrumentWritingBlocks(editor){
   ensureInstrumentReflectionIds(editor);
+  editor.querySelectorAll('[data-playbook-node="psych-prompt"]').forEach(prompt=>{
+    let button=prompt.querySelector(':scope > .pb-doc-remove-btn');
+    if(!button){button=document.createElement('button');button.className='pb-doc-remove-btn';prompt.appendChild(button)}
+    if(!button.hasAttribute('data-instrument-remove-reflection')){
+      button.type='button';button.contentEditable='false';button.dataset.instrumentRemoveReflection='';
+      button.setAttribute('aria-label','Remove reflection box');button.title='Remove reflection box';
+      button.innerHTML='<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg>';
+    }
+  });
   editor.querySelectorAll('[data-playbook-node="reflection-group"]').forEach(group=>{
+    // Each response box owns its remove button; a group-wide button overlaps it.
+    group.querySelectorAll(':scope > .pb-doc-remove-btn').forEach(button=>button.remove());
     const colors=playbookStyleColorsFromTarget(group),style=playbookVisualStyleFromTarget(group);
     group.querySelectorAll('[data-playbook-node="psych-prompt"]').forEach(prompt=>{
       resetPlaybookTargetStyle(prompt);
@@ -14361,9 +14376,34 @@ function initInstrumentWriting(kind){
   initInstrumentSelectionGuidance(kind);
   editor.closest('.page')?.querySelector('[data-instrument-back-to-text]')?.addEventListener('click',()=>applyInstrumentFunction(kind,'p'));
   editor.closest('.page')?.querySelector('[data-instrument-reflection-function]')?.addEventListener('click',()=>applyInstrumentFunction(kind,'psych-prompt'));
+  editor.addEventListener('pointerdown',event=>{if(event.target.closest('[data-instrument-remove-reflection]'))event.preventDefault()});
+  editor.addEventListener('click',event=>{
+    const button=event.target.closest('[data-instrument-remove-reflection]');if(!button||!editor.contains(button))return;
+    event.preventDefault();event.stopImmediatePropagation();
+    const prompt=button.closest('[data-playbook-node="psych-prompt"]');if(!prompt)return;
+    const group=prompt.closest('[data-playbook-node="reflection-group"]');
+    const target=group||prompt;let replacement='';
+    if(group){
+      const remaining=group.cloneNode(true);
+      remaining.querySelector('[data-ti-reflection-id="'+prompt.dataset.tiReflectionId+'"]')?.remove();
+      if(remaining.querySelector('[data-playbook-node="psych-prompt"]'))replacement=remaining.outerHTML;
+    }
+    // Include editor-only controls in the same native undoable edit.
+    const controls=[...target.querySelectorAll('[contenteditable="false"]')];controls.forEach(control=>control.contentEditable='true');
+    // Plain editing boundaries prevent deletion from pulling the next paragraph
+    // into the reflection wrapper, matching the existing function conversion path.
+    const before=document.createElement('p');before.append(document.createElement('br'));
+    const after=before.cloneNode(true);target.before(before);target.after(after);
+    const range=document.createRange();range.setStart(before,0);range.setEnd(after,0);instrumentRestoreRange(kind,range);
+    if(replacement)document.execCommand('insertHTML',false,replacement);else document.execCommand('delete');
+    controls.forEach(control=>control.contentEditable='false');
+    before.remove();after.remove();
+    instrumentWritingChanged(kind);
+  },true);
   editor.addEventListener('focus',()=>document.execCommand('defaultParagraphSeparator',false,'p'));
   editor.addEventListener('input',()=>normalizeInstrumentWritingBlocks(editor));
   editor.addEventListener('keydown',event=>{
+    if(event.target.closest('[data-instrument-remove-reflection]'))return;
     if(event.key!=='Enter'||event.shiftKey||event.isComposing)return;
     const selection=window.getSelection(),range=selection?.rangeCount?selection.getRangeAt(0):null;
     if(!range?.collapsed||!editor.contains(range.commonAncestorContainer))return;
@@ -15419,7 +15459,7 @@ function ensureSecondaryBlockControls(kind){
   const editor=secondaryFind(kind,'[data-ti-editor]');if(!editor)return;
   normalizeInstrumentWritingBlocks(editor);
   editor.querySelectorAll('[data-playbook-node]').forEach(block=>{
-    if(block.matches('p,h1,h2,h3,blockquote'))return;
+    if(block.matches('p,h1,h2,h3,blockquote,[data-playbook-node="reflection-group"]'))return;
     if(block.closest('[data-playbook-node]')!==block)return;
     if(!block.querySelector(':scope > .pb-doc-remove-btn')){
       const b=document.createElement('button');b.type='button';b.className='pb-doc-remove-btn';b.contentEditable='false';b.textContent='×';b.title='Remove this block';block.appendChild(b);
