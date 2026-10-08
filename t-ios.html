@@ -6823,7 +6823,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               <div class="playbook-word-tool-group">
                 <span class="playbook-word-tool-label">Media</span>
                 <div class="playbook-word-tool-row">
-                  <button type="button" class="playbook-word-insert-btn" data-playbook-insert="image-field" title="Design a picture field to fill for each trade later">+ Image Field</button>
+                  <button type="button" class="playbook-word-insert-btn" data-playbook-insert="image-field" title="Insert a blank picture field; edit optional settings afterward">+ Image Field</button>
                   <button type="button" class="playbook-word-insert-btn" data-playbook-insert="image" title="Upload a reference picture that belongs to the instrument">+ Reference Image</button>
                 </div>
               </div>
@@ -14336,7 +14336,7 @@ function applyPlaybookDefaultTemplate(id){
 function insertPlaybookElement(kind){
   if(!currentPlaybookDocument()){showStatus('Create a Playbook first.');return}
   if(kind==='image'){openInstrumentImagePicker('playbook');return}
-  if(kind==='image-field'){openInstrumentImageFieldModal('playbook');return}
+  if(kind==='image-field'){insertInstrumentImageField('playbook');return}
   if(kind==='choice'){
     openPlaybookChoiceModal();
     return;
@@ -14722,7 +14722,7 @@ function secondaryWorkspaceHtml(kind){
             <div class="playbook-word-tool-group">
               <span class="playbook-word-tool-label">Media</span>
               <div class="playbook-word-tool-row">
-                <button type="button" class="playbook-word-insert-btn" data-ti-insert="image-field" title="Design a picture field to fill for each trade later">+ Image Field</button>
+                <button type="button" class="playbook-word-insert-btn" data-ti-insert="image-field" title="Insert a blank picture field; edit optional settings afterward">+ Image Field</button>
                 <button type="button" class="playbook-word-insert-btn" data-ti-insert="image" title="Upload a reference picture that belongs to the instrument">+ Reference Image</button>
               </div>
             </div>
@@ -15001,7 +15001,7 @@ function applySecondaryDefaultTemplate(kind,id){
 }
 function secondaryInsert(kind,type){
   if(type==='image'){openInstrumentImagePicker(kind);return}
-  if(type==='image-field'){openInstrumentImageFieldModal(kind);return}
+  if(type==='image-field'){insertInstrumentImageField(kind);return}
   if(type==='choice'){openSecondaryChoiceModal(kind);return}
   if(type==='table'){openSecondaryTableModal(kind);return}
   const templates={
@@ -15353,7 +15353,7 @@ function instrumentReferenceImageHtml(item,editable=false){
   const width=normalizeInstrumentImageWidth(item.width);
   const caption=String(item.caption||'');
   const tools=editable?`<div class="ti-reference-image-tools" contenteditable="false"><b>Reference image</b><button type="button" data-ti-reference-size="-10" aria-label="Make image narrower">−</button><span data-ti-reference-width-label>${width}%</span><button type="button" data-ti-reference-size="10" aria-label="Make image wider">+</button></div><button type="button" class="pb-doc-remove-btn" contenteditable="false" aria-label="Remove reference image" title="Remove reference image">×</button>`:'';
-  const captionHtml=editable||caption?`<figcaption${editable?' contenteditable="true" data-placeholder="Add a caption…" aria-label="Image caption"':''}>${escapeHtml(caption)}</figcaption>`:'';
+  const captionHtml=editable||caption?`<figcaption${editable?' contenteditable="true" data-placeholder="Picture description (optional)…" aria-label="Picture description (optional)"':''}>${escapeHtml(caption)}</figcaption>`:'';
   const interaction=editable?'aria-label="Select picture" title="Click to select; Shift-click to select more; double-click to view."':'aria-label="Open reference image"';
   return `<figure class="ti-reference-image" data-playbook-node="image" data-playbook-image-key="${escapeHtml(item.key)}" data-playbook-image-width="${width}" style="width:${width}%" contenteditable="false">${tools}<img data-ti-reference-image data-ti-reference-open alt="${escapeHtml(caption||'Reference image')}" tabindex="0" role="button" ${interaction}><span class="ti-reference-image-status">Loading image…</span>${captionHtml}${editable?'<button type="button" class="ti-reference-image-resize" data-ti-reference-resize aria-label="Resize reference image" title="Drag to resize; arrow keys adjust width"></button>':''}</figure>`;
 }
@@ -15531,7 +15531,7 @@ function ensureInstrumentImageFieldModal(){
   if($('#instrumentImageFieldModal'))return;
   const modal=document.createElement('div');modal.id='instrumentImageFieldModal';modal.className='modal';
   modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.setAttribute('aria-hidden','true');modal.setAttribute('aria-labelledby','instrumentImageFieldTitle');
-  modal.innerHTML='<div class="modal-card playbook-choice-modal-card"><div class="modal-head"><h2 id="instrumentImageFieldTitle">Design Image Field</h2><button class="close" type="button" data-image-field-close aria-label="Close image field design">×</button></div><form class="playbook-choice-modal-body" id="instrumentImageFieldForm"></form></div>';
+  modal.innerHTML='<div class="modal-card playbook-choice-modal-card"><div class="modal-head"><h2 id="instrumentImageFieldTitle">Edit Image Field</h2><button class="close" type="button" data-image-field-close aria-label="Close image field settings">×</button></div><form class="playbook-choice-modal-body" id="instrumentImageFieldForm"></form></div>';
   document.body.appendChild(modal);
   modal.addEventListener('click',event=>{if(event.target===modal||event.target.closest('[data-image-field-close]'))closeInstrumentImageFieldModal()});
   modal.addEventListener('keydown',event=>{
@@ -15574,14 +15574,30 @@ function ensureInstrumentImageFieldModal(){
     if(event.target.closest('[data-image-pattern-remove]')){context.patterns=context.patterns.filter(item=>item!==pattern);row.remove()}
   });
 }
-function openInstrumentImageFieldModal(kind,field=null){
+function writeInstrumentImageField(context,item){
+  if(!instrumentImageContextCurrent(context)||context.field&&!context.editor.contains(context.field)||!context.field&&context.anchor&&!context.editor.contains(context.anchor))return null;
+  const host=document.createElement('div');host.innerHTML=instrumentImageFieldHtml(item,true);const block=host.firstElementChild;
+  if(context.field)context.field.replaceWith(block);
+  else if(context.anchor)context.anchor.after(block);
+  else context.editor.appendChild(block);
+  if(!block.nextSibling){const paragraph=document.createElement('p');paragraph.innerHTML='<br>';block.after(paragraph)}
+  refreshInstrumentImageFieldRelations(context.editor);
+  return block;
+}
+function insertInstrumentImageField(kind){
   const context=captureInstrumentImageContext(kind);if(!context)return;
-  if(field&&!context.editor.contains(field))return;
+  const item={id:makeInstrumentImageFieldId(),label:'',timeframe:'',stage:'other',prompt:'',related:'',selection:'capture',patterns:[]};
+  const block=writeInstrumentImageField(context,item);if(!block)return;
+  hydratePlaybookImages(block);syncInstrumentImageDocument(kind);selectInstrumentPicture(kind,block);
+}
+function openInstrumentImageFieldModal(kind,field){
+  const context=captureInstrumentImageContext(kind);if(!context)return;
+  if(!field||!context.editor.contains(field))return;
   ensureInstrumentImageFieldModal();
   if(instrumentImageFieldModalContext)closeInstrumentImageFieldModal({restore:false});
   context.field=field;
   instrumentImageFieldModalContext=context;
-  const item=field?instrumentImageFieldItem(field,context.editor):{id:makeInstrumentImageFieldId(),label:'',timeframe:'',stage:'other',prompt:'',related:'',selection:'capture',patterns:[]};
+  const item=instrumentImageFieldItem(field,context.editor);
   context.fieldId=item.id;
   context.patterns=normalizeInstrumentImagePatterns(item.patterns);context.newMediaKeys=new Set();context.pendingUploads=0;
   const fields=[...context.editor.querySelectorAll('[data-playbook-node="image-field"]')].filter(node=>node!==field);
@@ -15589,20 +15605,20 @@ function openInstrumentImageFieldModal(kind,field=null){
     const value=instrumentImageFieldItem(node,context.editor);
     return '<option value="'+escapeHtml(value.id)+'">'+escapeHtml(instrumentImageFieldDisplayName(node,context.editor)+(value.timeframe?' · '+value.timeframe:''))+'</option>';
   }).join('');
-  $('#instrumentImageFieldTitle').textContent=field?'Edit Image Field':'Design Image Field';
+  $('#instrumentImageFieldTitle').textContent='Edit Image Field';
   $('#instrumentImageFieldForm').innerHTML=`
-    <p class="ti-image-field-modal-note">Insert a picture field without entering any details. Names and context are optional and can be added later. Trade pictures and responses will be recorded in Journal.</p>
+    <p class="ti-image-field-modal-note">Optional picture settings. Add or change names, descriptions and context here. Trade pictures and responses will be recorded in Journal.</p>
     <label class="playbook-choice-field"><span>Field name (optional)</span><input name="label" maxlength="120" placeholder="e.g. 4H balance / imbalance" value="${escapeHtml(item.label)}"></label>
     <div class="ti-image-field-modal-grid">
       <label class="playbook-choice-field"><span>Timeframe (optional)</span><input name="timeframe" maxlength="30" placeholder="e.g. 4H, 30min, 5min" value="${escapeHtml(item.timeframe)}"></label>
       <label class="playbook-choice-field"><span>Trading stage (optional)</span><select name="stage">${Object.entries(INSTRUMENT_IMAGE_FIELD_STAGES).map(([value,label])=>'<option value="'+value+'">'+(value==='other'?'None':label)+'</option>').join('')}</select></label>
     </div>
-    <label class="playbook-choice-field"><span>What should the picture show? (optional)</span><textarea name="prompt" maxlength="1200" placeholder="Describe the analysis, entry or exit condition to capture.">${escapeHtml(item.prompt)}</textarea></label>
+    <label class="playbook-choice-field"><span>Picture description (optional)</span><textarea name="prompt" maxlength="1200" placeholder="Describe this picture or what it should show.">${escapeHtml(item.prompt)}</textarea></label>
     <label class="playbook-choice-field"><span>Selection</span><select name="selection">${Object.entries(INSTRUMENT_IMAGE_FIELD_SELECTIONS).map(([value,label])=>'<option value="'+value+'">'+label+'</option>').join('')}</select></label>
     <div class="ti-image-pattern-design" data-image-pattern-design hidden><div class="ti-image-pattern-design-head"><strong>Representative patterns</strong><button class="btn" type="button" data-image-pattern-add>+ Add pattern</button></div><p class="ti-image-pattern-design-help" data-image-pattern-help></p><div data-image-pattern-rows></div></div>
     <label class="playbook-choice-field"><span>Related image field (optional)</span><select name="related"><option value="">None</option>${options}</select></label>
     <div class="playbook-choice-error" data-image-field-error role="alert"></div>
-    <div class="playbook-choice-modal-actions"><span></span><div class="playbook-choice-modal-actions-right"><button class="btn" type="button" data-image-field-close>Cancel</button><button class="btn primary" type="submit">${field?'Save Field':'Insert Image Field'}</button></div></div>`;
+    <div class="playbook-choice-modal-actions"><span></span><div class="playbook-choice-modal-actions-right"><button class="btn" type="button" data-image-field-close>Cancel</button><button class="btn primary" type="submit">Save Field</button></div></div>`;
   const form=$('#instrumentImageFieldForm');form.elements.stage.value=item.stage;form.elements.related.value=item.related||'';form.elements.selection.value=item.selection;
   context.patterns.forEach(appendInstrumentImagePatternDesignRow);syncInstrumentImagePatternDesign();
   const modal=$('#instrumentImageFieldModal');modal.classList.add('open');modal.setAttribute('aria-hidden','false');form.elements.label.focus();
@@ -15630,18 +15646,9 @@ function saveInstrumentImageFieldFromModal(event){
     seen.add(related);related=fields.find(node=>node.dataset.tiImageFieldId===related)?.dataset.tiImageFieldRelated||'';
   }
   item.relatedLabel=item.related?instrumentImageFieldDisplayName(parent,context.editor):'';
-  const host=document.createElement('div');host.innerHTML=instrumentImageFieldHtml(item,true);const block=host.firstElementChild;
-  if(context.field)context.field.replaceWith(block);
-  else if(context.anchor)context.anchor.after(block);
-  else context.editor.appendChild(block);
-  if(!block.nextSibling){const paragraph=document.createElement('p');paragraph.innerHTML='<br>';block.after(paragraph)}
-  refreshInstrumentImageFieldRelations(context.editor);
+  const block=writeInstrumentImageField(context,item);if(!block)return;
   closeInstrumentImageFieldModal({restore:false,keepMedia:true});hydratePlaybookImages(block);syncInstrumentImageDocument(context.kind);
-  context.editor.focus();
-  const range=document.createRange();range.selectNodeContents(block.querySelector('.ti-image-field-name'));range.collapse(false);
-  const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);
-  if(context.kind==='playbook')rememberPlaybookEditorSelection();else secondaryRememberSelection(context.kind);
-  block.querySelector('[data-ti-image-field-edit]').focus();
+  selectInstrumentPicture(context.kind,block);
 }
 
 // Store the media key and presentation in document HTML, not transient data URLs.
@@ -15682,8 +15689,12 @@ function captureInstrumentImageContext(kind){
   const remembered=kind==='playbook'?playbookEditorSelectionRange:secondaryState(kind).selectionRange;
   const range=(kind==='playbook'?capturePlaybookEditorSelection():secondaryCaptureSelection(kind))||remembered;
   let element=range?.startContainer;
+  if(element?.nodeType===1&&!range.collapsed){
+    const selected=element.childNodes[range.startOffset];
+    if(selected?.nodeType===1)element=selected;
+  }
   if(element?.nodeType!==1)element=element?.parentElement;
-  const anchor=element?.closest?.('[data-playbook-node],ul,ol')||element?.closest?.('p,h1,h2,h3,blockquote,table');
+  const anchor=element?.closest?.('[data-playbook-node],ul,ol')||element?.closest?.('p,h1,h2,h3,blockquote,table,[data-ti-text-block],[data-ti-function-heading]');
   return {kind,editor,documentId:instrumentImageDocumentId(kind),scope:instrumentImageScope(kind),anchor:anchor&&editor.contains(anchor)?anchor:null,range:range?.cloneRange()||null};
 }
 function instrumentImageContextCurrent(context){

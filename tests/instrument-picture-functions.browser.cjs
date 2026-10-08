@@ -25,13 +25,18 @@ async function saved(kind){await page.waitForFunction(kind=>{const state=kind===
 async function fieldDesign(kind,index,selection='capture',pictureFile=null){
   await editor(kind).evaluate((el,index)=>{el.insertAdjacentHTML('beforeend','<p id="picture-field-anchor-'+index+'"><br></p>');el.dispatchEvent(new Event('input',{bubbles:true}))},index);
   await editor(kind).locator('#picture-field-anchor-'+index).click();await ribbon(kind,'insert');await active(kind).locator('['+configs[kind].prefix+'-insert="image-field"]').click();
+  assert.equal(await page.locator('#instrumentImageFieldModal.open').count(),0);
+  const id=await editor(kind).locator('#picture-field-anchor-'+index).evaluate(el=>el.nextElementSibling.dataset.tiImageFieldId);
+  assert.equal(await field(kind,id).getAttribute('data-ti-image-field-label'),'');assert.equal(await field(kind,id).evaluate(el=>el.classList.contains('ti-picture-selected')),true);
+  if(selection==='capture'&&!pictureFile)return id;
+  await field(kind,id).locator('[data-ti-image-field-edit]').click();
   if(selection!=='capture')await form().locator('[name="selection"]').selectOption(selection);
   if(pictureFile)for(let i=0;i<2;i++){
     await form().locator('[data-image-pattern-file]').nth(i).setInputFiles(pictureFile);
     await form().locator('[data-image-pattern-row]').nth(i).locator('img[src]').waitFor();
     await page.waitForFunction(()=>!document.querySelector('#instrumentImageFieldForm [type="submit"]').disabled);
   }
-  const id=await page.evaluate(()=>instrumentImageFieldModalContext.fieldId);await form().locator('[type="submit"]').click();return id;
+  assert.equal(await page.evaluate(()=>instrumentImageFieldModalContext.fieldId),id);await form().locator('[type="submit"]').click();return id;
 }
 async function snapshot(name){if(process.env.TIOS_TEST_SCREENSHOT_DIR){fs.mkdirSync(process.env.TIOS_TEST_SCREENSHOT_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.TIOS_TEST_SCREENSHOT_DIR,name+'.png')})}}
 async function run(){

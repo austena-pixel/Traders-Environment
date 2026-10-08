@@ -33,7 +33,12 @@ async function openDesign(kind,selection,label){
   });
   await active(kind).locator('['+configs[kind].prefix+'-ribbon="insert"]').click();
   await active(kind).locator('['+configs[kind].prefix+'-insert="image-field"]').click();
+  assert.equal(await page.locator('#instrumentImageFieldModal.open').count(),0);
+  const id=await editor(kind).locator('#pattern-anchor').evaluate(el=>el.nextElementSibling.dataset.tiImageFieldId);
+  assert.equal(await field(kind,id).getAttribute('data-ti-image-field-label'),'');assert.equal(await field(kind,id).getAttribute('data-ti-image-field-selection'),'capture');
+  await field(kind,id).locator('[data-ti-image-field-edit]').click();
   await form().locator('[name="label"]').fill(label);await form().locator('[name="selection"]').selectOption(selection);
+  return id;
 }
 async function upload(index,picture){
   await rows().nth(index).locator('[data-image-pattern-file]').setInputFiles(picture);
@@ -203,7 +208,7 @@ async function run(){
       pass(kind+' separate Execution Quality mapping preserves pictures, Choice/Check, group independence, reset and existing scoring');
     }
     await switchBuilder('playbook');await editor('playbook').locator('#pattern-anchor').waitFor();
-    await openDesign('playbook','choice','Cancelled uploads');
+    const cancelledId=await openDesign('playbook','choice','Cancelled uploads');
     const countBefore=await editor('playbook').locator('[data-playbook-node="image-field"]').count();
     await page.evaluate(()=>{
       window.originalPatternStore=storePlaybookDemoImage;
@@ -215,7 +220,8 @@ async function run(){
     await page.waitForFunction(async()=>!(await getPlaybookMediaRecord(window.pendingPatternKey)));
     await page.evaluate(()=>storePlaybookDemoImage=window.originalPatternStore);
     assert.equal(await editor('playbook').locator('[data-playbook-node="image-field"]').count(),countBefore);
-    pass('Cancelling during an asynchronous picture upload creates no field and removes the unused new image');
+    assert.equal(await field('playbook',cancelledId).getAttribute('data-ti-image-field-label'),'');assert.equal(await field('playbook',cancelledId).getAttribute('data-ti-image-field-selection'),'capture');
+    pass('Cancelling settings during an asynchronous picture upload leaves the inserted field unchanged and removes the unused new image');
     const existing=editor('playbook').locator('[data-ti-image-field-label="Entry pattern"]');
     await existing.locator('[data-ti-image-field-edit]').click();const imageKey=JSON.parse(await existing.getAttribute('data-ti-image-field-patterns'))[0].imageKey;
     await rows().first().locator('[data-image-pattern-file]').setInputFiles({name:'invalid.png',mimeType:'image/png',buffer:Buffer.from('invalid image')});

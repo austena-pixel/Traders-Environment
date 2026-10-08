@@ -35,6 +35,13 @@ async function openField(kind,index){
   await select(kind,'#field-anchor-'+index);
   await active(kind).locator('['+configs[kind].prefix+'-ribbon="insert"]').click();
   await active(kind).locator('['+configs[kind].prefix+'-insert="image-field"]').click();
+  assert.equal(await page.locator('#instrumentImageFieldModal.open').count(),0);
+  const id=await editor(kind).locator('#field-anchor-'+index).evaluate(el=>el.nextElementSibling.dataset.tiImageFieldId);
+  const block=editor(kind).locator('[data-ti-image-field-id="'+id+'"]');
+  assert.equal(await block.getAttribute('data-ti-image-field-label'),'');
+  assert.equal(await block.getAttribute('data-ti-image-field-prompt'),'');
+  assert.equal(await block.evaluate(el=>el.classList.contains('ti-picture-selected')),true);
+  await block.locator('[data-ti-image-field-edit]').click();
   await page.locator('#instrumentImageFieldModal.open').waitFor();
 }
 async function fillField(value,relatedId=''){
@@ -64,7 +71,7 @@ async function run(){
       const ids=[];
       for(let i=0;i<examples.length;i++){
         await openField(kind,i);await fillField(examples[i],i?ids[i-1]:'');
-        const block=fields(kind).nth(i);assert.equal(await block.evaluate(el=>el.previousElementSibling.id),'field-anchor-'+i,'Modal preserves selected insertion point');
+        const block=fields(kind).nth(i);assert.equal(await block.evaluate(el=>el.previousElementSibling.id),'field-anchor-'+i,'Insertion and optional editing preserve the selected insertion point');
         ids.push(await block.getAttribute('data-ti-image-field-id'));
         assert.equal(await block.getAttribute('data-ti-image-field-timeframe'),examples[i].timeframe);assert.equal(await block.getAttribute('data-ti-image-field-stage'),examples[i].stage);
         assert.equal(await block.getAttribute('data-ti-image-field-related'),i?ids[i-1]:'');
@@ -85,30 +92,44 @@ async function run(){
       await fields(kind).first().locator('[data-ti-image-field-edit]').click();await form().locator('[name="related"]').selectOption(ids[1]);await form().locator('[type="submit"]').click();
       assert.match(await form().locator('[data-image-field-error]').textContent(),/loop/);assert.equal(await fields(kind).first().getAttribute('data-ti-image-field-related'),'');
       await page.keyboard.press('Escape');assert.equal(await page.locator('#instrumentImageFieldModal').getAttribute('aria-hidden'),'true');
-      await openField(kind,0);
-      await form().locator('[data-image-field-close]').click();assert.equal(await fields(kind).count(),4);
-      pass(kind+' relationship cycle guard, Escape and cancel create no extra fields');
+      await fields(kind).first().locator('[data-ti-image-field-edit]').click();await form().locator('[name="label"]').fill('Unsaved change');
+      await form().locator('[data-image-field-close]').click();assert.equal(await fields(kind).count(),4);assert.equal(await fields(kind).first().getAttribute('data-ti-image-field-label'),renamed);
+      pass(kind+' relationship cycle guard, Escape and cancelling optional edits leave existing fields unchanged');
       await page.waitForFunction(kind=>{const state=kind==='playbook'?document.querySelector('#playbookDraftSaveState'):secondaryFind(kind,'[data-ti-save-state]');return state?.textContent==='Saved'},kind);
       const stored=await page.evaluate(kind=>{const key=kind==='playbook'?playbookDocumentKey():secondaryStoreKey(kind),id=instrumentImageDocumentId(kind);return JSON.parse(localStorage.getItem(key)).find(doc=>doc.id===id).documentHtml},kind);
-      for(const id of ids)assert.ok(stored.includes(id));assert.ok(stored.includes('data-ti-image-field-timeframe="4H"'));assert.ok(stored.includes('data-ti-image-field-related="'+ids[2]+'"'));
+      for(const id of ids)assert.ok(stored.includes(id));assert.ok(stored.includes('data-ti-image-field-timeframe="4H"'));assert.ok(stored.includes('data-ti-image-field-prompt="'+examples[0].prompt+'"'));assert.ok(stored.includes('data-ti-image-field-related="'+ids[2]+'"'));
       pass(kind+' autosave stores field identity, definitions and relationships inside document HTML');
       await active(kind).locator(configs[kind].save).click();const originalId=await page.evaluate(kind=>instrumentImageDocumentId(kind),kind);
       await active(kind).locator(configs[kind].create).click();assert.equal(await fields(kind).count(),0);
       await editor(kind).locator('p').first().click();await active(kind).locator('['+configs[kind].prefix+'-ribbon="insert"]').click();await active(kind).locator('['+configs[kind].prefix+'-insert="image-field"]').click();
-      assert.equal(await form().locator('[name="related"] option').count(),1,'Relationships are confined to this document');
-      assert.equal(await form().locator('[required]').count(),0);
-      await form().locator('[type="submit"]').click();assert.equal(await fields(kind).count(),1);
+      assert.equal(await page.locator('#instrumentImageFieldModal.open').count(),0);assert.equal(await fields(kind).count(),1);
       const unnamedId=await fields(kind).first().getAttribute('data-ti-image-field-id');
       assert.equal(await fields(kind).first().getAttribute('data-ti-image-field-label'),'');
       assert.equal(await fields(kind).first().getAttribute('data-ti-image-field-timeframe'),'');assert.equal(await fields(kind).first().getAttribute('data-ti-image-field-prompt'),'');
       const blankModel=active(kind).locator(configs[kind].preview).locator('[data-ti-image-field-id="'+unnamedId+'"]');
       assert.equal(await blankModel.locator('.ti-image-field-name').textContent(),'');assert.equal(await blankModel.locator('.ti-image-field-meta,.ti-image-field-prompt').count(),0);
-      pass(kind+' inserts a picture field with untouched defaults and no required name, timeframe, stage or description');
+      pass(kind+' immediately inserts a picture field without a dialog, name, timeframe, stage or description');
       await fields(kind).first().locator('[data-ti-image-field-edit]').click();
+      assert.equal(await form().locator('[name="related"] option').count(),1,'Relationships are confined to this document');assert.equal(await form().locator('[required]').count(),0);
+      assert.equal(await form().locator('[name="prompt"]').inputValue(),'');assert.match(await form().locator('[name="prompt"]').locator('..').textContent(),/Picture description \(optional\)/);
       assert.equal(await form().locator('[name="label"]').inputValue(),'');assert.equal(await form().locator('[name="timeframe"]').inputValue(),'');
-      await form().locator('[name="label"]').fill('   ');await form().locator('[type="submit"]').click();
+      const description='4H <balance> & entry analysis';await form().locator('[name="prompt"]').fill(description);await form().locator('[name="label"]').fill('   ');await form().locator('[type="submit"]').click();
       assert.equal(await fields(kind).first().getAttribute('data-ti-image-field-id'),unnamedId);assert.equal(await fields(kind).first().getAttribute('data-ti-image-field-label'),'');
-      await select(kind,'p:last-child');await active(kind).locator('['+configs[kind].prefix+'-insert="image-field"]').click();
+      assert.equal(await blankModel.locator('.ti-image-field-prompt').textContent(),description);
+      await fields(kind).first().locator('[data-ti-image-field-edit]').click();assert.equal(await form().locator('[name="prompt"]').inputValue(),description);await form().locator('[name="prompt"]').fill('');await form().locator('[type="submit"]').click();
+      assert.equal(await blankModel.locator('.ti-image-field-prompt').count(),0);assert.equal(await fields(kind).first().getAttribute('data-ti-image-field-prompt'),'');
+      pass(kind+' optional descriptions can be added, edited and cleared without requiring other metadata');
+      await editor(kind).evaluate(el=>{el.insertAdjacentHTML('beforeend','<p id="direct-neighbor">Keep this neighboring text.</p>');el.dispatchEvent(new Event('input',{bubbles:true}))});
+      await fields(kind).first().locator('.ti-image-field-placeholder').click();await active(kind).locator('['+configs[kind].prefix+'-insert="image-field"]').click();
+      assert.equal(await page.locator('#instrumentImageFieldModal.open').count(),0);assert.equal(await fields(kind).count(),2);
+      assert.equal(await fields(kind).last().evaluate(el=>el.previousElementSibling.dataset.tiImageFieldId),unnamedId);assert.equal(await editor(kind).locator('#direct-neighbor').textContent(),'Keep this neighboring text.');
+      const selected=await fields(kind).last().getAttribute('data-ti-image-field-id');assert.equal(await fields(kind).last().evaluate(el=>el.classList.contains('ti-picture-selected')),true);
+      await active(kind).locator('['+configs[kind].prefix+'-ribbon="home"]').click();
+      const functions=active(kind).locator(kind==='playbook'?'#playbookBlockStyle':'[data-ti-block-style]');assert.equal(await functions.isEnabled(),true);await functions.selectOption('rule');
+      assert.equal(await editor(kind).locator('[data-playbook-node="rule"] [data-ti-image-field-id="'+selected+'"]').count(),1);await active(kind).locator('[data-instrument-back-to-text]').click();
+      assert.equal(await fields(kind).count(),2);assert.equal(await editor(kind).locator('#direct-neighbor').textContent(),'Keep this neighboring text.');
+      pass(kind+' insertion beside the selected picture preserves neighboring text and immediately supports Functions and Back to text');
+      await fields(kind).last().locator('[data-ti-image-field-edit]').click();
       assert.equal(await form().locator('[name="related"] option').last().textContent(),'Picture field 1');
       await form().locator('[name="related"]').selectOption(unnamedId);await form().locator('[type="submit"]').click();
       const anonymousIds=await fields(kind).evaluateAll(nodes=>nodes.map(node=>node.dataset.tiImageFieldId));
@@ -133,6 +154,7 @@ async function run(){
       await page.reload({waitUntil:'load'});await page.evaluate(kind=>{setLoggedInUI(true);switchTechnicalInstrumentBuilder(kind)},kind);
       assert.deepEqual(await fields(kind).evaluateAll(nodes=>nodes.map(node=>node.dataset.tiImageFieldId)),ids);
       assert.equal(await fields(kind).nth(3).getAttribute('data-ti-image-field-related'),ids[2]);
+      assert.deepEqual(await fields(kind).evaluateAll(nodes=>nodes.map(node=>node.dataset.tiImageFieldPrompt)),examples.map(item=>item.prompt));
       pass(kind+' manual Save, separate documents/builders and reload preserve all field definitions');
       if(kind==='playbook'&&process.env.TIOS_TEST_SCREENSHOT){await active(kind).locator('[data-playbook-ribbon="insert"]').click();await editor(kind).locator('#field-anchor-0').scrollIntoViewIfNeeded();await page.screenshot({path:process.env.TIOS_TEST_SCREENSHOT})}
       await active(kind).locator(kind==='playbook'?'#playbookPreviewOpenExecutionBtn':'[data-ti-action="preview"]').click();
@@ -141,6 +163,7 @@ async function run(){
       assert.equal(await mapped.locator('input[type="checkbox"]').count(),2,'Image fields do not become conditions');assert.equal(await mapped.locator('input[type="file"]').count(),0);
       const radios=mapped.locator('input[type="radio"]');await radios.nth(0).check();await radios.nth(1).check();assert.equal(await radios.nth(0).isChecked(),false);
       assert.equal(await mapped.locator('[data-ti-image-field-related-label]').nth(3).textContent(),'Related to: '+examples[2].label);
+      assert.deepEqual(await mapped.locator('.ti-image-field-prompt').allTextContents(),examples.map(item=>item.prompt));
       await page.locator('#executionBackToInstrumentsBtn').click();
       pass(kind+' separate Execution Quality design mapping, unchanged conditions and Either / Or');
       await fields(kind).nth(2).locator('[aria-label="Remove image field"]').click();assert.equal(await fields(kind).count(),3);
@@ -152,9 +175,10 @@ async function run(){
     await page.evaluate(()=>createPlaybookDocument());await form().locator('[type="submit"]').click();assert.equal(await fields('playbook').count(),0);
     pass('Switching document while a field modal is open cannot write into another document');
     await page.setViewportSize({width:390,height:844});await editor('playbook').click();await active('playbook').locator('[data-playbook-ribbon="insert"]').click();await active('playbook').locator('[data-playbook-insert="image-field"]').click();
+    assert.equal(await page.locator('#instrumentImageFieldModal.open').count(),0);await fields('playbook').first().locator('[data-ti-image-field-edit]').click();
     const modal=page.locator('#instrumentImageFieldModal .modal-card'),box=await modal.boundingBox();assert.ok(box.x>=0&&box.x+box.width<=390);
     await form().locator('[type="submit"]').focus();await page.keyboard.press('Tab');assert.equal(await page.locator('[data-image-field-close]').first().evaluate(el=>el===document.activeElement),true);await page.keyboard.press('Escape');
-    pass('Phone-sized design modal fits and supports keyboard focus and cancellation');
+    pass('Phone-sized optional settings fit and support keyboard focus and cancellation');
     assert.equal(chooserCount,0);assert.deepEqual(errors,[]);pass('Design fields open no file chooser and produce no JavaScript errors');
     console.log(checks+' image-field browser checks passed');
   }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve))}
