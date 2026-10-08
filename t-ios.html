@@ -4865,11 +4865,35 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
   min-height:0;
 }
 .execution-map-context{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
   padding:14px;
+  overflow:hidden;
+}
+.execution-map-context>.execution-map-control{
+  display:flex;
+  flex-direction:column;
+  flex:1 0 150px;
+  min-height:150px;
+  margin-bottom:0;
+}
+.execution-map-context>.execution-map-control select{
+  flex:1 1 0;
+  min-height:110px;
+  padding:0;
+}
+.execution-map-context>.execution-map-control option{
+  min-height:29px;
+  padding:7px 9px;
+}
+.execution-map-context-details{
+  flex:0 1 auto;
+  min-height:0;
+  margin-top:auto;
   overflow-y:auto;
   overscroll-behavior:contain;
 }
-.execution-map-context>.execution-map-control{display:block;margin-bottom:14px}
 .execution-map-context-head>span{
   display:block;
   color:#7c93ad;
@@ -4882,6 +4906,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
   margin-top:5px;
   color:#f0f5fb;
   font-size:14px;
+  overflow-wrap:anywhere;
 }
 .execution-map-context-head small{
   display:block;
@@ -7036,9 +7061,10 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
       <div class="execution-map-layout">
         <aside class="panel execution-map-context">
           <label class="execution-map-control">
-            <span>Trade</span>
-            <select id="executionMapTradeSelect" aria-label="Trade to review"></select>
+            <span>Trades</span>
+            <select id="executionMapTradeSelect" aria-label="Trade to review" size="5"></select>
           </label>
+          <div class="execution-map-context-details">
           <div class="execution-map-context-head">
             <span>TRADE CONTEXT</span>
             <strong id="executionMapTradeTitle">No trade selected</strong>
@@ -7073,6 +7099,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <span>Live execution match</span>
             <strong id="executionMapScore">—</strong>
             <small id="executionMapScoreMeta">No measurable Playbook rules yet.</small>
+          </div>
           </div>
         </aside>
 
