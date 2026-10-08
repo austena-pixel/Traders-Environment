@@ -2579,6 +2579,8 @@ textarea{resize:vertical;min-height:90px}
   font-size:11px;
   z-index:150;
   display:none;
+  max-width:min(480px,calc(100vw - 36px));
+  line-height:1.55;
 }
 .status-bar.show{display:block}
 
@@ -6836,7 +6838,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
                 </div>
               </div>
 
-              <div class="playbook-word-tool-group">
+              <div class="playbook-word-tool-group" data-instrument-selection-functions>
                 <span class="playbook-word-tool-label">Functions</span>
                 <div class="playbook-word-tool-row">
                   <select class="playbook-word-style-select" id="playbookBlockStyle" aria-label="Apply function to selected text" title="Highlight text, then choose its function">
@@ -7590,7 +7592,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
   </div>
 </div>
 
-<div class="status-bar" id="statusBar"></div>
+<div class="status-bar" id="statusBar" role="status" aria-live="polite" aria-atomic="true"></div>
 
 
 <script src="core/evidence-contract.js"></script>
@@ -7665,6 +7667,7 @@ const signedMoney = n => (Number(n)>0?'+':'') + money(n);
 
 function showStatus(text, ms=2200){
   const el = $('#statusBar');
+  delete el.dataset.instrumentSelectionHint;
   el.textContent = text;
   el.classList.add('show');
   clearTimeout(showStatus.timer);
@@ -14071,7 +14074,7 @@ function initInstrumentStyleSelection(editor,ribbon,remember,clear,refresh){
     if(!editor.closest('.page.active'))return;
     const selection=window.getSelection();
     const range=selection?.rangeCount?selection.getRangeAt(0):null;
-    if(range&&editor.contains(range.commonAncestorContainer))remember();
+    if(editor.contains(document.activeElement)&&range&&editor.contains(range.commonAncestorContainer))remember();
     else if(!ribbon?.contains(document.activeElement))clear();
     refresh();
   };
@@ -14089,7 +14092,7 @@ function initInstrumentStyleSelection(editor,ribbon,remember,clear,refresh){
     }
   });
   ribbon?.addEventListener('pointerdown',()=>{
-    remember();
+    if(editor.contains(document.activeElement))remember();
     refresh();
   });
   ribbon?.addEventListener('mousedown',event=>{
@@ -14144,6 +14147,61 @@ function instrumentFunctionUnits(editor,range){
   const units=instrumentWritingUnits(editor,range);
   // Table cells have their own editing boundaries; pictures are normal function content.
   return units.some(node=>node.nodeType===1&&(node.matches('table,.pb-doc-table-wrap')||node.querySelector('table')))?[]:units;
+}
+const INSTRUMENT_SELECTION_GUIDANCE={
+  functions:'First, highlight the text or pictures you want, then apply a function.',
+  reflection:'First, highlight the text or pictures you want, then choose Reflection.',
+  back:'First, select text or pictures with an applied function, then choose Back to text.',
+  styles:'First, highlight text or place the cursor inside the structure you want to style.',
+  layout:'First, select a list, an Either / Or group or a reflection group, then choose a layout.',
+  formatting:'First, highlight text to format, or place the cursor where you want to type.'
+};
+function clearInstrumentSelectionGuidance(){
+  const notice=$('#statusBar');
+  if(!notice?.dataset.instrumentSelectionHint)return;
+  notice.classList.remove('show');delete notice.dataset.instrumentSelectionHint;clearTimeout(showStatus.timer);
+}
+function instrumentSelectionGuidance(kind,target){
+  const {editor,range}=instrumentWritingContext(kind);
+  if(!editor?.closest('.page.active')||!target?.closest)return null;
+  const hint=(key,block=true)=>({message:INSTRUMENT_SELECTION_GUIDANCE[key],block});
+  const back=target.closest('[data-instrument-back-to-text]');
+  if(back)return back.disabled?hint('back'):null;
+  if(target.closest('[data-instrument-selection-functions]')){
+    const units=instrumentFunctionUnits(editor,range);
+    if(!units.length||!instrumentSelectedFunctionContent(editor,range,units).lines.length){
+      return hint(target.closest('[data-instrument-reflection-function]')?'reflection':'functions',Boolean(target.closest('button,select')));
+    }
+    return null;
+  }
+  const layout=target.closest('[data-playbook-list-layout],[data-ti-list-layout]');
+  const navigation=target.closest('[data-playbook-ribbon="styles"],[data-ti-ribbon="styles"],[data-playbook-style-category],[data-ti-style-category]');
+  const style=layout||navigation||target.closest('[data-playbook-style-align],[data-ti-style-align],[data-playbook-style-spacing],[data-ti-style-spacing],[data-playbook-style-border],[data-ti-style-border],[data-playbook-style-preset],[data-ti-style-preset],[data-playbook-style-color],[data-ti-style-color],#playbookStyleColorReset,#playbookStyleResetSelected,[data-ti-action="default-colors"],[data-ti-action="reset-style"]');
+  if(style){
+    const targets=instrumentStyleTargetsFromRange(editor,range);
+    if(layout&&(!targets.length||!targets.every(instrumentStyleGroup)))return hint('layout');
+    if(!targets.length)return hint('styles',!navigation);
+    return null;
+  }
+  const command=target.closest('[data-playbook-command],[data-ti-command]');
+  if(command&&!['undo','redo'].includes(command.dataset.playbookCommand||command.dataset.tiCommand)&&(!range||!editor.contains(range.commonAncestorContainer)))return hint('formatting');
+  return null;
+}
+function initInstrumentSelectionGuidance(kind){
+  const {editor}=instrumentWritingContext(kind),ribbon=editor?.closest('.page')?.querySelector('.playbook-word-ribbon');
+  if(!ribbon)return;
+  const inspect=event=>{
+    const selection=window.getSelection(),range=selection?.rangeCount?selection.getRangeAt(0):null;
+    if(editor.contains(document.activeElement)&&range&&editor.contains(range.commonAncestorContainer))instrumentRememberRange(kind,range.cloneRange());
+    const hint=instrumentSelectionGuidance(kind,event.target);
+    if(!hint){clearInstrumentSelectionGuidance();return}
+    if(event.type==='pointerdown'||event.detail===0){showStatus(hint.message,5000);$('#statusBar').dataset.instrumentSelectionHint='1'}
+    if(hint.block){event.preventDefault();if(event.type==='click')event.stopImmediatePropagation()}
+  };
+  // Disabled controls still emit pointer events; their normal click event is suppressed.
+  ribbon.addEventListener('pointerdown',inspect,true);
+  ribbon.addEventListener('click',inspect,true);
+  editor.addEventListener('pointerdown',clearInstrumentSelectionGuidance);
 }
 function refreshInstrumentFunctionControls(kind){
   const {editor,range}=instrumentWritingContext(kind),units=instrumentFunctionUnits(editor,range),page=editor?.closest('.page');
@@ -14218,10 +14276,10 @@ function applyInstrumentFunction(kind,type){
   if(!['p','h1','h2','h3','rule','choice','ul','ol','note','psych-prompt','blockquote'].includes(type))return;
   const {editor,range}=instrumentWritingContext(kind),units=instrumentFunctionUnits(editor,range);
   if(!editor?.closest('.page.active'))return;
-  if(!units.length){showStatus('Select text or pictures on the writing page first.');return}
+  if(!units.length){showStatus(INSTRUMENT_SELECTION_GUIDANCE.functions,5000);return}
   if(type==='choice'&&units.length===1&&units[0].matches?.('[data-playbook-node="choice"],.pb-doc-choice')){instrumentRestoreRange(kind,range);return}
   const content=instrumentSelectedFunctionContent(editor,range,units);
-  if(!content.lines.length){showStatus('Write or select some text or pictures first.');return}
+  if(!content.lines.length){showStatus(INSTRUMENT_SELECTION_GUIDANCE.functions,5000);return}
   if(type==='choice'){
     const text=content.lines.map(line=>{
       const node=document.createElement('div');node.innerHTML=line;
@@ -14276,6 +14334,7 @@ function normalizeInstrumentWritingBlocks(editor){
 }
 function initInstrumentWriting(kind){
   const {editor}=instrumentWritingContext(kind);if(!editor)return;
+  initInstrumentSelectionGuidance(kind);
   editor.closest('.page')?.querySelector('[data-instrument-back-to-text]')?.addEventListener('click',()=>applyInstrumentFunction(kind,'p'));
   editor.closest('.page')?.querySelector('[data-instrument-reflection-function]')?.addEventListener('click',()=>applyInstrumentFunction(kind,'psych-prompt'));
   editor.addEventListener('focus',()=>document.execCommand('defaultParagraphSeparator',false,'p'));
@@ -14352,7 +14411,7 @@ function refreshInstrumentStyleControls(targets,controls){
 function applyInstrumentSelectedStyle(kind,operation,value,colorKey=null){
   const {editor,range}=instrumentWritingContext(kind),targets=instrumentStyleTargetsFromRange(editor,range);
   if(!editor?.closest('.page.active'))return;
-  if(!targets.length){showStatus('Select text or place the cursor in a paragraph or group first.');return}
+  if(!targets.length){showStatus(INSTRUMENT_SELECTION_GUIDANCE.styles,5000);return}
   if(operation==='layout'&&(!['vertical','row','columns-2','columns-3','squares'].includes(value)||!targets.every(instrumentStyleGroup)))return;
   const colorDataset={background:'playbookColorBackground',border:'playbookColorBorder',text:'playbookColorText',accent:'playbookColorAccent'};
   if(operation==='color'&&(!colorDataset[colorKey]||!normalizePlaybookStyleColor(value)))return;
@@ -15034,7 +15093,7 @@ function secondaryWorkspaceHtml(kind){
                 <button class="playbook-word-tool-btn" type="button" data-ti-command="redo">↷</button>
               </div>
             </div>
-            <div class="playbook-word-tool-group">
+            <div class="playbook-word-tool-group" data-instrument-selection-functions>
               <span class="playbook-word-tool-label">Functions</span>
               <div class="playbook-word-tool-row">
                 <select class="playbook-word-style-select" data-ti-block-style aria-label="Apply function to selected text" title="Highlight text, then choose its function">

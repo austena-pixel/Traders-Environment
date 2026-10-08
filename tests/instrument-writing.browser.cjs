@@ -13,6 +13,10 @@ let page,checks=0;
 const pass=message=>{checks++;console.log('PASS '+message)};
 const active=kind=>page.locator(configs[kind].page),editor=kind=>active(kind).locator(configs[kind].editor),model=kind=>active(kind).locator(configs[kind].model);
 const attribute=(kind,key)=>configs[kind].prefix+'-'+key;
+async function clickDisabledControl(control){
+  await control.scrollIntoViewIfNeeded();const box=await control.boundingBox();
+  await page.mouse.click(box.x+box.width/2,box.y+box.height/2);
+}
 async function switchBuilder(kind){await page.evaluate(kind=>{setLoggedInUI(true);switchTechnicalInstrumentBuilder(kind)},kind)}
 async function select(kind,start,end=start,substring=null,collapse=false){
   await editor(kind).evaluate((el,{start,end,substring,collapse})=>{
@@ -66,11 +70,54 @@ async function run(){
     for(const kind of Object.keys(configs)){
       await switchBuilder(kind);assert.equal(await editor(kind).textContent(),'');
       assert.ok((await active(kind).locator('['+attribute(kind,'ribbon-panel')+'="home"]').textContent()).includes('Functions'));
+      const untouched=await editor(kind).innerHTML(),notice=page.locator('#statusBar');
+      const functionControl=active(kind).locator(configs[kind].functions);
+      assert.equal(await functionControl.isDisabled(),true);
+      await clickDisabledControl(functionControl);assert.match(await notice.textContent(),/^First, highlight.*apply a function/);assert.equal(await notice.isVisible(),true);
+      await screenshot('selection-guidance-'+kind);
+      await active(kind).locator('[data-instrument-selection-functions] .playbook-word-tool-label').click();assert.match(await notice.textContent(),/highlight.*function/);
+      await clickDisabledControl(active(kind).locator('[data-instrument-reflection-function]'));assert.match(await notice.textContent(),/highlight.*Reflection/);
+      await clickDisabledControl(active(kind).locator('[data-instrument-back-to-text]'));assert.match(await notice.textContent(),/^First, select.*Back to text/);
+      assert.equal(await editor(kind).innerHTML(),untouched);
+      pass(kind+' disabled Functions, Reflection and Back to text controls show selection guidance on real clicks without changing the document');
+
+      const stylesTab=active(kind).locator('['+attribute(kind,'ribbon')+'="styles"]');
+      await stylesTab.click();assert.match(await notice.textContent(),/^First, highlight text.*structure.*style/);
+      assert.equal(await active(kind).locator('['+attribute(kind,'ribbon-panel')+'="styles"]').isVisible(),true);
+      await clickDisabledControl(active(kind).locator('['+attribute(kind,'style-align')+'="center"]'));assert.match(await notice.textContent(),/structure.*style/);
+      await clickDisabledControl(active(kind).locator('['+attribute(kind,'list-layout')+'="columns-2"]'));assert.match(await notice.textContent(),/^First, select a list.*layout/);
+      await active(kind).locator('['+attribute(kind,'style-category')+'="colors"]').click();
+      await clickDisabledControl(active(kind).locator('['+attribute(kind,'style-color')+'="border"]'));assert.match(await notice.textContent(),/structure.*style/);
+      await stylesTab.focus();await page.keyboard.press('Enter');assert.match(await notice.textContent(),/structure.*style/);assert.equal(await notice.isVisible(),true);
+      assert.equal(await notice.getAttribute('role'),'status');assert.equal(await editor(kind).innerHTML(),untouched);
+      pass(kind+' Styles, disabled layout/color controls and keyboard tab activation explain the required selection while keeping Styles accessible');
+
+      await active(kind).locator('['+attribute(kind,'ribbon')+'="home"]').click();
+      await active(kind).locator('['+attribute(kind,'command')+'="bold"]').click();assert.match(await notice.textContent(),/^First, highlight text to format/);
+      assert.equal(await editor(kind).innerHTML(),untouched);
       await editor(kind).click();await page.keyboard.type('Context before. Wait for confirmation. Context after.');
+      assert.equal(await notice.evaluate(el=>Boolean(el.dataset.instrumentSelectionHint)),false);
       assert.equal(await active(kind).locator('[data-instrument-back-to-text]').isDisabled(),true);
       assert.equal((await page.evaluate(kind=>playbookStructuredPreviewItems(instrumentImageEditor(kind).innerHTML),kind)).every(item=>item.type==='content'),true);
       assert.equal(await model(kind).locator('.playbook-preview-checkbox,.ti-preview-prompt').count(),0);
       pass(kind+' opens as a normal blank writing page and typing creates unscored prose');
+
+      await select(kind,':scope > p',undefined,'Wait for confirmation.');
+      const prose=await editor(kind).innerHTML();
+      await active(kind).locator(configs[kind].title).evaluate(el=>{
+        const stale=window.getSelection().getRangeAt(0).cloneRange();
+        const selection=window.getSelection();selection.removeAllRanges();selection.addRange(stale);
+        el.focus();
+        document.dispatchEvent(new Event('selectionchange'));
+      });
+      assert.equal(await functionControl.isDisabled(),true);
+      await clickDisabledControl(functionControl);assert.match(await notice.textContent(),/highlight.*function/);
+      await stylesTab.click();assert.match(await notice.textContent(),/structure.*style/);
+      await active(kind).locator('['+attribute(kind,'style-category')+'="alignment"]').click();
+      const center=active(kind).locator('['+attribute(kind,'style-align')+'="center"]');
+      assert.equal(await center.isDisabled(),true);await clickDisabledControl(center);
+      assert.equal(await editor(kind).innerHTML(),prose);
+      pass(kind+' leaving the editor invalidates the target even when the browser retains an old range; ribbon clicks show guidance instead of styling old text');
 
       await select(kind,':scope > p',undefined,'Wait for confirmation.');await apply(kind,'rule');
       assert.equal(await editor(kind).locator('[data-playbook-node="rule"]').textContent(),'Wait for confirmation.');
@@ -217,6 +264,11 @@ async function run(){
     const functions=active('psych').locator(configs.psych.functions);await editor('psych').locator('h2').click();assert.equal(await functions.isEnabled(),true);await functions.scrollIntoViewIfNeeded();const box=await functions.boundingBox();assert.ok(box.x>=0&&box.x+box.width<=390);
     const back=active('psych').locator('[data-instrument-back-to-text]');assert.equal(await back.isEnabled(),true);await back.scrollIntoViewIfNeeded();const backBox=await back.boundingBox();assert.ok(backBox.x>=0&&backBox.x+backBox.width<=390);
     await screenshot('writing-mobile');pass('Document stores remain separate and Home Functions stays usable on a phone');
+    await page.evaluate(()=>{secondaryFind('psych','[data-ti-title]').focus();window.getSelection().removeAllRanges();secondaryState('psych').selectionRange=null;refreshSecondaryStyleControls('psych')});
+    await active('psych').locator('[data-ti-ribbon="styles"]').click();
+    const popup=page.locator('#statusBar');assert.equal(await popup.isVisible(),true);
+    assert.ok(await popup.evaluate(el=>{const rect=el.getBoundingClientRect();return rect.left>=0&&rect.right<=innerWidth}));
+    await screenshot('selection-guidance-mobile');pass('Selection guidance wraps inside the phone viewport');
     assert.deepEqual(errors,[]);pass('Browser console and JavaScript remain error-free');console.log('Completed '+checks+' writing checks');
   }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve))}
 }
