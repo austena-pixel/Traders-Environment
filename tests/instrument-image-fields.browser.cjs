@@ -125,10 +125,10 @@ async function run(){
       assert.equal(await fields(kind).last().evaluate(el=>el.previousElementSibling.dataset.tiImageFieldId),unnamedId);assert.equal(await editor(kind).locator('#direct-neighbor').textContent(),'Keep this neighboring text.');
       const selected=await fields(kind).last().getAttribute('data-ti-image-field-id');assert.equal(await fields(kind).last().evaluate(el=>el.classList.contains('ti-picture-selected')),true);
       await active(kind).locator('['+configs[kind].prefix+'-ribbon="home"]').click();
-      const functions=active(kind).locator(kind==='playbook'?'#playbookBlockStyle':'[data-ti-block-style]');assert.equal(await functions.isEnabled(),true);await functions.selectOption('rule');
-      assert.equal(await editor(kind).locator('[data-playbook-node="rule"] [data-ti-image-field-id="'+selected+'"]').count(),1);await active(kind).locator('[data-instrument-back-to-text]').click();
+      const functions=active(kind).locator(kind==='playbook'?'#playbookBlockStyle':'[data-ti-block-style]');assert.equal(await functions.isEnabled(),true);await functions.focus();await functions.selectOption('rule');
+      assert.equal(await editor(kind).locator('[data-playbook-node="rule"] [data-ti-image-field-id="'+selected+'"]').count(),1);
       assert.equal(await fields(kind).count(),2);assert.equal(await editor(kind).locator('#direct-neighbor').textContent(),'Keep this neighboring text.');
-      pass(kind+' insertion beside the selected picture preserves neighboring text and immediately supports Functions and Back to text');
+      pass(kind+' insertion beside the selected picture preserves neighboring text and immediately supports Functions');
       await fields(kind).last().locator('[data-ti-image-field-edit]').click();
       assert.equal(await form().locator('[name="related"] option').last().textContent(),'Picture field 1');
       await form().locator('[name="related"]').selectOption(unnamedId);await form().locator('[type="submit"]').click();
@@ -147,6 +147,8 @@ async function run(){
       const anonymousMapped=page.locator('#executionMapFormBody [data-execution-instrument-section="'+kind+'"]');
       assert.deepEqual(await anonymousMapped.locator('[data-playbook-node="image-field"]').evaluateAll(nodes=>nodes.map(node=>[node.dataset.tiImageFieldId,node.dataset.tiImageFieldLabel])),anonymousIds.map(id=>[id,'']));
       assert.deepEqual(await anonymousMapped.locator('.ti-image-field-name').allTextContents(),['','']);assert.equal(await anonymousMapped.locator('.ti-image-field-meta,.ti-image-field-prompt').count(),0);
+      assert.equal(await page.locator('#executionMapScore').textContent(),'0.0%');assert.match(await page.locator('#executionMapScoreMeta').textContent(),/^0 of 1 planned condition met/,'Only the explicitly assigned Rule counts; picture-only placeholders add no conditions');
+      await anonymousMapped.locator('.execution-map-rule-main > input[type="checkbox"]').check();assert.equal(await page.locator('#executionMapScore').textContent(),'100.0%');await page.locator('#executionMapResetBtn').click();assert.equal(await page.locator('#executionMapScore').textContent(),'0.0%');
       await page.locator('#executionBackToInstrumentsBtn').click();
       pass(kind+' unnamed picture fields map into Execution Quality without invented titles or context');
       await active(kind).locator(configs[kind].picker).selectOption(originalId);

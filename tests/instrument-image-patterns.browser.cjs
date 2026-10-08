@@ -49,6 +49,10 @@ async function waitSaved(kind){
   await page.waitForFunction(kind=>{const el=kind==='playbook'?document.querySelector('#playbookDraftSaveState'):secondaryFind(kind,'[data-ti-save-state]');return el?.textContent==='Saved'},kind);
 }
 async function savedHtml(kind){return page.evaluate(kind=>{const key=instrumentImageScope(kind),id=instrumentImageDocumentId(kind);return JSON.parse(localStorage.getItem(key)).find(item=>item.id===id).documentHtml},kind)}
+async function assertScore(followed,total){
+  assert.equal(await page.locator('#executionMapScore').textContent(),(followed/total*100).toFixed(1)+'%');
+  assert.match(await page.locator('#executionMapScoreMeta').textContent(),new RegExp('^'+followed+' of '+total+' planned conditions? met'));
+}
 async function screenshot(name){
   if(!process.env.TIOS_TEST_SCREENSHOT_DIR)return;
   fs.mkdirSync(process.env.TIOS_TEST_SCREENSHOT_DIR,{recursive:true});
@@ -103,7 +107,7 @@ async function run(){
     const picture={name:'representative-pattern.png',mimeType:'image/png',buffer:Buffer.from(pictureData,'base64')};
     for(const kind of Object.keys(configs)){
       await switchBuilder(kind);await active(kind).locator(configs[kind].create).click();
-      await editor(kind).evaluate(el=>{el.innerHTML='<h2>Pattern design</h2><p id="pattern-anchor">Select a representative setup.</p><ul><li>Respect planned risk</li></ul>';el.dispatchEvent(new Event('input',{bubbles:true}))});
+      await editor(kind).evaluate(el=>{el.innerHTML='<h2>Pattern design</h2><p id="pattern-anchor">Select a representative setup.</p><ul><li>Respect planned risk</li></ul><div class="pb-doc-note" data-playbook-node="psych-prompt"><p>Reflect on the decision.</p></div>';el.dispatchEvent(new Event('input',{bubbles:true}))});
       await openDesign(kind,'choice','Entry pattern');assert.equal(await rows().count(),2);
       await rows().nth(0).locator('[data-image-pattern-label]').fill('Pattern 1: <reversal> & "break"');
       await rows().nth(1).locator('[data-image-pattern-label]').fill('Pattern 2: continuation');
@@ -116,21 +120,20 @@ async function run(){
       assert.equal(await field(kind,choiceId).locator('input').count(),0,'The design stores definitions, not trade responses');
       await model(kind,choiceId).locator('img[src]').nth(1).waitFor();
       assert.deepEqual(await model(kind,choiceId).locator('.ti-image-pattern-label').allTextContents(),patterns.map(item=>item.label));
-      const liveRadios=model(kind,choiceId).locator('input[type="radio"]');await liveRadios.nth(0).check();await liveRadios.nth(1).check();
-      assert.equal(await liveRadios.nth(0).isChecked(),false);assert.equal(await liveRadios.nth(1).isChecked(),true);
-      await model(kind,choiceId).locator('img').nth(0).click();assert.equal(await liveRadios.nth(0).isChecked(),true);assert.equal(await liveRadios.nth(1).isChecked(),false);
-      pass(kind+' named representative pictures appear immediately and Choice allows only one pattern');
+      const liveRadios=model(kind,choiceId).locator('input[type="radio"]');assert.deepEqual(await liveRadios.evaluateAll(inputs=>inputs.map(input=>input.disabled)),[true,true]);
+      await model(kind,choiceId).locator('img').nth(0).click();await model(kind,choiceId).locator('img').nth(1).click();assert.deepEqual(await liveRadios.evaluateAll(inputs=>inputs.map(input=>input.checked)),[false,false]);
+      assert.equal(await liveRadios.first().evaluate(el=>{el.focus();return el===document.activeElement}),false);
+      pass(kind+' named representative pictures appear immediately, while Live Model cannot select or focus picture choices');
       await openDesign(kind,'check','Independent confirmations');await form().locator('[type="submit"]').click();
       const checkId=await editor(kind).locator('[data-ti-image-field-label="Independent confirmations"]').getAttribute('data-ti-image-field-id');
-      const liveChecks=model(kind,checkId).locator('input[type="checkbox"]');await liveChecks.nth(0).check();await liveChecks.nth(1).check();
-      assert.equal(await liveChecks.nth(0).isChecked(),true);assert.equal(await liveChecks.nth(1).isChecked(),true);
+      const liveChecks=model(kind,checkId).locator('input[type="checkbox"]');assert.deepEqual(await liveChecks.evaluateAll(inputs=>inputs.map(input=>input.disabled)),[true,true]);
+      await model(kind,checkId).locator('.ti-image-pattern').first().click();assert.deepEqual(await liveChecks.evaluateAll(inputs=>inputs.map(input=>input.checked)),[false,false]);
       await waitSaved(kind);await page.evaluate(kind=>kind==='playbook'?renderPlaybookExecutionPreview():renderSecondaryPreview(kind),kind);
-      assert.equal(await liveChecks.nth(0).isChecked(),true);assert.equal(await liveChecks.nth(1).isChecked(),true);
+      assert.deepEqual(await liveChecks.evaluateAll(inputs=>inputs.map(input=>input.checked)),[false,false]);
       await openDesign(kind,'choice','Another pattern group');await form().locator('[type="submit"]').click();
       const secondId=await editor(kind).locator('[data-ti-image-field-label="Another pattern group"]').getAttribute('data-ti-image-field-id');
-      await model(kind,choiceId).locator('input[type="radio"]').first().check();await model(kind,secondId).locator('input[type="radio"]').last().check();
-      assert.equal(await model(kind,choiceId).locator('input[type="radio"]').first().isChecked(),true);
-      pass(kind+' Check permits multiple selections and separate Choice fields remain independent');
+      assert.equal(await model(kind,secondId).locator('input[type="radio"]').last().isDisabled(),true);
+      pass(kind+' Live Model Check and separate Choice groups remain read-only through refreshes');
       await field(kind,choiceId).locator('[data-ti-image-field-edit]').click();await rows().last().locator('[data-image-pattern-remove]').click();
       await form().locator('[type="submit"]').click();assert.match(await form().locator('[data-image-field-error]').textContent(),/at least 2/);
       await form().locator('[data-image-pattern-add]').click();await rows().last().locator('[data-image-pattern-label]').fill('   ');
@@ -140,7 +143,6 @@ async function run(){
       await field(kind,choiceId).locator('[data-ti-image-field-edit]').click();await form().locator('[name="selection"]').selectOption('choice');await form().locator('[type="submit"]').click();
       assert.deepEqual(JSON.parse(await field(kind,choiceId).getAttribute('data-ti-image-field-patterns')),patterns);
       pass(kind+' validation, cancellation and mode changes preserve saved pattern definitions and images');
-      await model(kind,choiceId).locator('input[type="radio"]').first().check();
       const anonymous=[];
       for(const selection of ['choice','check']){
         await openDesign(kind,selection,'');
@@ -155,15 +157,16 @@ async function run(){
         await model(kind,id).locator('img[src]').nth(1).waitFor();
         const controls=model(kind,id).locator('input');assert.deepEqual(await controls.evaluateAll(inputs=>inputs.map(input=>input.getAttribute('aria-label'))),['Pattern 1','Pattern 2']);
         await model(kind,id).locator('img').nth(0).click();await model(kind,id).locator('img').nth(1).click();
-        assert.equal(await controls.first().isChecked(),selection==='check');assert.equal(await controls.last().isChecked(),true);
-        assert.equal(await model(kind,choiceId).locator('input[type="radio"]').first().isChecked(),true,'Unnamed groups do not share responses with named fields');
+        assert.deepEqual(await controls.evaluateAll(inputs=>inputs.map(input=>[input.disabled,input.checked])),[[true,false],[true,false]]);
+        assert.equal(await model(kind,choiceId).locator('input[type="radio"]').first().isChecked(),false);
         anonymous.push({id,selection,patterns:savedPatterns});
       }
-      pass(kind+' representative pictures need no field or pattern names, while Choice and Check retain independent controls');
+      pass(kind+' representative pictures need no names, and unnamed Choice and Check are also read-only in Live Model');
       await waitSaved(kind);const html=await savedHtml(kind);
       for(const pattern of patterns){assert.ok(html.includes(pattern.id));assert.ok(html.includes(pattern.imageKey))}
       for(const item of anonymous)for(const pattern of item.patterns){assert.ok(html.includes(pattern.id));assert.ok(html.includes(pattern.imageKey))}
       assert.ok(html.includes('data-ti-image-field-selection="choice"'));assert.equal(html.includes('data:image/'),false);
+      assert.equal(html.includes('data-ti-image-pattern-response'),false,'Saved designs contain no execution responses');
       await active(kind).locator(configs[kind].save).click();const docId=await page.evaluate(kind=>instrumentImageDocumentId(kind),kind);
       await active(kind).locator(configs[kind].create).click();assert.equal(await editor(kind).locator('[data-playbook-node="image-field"]').count(),0);
       await active(kind).locator(configs[kind].picker).selectOption(docId);await switchBuilder(kind==='playbook'?'checklist':'playbook');await switchBuilder(kind);
@@ -185,27 +188,33 @@ async function run(){
       assert.equal(await page.locator('#executionMapFormBody [data-execution-instrument-section]').count(),1);
       const mappedChoice=mapped.locator('[data-ti-image-field-id="'+choiceId+'"]');await mappedChoice.locator('img[src]').nth(1).waitFor();
       assert.ok(await mappedChoice.locator('input[type="radio"]').first().evaluate(el=>el.getBoundingClientRect().width<=20),'Pattern controls retain their compact size inside the generated form');
-      const scoreBefore=await page.locator('#executionMapScore').textContent();
+      await assertScore(0,8);
+      await mapped.locator('.execution-psych-prompt textarea').fill('Review response.');await assertScore(0,8);
+      await mappedChoice.locator('img').first().click();await assertScore(1,8);await mappedChoice.locator('img').last().click();await assertScore(1,8);
+      assert.equal(await mappedChoice.locator('input[type="radio"]').first().isChecked(),false);assert.equal(await mappedChoice.locator('input[type="radio"]').last().isChecked(),true);
+      const mappedChecks=mapped.locator('[data-ti-image-field-id="'+checkId+'"] input[type="checkbox"]');
+      await mappedChecks.first().check();await assertScore(2,8);await mappedChecks.last().check();await assertScore(3,8);
+      await mappedChecks.first().uncheck();await assertScore(2,8);await mappedChecks.first().check();await assertScore(3,8);
+      await mapped.locator('[data-ti-image-field-id="'+secondId+'"] input[type="radio"]').first().check();await assertScore(4,8);
+      let followed=4;
       for(const item of anonymous){
         const mappedAnonymous=mapped.locator('[data-ti-image-field-id="'+item.id+'"]');
         assert.equal(await mappedAnonymous.getAttribute('data-ti-image-field-label'),'');await mappedAnonymous.locator('img[src]').nth(1).waitFor();
         assert.deepEqual(await mappedAnonymous.locator('.ti-image-pattern-label').allTextContents(),['','']);
-        await mappedAnonymous.locator('img').nth(0).click();await mappedAnonymous.locator('img').nth(1).click();
+        await mappedAnonymous.locator('img').nth(0).click();await assertScore(++followed,8);
+        await mappedAnonymous.locator('img').nth(1).click();if(item.selection==='check')followed++;await assertScore(followed,8);
         assert.equal(await mappedAnonymous.locator('input').first().isChecked(),item.selection==='check');assert.equal(await mappedAnonymous.locator('input').last().isChecked(),true);
       }
-      await mappedChoice.locator('input[type="radio"]').first().check();await mappedChoice.locator('input[type="radio"]').last().check();
-      assert.equal(await mappedChoice.locator('input[type="radio"]').first().isChecked(),false);
-      const mappedChecks=mapped.locator('[data-ti-image-field-id="'+checkId+'"] input[type="checkbox"]');await mappedChecks.nth(0).check();await mappedChecks.nth(1).check();
-      assert.equal(await mappedChecks.nth(0).isChecked(),true);assert.equal(await mappedChecks.nth(1).isChecked(),true);
-      await mapped.locator('[data-ti-image-field-id="'+secondId+'"] input[type="radio"]').first().check();
+      assert.equal(followed,7);await mapped.locator('.execution-map-rule-main > input[type="checkbox"]').check();await assertScore(8,8);
       assert.equal(await mappedChoice.locator('input[type="radio"]').last().isChecked(),true);
       const hiddenPreview=model(kind,choiceId).locator('input[type="radio"]');
-      await hiddenPreview.first().evaluate(el=>el.checked=true);assert.equal(await mappedChoice.locator('input[type="radio"]').last().isChecked(),true);
-      await page.evaluate(()=>updateExecutionMappingScore());assert.equal(await page.locator('#executionMapScore').textContent(),scoreBefore);
+      assert.equal(await hiddenPreview.first().isDisabled(),true);await hiddenPreview.first().evaluate(el=>{el.checked=true;el.dispatchEvent(new Event('change',{bubbles:true}))});
+      await page.evaluate(()=>updateExecutionMappingScore());await assertScore(8,8);
+      await page.evaluate(kind=>kind==='playbook'?renderPlaybookExecutionPreview():renderSecondaryPreview(kind),kind);assert.equal(await hiddenPreview.first().isChecked(),false);await assertScore(8,8);
       if(kind==='playbook')await screenshot('image-pattern-execution');
-      await page.locator('#executionMapResetBtn').click();assert.equal(await mapped.locator('[data-ti-image-pattern-response]:checked').count(),0);
+      await page.locator('#executionMapResetBtn').click();assert.equal(await mapped.locator('[data-ti-image-pattern-response]:checked').count(),0);await assertScore(0,8);
       await page.locator('#executionBackToInstrumentsBtn').click();
-      pass(kind+' separate Execution Quality mapping preserves pictures, Choice/Check, group independence, reset and existing scoring');
+      pass(kind+' Execution Quality scores Choice once, each Check independently and normal rules, reaches 100%, ignores Live Model and resets to 0%');
     }
     await switchBuilder('playbook');await editor('playbook').locator('#pattern-anchor').waitFor();
     const cancelledId=await openDesign('playbook','choice','Cancelled uploads');

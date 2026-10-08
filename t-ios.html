@@ -11386,8 +11386,14 @@ function renderExecutionMappingForm(){
 }
 
 function updateExecutionMappingScore(){
-  const checks=$$('[data-execution-map-check]');
-  const choiceGroups=$$('[data-execution-map-choice-group]');
+  const section=$('#executionMapFormBody [data-execution-instrument-section]');
+  const kind=section?.dataset.executionInstrumentSection||executionMappingActiveInstrument;
+  const prefix=kind==='playbook'?'map':kind;
+  const checkSelector=`[data-execution-${prefix}-check]`;
+  const choiceSelector=`[data-execution-${prefix}-choice]`;
+  const groupSelector=`[data-execution-${prefix}-choice-group]`;
+  const checks=section?[...section.querySelectorAll(checkSelector)]:[];
+  const choiceGroups=section?[...section.querySelectorAll(groupSelector)]:[];
   const score=$('#executionMapScore');
   const meta=$('#executionMapScoreMeta');
   if(!score||!meta)return;
@@ -11395,12 +11401,13 @@ function updateExecutionMappingScore(){
   const total=checks.length+choiceGroups.length;
   if(!total){
     score.textContent='—';
-    meta.textContent='No measurable Playbook rules yet.';
+    const label=kind==='checklist'?'Rules':(kind==='psych'?'Psychological Reflection':'Playbook');
+    meta.textContent='No measurable '+label+' conditions yet.';
     return;
   }
 
   const followedChecks=checks.filter(item=>item.checked).length;
-  const satisfiedChoices=choiceGroups.filter(group=>Boolean(group.querySelector('[data-execution-map-choice]:checked'))).length;
+  const satisfiedChoices=choiceGroups.filter(group=>[...group.querySelectorAll(choiceSelector+':checked')].some(input=>input.closest(groupSelector)===group)).length;
   const followed=followedChecks+satisfiedChoices;
   const pct=followed/total*100;
   score.textContent=pct.toFixed(1)+'%';
@@ -11478,7 +11485,7 @@ function initExecutionMappingWorkspace(){
   });
 
   $('#executionMapFormBody')?.addEventListener('change',event=>{
-    if(event.target.matches('[data-execution-map-check], [data-execution-map-choice]'))updateExecutionMappingScore();
+    if(event.target.matches('input[type="checkbox"], input[type="radio"]'))updateExecutionMappingScore();
   });
 
   $('#executionMapResetBtn')?.addEventListener('click',resetExecutionMappingInputs);
@@ -13324,15 +13331,13 @@ function renderPlaybookExecutionPreview(){
   const checkCount=items.filter(item=>item.type==='check').length;
   const choiceCount=items.filter(item=>item.type==='choice').length;
   const linkedCount=items.filter(item=>item.type==='checklist'||item.type==='reflection').length;
-  const measurableCount=checkCount+choiceCount;
-  meta.textContent=`Preview only · ${measurableCount} condition${measurableCount===1?'':'s'} · ${linkedCount} linked instrument${linkedCount===1?'':'s'}`;
 
   if(!items.length){
+    meta.textContent='Preview only · 0 conditions · 0 linked instruments';
     body.innerHTML='<div class="playbook-preview-empty">Start organizing your Playbook to see the Execution Quality model form here.</div>';
     return;
   }
 
-  const patternResponses=captureInstrumentImagePatternResponses(body,source.id);
   body.innerHTML=items.map((item,itemIndex)=>{
     if(item.type==='image')return instrumentReferenceImageHtml(item);
     if(item.type==='image-field')return instrumentImageFieldHtml(item,false,{kind:'playbook',area:'preview'});
@@ -13410,7 +13415,8 @@ function renderPlaybookExecutionPreview(){
     }
     return '';
   }).join('');
-  restoreInstrumentImagePatternResponses(body,source.id,patternResponses);
+  const measurableCount=checkCount+choiceCount+instrumentImagePatternConditionCount(body);
+  meta.textContent=`Preview only · ${measurableCount} condition${measurableCount===1?'':'s'} · ${linkedCount} linked instrument${linkedCount===1?'':'s'}`;
   hydratePlaybookImages(body);
 }
 
@@ -15103,14 +15109,12 @@ function renderSecondaryPreview(kind){
   if(!doc){body.innerHTML='<div class="playbook-preview-empty">Create an instrument first.</div>';return}
   const sourceHtml=secondaryFind(kind,'[data-ti-editor]')?.innerHTML||doc.documentHtml||'';
   const items=playbookStructuredPreviewItems(sourceHtml,{kind,area:'preview'});
+  body.innerHTML=items.length?secondaryPreviewHtml(kind,items):'<div class="playbook-preview-empty">Start building this instrument to see its Execution Quality model.</div>';
   const meta=secondaryFind(kind,'[data-ti-preview-meta]');
   if(meta){
-    const measurable=kind==='psych'?items.filter(x=>x.type==='psych-prompt'||x.type==='choice'||x.type==='check').length:items.filter(x=>x.type==='check'||x.type==='choice').length;
+    const measurable=(kind==='psych'?items.filter(x=>x.type==='psych-prompt'||x.type==='choice'||x.type==='check').length:items.filter(x=>x.type==='check'||x.type==='choice').length)+instrumentImagePatternConditionCount(body);
     meta.textContent='Preview only · '+measurable+' '+(kind==='psych'?'prompt':'condition')+(measurable===1?'':'s')+' · mapped separately';
   }
-  const patternResponses=captureInstrumentImagePatternResponses(body,doc.id);
-  body.innerHTML=items.length?secondaryPreviewHtml(kind,items):'<div class="playbook-preview-empty">Start building this instrument to see its Execution Quality model.</div>';
-  restoreInstrumentImagePatternResponses(body,doc.id,patternResponses);
   hydratePlaybookImages(body);
 }
 function renderSecondaryDocument(kind){
@@ -15388,24 +15392,20 @@ function instrumentImageFieldPatternsHtml(item,editable,{kind='playbook',area='p
   if(selection==='capture')return '';
   const instruction=selection==='choice'?'Choose one pattern':'Check each applicable pattern';
   const name='ti_image_pattern_'+area+'_'+kind+'_'+item.id;
+  const execution=!editable&&area==='execution';
+  const prefix=kind==='playbook'?'map':kind;
   const patterns=normalizeInstrumentImagePatterns(item.patterns).map((pattern,index)=>{
-    const tag=editable?'div':'label';
-    const control=editable?'<span aria-hidden="true">'+(selection==='choice'?'○':'□')+'</span>':`<input type="${selection==='choice'?'radio':'checkbox'}" name="${escapeHtml(name)}" value="${escapeHtml(pattern.id)}" aria-label="${escapeHtml(pattern.label||'Pattern '+(index+1))}" data-ti-image-pattern-response>`;
+    const tag=execution?'label':'div';
+    const scoreAttr=execution?(selection==='choice'?` data-execution-${prefix}-choice`:` data-execution-${prefix}-check="${escapeHtml(name+'_'+pattern.id)}"`):' disabled';
+    const control=editable?'<span aria-hidden="true">'+(selection==='choice'?'○':'□')+'</span>':`<input type="${selection==='choice'?'radio':'checkbox'}" name="${escapeHtml(name)}" value="${escapeHtml(pattern.id)}" aria-label="${escapeHtml(pattern.label||'Pattern '+(index+1))}" data-ti-image-pattern-response${scoreAttr}>`;
     return `<${tag} class="ti-image-pattern" data-ti-image-pattern-id="${escapeHtml(pattern.id)}">${instrumentImagePatternPictureHtml(pattern)}<span class="ti-image-pattern-label">${control}<span>${escapeHtml(pattern.label)}</span></span></${tag}>`;
   }).join('');
-  return `<div class="ti-image-field-selection-note">${instruction}</div><div class="ti-image-field-patterns" role="group" aria-label="${escapeHtml((item.label?item.label+': ':'')+instruction)}">${patterns}</div>`;
+  const groupAttr=execution&&selection==='choice'?` data-execution-${prefix}-choice-group="${escapeHtml(name)}"`:'';
+  return `<div class="ti-image-field-selection-note">${instruction}</div><div class="ti-image-field-patterns" role="group" aria-label="${escapeHtml((item.label?item.label+': ':'')+instruction)}"${groupAttr}>${patterns}</div>`;
 }
-// Keep trial selections during a Live Model refresh; responses stay out of saved design HTML.
-function captureInstrumentImagePatternResponses(root,documentId){
-  if(root.dataset.tiImagePatternDocument!==documentId)return new Set();
-  return new Set([...root.querySelectorAll('[data-ti-image-pattern-response]:checked')].map(input=>
-    JSON.stringify([input.closest('[data-ti-image-field-id]').dataset.tiImageFieldId,input.value])));
-}
-function restoreInstrumentImagePatternResponses(root,documentId,responses){
-  root.dataset.tiImagePatternDocument=documentId;
-  root.querySelectorAll('[data-ti-image-pattern-response]').forEach(input=>{
-    input.checked=responses.has(JSON.stringify([input.closest('[data-ti-image-field-id]').dataset.tiImageFieldId,input.value]));
-  });
+function instrumentImagePatternConditionCount(root){
+  return [...root.querySelectorAll('.ti-image-field-patterns')].reduce((total,group)=>
+    total+(group.querySelector('input[type="radio"]')?1:group.querySelectorAll('input[type="checkbox"]').length),0);
 }
 // An unnamed field stays unnamed in the document; numbered labels only identify relationship choices.
 function instrumentImageFieldDisplayName(node,root){
