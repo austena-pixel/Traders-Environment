@@ -4216,6 +4216,15 @@ body.playbook-preview-resizing *{
 .playbook-word-tool-row{display:flex;align-items:center;gap:4px}
 .playbook-word-tool-btn,.playbook-word-insert-btn{min-width:34px;min-height:31px;border:1px solid transparent;border-radius:5px;background:transparent;color:#202a36;padding:5px 8px;font-size:10px}
 .playbook-word-tool-btn:hover,.playbook-word-insert-btn:hover{border-color:#c8ced6;background:#e7edf5}
+.playbook-word-tool-btn:is([data-instrument-reflection-function],[data-instrument-back-to-text]){display:inline-flex;flex:0 0 auto;align-items:center;justify-content:center;gap:6px;min-height:34px;padding:7px 10px;border:1px solid #c5cdd8;border-radius:8px;background:#fff;color:#3c485b;font-size:11px;font-weight:650;line-height:1.2;white-space:nowrap;box-shadow:0 1px 2px rgba(28,38,56,.06);transition:background .15s,border-color .15s,box-shadow .15s}
+.playbook-word-tool-btn:is([data-instrument-reflection-function],[data-instrument-back-to-text]) svg{width:14px;height:14px;flex:0 0 14px;pointer-events:none}
+.playbook-word-tool-btn[data-instrument-reflection-function]{border-color:#7143b4;background:linear-gradient(180deg,#8556ca,#7041b3);color:#fff;box-shadow:0 2px 4px rgba(99,57,158,.16)}
+.playbook-word-tool-btn[data-instrument-reflection-function]:hover:not(:disabled){border-color:#60349f;background:linear-gradient(180deg,#7747bc,#61349e);box-shadow:0 3px 6px rgba(99,57,158,.2)}
+.playbook-word-tool-btn[data-instrument-back-to-text]:hover:not(:disabled){border-color:#9cabc0;background:#edf2f8;color:#26364e}
+.playbook-word-tool-btn:is([data-instrument-reflection-function],[data-instrument-back-to-text]):focus-visible{outline:2px solid #9069ca;outline-offset:2px}
+.playbook-word-tool-btn:is([data-instrument-reflection-function],[data-instrument-back-to-text]):active:not(:disabled){box-shadow:inset 0 1px 3px rgba(28,38,56,.15)}
+.playbook-word-tool-btn:is([data-instrument-reflection-function],[data-instrument-back-to-text]):disabled{border-color:#dfe3e9;background:#f1f3f6;color:#8d97a5;box-shadow:none;cursor:not-allowed;opacity:1}
+.playbook-word-tool-btn[data-instrument-reflection-function]:disabled{border-color:#ded1ee;background:#eee7f8;color:#9885af}
 .playbook-word-tool-btn.strong{font-weight:900}.playbook-word-tool-btn.italic{font-style:italic}.playbook-word-tool-btn.underline{text-decoration:underline}
 .playbook-word-style-select{min-width:120px;height:31px;border:1px solid #c8ced6;border-radius:5px;background:#fff;color:#202a36;padding:0 7px;font-size:10px}
 .playbook-list-style-btn{
@@ -6844,8 +6853,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
                     <option value="psych-prompt">Reflection prompt</option>
                     <option value="blockquote">Quote</option>
                   </select>
-                  <button type="button" class="playbook-word-tool-btn" data-instrument-reflection-function disabled title="Select text to create a written reflection prompt in Execution Quality">Reflection</button>
-                  <button type="button" class="playbook-word-tool-btn" data-instrument-back-to-text disabled title="Remove the selected function; keep its text, pictures and formatting">Back to text</button>
+                  <button type="button" class="playbook-word-tool-btn" data-instrument-reflection-function disabled title="Select text to create a written reflection prompt in Execution Quality"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 14a3 3 0 0 1-3 3h-7l-5 4v-4a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3Z"/><path d="M8 8h8M8 12h5"/></svg>Reflection</button>
+                  <button type="button" class="playbook-word-tool-btn" data-instrument-back-to-text disabled title="Remove the selected function; keep its text, pictures and formatting"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 10-4 4 4 4M5 14h9a5 5 0 0 0 0-10h-2"/></svg>Back to text</button>
                 </div>
               </div>
 
@@ -15032,8 +15041,8 @@ function secondaryWorkspaceHtml(kind){
                   <option value="">Apply a function…</option><option value="p">Plain text / Remove function</option><option value="h1">Heading 1</option><option value="h2">Heading 2</option><option value="h3">Heading 3</option>
                   <option value="rule">Rule / Check</option><option value="choice">Either / Or</option><option value="ul">Bulleted conditions</option><option value="ol">Numbered conditions</option><option value="note">Note</option><option value="psych-prompt">Reflection prompt</option><option value="blockquote">Quote</option>
                 </select>
-                <button class="playbook-word-tool-btn" type="button" data-instrument-reflection-function disabled title="Select text to create a written reflection prompt in Execution Quality">Reflection</button>
-                <button class="playbook-word-tool-btn" type="button" data-instrument-back-to-text disabled title="Remove the selected function; keep its text, pictures and formatting">Back to text</button>
+                <button class="playbook-word-tool-btn" type="button" data-instrument-reflection-function disabled title="Select text to create a written reflection prompt in Execution Quality"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 14a3 3 0 0 1-3 3h-7l-5 4v-4a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3Z"/><path d="M8 8h8M8 12h5"/></svg>Reflection</button>
+                <button class="playbook-word-tool-btn" type="button" data-instrument-back-to-text disabled title="Remove the selected function; keep its text, pictures and formatting"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 10-4 4 4 4M5 14h9a5 5 0 0 0 0-10h-2"/></svg>Back to text</button>
               </div>
             </div>
             <div class="playbook-word-tool-group">
