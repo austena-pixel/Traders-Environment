@@ -366,19 +366,41 @@ async function run(){
     assert.equal(await mappedBoxes.first().evaluate(el=>getComputedStyle(el).borderTopWidth),'2px');
     assert.equal(await mappedBoxes.first().evaluate(el=>getComputedStyle(el).borderTopColor),'rgb(18, 101, 201)');
     assert.equal(await mappedBoxes.first().locator('.ti-score-entry').evaluate(el=>getComputedStyle(el).justifyContent),'center');
-    await page.locator('#executionMapFormBody input[type="checkbox"]').check();assert.equal(await page.locator('#executionMapScore').textContent(),'100.0%');
+    assert.equal(await page.locator('#executionMapScore').textContent(),'—');
+    assert.equal(await page.locator('#executionMapScoreLabel').textContent(),'Live score total');
+    assert.equal(await page.locator('#executionMapScoreMeta').textContent(),'0 / 30 points · 0 of 3 scored.');
+    await page.locator('#executionMapFormBody input[type="checkbox"]').check();assert.equal(await page.locator('#executionMapScore').textContent(),'—');
+    assert.equal(await page.locator('#executionMapConditionScore').textContent(),'Conditions: 100.0% · 1 of 1 met.');
+    const beforeScoring=await state();
+    await responses().first().fill('10');assert.equal(await page.locator('#executionMapScore').textContent(),'33.3%');
+    assert.equal(await page.locator('#executionMapScoreMeta').textContent(),'10 / 30 points · 1 of 3 scored.');
+    await responses().nth(1).fill('10');await responses().nth(2).fill('8');
+    assert.equal(await page.locator('#executionMapScore').textContent(),'93.3%');
+    assert.equal(await page.locator('#executionMapScoreMeta').textContent(),'28 / 30 points · 3 of 3 scored.');
+    await snapshot(kind+'-score-28-of-30');
+    await responses().nth(2).fill('10');assert.equal(await page.locator('#executionMapScore').textContent(),'100.0%');
+    assert.equal(await page.locator('#executionMapScoreMeta').textContent(),'30 / 30 points · 3 of 3 scored.');
+    for(const field of await responses().all())await field.fill('0');
+    assert.equal(await page.locator('#executionMapScore').textContent(),'0.0%');
+    assert.equal(await page.locator('#executionMapScoreMeta').textContent(),'0 / 30 points · 3 of 3 scored.');
+    assert.deepEqual(await state(),beforeScoring);
+    pass(kind+' ratings update the marked total immediately: 28/30 → 93.3%, 30/30 → 100%, zeros → 0%; blanks still contribute to the full maximum and no typing is written before Save');
     for(const [index,value] of ['10','7.5','0'].entries())await responses().nth(index).fill(value);
     await save();
     const savedRows=(await state()).checks.filter(row=>row.review_id==='legacy-review'&&scoreIds[kind].some(id=>row.criterion_key.endsWith(id)));
     assert.deepEqual(savedRows.map(row=>JSON.parse(row.comment)),[{type:'score',value:10,max:10},{type:'score',value:7.5,max:10},{type:'score',value:0,max:10}]);
     assert.ok(savedRows.every(row=>row.criterion_key.startsWith('text__ti__'+kind+'__')));
-    assert.equal(await page.locator('#executionMapScore').textContent(),'100.0%');assert.equal(await page.evaluate(()=>trades[0].execution_score),7);
+    assert.equal(await page.locator('#executionMapScore').textContent(),'58.3%');assert.equal(await page.evaluate(()=>trades[0].execution_score),7);
+    assert.equal(await page.locator('#executionMapConditionScore').textContent(),'Conditions: 100.0% · 1 of 1 met.');
+    await page.locator('#executionMapFormBody input[type="checkbox"]').uncheck();assert.equal(await page.locator('#executionMapScore').textContent(),'58.3%');
+    assert.equal(await page.locator('#executionMapConditionScore').textContent(),'Conditions: 0.0% · 0 of 1 met.');
     assert.ok((await page.locator('#executionMapReflectionSaveState').textContent()).includes('Scores saved for this trade'));
     pass(kind+' Score layouts, alignment, spacing, borders, presets and custom colors map immediately; 10, fractional and zero ratings save independently of condition percentages');
 
-    await page.locator('#executionMapTradeSelect').selectOption(secondTrade);assert.deepEqual(await responses().evaluateAll(nodes=>nodes.map(node=>node.value)),['','','']);
-    await responses().first().fill('6.25');await save();
+    await page.locator('#executionMapTradeSelect').selectOption(secondTrade);assert.deepEqual(await responses().evaluateAll(nodes=>nodes.map(node=>node.value)),['','','']);assert.equal(await page.locator('#executionMapScore').textContent(),'—');
+    await responses().first().fill('6.25');assert.equal(await page.locator('#executionMapScore').textContent(),'20.8%');await save();
     await page.locator('#executionMapTradeSelect').selectOption(firstTrade);assert.deepEqual(await responses().evaluateAll(nodes=>nodes.map(node=>node.value)),['10','7.5','0']);
+    assert.equal(await page.locator('#executionMapScore').textContent(),'58.3%');
     await snapshot(kind+'-score-execution');
     pass(kind+' scores remain isolated between trades and between Technical Instruments');
     await page.locator('#executionBackToInstrumentsBtn').click();
@@ -387,6 +409,7 @@ async function run(){
   for(const kind of Object.keys(config)){
     await open(kind);assert.deepEqual(await editor(kind).locator('[data-ti-response-type="score"]').evaluateAll(nodes=>nodes.map(node=>node.dataset.tiReflectionId)),scoreIds[kind]);
     await mapped(kind);assert.deepEqual(await responses().evaluateAll(nodes=>nodes.map(node=>node.value)),['10','7.5','0']);
+    assert.equal(await page.locator('#executionMapScore').textContent(),'58.3%');assert.equal(await page.locator('#executionMapScoreMeta').textContent(),'17.5 / 30 points · 3 of 3 scored.');
     assert.equal(await page.evaluate(()=>executionMappingReflectionContext.documentId),scoreDocuments[kind]);
     await page.locator('#executionBackToInstrumentsBtn').click();
   }
@@ -396,14 +419,17 @@ async function run(){
   for(const invalid of ['-1','11']){
     const before=await state();await responses().first().fill(invalid);await save();
     assert.ok((await page.locator('#executionMapReflectionSaveState').textContent()).includes('Discipline: Enter a score from 0 to 10'));
+    assert.equal(await page.locator('#executionMapScore').textContent(),'—');assert.equal(await page.locator('#executionMapScoreMeta').textContent(),'Enter scores from 0 to 10.');
     assert.deepEqual(await state(),before);assert.equal(await responses().first().inputValue(),invalid);
   }
   await responses().first().fill('');await responses().first().press('e');
   assert.equal(await responses().first().evaluate(el=>el.validity.badInput),true);
+  assert.equal(await page.locator('#executionMapScore').textContent(),'—');
   const invalidBefore=await state();await save();assert.deepEqual(await state(),invalidBefore);
   await responses().first().fill('10');await responses().nth(1).fill('');await save();
   assert.equal((await state()).checks.find(row=>row.review_id==='legacy-review'&&row.criterion_key.endsWith(scoreIds.psych[1])).comment,null);
   assert.equal(await responses().nth(2).inputValue(),'0');
+  assert.equal(await page.locator('#executionMapScore').textContent(),'33.3%');assert.equal(await page.locator('#executionMapScoreMeta').textContent(),'10 / 30 points · 2 of 3 scored.');
   pass('Scores reject negative, over-10 and non-numeric input before any write; blank clears a response and remains distinct from a saved zero');
 
   await responses().first().fill('9');await page.evaluate(()=>window.__reflectionFailSave=true);await save();
@@ -440,8 +466,10 @@ async function run(){
 
   await open('psych');await mapped('psych');const beforeReset=await state();await page.locator('#executionMapResetBtn').click();
   assert.deepEqual(await responses().evaluateAll(nodes=>nodes.map(node=>node.value)),['','','']);assert.deepEqual(await state(),beforeReset);
+  assert.equal(await page.locator('#executionMapScore').textContent(),'—');assert.equal(await page.locator('#executionMapScoreMeta').textContent(),'0 / 30 points · 0 of 3 scored.');
   await page.reload({waitUntil:'load'});await hydrate();await page.evaluate(()=>{executionMappingActiveInstrument='psych';navigate('execution')});
   assert.deepEqual(await responses().evaluateAll(nodes=>nodes.map(node=>node.value)),['10','','0']);
+  assert.equal(await page.locator('#executionMapScore').textContent(),'33.3%');
   pass('Reset Inputs clears the visible score fields without deleting saved ratings before Save');
 
   await page.locator('#executionBackToInstrumentsBtn').click();await open('psych');await ribbon('psych','home');
@@ -471,12 +499,35 @@ async function run(){
   await responses().nth(0).fill('10');await responses().nth(1).fill('I waited for confirmation.');await save();
   assert.ok((await state()).checks.some(row=>row.criterion_key.endsWith(singleScoreId)&&JSON.parse(row.comment).value===10));
   assert.ok((await state()).checks.some(row=>row.comment==='I waited for confirmation.'));
-  assert.equal(await page.locator('#executionMapScore').textContent(),'—');
+  assert.equal(await page.locator('#executionMapScore').textContent(),'100.0%');
+  assert.equal(await page.locator('#executionMapScoreMeta').textContent(),'10 / 10 points · 1 of 1 scored.');
+  assert.equal(await page.locator('#executionMapConditionScore').isVisible(),false);
   await snapshot('mixed-score-reflection');
   await page.setViewportSize({width:390,height:844});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
   assert.ok(await responses().first().evaluate(el=>el.getBoundingClientRect().right<=innerWidth));await snapshot('scores-mobile');
   await page.setViewportSize({width:1823,height:1000});
   pass('A single characteristic becomes a Score, coexists with a written reflection, survives Reset Selected and fits mobile width without changing compliance scoring');
+
+  await page.locator('#executionBackToInstrumentsBtn').click();await open('psych');
+  await put('psych','<p>Discipline</p><p>Patience</p><p>Accountability</p>');
+  await editor('psych').evaluate(el=>{const range=document.createRange();range.selectNodeContents(el);instrumentRestoreRange('psych',range);refreshSecondaryStyleControls('psych')});
+  await ribbon('psych','home');await active('psych').locator(config.psych.functions).selectOption('score');await mapped('psych');
+  for(const [index,value] of ['10','10','8'].entries())await responses().nth(index).fill(value);
+  assert.equal(await page.locator('#executionMapScore').textContent(),'93.3%');await save();
+  await page.reload({waitUntil:'load'});await hydrate();await page.evaluate(()=>{executionMappingActiveInstrument='psych';navigate('execution')});
+  assert.deepEqual(await responses().evaluateAll(nodes=>nodes.map(node=>node.value)),['10','10','8']);
+  assert.equal(await page.locator('#executionMapScore').textContent(),'93.3%');assert.equal(await page.locator('#executionMapScoreMeta').textContent(),'28 / 30 points · 3 of 3 scored.');
+  assert.equal(await page.locator('#executionMapConditionScore').isVisible(),false);await snapshot('saved-28-of-30');
+  pass('The requested 10 + 10 + 8 example saves per trade and restores 28/30 = 93.3% after a full reload');
+
+  await page.locator('#executionBackToInstrumentsBtn').click();await open('psych');
+  await editor('psych').evaluate(el=>{el.insertAdjacentHTML('beforeend','<div data-playbook-node="choice" class="pb-doc-choice"><div class="pb-doc-choice-options"><div class="pb-doc-choice-option"><span data-choice-option>Balance</span></div><div class="pb-doc-choice-option"><span data-choice-option>Imbalance</span></div></div></div>');el.dispatchEvent(new Event('input',{bubbles:true}))});
+  await mapped('psych');const choices=page.locator('#executionMapFormBody input[type="radio"]');
+  assert.equal(await page.locator('#executionMapScore').textContent(),'93.3%');assert.equal(await page.locator('#executionMapConditionScore').textContent(),'Conditions: 0.0% · 0 of 1 met.');
+  await choices.first().check();assert.equal(await page.locator('#executionMapScore').textContent(),'93.3%');assert.equal(await page.locator('#executionMapConditionScore').textContent(),'Conditions: 100.0% · 1 of 1 met.');
+  await choices.last().check();assert.deepEqual(await choices.evaluateAll(nodes=>nodes.map(node=>node.checked)),[false,true]);assert.equal(await page.locator('#executionMapScore').textContent(),'93.3%');
+  await snapshot('scores-with-exclusive-choice');
+  pass('Either / Or remains exclusive and keeps its compliance percentage separate from the 28/30 Score total');
   assert.deepEqual(errors,[]);pass('No browser console or JavaScript runtime errors');
   console.log(checks+' reflection browser scenarios passed');
  }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve))}

@@ -5054,6 +5054,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
   font-size:8px;
   line-height:1.4;
 }
+#executionMapConditionScore[hidden]{display:none}
 .execution-map-form{
   display:flex;
   flex-direction:column;
@@ -7166,9 +7167,10 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           </div>
 
           <div class="execution-map-score">
-            <span>Live execution match</span>
+            <span id="executionMapScoreLabel">Live execution match</span>
             <strong id="executionMapScore">—</strong>
             <small id="executionMapScoreMeta">No measurable Playbook rules yet.</small>
+            <small id="executionMapConditionScore" hidden></small>
           </div>
           </div>
         </aside>
@@ -11659,6 +11661,7 @@ function restoreExecutionMappingReflections(){
     field.disabled=!scope?.tradeId;
   });
   updateExecutionMappingReflectionState();
+  updateExecutionMappingScore();
 }
 function updateExecutionMappingReflectionState(){
   const scope=executionMappingReflectionContext,fields=$$('#executionMapFormBody [data-execution-reflection-id]');
@@ -11748,23 +11751,45 @@ function updateExecutionMappingScore(){
   const groupSelector=`[data-execution-${prefix}-choice-group]`;
   const checks=section?[...section.querySelectorAll(checkSelector)]:[];
   const choiceGroups=section?[...section.querySelectorAll(groupSelector)]:[];
+  const scoreFields=section?[...section.querySelectorAll('[data-execution-response-type="score"][data-execution-reflection-id]')]:[];
   const score=$('#executionMapScore');
   const meta=$('#executionMapScoreMeta');
+  const label=$('#executionMapScoreLabel'),conditions=$('#executionMapConditionScore');
   if(!score||!meta)return;
 
   const total=checks.length+choiceGroups.length;
-  if(!total){
-    score.textContent='—';
-    const label=kind==='checklist'?'Rules':(kind==='psych'?'Psychological Reflection':'Playbook');
-    meta.textContent='No measurable '+label+' conditions yet.';
-    return;
-  }
-
   const followedChecks=checks.filter(item=>item.checked).length;
   const satisfiedChoices=choiceGroups.filter(group=>[...group.querySelectorAll(choiceSelector+':checked')].some(input=>input.closest(groupSelector)===group)).length;
   const followed=followedChecks+satisfiedChoices;
-  const pct=followed/total*100;
-  score.textContent=pct.toFixed(1)+'%';
+  const conditionPct=total?followed/total*100:null;
+  if(label)label.textContent=scoreFields.length?'Live score total':'Live execution match';
+  if(conditions){
+    conditions.hidden=!scoreFields.length||!total;
+    conditions.textContent=conditions.hidden?'':`Conditions: ${conditionPct.toFixed(1)}% · ${followed} of ${total} met.`;
+  }
+
+  if(scoreFields.length){
+    const maximum=scoreFields.length*10;
+    if(scoreFields.some(field=>executionScoreFieldError(field))){
+      score.textContent='—';meta.textContent='Enter scores from 0 to 10.';return;
+    }
+    const answered=scoreFields.filter(field=>field.value.trim()!=='').length;
+    const earned=scoreFields.reduce((sum,field)=>sum+Number(field.value||0),0);
+    // Every defined Score field contributes to the maximum, including blanks.
+    // Answers remain individually saved; the percentage is always derived.
+    score.textContent=answered?(earned/maximum*100).toFixed(1)+'%':'—';
+    meta.textContent=`${Number(earned.toFixed(6))} / ${maximum} points · ${answered} of ${scoreFields.length} scored.`;
+    return;
+  }
+
+  if(!total){
+    score.textContent='—';
+    const instrument=kind==='checklist'?'Rules':(kind==='psych'?'Psychological Reflection':'Playbook');
+    meta.textContent='No measurable '+instrument+' conditions yet.';
+    return;
+  }
+
+  score.textContent=conditionPct.toFixed(1)+'%';
   meta.textContent=`${followed} of ${total} planned condition${total===1?'':'s'} met in this mapping test.`;
 }
 
@@ -11842,13 +11867,14 @@ function initExecutionMappingWorkspace(){
   });
 
   $('#executionMapFormBody')?.addEventListener('change',event=>{
-    if(event.target.matches('input[type="checkbox"], input[type="radio"]'))updateExecutionMappingScore();
+    if(event.target.matches('input[type="checkbox"], input[type="radio"], [data-execution-response-type="score"]'))updateExecutionMappingScore();
   });
 
   $('#executionMapFormBody')?.addEventListener('input',event=>{
     if(!event.target.matches('[data-execution-reflection-id]'))return;
     executionMappingReflectionError=null;
     captureExecutionMappingReflectionDraft();updateExecutionMappingReflectionState();
+    if(event.target.matches('[data-execution-response-type="score"]'))updateExecutionMappingScore();
   });
   $('#executionMapSaveReflectionsBtn')?.addEventListener('click',saveExecutionMappingReflections);
   $('#executionMapResetBtn')?.addEventListener('click',resetExecutionMappingInputs);
