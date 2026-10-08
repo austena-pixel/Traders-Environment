@@ -323,6 +323,160 @@ async function run(){
     assert.equal(await editor(kind).locator('[data-playbook-node="psych-prompt"]').count(),0);
   }
   pass('Reflection removals persist across builder switching and page reload, with separate document storage');
+
+  const scoreIds={},scoreDocuments={};
+  for(const kind of Object.keys(config)){
+    await open(kind);await put(kind,'<h2>Characteristics</h2><ul id="traits"><li><b>Discipline</b></li><li>Patience</li><li>Objectivity</li></ul><p id="score-rule" data-playbook-node="rule">Followed the plan.</p><p id="score-neighbor">Keep my wording.</p>');
+    const neighbor=await editor(kind).locator('#score-neighbor').evaluate(el=>el.outerHTML);
+    await select(kind,'#traits',true);await ribbon(kind,'home');await active(kind).locator(config[kind].functions).selectOption('score');
+    const scoreGroup=editor(kind).locator('[data-playbook-node="reflection-group"]');
+    const boxes=scoreGroup.locator('[data-ti-response-type="score"]');
+    assert.equal(await boxes.count(),3);
+    assert.deepEqual(await boxes.evaluateAll(nodes=>nodes.map(node=>{const clone=node.cloneNode(true);clone.querySelectorAll('button').forEach(b=>b.remove());return clone.textContent})),['Discipline','Patience','Objectivity']);
+    assert.equal(await boxes.first().locator('b').textContent(),'Discipline');
+    assert.equal(await editor(kind).locator('#score-neighbor').evaluate(el=>el.outerHTML),neighbor);
+    scoreIds[kind]=await boxes.evaluateAll(nodes=>nodes.map(node=>node.dataset.tiReflectionId));assert.ok(scoreIds[kind].every(id=>id.startsWith('score_')));
+    assert.equal(await model(kind).locator('.ti-score-placeholder').count(),3);
+    assert.equal(await model(kind).locator('input,textarea').count(),0);
+    pass(kind+' converts an existing personality list into separately labelled Score fields without adding content; Live Model remains read-only');
+
+    await select(kind,'[data-playbook-node="reflection-group"]',true);await ribbon(kind,'styles');
+    await active(kind).locator('['+config[kind].ribbon+'-list-layout="columns-2"]').click();
+    for(const [category,value] of [['alignment','center'],['spacing','relaxed'],['borders','strong'],['presets','card']]){
+      await active(kind).locator('['+config[kind].ribbon+'-style-category="'+category+'"]').click();
+      const key={alignment:'align',spacing:'spacing',borders:'border',presets:'preset'}[category];
+      await active(kind).locator('['+config[kind].ribbon+'-style-'+key+'="'+value+'"]').click();
+    }
+    await active(kind).locator('['+config[kind].ribbon+'-style-category="colors"]').click();
+    for(const [slot,color] of [['background','#e7efff'],['border','#1265c9'],['text','#14253f'],['accent','#805ac2']]){
+      await active(kind).locator('['+config[kind].ribbon+'-style-color="'+slot+'"]').evaluate((el,value)=>{el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}))},color);
+    }
+    const liveBoxes=model(kind).locator('[data-ti-response-type="score"]');
+    assert.equal(await liveBoxes.first().evaluate(el=>getComputedStyle(el).borderTopWidth),'2px');
+    assert.equal(await liveBoxes.first().evaluate(el=>getComputedStyle(el).borderTopColor),'rgb(18, 101, 201)');
+    assert.equal(await liveBoxes.first().evaluate(el=>getComputedStyle(el).textAlign),'center');
+    await snapshot(kind+'-score-builder');await mapped(kind);
+    scoreDocuments[kind]=await page.evaluate(()=>executionMappingReflectionContext.documentId);
+    assert.equal(await responses().count(),3);assert.equal(await responses().first().getAttribute('type'),'number');
+    assert.deepEqual(await responses().evaluateAll(nodes=>nodes.map(node=>node.value)),['','','']);
+    assert.equal(await saveResponses().textContent(),'Save scores');
+    for(const field of await responses().all()){assert.equal(await field.getAttribute('min'),'0');assert.equal(await field.getAttribute('max'),'10');assert.equal(await field.getAttribute('step'),'any')}
+    const mappedBoxes=page.locator('#executionMapFormBody [data-ti-response-type="score"]');
+    assert.equal(await page.locator('#executionMapFormBody .ti-reflection-layout').getAttribute('data-playbook-list-layout'),'columns-2');
+    assert.equal(await mappedBoxes.first().evaluate(el=>getComputedStyle(el).borderTopWidth),'2px');
+    assert.equal(await mappedBoxes.first().evaluate(el=>getComputedStyle(el).borderTopColor),'rgb(18, 101, 201)');
+    assert.equal(await mappedBoxes.first().locator('.ti-score-entry').evaluate(el=>getComputedStyle(el).justifyContent),'center');
+    await page.locator('#executionMapFormBody input[type="checkbox"]').check();assert.equal(await page.locator('#executionMapScore').textContent(),'100.0%');
+    for(const [index,value] of ['10','7.5','0'].entries())await responses().nth(index).fill(value);
+    await save();
+    const savedRows=(await state()).checks.filter(row=>row.review_id==='legacy-review'&&scoreIds[kind].some(id=>row.criterion_key.endsWith(id)));
+    assert.deepEqual(savedRows.map(row=>JSON.parse(row.comment)),[{type:'score',value:10,max:10},{type:'score',value:7.5,max:10},{type:'score',value:0,max:10}]);
+    assert.ok(savedRows.every(row=>row.criterion_key.startsWith('text__ti__'+kind+'__')));
+    assert.equal(await page.locator('#executionMapScore').textContent(),'100.0%');assert.equal(await page.evaluate(()=>trades[0].execution_score),7);
+    assert.ok((await page.locator('#executionMapReflectionSaveState').textContent()).includes('Scores saved for this trade'));
+    pass(kind+' Score layouts, alignment, spacing, borders, presets and custom colors map immediately; 10, fractional and zero ratings save independently of condition percentages');
+
+    await page.locator('#executionMapTradeSelect').selectOption(secondTrade);assert.deepEqual(await responses().evaluateAll(nodes=>nodes.map(node=>node.value)),['','','']);
+    await responses().first().fill('6.25');await save();
+    await page.locator('#executionMapTradeSelect').selectOption(firstTrade);assert.deepEqual(await responses().evaluateAll(nodes=>nodes.map(node=>node.value)),['10','7.5','0']);
+    await snapshot(kind+'-score-execution');
+    pass(kind+' scores remain isolated between trades and between Technical Instruments');
+    await page.locator('#executionBackToInstrumentsBtn').click();
+  }
+  await page.reload({waitUntil:'load'});await hydrate();
+  for(const kind of Object.keys(config)){
+    await open(kind);assert.deepEqual(await editor(kind).locator('[data-ti-response-type="score"]').evaluateAll(nodes=>nodes.map(node=>node.dataset.tiReflectionId)),scoreIds[kind]);
+    await mapped(kind);assert.deepEqual(await responses().evaluateAll(nodes=>nodes.map(node=>node.value)),['10','7.5','0']);
+    assert.equal(await page.evaluate(()=>executionMappingReflectionContext.documentId),scoreDocuments[kind]);
+    await page.locator('#executionBackToInstrumentsBtn').click();
+  }
+  pass('Saved Score functions, stable IDs, styling and per-trade values survive builder switching and a full page reload');
+
+  await open('psych');await mapped('psych');
+  for(const invalid of ['-1','11']){
+    const before=await state();await responses().first().fill(invalid);await save();
+    assert.ok((await page.locator('#executionMapReflectionSaveState').textContent()).includes('Discipline: Enter a score from 0 to 10'));
+    assert.deepEqual(await state(),before);assert.equal(await responses().first().inputValue(),invalid);
+  }
+  await responses().first().fill('');await responses().first().press('e');
+  assert.equal(await responses().first().evaluate(el=>el.validity.badInput),true);
+  const invalidBefore=await state();await save();assert.deepEqual(await state(),invalidBefore);
+  await responses().first().fill('10');await responses().nth(1).fill('');await save();
+  assert.equal((await state()).checks.find(row=>row.review_id==='legacy-review'&&row.criterion_key.endsWith(scoreIds.psych[1])).comment,null);
+  assert.equal(await responses().nth(2).inputValue(),'0');
+  pass('Scores reject negative, over-10 and non-numeric input before any write; blank clears a response and remains distinct from a saved zero');
+
+  await responses().first().fill('9');await page.evaluate(()=>window.__reflectionFailSave=true);await save();
+  assert.ok((await page.locator('#executionMapReflectionSaveState').textContent()).includes('Scores were not saved'));
+  assert.equal(await responses().first().inputValue(),'9');await page.evaluate(()=>window.__reflectionFailSave=false);await save();
+  await responses().first().fill('8');await page.evaluate(()=>window.__reflectionHoldSave=true);await saveResponses().click();
+  await page.waitForFunction(()=>typeof window.__reflectionReleaseSave==='function');await responses().first().fill('10');
+  await page.evaluate(()=>{window.__reflectionHoldSave=false;window.__reflectionReleaseSave()});await page.waitForFunction(()=>!executionMappingReflectionSaving);
+  assert.equal(await responses().first().inputValue(),'10');assert.ok((await page.locator('#executionMapReflectionSaveState').textContent()).includes('Unsaved scores'));await save();
+  pass('A failed Score save retains the value for retry, and edits made during a pending save remain unsaved until the next Save');
+
+  await page.evaluate(()=>navigate('journal'));await journalButton(firstTrade).click();
+  const ratings=await journalBody().locator('dd').allTextContents();assert.ok(ratings.includes('10 / 10'));assert.ok(ratings.includes('0 / 10'));
+  assert.ok(!(await journalBody().textContent()).includes('"type":"score"'));
+  assert.equal((await journalBody().locator('dt').allTextContents()).filter(label=>label==='Discipline').length,1);
+  await snapshot('journal-saved-scores');await page.locator('#journalReflectionClose').click();
+  await page.evaluate(firstTrade=>{
+    // Exercise the compatibility renderer without reintroducing its retired UI.
+    const fixture=document.createElement('section');fixture.id='score-history-fixture';fixture.hidden=true;
+    for(const id of ['executionReflectionFields','executionStructureEmpty','executionStructureSelect','executionStructureActions','executionEditStructureBtn','executionDeleteStructureBtn','executionUseRecommendedBtn','executionNewStructureBtn','executionSaveHistoricalStructureBtn','executionStructureName','executionStructureMeta','executionLiveScore','executionLiveRating','executionHeaderGrade']){
+      const el=document.createElement(id==='executionStructureSelect'?'select':'div');el.id=id;fixture.appendChild(el);
+    }
+    document.body.appendChild(fixture);
+    selectedExecutionTradeId=firstTrade;
+    const review=executionReviews.find(row=>row.trade_id===firstTrade);renderExecutionReflectionFields(review);
+  },firstTrade);
+  const historical=page.locator('#executionReflectionFields [data-execution-response-type="score"]');
+  assert.equal(await historical.count(),9);assert.ok((await historical.evaluateAll(nodes=>nodes.map(node=>node.value))).includes('0'));
+  assert.equal(await page.locator('#executionReflectionFields textarea').evaluateAll(nodes=>nodes.some(node=>node.value.includes('"type":"score"'))),false);
+  assert.equal(await page.evaluate(()=>executionChecklistRowsForReview('legacy-review').length),1);
+  assert.deepEqual(await page.evaluate(()=>['not json','null','{"type":"score","value":11,"max":10}','{"type":"score","value":"0","max":10}'].map(executionScoreResponseFromComment)),[null,null,null,null]);
+  await page.evaluate(()=>document.getElementById('score-history-fixture').remove());
+  pass('Journal shows psychological ratings as readable values; historical reviews use numeric fields, malformed data is ignored and all ratings stay outside compliance scoring');
+
+  await open('psych');await mapped('psych');const beforeReset=await state();await page.locator('#executionMapResetBtn').click();
+  assert.deepEqual(await responses().evaluateAll(nodes=>nodes.map(node=>node.value)),['','','']);assert.deepEqual(await state(),beforeReset);
+  await page.reload({waitUntil:'load'});await hydrate();await page.evaluate(()=>{executionMappingActiveInstrument='psych';navigate('execution')});
+  assert.deepEqual(await responses().evaluateAll(nodes=>nodes.map(node=>node.value)),['10','','0']);
+  pass('Reset Inputs clears the visible score fields without deleting saved ratings before Save');
+
+  await page.locator('#executionBackToInstrumentsBtn').click();await open('psych');await ribbon('psych','home');
+  const remainingIds=scoreIds.psych.slice(1);await editor('psych').locator('[data-instrument-remove-reflection]').first().click();
+  assert.deepEqual(await editor('psych').locator('[data-ti-response-type="score"]').evaluateAll(nodes=>nodes.map(node=>node.dataset.tiReflectionId)),remainingIds);
+  await active('psych').locator('[data-ti-command="undo"]').click();assert.equal(await editor('psych').locator('[data-ti-response-type="score"]').count(),3);
+  await select('psych','[data-playbook-node="reflection-group"]',true);await active('psych').locator('[data-instrument-back-to-text]').click();
+  assert.equal(await editor('psych').locator('[data-ti-response-type="score"],[data-playbook-node="reflection-group"]').count(),0);
+  assert.ok((await editor('psych').textContent()).includes('Discipline'));assert.ok((await editor('psych').textContent()).includes('Keep my wording.'));
+  assert.equal(await model('psych').locator('.ti-score-placeholder').count(),0);
+  pass('Score boxes can be removed individually, restored with Undo and returned to ordinary text without changing their labels or nearby content');
+
+  await put('psych','<p id="single-score"><i>Discipline</i></p><p id="mixed-reflection">What happened?</p><p id="mixed-neighbor">Keep this paragraph.</p>');
+  await select('psych','#single-score',true);await active('psych').locator(config.psych.functions).selectOption('score');
+  assert.equal(await editor('psych').locator('[data-playbook-node="reflection-group"]').count(),0);
+  assert.equal(await editor('psych').locator('[data-ti-response-type="score"]').textContent(),'Discipline');
+  const singleScoreId=await editor('psych').locator('[data-ti-response-type="score"]').getAttribute('data-ti-reflection-id');
+  await select('psych','#mixed-reflection',true);await active('psych').locator('[data-instrument-reflection-function]').click();
+  await select('psych','[data-ti-response-type="score"]',true);await ribbon('psych','styles');
+  await active('psych').locator('[data-ti-style-category="presets"]').click();await active('psych').locator('[data-ti-style-preset="card"]').click();
+  const reflectionBefore=await editor('psych').locator('[data-playbook-node="psych-prompt"]:not([data-ti-response-type="score"])').evaluate(el=>el.outerHTML);
+  await active('psych').locator('[data-ti-style-category="reset"]').click();await active('psych').locator('[data-ti-action="reset-style"]').click();
+  assert.equal(await editor('psych').locator('[data-ti-response-type="score"]').getAttribute('data-ti-reflection-id'),singleScoreId);
+  assert.equal(await editor('psych').locator('[data-ti-response-type="score"]').getAttribute('data-playbook-preset'),null);
+  assert.equal(await editor('psych').locator('[data-playbook-node="psych-prompt"]:not([data-ti-response-type="score"])').evaluate(el=>el.outerHTML),reflectionBefore);
+  await mapped('psych');assert.equal(await responses().count(),2);assert.equal(await saveResponses().textContent(),'Save responses');
+  await responses().nth(0).fill('10');await responses().nth(1).fill('I waited for confirmation.');await save();
+  assert.ok((await state()).checks.some(row=>row.criterion_key.endsWith(singleScoreId)&&JSON.parse(row.comment).value===10));
+  assert.ok((await state()).checks.some(row=>row.comment==='I waited for confirmation.'));
+  assert.equal(await page.locator('#executionMapScore').textContent(),'—');
+  await snapshot('mixed-score-reflection');
+  await page.setViewportSize({width:390,height:844});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  assert.ok(await responses().first().evaluate(el=>el.getBoundingClientRect().right<=innerWidth));await snapshot('scores-mobile');
+  await page.setViewportSize({width:1823,height:1000});
+  pass('A single characteristic becomes a Score, coexists with a written reflection, survives Reset Selected and fits mobile width without changing compliance scoring');
   assert.deepEqual(errors,[]);pass('No browser console or JavaScript runtime errors');
   console.log(checks+' reflection browser scenarios passed');
  }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve))}

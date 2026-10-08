@@ -4774,6 +4774,14 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 .ti-reflection-placeholder{display:block;min-height:64px;margin-top:10px;padding:10px;border:1px dashed #58486f;border-radius:6px;background:#100d17;color:#aa95bc;font:10px/1.5 Arial,sans-serif}
 .playbook-word-editor [data-playbook-node="psych-prompt"]{padding:12px;border:1px solid #cfc2df;border-radius:9px;background:#faf7fd;min-width:0}
 .playbook-word-editor [data-playbook-node="psych-prompt"]::after{content:'Written response in Execution Quality';display:block;flex:1;min-height:50px;margin-top:10px;padding:9px;border:1px dashed #cfc2df;border-radius:6px;color:#80688f;font:10px/1.5 Arial,sans-serif;pointer-events:none}
+.playbook-word-editor [data-playbook-node="psych-prompt"][data-ti-response-type="score"]::after{content:'— / 10 · Score in Execution Quality';min-height:0;flex:0;font-size:12px}
+.ti-score-placeholder{min-height:0;font-size:13px;font-weight:700}
+.ti-score-entry{display:flex;align-items:center;justify-content:inherit;gap:8px;margin-top:8px;min-width:0}
+[data-playbook-align="center"] .ti-score-entry{justify-content:center}
+[data-playbook-align="right"] .ti-score-entry{justify-content:flex-end}
+.ti-score-entry input[type="number"]{width:90px;max-width:100%;min-width:0;padding:9px;border:1px solid var(--pb-style-accent,#58486f);border-radius:8px;background:#0d0a12;color:#edf2f7;font-size:14px;font-weight:700;text-align:inherit}
+.ti-score-entry span{white-space:nowrap;font-size:12px;color:inherit;opacity:.8}
+.ti-score-entry input:focus-visible{outline:2px solid var(--pb-style-accent,#a78bfa);outline-offset:2px}
 .playbook-word-editor [data-playbook-node="psych-prompt"] :is(p,h3){margin:0;font-size:inherit;color:inherit}
 .playbook-word-editor [data-playbook-node="reflection-group"]{position:relative}
 .ti-preview-prompt b,.execution-psych-prompt label{color:inherit}
@@ -6866,6 +6874,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
                     <option value="ol">Numbered conditions</option>
                     <option value="note">Note</option>
                     <option value="psych-prompt">Reflection prompt</option>
+                    <option value="score">Score (0–10)</option>
                     <option value="blockquote">Quote</option>
                   </select>
                   <button type="button" class="playbook-word-tool-btn" data-instrument-reflection-function disabled title="Select text to create a written reflection prompt in Execution Quality"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 14a3 3 0 0 1-3 3h-7l-5 4v-4a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3Z"/><path d="M8 8h8M8 12h5"/></svg>Reflection</button>
@@ -9823,7 +9832,9 @@ function journalReflectionEntries(tradeId){
       if(!key.startsWith('text__ti__'))return [{group:'execution',label:row.criterion_label||'Reflection',answer:String(row.comment)}];
       const parts=key.split('__');
       if(parts.length<5||parts[2]!=='psych')return [];
-      try{return [{group:'psych:'+parts[3],documentId:decodeURIComponent(parts[3]),label:row.criterion_label||'Reflection',answer:String(row.comment)}]}
+      const score=executionIsScoreResponseKey(key)?executionScoreResponseFromComment(row.comment):null;
+      if(executionIsScoreResponseKey(key)&&!score)return [];
+      try{return [{group:'psych:'+parts[3],documentId:decodeURIComponent(parts[3]),label:row.criterion_label||'Reflection',answer:score?score.value+' / '+score.max:String(row.comment)}]}
       catch(error){return []}
     });
   reviews.forEach(review=>{
@@ -10394,6 +10405,30 @@ function executionItemTypeFromKey(key){
   return String(key||'').startsWith('text__')?'text':'check';
 }
 
+// Numeric responses stay in the existing non-compliance response rows. The
+// stable prompt ID retains their type even when the source document changes.
+function executionIsScoreResponseKey(key){
+  return String(key||'').startsWith('text__ti__')&&/__score_[a-zA-Z0-9_-]+$/.test(key);
+}
+function executionScoreResponseFromComment(comment){
+  try{
+    const score=JSON.parse(comment);
+    return score?.type==='score'&&typeof score.value==='number'&&Number.isFinite(score.value)&&score.max===10&&score.value>=0&&score.value<=10?score:null;
+  }catch(error){return null}
+}
+function executionScoreFieldError(field){
+  if(field?.dataset.executionResponseType!=='score')return '';
+  const value=field.value.trim(),number=Number(value);
+  return field.validity.badInput||(value&&(!Number.isFinite(number)||number<0||number>10))?'Enter a score from 0 to 10.':'';
+}
+function executionResponseComment(field){
+  const value=field?.value.trim()||'';
+  if(!value)return null;
+  if(field.dataset.executionResponseType!=='score')return value;
+  if(executionScoreFieldError(field))throw new Error('Enter a score from 0 to 10.');
+  return JSON.stringify({type:'score',value:Number(value),max:10});
+}
+
 function executionReflectionSignature(items){
   return (Array.isArray(items)?items:[])
     .map((item,index)=>({
@@ -10807,11 +10842,21 @@ function renderExecutionReflectionFields(review){
           guidance.textContent=item.guidance;
           block.appendChild(guidance);
         }
-        const textarea=document.createElement('textarea');
-        textarea.dataset.executionTextKey=item.key;
-        textarea.placeholder=item.placeholder||'Write your reflection...';
-        textarea.value=row&&row.comment?row.comment:'';
-        block.appendChild(textarea);
+        const score=executionIsScoreResponseKey(item.key);
+        const input=document.createElement(score?'input':'textarea');
+        input.dataset.executionTextKey=item.key;
+        input.id='execution-response-'+item.key;label.htmlFor=input.id;
+        if(score){
+          input.type='number';input.min='0';input.max='10';input.step='any';input.dataset.executionResponseType='score';
+          input.placeholder='—';input.dataset.executionReflectionLabel=item.label;
+          const saved=executionScoreResponseFromComment(row?.comment);input.value=saved?String(saved.value):'';
+          const entry=document.createElement('div');entry.className='ti-score-entry';
+          const scale=document.createElement('span');scale.id=input.id+'-scale';scale.textContent='/ 10';input.setAttribute('aria-describedby',scale.id);
+          entry.append(input,scale);block.appendChild(entry);
+        }else{
+          input.placeholder=item.placeholder||'Write your reflection...';input.value=row&&row.comment?row.comment:'';
+          block.appendChild(input);
+        }
         container.appendChild(block);
         return;
       }
@@ -11608,7 +11653,9 @@ function restoreExecutionMappingReflections(){
   $$('#executionMapFormBody [data-execution-reflection-id]').forEach(field=>{
     const key=scope?executionMappingReflectionKey(scope,field.dataset.executionReflectionId):'';
     field.dataset.executionReflectionKey=key;
-    field.value=draft?.has(key)?draft.get(key):(scope?executionMappingSavedReflection(scope,key)?.comment||'':'');
+    const saved=scope?executionMappingSavedReflection(scope,key)?.comment||'':'';
+    const score=field.dataset.executionResponseType==='score'?executionScoreResponseFromComment(saved):null;
+    field.value=draft?.has(key)?draft.get(key):(field.dataset.executionResponseType==='score'?(score?String(score.value):''):saved);
     field.disabled=!scope?.tradeId;
   });
   updateExecutionMappingReflectionState();
@@ -11618,14 +11665,23 @@ function updateExecutionMappingReflectionState(){
   const button=$('#executionMapSaveReflectionsBtn'),status=$('#executionMapReflectionSaveState');
   if(!button||!status)return;
   button.hidden=!fields.length;
-  const dirty=Boolean(scope&&fields.some(field=>field.value.trim()!==(executionMappingSavedReflection(scope,field.dataset.executionReflectionKey)?.comment||'').trim()));
+  const scoreCount=fields.filter(field=>field.dataset.executionResponseType==='score').length;
+  const noun=scoreCount===fields.length&&scoreCount?'scores':scoreCount?'responses':'reflections';
+  const title=noun[0].toUpperCase()+noun.slice(1);button.textContent='Save '+noun;
+  const dirty=Boolean(scope&&fields.some(field=>{
+    if(executionScoreFieldError(field))return true;
+    const saved=executionMappingSavedReflection(scope,field.dataset.executionReflectionKey)?.comment||'';
+    const score=field.dataset.executionResponseType==='score'?executionScoreResponseFromComment(saved):null;
+    const stored=field.dataset.executionResponseType==='score'?(score?JSON.stringify({type:'score',value:score.value,max:score.max}):''):saved.trim();
+    return (executionResponseComment(field)||'')!==stored;
+  }));
   const hasSaved=Boolean(scope&&fields.some(field=>executionMappingSavedReflection(scope,field.dataset.executionReflectionKey)));
   button.disabled=executionMappingReflectionSaving||!scope?.userId||!scope?.tradeId||!fields.length||(!dirty&&!hasSaved);
   if(!fields.length)status.textContent='Mapping test only — these responses are not saved yet.';
-  else if(!scope?.tradeId)status.textContent='Select a trade to record your reflections.';
-  else if(executionMappingReflectionSaving)status.textContent='Saving reflections…';
+  else if(!scope?.tradeId)status.textContent='Select a trade to record your '+noun+'.';
+  else if(executionMappingReflectionSaving)status.textContent='Saving '+noun+'…';
   else if(executionMappingReflectionError?.key===scope.key)status.textContent=executionMappingReflectionError.message;
-  else status.textContent=(dirty?'Unsaved reflections.':hasSaved?'Reflections saved for this trade.':'Write your reflections, then Save.')+' Conditions remain a mapping preview.';
+  else status.textContent=(dirty?'Unsaved '+noun+'.':hasSaved?title+' saved for this trade.':scoreCount?'Enter your '+noun+', then Save.':'Write your reflections, then Save.')+' Conditions remain a mapping preview.';
 }
 async function saveExecutionMappingReflections(){
   if(executionMappingReflectionSaving)return;
@@ -11633,7 +11689,14 @@ async function saveExecutionMappingReflections(){
   const scope=executionMappingReflectionContext;
   const fields=$$('#executionMapFormBody [data-execution-reflection-id]');
   if(!scope?.userId||scope.userId!==currentUser?.id||!scope.tradeId||!fields.length)return;
-  const answers=fields.map(field=>({key:field.dataset.executionReflectionKey,label:field.dataset.executionReflectionLabel||'Reflection',value:field.value.trim()}));
+  const invalid=fields.find(field=>executionScoreFieldError(field));
+  if(invalid){
+    executionMappingReflectionError={key:scope.key,message:(invalid.dataset.executionReflectionLabel||'Score')+': '+executionScoreFieldError(invalid)};
+    updateExecutionMappingReflectionState();invalid.focus();invalid.reportValidity();return;
+  }
+  const scoreCount=fields.filter(field=>field.dataset.executionResponseType==='score').length;
+  const noun=scoreCount===fields.length?'Scores':scoreCount?'Responses':'Reflections';
+  const answers=fields.map(field=>({key:field.dataset.executionReflectionKey,label:field.dataset.executionReflectionLabel||'Reflection',value:field.value.trim(),comment:executionResponseComment(field)}));
   if(!answers.some(answer=>answer.value||executionMappingSavedReflection(scope,answer.key)))return;
   executionMappingReflectionSaving=true;executionMappingReflectionError=null;updateExecutionMappingReflectionState();
   try{
@@ -11653,12 +11716,12 @@ async function saveExecutionMappingReflections(){
     const lastOrder=Math.max(0,...existingRows.map(row=>Number(row.sort_order)||0));
     const rows=answers.map((answer,index)=>({
       review_id:review.id,user_id:scope.userId,criterion_key:answer.key,criterion_label:answer.label,
-      complied:true,comment:answer.value||null,
+      complied:true,comment:answer.comment,
       sort_order:existingRows.find(row=>row.criterion_key===answer.key)?.sort_order||lastOrder+index+1
     }));
     const saved=await db.from('trade_execution_checks').upsert(rows,{onConflict:'review_id,criterion_key'}).select();
     if(saved.error)throw saved.error;
-    if(!Array.isArray(saved.data)||saved.data.length!==rows.length)throw new Error('The reflection save could not be verified. Please retry.');
+    if(!Array.isArray(saved.data)||saved.data.length!==rows.length)throw new Error('The response save could not be verified. Please retry.');
     if(currentUser?.id===scope.userId&&String(tradingAccount?.id||'')===String(scope.accountId)){
       if(!executionReviews.some(item=>item.id===review.id))executionReviews.unshift(review);
       const keys=new Set(rows.map(row=>row.criterion_key));
@@ -11667,9 +11730,9 @@ async function saveExecutionMappingReflections(){
     const draft=executionMappingReflectionDrafts.get(scope.key);
     answers.forEach(answer=>{if(draft?.get(answer.key)?.trim()===answer.value)draft.delete(answer.key)});
     if(draft&&!draft.size)executionMappingReflectionDrafts.delete(scope.key);
-    if(executionMappingReflectionContext?.key===scope.key)showStatus('Reflections saved for this trade');
+    if(executionMappingReflectionContext?.key===scope.key)showStatus(noun+' saved for this trade');
   }catch(error){
-    executionMappingReflectionError={key:scope.key,message:'Reflections were not saved. '+(error.message||'Please retry.')};
+    executionMappingReflectionError={key:scope.key,message:noun+' were not saved. '+(error.message||'Please retry.')};
   }finally{
     executionMappingReflectionSaving=false;
     updateExecutionMappingReflectionState();
@@ -11707,7 +11770,7 @@ function updateExecutionMappingScore(){
 
 function resetExecutionMappingInputs(){
   $$('#executionMapFormBody input[type="checkbox"], #executionMapFormBody input[type="radio"]').forEach(item=>item.checked=false);
-  $$('#executionMapFormBody input[type="text"], #executionMapFormBody textarea').forEach(item=>item.value='');
+  $$('#executionMapFormBody input[type="text"], #executionMapFormBody input[type="number"], #executionMapFormBody textarea').forEach(item=>item.value='');
   captureExecutionMappingReflectionDraft();updateExecutionMappingReflectionState();
   updateExecutionMappingScore();
 }
@@ -11863,6 +11926,9 @@ async function saveExecutionReview(){
     return;
   }
 
+  const invalidScore=$$('#executionReflectionFields [data-execution-response-type="score"]').find(field=>executionScoreFieldError(field));
+  if(invalidScore){alert((invalidScore.dataset.executionReflectionLabel||'Score')+': '+executionScoreFieldError(invalidScore));invalidScore.focus();invalidScore.reportValidity();return}
+
   const reviewPayload={
     user_id:currentUser.id,
     trade_id:trade.id,
@@ -11914,7 +11980,7 @@ async function saveExecutionReview(){
           criterion_key:item.key,
           criterion_label:item.label,
           complied:true,
-          comment:input&&input.value.trim()?input.value.trim():null,
+          comment:executionResponseComment(input),
           sort_order:index+1
         };
       }
@@ -13237,8 +13303,9 @@ function ensureInstrumentReflectionIds(root){
   const seen=new Set();let changed=false;
   root.querySelectorAll('[data-playbook-node="psych-prompt"]').forEach(prompt=>{
     const id=prompt.dataset.tiReflectionId;
-    if(!id||seen.has(id)||!/^[a-zA-Z0-9_-]+$/.test(id)){
-      prompt.dataset.tiReflectionId=newExecutionStructureId('prompt');changed=true;
+    const score=prompt.dataset.tiResponseType==='score';
+    if(!id||seen.has(id)||!/^[a-zA-Z0-9_-]+$/.test(id)||score!==id.startsWith('score_')){
+      prompt.dataset.tiReflectionId=newExecutionStructureId(score?'score':'prompt');changed=true;
     }
     seen.add(prompt.dataset.tiReflectionId);
   });
@@ -13249,14 +13316,17 @@ function normalizeInstrumentReflectionHtml(html){
   const host=document.createElement('div');host.innerHTML=html;
   return ensureInstrumentReflectionIds(host)?host.innerHTML:html;
 }
-function instrumentReflectionGroupHtml(lines,layout='vertical',attrs='',shape=''){
-  return '<div class="ti-reflection-layout" data-playbook-node="reflection-group" data-playbook-list-layout="'+normalizePlaybookListLayout(layout)+'"'+(shape?' data-ti-reflection-shape="'+shape+'"':'')+attrs+'>'+lines.map(line=>'<div data-playbook-node="psych-prompt" data-ti-text-block="1" data-ti-reflection-id="'+newExecutionStructureId('prompt')+'"'+attrs+'>'+line+'</div>').join('')+'</div>';
+function instrumentReflectionGroupHtml(lines,layout='vertical',attrs='',shape='',responseType='text'){
+  const score=responseType==='score';
+  return '<div class="ti-reflection-layout" data-playbook-node="reflection-group" data-playbook-list-layout="'+normalizePlaybookListLayout(layout)+'"'+(shape?' data-ti-reflection-shape="'+shape+'"':'')+attrs+'>'+lines.map(line=>'<div data-playbook-node="psych-prompt" data-ti-text-block="1"'+(score?' data-ti-response-type="score"':'')+' data-ti-reflection-id="'+newExecutionStructureId(score?'score':'prompt')+'"'+attrs+'>'+line+'</div>').join('')+'</div>';
 }
 function instrumentReflectionRenderHtml(item,area,context={}){
   const renderPrompt=prompt=>{
-    const attrs=instrumentTextPresentation(prompt),label=prompt.html||escapeHtml(prompt.label);
-    if(area==='preview')return '<div class="ti-preview-prompt"'+attrs+'><b>'+label+'</b><div class="ti-reflection-placeholder" aria-hidden="true">Written response in Execution Quality</div></div>';
+    const score=prompt.responseType==='score';
+    const attrs=instrumentTextPresentation(prompt)+(score?' data-ti-response-type="score"':''),label=prompt.html||escapeHtml(prompt.label);
+    if(area==='preview')return '<div class="ti-preview-prompt"'+attrs+'><b>'+label+'</b><div class="ti-reflection-placeholder'+(score?' ti-score-placeholder':'')+'"'+(score?' aria-label="Score out of 10, recorded in Execution Quality"':' aria-hidden="true"')+'>'+(score?'— / 10':'Written response in Execution Quality')+'</div></div>';
     const id='execution-reflection-'+context.kind+'-'+prompt.reflectionId;
+    if(score)return '<div class="execution-psych-prompt"'+attrs+'><label for="'+escapeHtml(id)+'">'+label+'</label><div class="ti-score-entry"><input id="'+escapeHtml(id)+'" type="number" min="0" max="10" step="any" data-execution-response-type="score" data-execution-reflection-id="'+escapeHtml(prompt.reflectionId)+'" data-execution-reflection-label="'+escapeHtml(prompt.label)+'" placeholder="—" aria-describedby="'+escapeHtml(id)+'-scale"><span id="'+escapeHtml(id)+'-scale">/ 10</span></div></div>';
     return '<div class="execution-psych-prompt"'+attrs+'><label for="'+escapeHtml(id)+'">'+label+'</label><textarea id="'+escapeHtml(id)+'" data-execution-reflection-id="'+escapeHtml(prompt.reflectionId)+'" data-execution-reflection-label="'+escapeHtml(prompt.label)+'" placeholder="Write your reflection..."></textarea></div>';
   };
   if(item.type!=='reflection-group')return renderPrompt(item);
@@ -13515,7 +13585,7 @@ function playbookStructuredPreviewItems(documentHtml,renderContext={}){
 
     if(node.matches?.('[data-playbook-node="reflection-group"]')){
       const prompts=[...node.querySelectorAll('[data-playbook-node="psych-prompt"]')].map(prompt=>({
-        type:'psych-prompt',reflectionId:prompt.dataset.tiReflectionId,label:cleanNodeText(prompt),
+        type:'psych-prompt',reflectionId:prompt.dataset.tiReflectionId,responseType:prompt.dataset.tiResponseType==='score'?'score':'text',label:cleanNodeText(prompt),
         html:instrumentInlineHtml(prompt,renderContext,host),colors:presentation.colors,style:presentation.style
       })).filter(prompt=>prompt.label||prompt.html);
       if(prompts.length)items.push({type:'reflection-group',prompts,layout:normalizePlaybookListLayout(node.dataset.playbookListLayout),shape:node.dataset.tiReflectionShape==='squares'?'squares':'',colors:presentation.colors,style:presentation.style});
@@ -13556,7 +13626,7 @@ function playbookStructuredPreviewItems(documentHtml,renderContext={}){
 
     if(node.matches?.('[data-playbook-node="psych-prompt"]')){
       const label=cleanNodeText(node);
-      if(label||hasMedia)items.push({type:'psych-prompt',reflectionId:node.dataset.tiReflectionId,label,...presentation});
+      if(label||hasMedia)items.push({type:'psych-prompt',reflectionId:node.dataset.tiReflectionId,responseType:node.dataset.tiResponseType==='score'?'score':'text',label,...presentation});
       return;
     }
 
@@ -14279,6 +14349,7 @@ function instrumentSelectedFunctionContent(editor,range,units){
   return {before,after,lines};
 }
 function instrumentFunctionHtml(type,lines,attrs){
+  const score=type==='score';if(score)type='psych-prompt';
   const hasMedia=line=>{const node=document.createElement('div');node.innerHTML=line;return Boolean(node.querySelector(instrumentMediaSelector()))};
   if(type==='choice')return '<div class="pb-doc-choice" data-playbook-node="choice"><div class="pb-doc-choice-options"'+attrs+'>'+lines.map(line=>{
     const picture=hasMedia(line),tag=picture?'div':'span',id=picture?' data-ti-choice-option-id="option_'+makeInstrumentImageFieldId()+'"':'';
@@ -14289,7 +14360,7 @@ function instrumentFunctionHtml(type,lines,attrs){
     const host=document.createElement('div');host.innerHTML='<div'+attrs+'></div>';
     const group=host.firstElementChild,layout=group.dataset.playbookListLayout||'vertical';group.removeAttribute('data-playbook-list-layout');
     const attributes=[...group.attributes].map(attr=>' '+attr.name+'="'+escapeHtml(attr.value)+'"').join('');
-    return instrumentReflectionGroupHtml(lines,layout,attributes);
+    return instrumentReflectionGroupHtml(lines,layout,attributes,'',score?'score':'text');
   }
   const tag=['h1','h2','h3','blockquote'].includes(type)?type:'p';
   const semantic=['rule','note','psych-prompt'].includes(type)?' data-playbook-node="'+type+'"':'';
@@ -14297,11 +14368,11 @@ function instrumentFunctionHtml(type,lines,attrs){
     const picture=hasMedia(line),heading=picture&&['h1','h2','h3'].includes(tag);
     const block=picture&&tag!=='blockquote'?'div':tag;
     const role=heading?' data-ti-function-heading="'+tag+'" role="heading" aria-level="'+tag.slice(1)+'"':'';
-    return '<'+block+' data-ti-text-block="1"'+semantic+role+(type==='psych-prompt'?' data-ti-reflection-id="'+newExecutionStructureId('prompt')+'"':'')+attrs+'>'+line+'</'+block+'>';
+    return '<'+block+' data-ti-text-block="1"'+semantic+role+(type==='psych-prompt'?(score?' data-ti-response-type="score"':'')+' data-ti-reflection-id="'+newExecutionStructureId(score?'score':'prompt')+'"':'')+attrs+'>'+line+'</'+block+'>';
   }).join('');
 }
 function applyInstrumentFunction(kind,type){
-  if(!['p','h1','h2','h3','rule','choice','ul','ol','note','psych-prompt','blockquote'].includes(type))return;
+  if(!['p','h1','h2','h3','rule','choice','ul','ol','note','psych-prompt','score','blockquote'].includes(type))return;
   const {editor,range}=instrumentWritingContext(kind),units=instrumentFunctionUnits(editor,range);
   if(!editor?.closest('.page.active'))return;
   if(!units.length){showInstrumentSelectionGuidance(INSTRUMENT_SELECTION_GUIDANCE.functions);return}
@@ -14321,7 +14392,7 @@ function applyInstrumentFunction(kind,type){
   }
   const target=instrumentStyleTargetFromRange(editor,range);
   const layout=normalizePlaybookListLayout(target?.dataset?.playbookListLayout);
-  const attrs=playbookStyleRenderAttributes(playbookStyleColorsFromTarget(target),playbookVisualStyleFromTarget(target))+(['choice','ul','ol','psych-prompt'].includes(type)&&layout!=='vertical'?' data-playbook-list-layout="'+layout+'"':'');
+  const attrs=playbookStyleRenderAttributes(playbookStyleColorsFromTarget(target),playbookVisualStyleFromTarget(target))+(['choice','ul','ol','psych-prompt','score'].includes(type)&&layout!=='vertical'?' data-playbook-list-layout="'+layout+'"':'');
   const markup=instrumentFunctionHtml(type,content.lines,attrs),host=document.createElement('div');host.innerHTML=markup;
   const anchor='function-'+Date.now().toString(36);
   [...host.children].forEach(node=>node.dataset.tiFunctionAnchor=anchor);
@@ -14351,9 +14422,9 @@ function normalizeInstrumentWritingBlocks(editor){
     if(!button){button=document.createElement('button');button.className='pb-doc-remove-btn';prompt.appendChild(button)}
     if(!button.hasAttribute('data-instrument-remove-reflection')){
       button.type='button';button.contentEditable='false';button.dataset.instrumentRemoveReflection='';
-      button.setAttribute('aria-label','Remove reflection box');button.title='Remove reflection box';
       button.innerHTML='<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg>';
     }
+    button.setAttribute('aria-label',prompt.dataset.tiResponseType==='score'?'Remove score':'Remove reflection box');button.title=button.getAttribute('aria-label');
   });
   editor.querySelectorAll('[data-playbook-node="reflection-group"]').forEach(group=>{
     // Each response box owns its remove button; a group-wide button overlaps it.
@@ -15162,7 +15233,7 @@ function secondaryWorkspaceHtml(kind){
               <div class="playbook-word-tool-row">
                 <select class="playbook-word-style-select" data-ti-block-style aria-label="Apply function to selected text" title="Highlight text, then choose its function">
                   <option value="">Apply a function…</option><option value="p">Plain text / Remove function</option><option value="h1">Heading 1</option><option value="h2">Heading 2</option><option value="h3">Heading 3</option>
-                  <option value="rule">Rule / Check</option><option value="choice">Either / Or</option><option value="ul">Bulleted conditions</option><option value="ol">Numbered conditions</option><option value="note">Note</option><option value="psych-prompt">Reflection prompt</option><option value="blockquote">Quote</option>
+                  <option value="rule">Rule / Check</option><option value="choice">Either / Or</option><option value="ul">Bulleted conditions</option><option value="ol">Numbered conditions</option><option value="note">Note</option><option value="psych-prompt">Reflection prompt</option><option value="score">Score (0–10)</option><option value="blockquote">Quote</option>
                 </select>
                 <button class="playbook-word-tool-btn" type="button" data-instrument-reflection-function disabled title="Select text to create a written reflection prompt in Execution Quality"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 14a3 3 0 0 1-3 3h-7l-5 4v-4a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3Z"/><path d="M8 8h8M8 12h5"/></svg>Reflection</button>
                 <button class="playbook-word-tool-btn" type="button" data-instrument-back-to-text disabled title="Remove the selected function; keep its text, pictures and formatting"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 10-4 4 4 4M5 14h9a5 5 0 0 0 0-10h-2"/></svg>Back to text</button>
