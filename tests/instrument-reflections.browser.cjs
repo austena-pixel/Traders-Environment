@@ -108,6 +108,82 @@ async function run(){
   assert.equal(savedBefore.checks.filter(row=>row.criterion_key.startsWith('text__ti__')).length,3);
   pass('Saving reflections preserves existing reviews, condition rows, historical notes and trade scores');
 
+  const journalButton=id=>page.locator('[data-journal-reflection="'+id+'"]');
+  const journalDialog=()=>page.locator('#journalReflectionModal');
+  const journalBody=()=>page.locator('#journalReflectionBody');
+  await page.evaluate(()=>navigate('journal'));
+  assert.equal(await page.locator('#journalBody [data-journal-reflection]').count(),2);
+  assert.ok((await journalButton(firstTrade).getAttribute('class')).includes('has-reflections'));
+  assert.ok(!(await journalButton(secondTrade).getAttribute('class')).includes('has-reflections'));
+  await snapshot('journal-reflection-buttons');await journalButton(firstTrade).click();
+  assert.equal(await journalDialog().getAttribute('aria-hidden'),'false');
+  assert.equal(await journalBody().locator('textarea,input,[contenteditable="true"]').count(),0);
+  assert.ok((await page.locator('#journalReflectionTrade').textContent()).includes('Trade One'));
+  assert.deepEqual(await journalBody().locator('dd').allTextContents(),['psych reflection\nI waited for confirmation <without chasing>.','Keep historical notes']);
+  assert.equal(await journalBody().locator('without,script,img').count(),0);
+  await snapshot('journal-saved-reflection');
+  pass('Journal Psychology buttons open the selected trade’s saved psychological answers and historical notes, read-only, with no Playbook or Rules leakage');
+
+  await page.evaluate(()=>renderJournal());assert.equal(await journalDialog().getAttribute('aria-hidden'),'false');
+  assert.equal(await page.locator('#journalReflectionClose').evaluate(el=>document.activeElement===el),true);
+  await page.keyboard.press('Shift+Tab');assert.equal(await journalBody().evaluate(el=>document.activeElement===el),true);
+  await page.keyboard.press('Tab');assert.equal(await page.locator('#journalReflectionClose').evaluate(el=>document.activeElement===el),true);
+  await page.keyboard.press('Escape');assert.equal(await journalDialog().getAttribute('aria-hidden'),'true');
+  assert.equal(await journalButton(firstTrade).evaluate(el=>document.activeElement===el),true);
+  assert.deepEqual(await state(),savedBefore);assert.equal(await page.evaluate(()=>trades[0].execution_score),7);
+  pass('Reflection viewing survives Journal refresh, traps keyboard focus, closes with Escape, restores the row button and never writes or changes a score');
+
+  await journalButton(secondTrade).click();assert.ok((await journalBody().textContent()).includes('No reflection saved for this trade yet'));
+  assert.equal(await journalBody().locator('dd').count(),0);
+  await journalDialog().click({position:{x:2,y:2}});assert.equal(await journalDialog().getAttribute('aria-hidden'),'true');
+  await page.locator('#journalSearch').fill('Trade Two');assert.equal(await page.locator('#journalBody [data-journal-reflection]').count(),1);
+  await journalButton(secondTrade).click();assert.equal(await journalBody().locator('dd').count(),0);
+  await page.locator('#journalReflectionClose').click();await page.locator('#resetFilters').click();
+  pass('Trades without reflections show an honest empty state; row buttons still work after filtering and backdrop close');
+
+  await page.evaluate(({owner,firstTrade})=>{
+    const review=executionReviews.find(row=>row.trade_id===firstTrade);
+    secondaryState('psych').docs.push(secondaryNormalizeDoc('psych',{id:'journal-second-document',name:'Second reflection <b>',documentHtml:'<p>Historical template.</p>'}));
+    persistSecondaryDocuments('psych');
+    executionChecks.push(
+      {review_id:review.id,user_id:owner,criterion_key:'text__ti__psych__journal-second-document__question__with_underscores',criterion_label:'Second question',comment:'Second answer\nAnother line.',sort_order:50},
+      {review_id:review.id,user_id:owner,criterion_key:'text__ti__psych__removed-document__prompt',criterion_label:'Old question',comment:'Keep this answer after deleting or changing its template.',sort_order:51},
+      {review_id:review.id,user_id:owner,criterion_key:'text__legacy_question',criterion_label:'Legacy question',comment:'Older written reflection.',sort_order:52},
+      {review_id:review.id,user_id:'another-user',criterion_key:'text__ti__psych__journal-second-document__private',criterion_label:'Private',comment:'Do not show another owner’s text.',sort_order:53},
+      {review_id:review.id,user_id:owner,criterion_key:'text__ti__psych__%ZZ__broken',criterion_label:'Malformed',comment:'Do not crash.',sort_order:54},
+      {review_id:review.id,user_id:owner,criterion_key:'text__ti__psych__journal-second-document__empty',criterion_label:'Empty',comment:'   ',sort_order:55}
+    );renderJournal();
+  },{owner,firstTrade});
+  await journalButton(firstTrade).click();
+  assert.ok((await journalBody().locator('h3').allTextContents()).includes('Second reflection <b>'));
+  const viewed=await journalBody().locator('dd').allTextContents();
+  for(const answer of ['Second answer\nAnother line.','Keep this answer after deleting or changing its template.','Older written reflection.'])assert.ok(viewed.includes(answer));
+  assert.ok(!(await journalBody().textContent()).includes('another owner'));
+  assert.ok(!(await journalBody().textContent()).includes('Do not crash.'));
+  assert.equal(await journalBody().locator('h3 b').count(),0);
+  pass('Multiple psychological documents, removed prompts and legacy answers retain their saved labels and multiline text; foreign-owner, blank and malformed rows stay out');
+
+  await page.setViewportSize({width:390,height:844});
+  assert.ok(await page.locator('.journal-reflection-card').evaluate(el=>el.getBoundingClientRect().width<=innerWidth-30&&el.scrollWidth<=el.clientWidth));
+  await snapshot('journal-reflection-mobile');
+  await page.locator('#journalReflectionClose').click();await page.setViewportSize({width:1823,height:1000});
+  await page.reload({waitUntil:'load'});await hydrate();await page.evaluate(()=>navigate('journal'));
+  await journalButton(firstTrade).click();
+  assert.deepEqual(await journalBody().locator('dd').allTextContents(),['psych reflection\nI waited for confirmation <without chasing>.','Keep historical notes']);
+  await page.locator('#journalReflectionClose').click();await journalButton(secondTrade).click();assert.equal(await journalBody().locator('dd').count(),0);
+  pass('The viewer fits mobile width and reload restores only persisted answers for the chosen trade');
+
+  await page.evaluate(()=>navigate('execution'));assert.equal(await journalDialog().getAttribute('aria-hidden'),'true');
+  await page.evaluate(()=>navigate('journal'));await journalButton(firstTrade).click();
+  await page.evaluate(()=>{tradingAccount={id:'another-account'};trades=[];renderJournal()});
+  assert.equal(await journalDialog().getAttribute('aria-hidden'),'true');assert.equal(await journalBody().textContent(),'');
+  await hydrate();await page.evaluate(()=>navigate('journal'));await journalButton(firstTrade).click();
+  await page.evaluate(()=>{currentUser={id:'another-user'};renderJournal()});await journalButton(firstTrade).click();
+  assert.equal(await journalBody().locator('dd').count(),0);
+  await page.evaluate(()=>setLoggedInUI(false));assert.equal(await journalDialog().getAttribute('aria-hidden'),'true');
+  await hydrate();assert.deepEqual(await state(),savedBefore);
+  pass('Navigation, account changes and sign-out close and clear the viewer; saved reflections remain restricted to the current owner');
+
   await open('psych');await put('psych','<p>Strengths</p><p>Weaknesses</p><p>Opportunities</p><p>Threats</p><p id="neighbor">Outside the group.</p>');
   await page.evaluate(()=>{
     const el=secondaryFind('psych','[data-ti-editor]'),range=document.createRange();range.setStart(el.children[0],0);range.setEnd(el.children[3],el.children[3].childNodes.length);
