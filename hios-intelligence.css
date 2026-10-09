@@ -101,6 +101,8 @@
 #appScreen .calendar-day{min-height:0;display:flex;flex-direction:column}
 #appScreen .calendar-events{min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;flex:1 1 auto}
 @media(min-width:951px){
+  /* Align the top divider with the sidebar after its 18px inset and 1px border. */
+  .hios-top-row{grid-template-columns:calc(240px - 18px - 1px) minmax(0,1fr)!important}
   .hios-top-row{overflow:visible!important}
   .hios-top-row::after{display:none}
   .top-k-panel.goal-status-card{transition:transform .2s,border-color .2s,box-shadow .2s!important;transform-origin:top left!important}
