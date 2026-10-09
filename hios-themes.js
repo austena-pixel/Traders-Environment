@@ -12,8 +12,21 @@
     {id:'amethyst',name:'Amethyst',description:'Plum surfaces with lavender and rose.',base:[276,.24],primary:[274,.7],secondary:[327,.55],bg:'#0e0a12',surface:'#201728',accent:'#c6a0ec',accent2:'#dda4c3'}
   ];
   const colors=new Map(),seenRules=new WeakSet();
-  let current='blue',persistent=true,dialog=null,opener=null;
-  try{const saved=localStorage.getItem(KEY);if(themes.some(t=>t.id===saved))current=saved}catch{persistent=false}
+  let current='blue',customColor='#6ea8ff',persistent=true,dialog=null,opener=null;
+  function customTheme(hex){
+    const r=parseInt(hex.slice(1,3),16)/255,g=parseInt(hex.slice(3,5),16)/255,b=parseInt(hex.slice(5,7),16)/255;
+    const max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min,l=(max+min)/2;
+    const h=d?60*(max===r?((g-b)/d+6)%6:max===g?(b-r)/d+2:(r-g)/d+4):0;
+    const saturation=d?d/(1-Math.abs(2*l-1)):0;
+    const color=(light,s=saturation)=>`hsl(${h} ${s*100}% ${light}%)`;
+    return {id:'custom',name:'Custom Color',base:[h,Math.min(saturation,.3)],primary:[h,saturation],secondary:[h,saturation*.8],bg:color(4,Math.min(saturation,.3)),surface:color(11,Math.min(saturation,.3)),accent:color(75),accent2:color(70,saturation*.8)};
+  }
+  function readPreference(value){
+    if(themes.some(t=>t.id===value)){current=value;return}
+    try{const saved=JSON.parse(value);if(saved?.id==='custom'&&/^#[0-9a-f]{6}$/i.test(saved.color)){customColor=saved.color;current='custom';return}}catch{}
+    current='blue';
+  }
+  try{readPreference(localStorage.getItem(KEY))}catch{persistent=false}
 
   function parseColor(value){
     let channels;
@@ -70,7 +83,7 @@
     }
   }
   function apply(id,save=false){
-    const theme=themes.find(t=>t.id===id);if(!theme)return;
+    const theme=id==='custom'?customTheme(customColor):themes.find(t=>t.id===id);if(!theme)return;
     current=id;root.dataset.hiosTheme=id;
     for(const color of colors.values()){
       if(id==='blue'){root.style.removeProperty(color.name);continue}
@@ -79,9 +92,12 @@
     }
     for(const key of ['bg','surface','accent','accent2'])root.style.setProperty('--hios-theme-'+key,theme[key]);
     root.style.setProperty('--hios-theme-line',id==='blue'?'#34435a':`hsl(${theme.base[0]} ${theme.base[1]*100}% 27%)`);
-    if(save){try{localStorage.setItem(KEY,id);persistent=true}catch{persistent=false}}
+    if(save){try{localStorage.setItem(KEY,id==='custom'?JSON.stringify({id,color:customColor}):id);persistent=true}catch{persistent=false}}
     document.querySelectorAll('.hios-theme-button').forEach(button=>{button.title='Color theme: '+theme.name});
     if(dialog){
+      dialog.querySelector('#hiosCustomColor').value=customColor;
+      const hex=dialog.querySelector('#hiosCustomHex');if(document.activeElement!==hex)hex.value=customColor;
+      dialog.querySelector('.hios-theme-custom').dataset.active=String(id==='custom');
       dialog.querySelectorAll('[data-theme-choice]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.themeChoice===id)));
       dialog.querySelector('.hios-theme-save-status').textContent=persistent?'Saved for this browser. Used across the H-IOS family.':'Theme applies for this visit. Browser storage is unavailable.';
     }
@@ -99,8 +115,13 @@
   function mount(){
     bridgeStyles();
     dialog=document.createElement('dialog');dialog.className='hios-theme-dialog';dialog.setAttribute('aria-labelledby','hiosThemeTitle');
-    dialog.innerHTML='<div class="hios-theme-heading"><div><h2 id="hiosThemeTitle">Color theme</h2><p>Choose the style of your H-IOS environment.</p></div><button class="hios-theme-close" type="button" aria-label="Close color themes" autofocus>×</button></div><div class="hios-theme-choices">'+themes.map(t=>`<button class="hios-theme-choice" type="button" data-theme-choice="${t.id}" aria-pressed="false"><span class="hios-theme-preview" aria-hidden="true" style="--preview-bg:${t.bg};--preview-surface:${t.surface};--preview-accent:${t.accent};--preview-accent2:${t.accent2}"><i></i><i></i><i></i></span><span><b>${t.name}</b><small>${t.description}</small></span><span class="hios-theme-selected" aria-hidden="true">✓</span></button>`).join('')+'</div><div class="hios-theme-footer"><p class="hios-theme-save-status" role="status"></p><button class="hios-theme-done" type="button">Done</button></div>';
+    dialog.innerHTML='<div class="hios-theme-heading"><div><h2 id="hiosThemeTitle">Color theme</h2><p>Choose the style of your H-IOS environment.</p></div><button class="hios-theme-close" type="button" aria-label="Close color themes" autofocus>×</button></div><div class="hios-theme-choices">'+themes.map(t=>`<button class="hios-theme-choice" type="button" data-theme-choice="${t.id}" aria-pressed="false"><span class="hios-theme-preview" aria-hidden="true" style="--preview-bg:${t.bg};--preview-surface:${t.surface};--preview-accent:${t.accent};--preview-accent2:${t.accent2}"><i></i><i></i><i></i></span><span><b>${t.name}</b><small>${t.description}</small></span><span class="hios-theme-selected" aria-hidden="true">✓</span></button>`).join('')+'</div><div class="hios-theme-custom"><label for="hiosCustomColor"><b>Custom color</b><small>Pick a color for the whole environment.</small></label><input type="color" id="hiosCustomColor" aria-label="Custom theme color"><label class="hios-theme-hex-label" for="hiosCustomHex">HEX<input id="hiosCustomHex" type="text" maxlength="7" pattern="#[0-9a-fA-F]{6}" spellcheck="false" aria-describedby="hiosColorHelp"></label><small id="hiosColorHelp">Backgrounds stay dark and text stays readable. Your chosen color sets the palette.</small></div><div class="hios-theme-footer"><p class="hios-theme-save-status" role="status"></p><button class="hios-theme-done" type="button">Done</button></div>';
     document.body.append(dialog);
+    const colorInput=dialog.querySelector('#hiosCustomColor'),hexInput=dialog.querySelector('#hiosCustomHex');
+    function selectCustom(value){if(!/^#[0-9a-f]{6}$/i.test(value))return;customColor=value.toLowerCase();hexInput.setCustomValidity('');apply('custom',true)}
+    colorInput.addEventListener('input',()=>{selectCustom(colorInput.value);hexInput.value=customColor});
+    hexInput.addEventListener('input',()=>{const valid=/^#[0-9a-f]{6}$/i.test(hexInput.value);hexInput.setCustomValidity(valid?'':'Enter a six-digit HEX color, such as #c58cff.');if(valid)selectCustom(hexInput.value)});
+    hexInput.addEventListener('blur',()=>{hexInput.value=customColor;hexInput.setCustomValidity('')});
     dialog.querySelectorAll('[data-theme-choice]').forEach(button=>button.addEventListener('click',()=>apply(button.dataset.themeChoice,true)));
     dialog.querySelectorAll('.hios-theme-close,.hios-theme-done').forEach(button=>button.addEventListener('click',()=>dialog.close()));
     dialog.addEventListener('close',()=>{if(opener?.isConnected&&opener.getClientRects().length)opener.focus()});
@@ -119,5 +140,5 @@
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
   document.addEventListener('load',event=>{if(event.target?.matches?.('link[rel="stylesheet"]')){bridgeStyles();apply(current)}},true);
-  window.addEventListener('storage',event=>{if(event.key===KEY)apply(themes.some(t=>t.id===event.newValue)?event.newValue:'blue')});
+  window.addEventListener('storage',event=>{if(event.key===KEY){readPreference(event.newValue);apply(current)}});
 })();

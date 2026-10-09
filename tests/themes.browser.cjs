@@ -70,6 +70,26 @@ async function run(){
       await screenshot(id+'.png');
       await launch();
     }
+    for(const hex of ['#ff3300','#000000','#ffffff','#7c3aed']){
+      await page.getByLabel('HEX',{exact:true}).fill(hex);
+      assert.equal(await page.locator('html').getAttribute('data-hios-theme'),'custom');
+      assert.equal(await page.getByLabel('Custom theme color',{exact:true}).inputValue(),hex);
+      const current=await colors();assert.equal(current.good,original.good);assert.equal(current.danger,original.danger);
+    }
+    await page.getByLabel('HEX',{exact:true}).fill('#xyz');
+    assert.equal(JSON.parse(await page.evaluate(()=>localStorage.getItem('hios_color_theme_v1'))).color,'#7c3aed');
+    await page.getByLabel('Custom theme color',{exact:true}).evaluate(input=>{input.value='#ff8800';input.dispatchEvent(new Event('input',{bubbles:true}))});
+    assert.equal(await page.getByLabel('HEX',{exact:true}).inputValue(),'#ff8800');
+    await screenshot('custom-color.png');
+    await page.keyboard.press('Escape');await page.reload({waitUntil:'load'});
+    assert.equal(await page.locator('html').getAttribute('data-hios-theme'),'custom');
+    await launch();assert.equal(await page.getByLabel('Custom theme color',{exact:true}).inputValue(),'#ff8800');
+    const customPeer=await context.newPage();await customPeer.goto(origin+'/g-ios.html');
+    assert.equal(await customPeer.locator('html').getAttribute('data-hios-theme'),'custom');
+    await page.getByLabel('HEX',{exact:true}).fill('#36b5a0');
+    await customPeer.waitForFunction(()=>document.documentElement.style.getPropertyValue('--hios-theme-accent').includes('170'));
+    await customPeer.close();
+    pass('custom color block and HEX entry accept any hue, reject invalid input and persist through reload');
     await choose('forest');await page.keyboard.press('Escape');
     assert.equal(await page.evaluate(()=>document.activeElement.classList.contains('hios-theme-button')),true);
     pass('all five palettes change the full dashboard, restore blue exactly, retain semantic colors and readable level labels');
