@@ -1396,11 +1396,21 @@ function receiveTiosGoalEvidenceResponseSignal(signal){
  let requests={};try{requests=JSON.parse(localStorage.getItem(GIOS_EVIDENCE_REQUESTS_KEY)||'{}')||{}}catch(error){}
  const request=requests?.tios||null;
  const response=signal?.payload?.response;
- if(!validTiosEvidenceResponse(response,request))return false;
+ if(!validTiosEvidenceResponse(response,request)){
+  // A routed response can arrive after the user selects a newer request.
+  // Reject its evidence and retire the signal instead of leaving it pending.
+  if(goalsBridge.acknowledgeRequest){
+   goalsBridge.acknowledgeRequest(signal.signalId,{
+    requestId:response?.requestId||null,status:'rejected-by-goals-ios',
+    reason:'response-does-not-match-current-request'
+   },signal);
+  }
+  return false;
+ }
 
  let responses={};try{responses=JSON.parse(localStorage.getItem(TIOS_EVIDENCE_RESPONSES_KEY)||'{}')||{}}catch(error){}
  if(responses?.tios?.hiosSignalId===signal.signalId){
-  if(goalsBridge.acknowledgeRequest)goalsBridge.acknowledgeRequest(signal.signalId,{requestId:response.requestId,status:'received-by-goals-ios'});
+  if(goalsBridge.acknowledgeRequest)goalsBridge.acknowledgeRequest(signal.signalId,{requestId:response.requestId,status:'received-by-goals-ios'},signal);
   return true;
  }
 
@@ -1460,7 +1470,7 @@ function receiveTiosGoalEvidenceResponseSignal(signal){
  localStorage.setItem(PRODUCT_GOAL_EVIDENCE_KEY,JSON.stringify(store));
 
  if(goalsBridge.acknowledgeRequest){
-  goalsBridge.acknowledgeRequest(signal.signalId,{requestId:response.requestId,status:'received-by-goals-ios'});
+  goalsBridge.acknowledgeRequest(signal.signalId,{requestId:response.requestId,status:'received-by-goals-ios'},signal);
  }
  if(typeof renderProductEvidenceReceiver==='function')renderProductEvidenceReceiver();
  if(typeof renderPersonalIntelligenceResponse==='function')renderPersonalIntelligenceResponse();
@@ -1558,7 +1568,9 @@ function decideGoalReorientation(accept){
    status:stored.status,
    area:stored.area,
    phaseId:stored.phaseId||null
-  });
+  },{signalId:stored.hiosSignalId,contractVersion:HIOSConnectionLayer.version,
+    source:'h-ios',type:'goal.reorientation.requested',timestamp:stored.createdAt,
+    payload:{request:stored},meta:{}});
  }
 
  renderPersonalIntelligenceResponse();
@@ -2308,7 +2320,7 @@ function processHiosGoalRequest(signal){
   if(removed)toast(goal.title+' deleted through H-IOS.');
  }
 
- goalsBridge.acknowledgeRequest(signal.signalId,outcome);
+ goalsBridge.acknowledgeRequest(signal.signalId,outcome,signal);
 }
 
 function renderSetGoals(){

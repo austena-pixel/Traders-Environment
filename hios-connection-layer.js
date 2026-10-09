@@ -260,9 +260,25 @@
     throw new Error('Communication Centre dependencies must load before event-router.js');
   }
 
+  const REQUEST_OUTCOME_PREFIX='hios_communication_request_outcome_v1:';
+
   function readRequests(){
     const parsed=contracts.safeParse(localStorage.getItem(contracts.KEYS.requests),[]);
-    return Array.isArray(parsed)?parsed:[];
+    if(!Array.isArray(parsed))return [];
+    return parsed.map(request=>{
+      const receipt=contracts.safeParse(localStorage.getItem(REQUEST_OUTCOME_PREFIX+request.signalId),null);
+      return receipt?.signalId===request.signalId&&receipt.status==='handled'
+        ? {...request,status:'handled',handledAt:receipt.handledAt,outcome:receipt.outcome}
+        : request;
+    });
+  }
+
+  function writeRequests(requests){
+    const retained=requests.slice(-100);
+    localStorage.setItem(contracts.KEYS.requests,JSON.stringify(retained));
+    requests.slice(0,Math.max(0,requests.length-100)).forEach(request=>{
+      localStorage.removeItem(REQUEST_OUTCOME_PREFIX+request.signalId);
+    });
   }
 
   function queueRequest(signal){
@@ -270,26 +286,41 @@
     if(!type.endsWith('.requested')&&type!=='evidence.responded')return;
     const requests=readRequests();
     if(requests.some(request=>request.signalId===signal.signalId))return;
+    const receiptKey=REQUEST_OUTCOME_PREFIX+signal.signalId;
+    if(!localStorage.getItem(receiptKey)){
+      localStorage.setItem(receiptKey,JSON.stringify({signalId:signal.signalId,status:'pending'}));
+    }
     requests.push({...signal,status:'pending'});
-    localStorage.setItem(contracts.KEYS.requests,JSON.stringify(requests.slice(-100)));
+    writeRequests(requests);
   }
 
   function getPendingRequests(){
     return readRequests().filter(request=>request.status==='pending');
   }
 
-  function acknowledgeRequest(signalId,outcome={}){
+  function acknowledgeRequest(signalId,outcome={},receivedSignal=null){
     if(!signalId)return false;
     const requests=readRequests();
     const index=requests.findIndex(request=>request.signalId===signalId);
-    if(index<0)return false;
-    requests[index]={
-      ...requests[index],
+    const receipt=contracts.safeParse(localStorage.getItem(REQUEST_OUTCOME_PREFIX+signalId),null);
+    const received=receivedSignal?.signalId===signalId&&
+      contracts.validateSignal(receivedSignal).valid&&
+      permissions.canEmit(receivedSignal.source,receivedSignal.type)&&
+      (receivedSignal.type.endsWith('.requested')||receivedSignal.type==='evidence.responded');
+    // Broadcast delivery may precede visibility of another tab's queue write.
+    if(index<0&&receipt?.signalId!==signalId&&!received)return false;
+    const handled={
+      ...(index>=0?requests[index]:{}),
       status:'handled',
       handledAt:new Date().toISOString(),
       outcome:outcome&&typeof outcome==='object'&&!Array.isArray(outcome)?outcome:{value:outcome}
     };
-    localStorage.setItem(contracts.KEYS.requests,JSON.stringify(requests.slice(-100)));
+    // A per-signal receipt survives another tab writing an older queue snapshot.
+    // Keep the existing bounded queue/API, and retire receipts with evicted rows.
+    localStorage.setItem(REQUEST_OUTCOME_PREFIX+signalId,JSON.stringify({
+      signalId,status:'handled',handledAt:handled.handledAt,outcome:handled.outcome
+    }));
+    if(index>=0){requests[index]=handled;writeRequests(requests)}
     return true;
   }
 

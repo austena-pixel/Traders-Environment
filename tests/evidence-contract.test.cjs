@@ -91,7 +91,7 @@ function browser() {
   const storage = new Map();
   const context = vm.createContext({
     console, CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options.detail; } },
-    localStorage: { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value) },
+    localStorage: { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: key => storage.delete(key) },
     dispatchEvent() {}, addEventListener() {}, removeEventListener() {}
   });
   vm.runInContext('window = globalThis', context);
@@ -111,6 +111,53 @@ test('classic browser registration coexists with unchanged communication API', (
   run(read('core/evidence-contract.js'));
   assert.equal(run('HIOSEvidenceContract === originalContract'), true);
   assert.deepEqual([...storage], before);
+});
+
+test('a stale cross-tab queue write cannot make an acknowledged signal pending again', () => {
+  const { run } = browser();
+  run(read('hios-connection-layer.js'));
+  run(`const hios=HIOSConnectionLayer.connect('h-ios');
+    const first=hios.emit('task.delete.requested',{id:'first-task'}).signal;
+    const staleQueue=localStorage.getItem(HIOSConnectionLayer.keys.requests);
+    hios.acknowledgeRequest(first.signalId,{status:'kept'});
+    localStorage.setItem(HIOSConnectionLayer.keys.requests,staleQueue);`);
+  assert.equal(run('hios.getPendingRequests().length'),0);
+  run("hios.emit('task.delete.requested',{id:'second-task'})");
+  assert.equal(run('hios.getPendingRequests().length'),1);
+  assert.equal(run('hios.getPendingRequests()[0].payload.id'),'second-task');
+  assert.equal(run('HIOSCommunicationModules.router.readRequests()[0].outcome.status'),'kept');
+});
+
+test('a received signal can be acknowledged before its cross-tab queue and receipt are visible', () => {
+  const { run } = browser();
+  run(read('hios-connection-layer.js'));
+  run(`const hios=HIOSConnectionLayer.connect('h-ios');
+    const first=hios.emit('task.delete.requested',{id:'first-task'}).signal;
+    const staleQueue=localStorage.getItem(HIOSConnectionLayer.keys.requests);
+    localStorage.setItem(HIOSConnectionLayer.keys.requests,'[]');
+    localStorage.removeItem('hios_communication_request_outcome_v1:'+first.signalId);`);
+  assert.equal(run("hios.acknowledgeRequest(first.signalId,{status:'kept'},first)"),true);
+  run('localStorage.setItem(HIOSConnectionLayer.keys.requests,staleQueue)');
+  assert.equal(run('hios.getPendingRequests().length'),0);
+  assert.equal(run("hios.acknowledgeRequest('unknown-signal',{status:'kept'})"),false);
+  assert.equal(run("hios.acknowledgeRequest('different-id',{status:'kept'},first)"),false);
+  assert.equal(run("hios.acknowledgeRequest('invalid-source',{status:'kept'},{...first,signalId:'invalid-source',source:'t-ios'})"),false);
+});
+
+test('acknowledgement receipts are retired when their request leaves the bounded queue', () => {
+  const { run, storage } = browser();
+  run(read('hios-connection-layer.js'));
+  run(`const hios=HIOSConnectionLayer.connect('h-ios');
+    const first=hios.emit('task.delete.requested',{id:'first-task'}).signal;
+    hios.acknowledgeRequest(first.signalId,{status:'kept'});`);
+  const receiptKey=[...storage].find(([,value])=>{
+    const item=JSON.parse(value);
+    return item?.signalId===run('first.signalId')&&item.status==='handled';
+  })?.[0];
+  assert.ok(receiptKey);
+  run("for(let i=0;i<100;i++)hios.emit('task.delete.requested',{id:'task-'+i})");
+  assert.equal(run('HIOSCommunicationModules.router.readRequests().length'),100);
+  assert.equal(storage.has(receiptKey),false);
 });
 
 test('Stage 1B routes one T-IOS activity through the shared connector and H-IOS receives it once', () => {
@@ -172,7 +219,7 @@ test('Stage 1C routes only selected G-IOS evidence metrics through H-IOS to T-IO
   const { run } = browser();
   run(read('hios-connection-layer.js'));
   run(`localStorage.setItem('hios_added_products_v1', JSON.stringify(['gios','tios']));
-    const GIOS_EVIDENCE_REQUESTS_KEY='test-requests';
+    const GIOS_EVIDENCE_REQUESTS_KEY='hios_goal_evidence_requests_v1';
     const TIOS_EVIDENCE_RESPONSES_KEY='test-responses';
     const PRODUCT_GOAL_EVIDENCE_KEY='test-goal-evidence';
     const HIOS_PRODUCT_STATUS_KEY='test-status';
@@ -198,7 +245,7 @@ test('Stage 1C routes only selected G-IOS evidence metrics through H-IOS to T-IO
   assert.equal(run("JSON.parse(localStorage.getItem('hios_communication_last_signal_v1')).source"), 'goals-ios');
   assert.equal(run("JSON.parse(localStorage.getItem('hios_communication_last_signal_v1')).type"), 'evidence.requested');
   assert.deepEqual([...run("JSON.parse(localStorage.getItem('hios_communication_last_signal_v1')).payload.request.metrics")], ['playbook_adherence','discipline_score']);
-  assert.equal(run("JSON.parse(localStorage.getItem('test-requests')).tios.hiosSignalId === request.hiosSignalId"), true);
+  assert.equal(run("JSON.parse(localStorage.getItem(GIOS_EVIDENCE_REQUESTS_KEY)).tios.hiosSignalId === request.hiosSignalId"), true);
 
   run(`const isProductAdded=id=>JSON.parse(localStorage.getItem('hios_added_products_v1')||'[]').includes(id);
     const hiosBridge=HIOSConnectionLayer.connect('h-ios');`);
@@ -207,7 +254,7 @@ test('Stage 1C routes only selected G-IOS evidence metrics through H-IOS to T-IO
   run(`const routedSignal=JSON.parse(localStorage.getItem('hios_communication_last_signal_v1'));
     receiveGoalEvidenceRequestSignal(routedSignal);`);
   assert.equal(run("JSON.parse(localStorage.getItem('test-request-receipts'))[request.requestId].verified"), true);
-  assert.equal(run("JSON.parse(localStorage.getItem('test-requests')).tios.status"), 'routed');
+  assert.equal(run("JSON.parse(localStorage.getItem(GIOS_EVIDENCE_REQUESTS_KEY)).tios.status"), 'routed');
   assert.equal(run("hiosBridge.getPendingRequests().some(row=>row.signalId===routedSignal.signalId)"), false);
 
   run(`const currentUser={id:'00000000-0000-4000-8000-000000000001'};
@@ -307,6 +354,50 @@ test('Stage 1D rejects a T-IOS response that exceeds the selected request scope'
   assert.match(run("bad.errors.join(' ')"),/requested metric scope|deliver every requested metric/);
 });
 
+
+test('Stage 1D rejects stale responses and a changed selected metric set without delivering them', () => {
+  const { run } = browser();
+  run(read('hios-connection-layer.js'));
+  run(`localStorage.setItem('hios_added_products_v1',JSON.stringify(['gios','tios']));
+    localStorage.setItem('hios_goal_evidence_requests_v1',JSON.stringify({tios:{requestId:'req-current',metrics:['execution_errors']}}));
+    const tios=HIOSConnectionLayer.connect('t-ios');
+    const response={schema:'hios.goal-evidence-response.v1',requestId:'req-previous',source:'t-ios',target:'goals-ios',productId:'tios',
+      requestedMetrics:['execution_errors'],deliveredMetrics:['execution_errors'],unavailableMetrics:[],
+      evidence:[{metric:'execution_errors',value:3}],status:'fulfilled',respondedAt:'2026-10-09T12:00:00Z'};
+    const stale=tios.emit('evidence.responded',{response},{requestId:response.requestId});`);
+  assert.equal(run('stale.ok'),false);
+  assert.match(run("stale.errors.join(' ')"),/active H-IOS request/);
+  run(`response.requestId='req-current';response.requestedMetrics=['discipline_score'];
+    response.deliveredMetrics=['discipline_score'];response.evidence=[{metric:'discipline_score',value:90}];
+    const changed=tios.emit('evidence.responded',{response},{requestId:response.requestId});`);
+  assert.equal(run('changed.ok'),false);
+  assert.match(run("changed.errors.join(' ')"),/do not match the active request/);
+  assert.equal(run("HIOSConnectionLayer.connect('goals-ios').getPendingRequests().length"),0);
+  assert.equal(run("localStorage.getItem('hios_goal_reorientation_requests_v1')"),null);
+});
+
+test('G-IOS retires a response routed before the user selected a newer request', () => {
+  const { run } = browser();
+  run(read('hios-connection-layer.js'));
+  run(`localStorage.setItem('hios_added_products_v1',JSON.stringify(['gios','tios']));
+    const GIOS_EVIDENCE_REQUESTS_KEY='hios_goal_evidence_requests_v1';
+    const TIOS_EVIDENCE_RESPONSES_KEY='hios_goal_evidence_responses_v1';
+    const goalsBridge=HIOSConnectionLayer.connect('goals-ios');
+    localStorage.setItem(GIOS_EVIDENCE_REQUESTS_KEY,JSON.stringify({tios:{requestId:'req-before',metrics:['execution_errors']}}));
+    const routed=HIOSConnectionLayer.connect('t-ios').emit('evidence.responded',{response:{
+      schema:'hios.goal-evidence-response.v1',requestId:'req-before',source:'t-ios',target:'goals-ios',productId:'tios',
+      requestedMetrics:['execution_errors'],deliveredMetrics:['execution_errors'],unavailableMetrics:[],
+      evidence:[{metric:'execution_errors',value:0}],status:'fulfilled',respondedAt:'2026-10-09T12:00:00Z'
+    }});
+    localStorage.setItem(GIOS_EVIDENCE_REQUESTS_KEY,JSON.stringify({tios:{requestId:'req-after',metrics:['execution_errors']}}));`);
+  const gios=read('g-ios.html');
+  run(gios.slice(gios.indexOf('function validTiosEvidenceResponse('),gios.indexOf('function readGoalReorientations(')));
+  assert.equal(run('routed.ok'),true);
+  assert.equal(run('receiveTiosGoalEvidenceResponseSignal(routed.signal)'),false);
+  assert.equal(run('localStorage.getItem(TIOS_EVIDENCE_RESPONSES_KEY)'),null);
+  assert.equal(run("goalsBridge.getPendingRequests().some(row=>row.signalId===routed.signal.signalId)"),false);
+  assert.equal(run("HIOSCommunicationModules.router.readRequests().find(row=>row.signalId===routed.signal.signalId).outcome.status"),'rejected-by-goals-ios');
+});
 
 test('Stage 1E H-IOS creates one user-approved working-emphasis proposal from execution errors', () => {
   const { run } = browser();

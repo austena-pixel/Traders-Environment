@@ -6,7 +6,7 @@ const path = require('node:path');
 const source = fs.readFileSync(path.join(__dirname,'..','t-ios.html'),'utf8');
 
 test('Execution page no longer contains the permanent six-item static checklist', () => {
-  assert.ok(source.includes('id="executionReflectionFields"'));
+  assert.ok(source.includes('id="executionMapFormBody"'));
   assert.ok(source.includes('id="executionStructureModal"'));
   assert.ok(!source.includes('data-execution-key="entry_timing"'));
   assert.ok(!source.includes('id="executionWentWell"'));
@@ -26,8 +26,8 @@ test('Qualitative reflection rows are excluded from execution scoring', () => {
   assert.ok(source.includes("scorePct===null?null"));
 });
 
-test('Historical reviews preserve their saved structures', () => {
+test('Historical review metadata remains available to canonical execution intelligence', () => {
   assert.ok(source.includes('executionReflectionStructureForReview(review)'));
-  assert.ok(source.includes('Save This Structure'));
+  assert.ok(source.includes('Historical execution reflection'));
   assert.ok(source.includes('Historical reviews will not be deleted.'));
 });

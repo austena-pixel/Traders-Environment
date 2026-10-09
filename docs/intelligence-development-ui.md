@@ -151,8 +151,9 @@ are user-scoped. Live sign-in and real account writes are outside isolated UI te
 ## Verification
 
 ```sh
-node --test tests/intelligence-development.test.cjs tests/evidence-contract.test.cjs
+node --test tests/evidence-contract.test.cjs tests/intelligence-development.test.cjs tests/stage-2a1-execution-intelligence.test.cjs tests/stage-2a2-execution-trend.test.cjs tests/stage-2a2b-reflection-structure.test.cjs tests/execution-journal-creation.test.cjs tests/execution-journal-library-visibility.test.cjs tests/execution-reflection-structures.test.cjs
 HIOS_TEST_BROWSER=/path/to/chromium node tests/intelligence-development.browser.cjs
+HIOS_TEST_BROWSER=/path/to/chromium node tests/hios-evidence-loop.browser.cjs
 ```
 
 Browser tests require Playwright (as do the existing browser tests), simulate
@@ -165,9 +166,33 @@ Auto Zoom, independent wheel/keyboard scrolling with a fixed document and
 single-level progress. They do not establish live Supabase authentication or
 engine validity.
 
-The new unit tests and browser flow pass. The existing evidence-contract suite
-has one baseline failure: “Stage 1C routes only selected G-IOS evidence metrics
-through H-IOS to T-IOS” receives a null `routedResponse`. The same failure was
-reproduced on the untouched base commit
-`896bfdd3ce7410923447b0aa88650c906608acef`; the other 23 existing tests pass.
-No routing behavior or existing evidence-contract tests are changed here.
+The 2026-10-09 verification cleanup resolves the earlier Stage 1C fixture failure
+by using the canonical `hios_goal_evidence_requests_v1` store. Execution model
+fixtures now load the actual reflection, scoring and chronology helpers. They
+distinguish saved user structures from historical and recommended legacy reviews.
+Older markup checks now follow the current instrument mapping controls.
+
+The expanded foundation suite has 57 passing checks. It covers selected-metric
+scope, stale response rejection, saved structure identity and account isolation,
+incompatible criterion labels, qualitative response exclusion and missing scores.
+Text-only reflections cannot establish a quantitative execution trend.
+
+The new evidence-loop browser test has nine passing checks across real H-IOS,
+G-IOS and T-IOS tabs on an isolated origin. It follows a selected request through
+the actual storage transport, canonical execution calculations, response receipts
+and the Keep/Apply decision buttons. Goals, selected evidence and deadlines remain
+intact. Stale responses and disconnected requests are rejected; text-only reviews
+return unavailable quantitative metrics. This test blocks external traffic and
+performs no account writes or paid AI requests.
+
+Receipt/status updates in the request store no longer trigger another T-IOS
+response. A response superseded before G-IOS receives it is rejected and
+acknowledged without applying its evidence. Per-signal acknowledgement receipts prevent an older cross-tab queue
+snapshot from making a handled signal pending again, including when a received
+signal arrives before its queue/receipt is visible in the receiving tab. Consumers
+can pass the received signal to acknowledgement; its ID, format, allowed source
+and request type must match. An unknown ID without that signal is rejected.
+Receipts are retired when
+their rows leave the existing 100-request queue. These are browser-local routing
+protections, not authenticated provenance checks or a server-backed transaction
+system. No Supabase schema, policy or user-data migration is part of this cleanup.

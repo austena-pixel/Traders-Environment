@@ -8071,7 +8071,24 @@ window.TIOSGoalEvidenceDiagnostic=function(){
     response:signal?.source==='t-ios'&&signal?.type==='evidence.responded'?signal.payload?.response||null:readHiosJson(TIOS_EVIDENCE_RESPONSES_KEY,{})?.tios||null
   };
 };
-window.addEventListener('storage',event=>{if(event.key===GIOS_EVIDENCE_REQUESTS_KEY)respondToGoalEvidenceRequest('request_changed')});
+function tiosGoalEvidenceRequestSignature(raw){
+  let request=null;
+  try{request=JSON.parse(raw||'{}')?.tios||null}catch(error){}
+  if(!request)return '';
+  // G-IOS writes receipt/status fields into the same store after a response.
+  // Only changes to the request itself should trigger another response.
+  return JSON.stringify([
+    request.schema,request.requestId,request.source,request.targetProductId,
+    request.area,request.modelName,request.phaseId,request.phaseName,
+    request.metrics,request.metricGroups
+  ]);
+}
+window.addEventListener('storage',event=>{
+  if(event.key===GIOS_EVIDENCE_REQUESTS_KEY&&
+    tiosGoalEvidenceRequestSignature(event.oldValue)!==tiosGoalEvidenceRequestSignature(event.newValue)){
+    respondToGoalEvidenceRequest('request_changed');
+  }
+});
 window.addEventListener('hios:goal-evidence-routed',()=>respondToGoalEvidenceRequest('hios_routed'));
 window.addEventListener('hios:goal-evidence-request',()=>respondToGoalEvidenceRequest('request_event'));
 
@@ -18433,9 +18450,9 @@ function executionWindowSummary(reviews){
 }
 
 function executionTrendState(deltaPctPoints){
-  if(!Number.isFinite(Number(deltaPctPoints)))return 'insufficient-evidence';
-  if(Number(deltaPctPoints)>=TIOS_EXECUTION_TREND_THRESHOLD_PCT_POINTS)return 'improving';
-  if(Number(deltaPctPoints)<=-TIOS_EXECUTION_TREND_THRESHOLD_PCT_POINTS)return 'worsening';
+  if(!Number.isFinite(deltaPctPoints))return 'insufficient-evidence';
+  if(deltaPctPoints>=TIOS_EXECUTION_TREND_THRESHOLD_PCT_POINTS)return 'improving';
+  if(deltaPctPoints<=-TIOS_EXECUTION_TREND_THRESHOLD_PCT_POINTS)return 'worsening';
   return 'stable';
 }
 
@@ -18477,16 +18494,16 @@ function buildExecutionTrend(){
   const recent=executionWindowSummary(recentReviews);
   const previous=executionWindowSummary(previousReviews);
   const adherenceDelta=(
-    Number.isFinite(Number(recent.adherencePct)) &&
-    Number.isFinite(Number(previous.adherencePct))
+    Number.isFinite(recent.adherencePct) &&
+    Number.isFinite(previous.adherencePct)
   ) ? roundEvidence(Number(recent.adherencePct)-Number(previous.adherencePct),1) : null;
 
   const criteria=(currentStructure?.criteria||[]).map(item=>{
     const recentCriterion=recent.criteria.find(row=>row.key===item.key)||null;
     const previousCriterion=previous.criteria.find(row=>row.key===item.key)||null;
     const delta=(
-      Number.isFinite(Number(recentCriterion?.adherencePct)) &&
-      Number.isFinite(Number(previousCriterion?.adherencePct))
+      Number.isFinite(recentCriterion?.adherencePct) &&
+      Number.isFinite(previousCriterion?.adherencePct)
     ) ? roundEvidence(Number(recentCriterion.adherencePct)-Number(previousCriterion.adherencePct),1) : null;
     return {
       key:item.key,
@@ -18500,13 +18517,13 @@ function buildExecutionTrend(){
     };
   });
 
-  const comparable=criteria.filter(item=>Number.isFinite(Number(item.deltaAdherencePctPoints)));
+  const comparable=criteria.filter(item=>Number.isFinite(item.deltaAdherencePctPoints));
   const bestDelta=comparable.length?Math.max(...comparable.map(item=>Number(item.deltaAdherencePctPoints))):null;
   const worstDelta=comparable.length?Math.min(...comparable.map(item=>Number(item.deltaAdherencePctPoints))):null;
 
   return {
     state:executionTrendState(adherenceDelta),
-    reason:'comparable-reflection-structure',
+    reason:adherenceDelta===null?'no-quantitative-execution-checks':'comparable-reflection-structure',
     method:'recent-vs-previous-reviewed-trades',
     windowSize:TIOS_EXECUTION_TREND_WINDOW,
     minimumComparableReviews:TIOS_EXECUTION_TREND_MIN_REVIEWS,
@@ -18520,8 +18537,8 @@ function buildExecutionTrend(){
     delta:{
       adherencePctPoints:adherenceDelta,
       averageScorePctPoints:(
-        Number.isFinite(Number(recent.averageScorePct)) &&
-        Number.isFinite(Number(previous.averageScorePct))
+        Number.isFinite(recent.averageScorePct) &&
+        Number.isFinite(previous.averageScorePct)
       ) ? roundEvidence(Number(recent.averageScorePct)-Number(previous.averageScorePct),1) : null,
       missedChecks:recent.missedChecks-previous.missedChecks,
       tradesWithErrors:recent.tradesWithErrors-previous.tradesWithErrors,

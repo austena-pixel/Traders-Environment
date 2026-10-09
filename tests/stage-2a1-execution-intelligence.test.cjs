@@ -3,16 +3,14 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const {executionContext, recommendedCriteria} = require('./helpers/execution-intelligence-context.cjs');
 
 const root = path.join(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const slice = (source, start, end) => source.slice(source.indexOf(start), source.indexOf(end, source.indexOf(start)));
 
 function executionFixture(){
-  const EXECUTION_CRITERIA=[
-    {key:'entry_timing',sort:1},{key:'entry_accuracy',sort:2},{key:'stop_placement',sort:3},
-    {key:'risk_sizing',sort:4},{key:'trade_management',sort:5},{key:'exit_execution',sort:6}
-  ];
+  const EXECUTION_CRITERIA=recommendedCriteria();
   const trades=[{id:'t1'},{id:'t2'},{id:'t3'},{id:'t4'}];
   const executionReviews=[
     {id:'r1',trade_id:'t1'},{id:'r2',trade_id:'t2'},{id:'r3',trade_id:'t3'}
@@ -23,40 +21,15 @@ function executionFixture(){
       let complied=true;
       if(review.id==='r2'&&criterion.key==='trade_management')complied=false;
       if(review.id==='r3'&&['trade_management','risk_sizing'].includes(criterion.key))complied=false;
-      executionChecks.push({review_id:review.id,criterion_key:criterion.key,complied});
+      executionChecks.push({review_id:review.id,criterion_key:criterion.key,criterion_label:criterion.label,sort_order:criterion.sort,complied});
     }
   }
   return {EXECUTION_CRITERIA,trades,executionReviews,executionChecks};
 }
 
 test('Stage 2A-1 builds one evidence-linked execution intelligence model', () => {
-  const source=read('t-ios.html');
-  const block=slice(source,'function shortExecutionCriterionLabel','function marketStateStats');
   const fixture=executionFixture();
-  const context=vm.createContext({
-    ...fixture,
-    window:{},
-    tradingAccount:{id:'acct-test'},
-    roundEvidence(value,digits=2){const n=Number(value);if(!Number.isFinite(n))return null;const f=10**digits;return Math.round(n*f)/f;},
-    averageFinite(values){const nums=values.filter(Number.isFinite);return nums.length?nums.reduce((a,b)=>a+b,0)/nums.length:null;}
-  });
-  vm.runInContext(`
-    activeExecutionReviews=()=>executionReviews.filter(r=>trades.some(t=>t.id===r.trade_id));
-    executionScoreForTrade=tradeId=>{
-      const review=executionReviews.find(r=>r.trade_id===tradeId);
-      if(!review)return null;
-      const rows=executionChecks.filter(c=>c.review_id===review.id);
-      const passed=EXECUTION_CRITERIA.filter(c=>rows.find(r=>r.criterion_key===c.key)?.complied).length;
-      return passed/EXECUTION_CRITERIA.length*100;
-    };
-    executionRatingForTrade=tradeId=>{
-      const score=executionScoreForTrade(tradeId);
-      if(score===null)return null;
-      const passed=Math.round(score/100*6);
-      return passed===6?'A+':passed===5?'A':'B';
-    };
-  `,context);
-  vm.runInContext(block,context);
+  const context=executionContext(fixture);
 
   const model=vm.runInContext('buildExecutionIntelligenceModel()',context);
   assert.equal(model.schema,'tios.execution-intelligence.v1');

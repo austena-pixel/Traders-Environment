@@ -11,6 +11,12 @@ T-IOS orders active execution reviews by their associated trade occurrence chron
 
 At least 6 comparable reviewed trades are required. With fewer than 6, the trend is `insufficient-evidence`.
 
+Both windows also need quantitative checklist evidence. Text-only reflections
+retain their written responses but have no adherence or execution score. Missing
+scores stay `null`; they are not converted to zero or classified as a stable trend.
+With six comparable text-only reviews, the model reports `insufficient-evidence`
+with reason `no-quantitative-execution-checks` and null score deltas.
+
 ## Classification
 
 The overall trend is based on the change in execution adherence between the two equal 3-trade windows:

@@ -1,21 +1,10 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
 const vm = require('node:vm');
-const root = path.join(__dirname, '..');
-const read = file => fs.readFileSync(path.join(root, file), 'utf8');
-const slice = (source,start,end) => source.slice(source.indexOf(start),source.indexOf(end,source.indexOf(start)));
+const {executionContext, recommendedCriteria} = require('./helpers/execution-intelligence-context.cjs');
 
 function fixture(){
-  const recommended=[
-    {key:'entry_timing',label:'Entry timing matched the selected valid entry moment and trigger.',sort:1},
-    {key:'entry_accuracy',label:'The actual entry/order execution matched the intended trade.',sort:2},
-    {key:'stop_placement',label:'The initial stop loss was placed according to the plan.',sort:3},
-    {key:'risk_sizing',label:'Position size and risk stayed within the predefined limit.',sort:4},
-    {key:'trade_management',label:'In-trade management followed the intended process.',sort:5},
-    {key:'exit_execution',label:'The applicable exit rule was executed correctly.',sort:6}
-  ];
+  const recommended=recommendedCriteria();
   const custom=[
     {key:'wait_confirmation',label:'Waited for confirmation.',sort:1},
     {key:'planned_location',label:'Entered at the planned location.',sort:2},
@@ -43,28 +32,15 @@ function fixture(){
 }
 
 function context(){
-  const source=read('t-ios.html');
-  const data=fixture();
-  const ctx=vm.createContext({
-    ...data,window:{},Object,Math,tradingAccount:{id:'acct'},
-    roundEvidence(value,digits=2){const n=Number(value);if(!Number.isFinite(n))return null;const f=10**digits;return Math.round(n*f)/f;},
-    averageFinite(values){const nums=values.filter(Number.isFinite);return nums.length?nums.reduce((a,b)=>a+b,0)/nums.length:null;}
-  });
-  ctx.activeExecutionReviews=()=>data.executionReviews;
-  vm.runInContext(
-    slice(source,'const EXECUTION_REFLECTION_TEMPLATE_SCHEMA','function journalExecutionBadge')+'\n'+
-    slice(source,'function shortExecutionCriterionLabel','function marketStateStats'),
-    ctx
-  );
-  return ctx;
+  return executionContext(fixture());
 }
 
 test('recommended execution checklist is a versioned reflection template', () => {
   const ctx=context();
   assert.equal(vm.runInContext('EXECUTION_RECOMMENDED_TEMPLATE.id',ctx),'tios-recommended-execution');
   assert.equal(vm.runInContext('EXECUTION_RECOMMENDED_TEMPLATE.version',ctx),1);
-  assert.equal(vm.runInContext("executionReflectionStructureForReview(executionReviews[0]).source",ctx),'recommended');
-  assert.equal(vm.runInContext("executionReflectionStructureForReview(executionReviews[6]).source",ctx),'user-or-legacy');
+  assert.equal(vm.runInContext("executionReflectionStructureForReview(executionReviews[0]).source",ctx),'recommended-legacy');
+  assert.equal(vm.runInContext("executionReflectionStructureForReview(executionReviews[6]).source",ctx),'historical');
 });
 
 test('a custom review is scored from its own saved criteria', () => {
@@ -87,6 +63,76 @@ test('canonical execution intelligence follows the latest comparable reflection 
   const model=vm.runInContext('buildExecutionIntelligenceModel()',ctx);
   assert.equal(model.sample.totalReviewedTrades,7);
   assert.equal(model.sample.reviewedTrades,1);
-  assert.equal(model.reflectionStructure.current.source,'user-or-legacy');
+  assert.equal(model.reflectionStructure.current.source,'historical');
   assert.equal(model.criteria.length,3);
+});
+
+test('saved reflection identity and version are scoped to the user and trading account', () => {
+  const ctx=context();
+  vm.runInContext(`saveExecutionStructureStore({activeId:'custom-v3',structures:[{
+    id:'custom-v3',name:'My execution reflection',version:3,
+    items:executionReflectionStructureForReview(executionReviews[6]).items
+  }]})`,ctx);
+  const saved=vm.runInContext('buildExecutionIntelligenceModel().reflectionStructure.current',ctx);
+  assert.equal(saved.source,'user');
+  assert.equal(saved.templateId,'custom-v3');
+  assert.equal(saved.name,'My execution reflection');
+  assert.equal(saved.version,3);
+  vm.runInContext("tradingAccount={id:'another-account'}",ctx);
+  assert.equal(vm.runInContext('latestExecutionReflectionStructure().source',ctx),'historical');
+  vm.runInContext("tradingAccount={id:'acct-test'};currentUser={id:'another-user'}",ctx);
+  assert.equal(vm.runInContext('latestExecutionReflectionStructure().source',ctx),'historical');
+});
+
+test('renaming a saved criterion starts a separate comparable evidence sample', () => {
+  const data=fixture();
+  data.executionChecks=data.executionChecks.filter(row=>row.review_id!=='r7');
+  for(const criterion of recommendedCriteria()){
+    data.executionChecks.push({review_id:'r7',criterion_key:criterion.key,
+      criterion_label:criterion.key==='entry_timing'?'Waited for a different trigger.':criterion.label,
+      sort_order:criterion.sort,complied:true});
+  }
+  const ctx=executionContext(data);
+  const trend=vm.runInContext('buildExecutionTrend()',ctx);
+  assert.equal(trend.state,'insufficient-evidence');
+  assert.equal(trend.comparableReviewedTrades,1);
+  assert.equal(trend.excludedIncompatibleReviews,6);
+});
+
+function mixedReflectionData(textOnly=false){
+  const data=fixture();
+  data.executionReviews=data.executionReviews.slice(0,6);
+  data.executionChecks=data.executionReviews.flatMap(review=>[
+    ...(textOnly?[]:[{review_id:review.id,criterion_key:'check__risk',criterion_label:'Stayed within risk limit.',sort_order:1,complied:review.id!=='r1'}]),
+    {review_id:review.id,criterion_key:'text__notes',criterion_label:'What did I learn?',sort_order:2,complied:false,comment:'A qualitative reflection.'}
+  ]);
+  return data;
+}
+
+test('qualitative responses do not add errors or inflate quantitative execution scoring', () => {
+  const ctx=executionContext(mixedReflectionData());
+  const model=vm.runInContext('buildExecutionIntelligenceModel()',ctx);
+  assert.equal(model.sample.totalChecks,6);
+  assert.equal(model.sample.missedChecks,1);
+  assert.equal(model.sample.tradesWithErrors,1);
+  assert.equal(model.execution.adherencePct,83.3);
+  assert.equal(model.criteria.length,1);
+  assert.equal(vm.runInContext("executionScoreForTrade('t2')",ctx),100);
+});
+
+test('text-only reflections cannot establish a quantitative execution trend', () => {
+  const ctx=executionContext(mixedReflectionData(true));
+  const model=vm.runInContext('buildExecutionIntelligenceModel()',ctx);
+  assert.equal(model.sample.reviewedTrades,6);
+  assert.equal(model.sample.totalChecks,0);
+  assert.equal(model.sample.aPlusExecutions,0);
+  assert.equal(model.execution.adherencePct,null);
+  assert.equal(model.execution.averageScorePct,null);
+  assert.equal(vm.runInContext("executionRatingForTrade('t2')",ctx),null);
+  assert.equal(model.trend.state,'insufficient-evidence');
+  assert.equal(model.trend.reason,'no-quantitative-execution-checks');
+  assert.equal(model.trend.delta.adherencePctPoints,null);
+  assert.equal(model.trend.delta.averageScorePctPoints,null);
+  assert.equal(model.trend.mostImprovedCriteria.length,0);
+  assert.equal(model.trend.mostWorsenedCriteria.length,0);
 });

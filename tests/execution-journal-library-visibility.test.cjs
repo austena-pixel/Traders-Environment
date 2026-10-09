@@ -5,11 +5,11 @@ const path = require('node:path');
 
 const source=fs.readFileSync(path.join(__dirname,'..','t-ios.html'),'utf8');
 
-test('saved Execution journals remain visible while viewing reviewed trades',()=>{
-  assert.ok(source.includes('id="executionJournalLibraryLabel"'));
-  assert.ok(source.includes("libraryLabel.textContent='My Journals • '+store.structures.length"));
-  assert.ok(source.includes('select.hidden=false;'));
-  assert.ok(source.includes('this trade keeps its original journal'));
+test('Execution exposes saved instrument selectors beside the selected trade',()=>{
+  assert.ok(source.includes('id="executionMapPlaybookSelect"'));
+  assert.ok(source.includes('id="executionMapChecklistSelect"'));
+  assert.ok(source.includes('id="executionMapPsychSelect"'));
+  assert.ok(source.includes('function renderExecutionMappingControls()'));
 });
 
 test('journal selector represents active journal for future reviews',()=>{

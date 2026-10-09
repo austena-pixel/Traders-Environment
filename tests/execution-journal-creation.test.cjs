@@ -5,10 +5,10 @@ const path = require('node:path');
 
 const source = fs.readFileSync(path.join(__dirname,'..','t-ios.html'),'utf8');
 
-test('new execution journal is available as a page-level action', () => {
-  assert.ok(source.includes('id="executionNewJournalTopBtn"'));
-  assert.ok(source.includes("$('#executionNewJournalTopBtn').addEventListener"));
-  assert.ok(source.includes('Create Execution Journal'));
+test('Execution exposes the current route back to instrument creation and editing', () => {
+  assert.ok(source.includes('id="executionBackToInstrumentsBtn"'));
+  assert.ok(source.includes("$('#executionBackToInstrumentsBtn')?.addEventListener"));
+  assert.ok(source.includes('Back to Instruments'));
 });
 
 test('reviewed trades do not block creating another journal', () => {

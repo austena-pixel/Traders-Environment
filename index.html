@@ -2878,7 +2878,7 @@ function receiveGoalEvidenceRequestSignal(signal){
       requestId:request.requestId,
       targetProductId:'tios',
       status:'routed'
-    });
+    },signal);
   }
   return result;
 }
