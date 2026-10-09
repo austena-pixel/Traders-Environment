@@ -5921,6 +5921,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 .mobile-product-brand .product-mark svg{width:18px;height:18px}
 </style>
 <link rel="stylesheet" href="tios-dashboard.css">
+<link rel="stylesheet" href="technical-instruments/ai-builder.css">
 <link rel="stylesheet" href="hios-themes.css" data-hios-theme-sheet>
 <script src="hios-themes.js"></script>
 </head>
@@ -7608,6 +7609,9 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 <script src="technical-instruments/playbooks.js"></script>
 <script src="technical-instruments/checklists.js"></script>
 <script src="technical-instruments/reflections.js"></script>
+<script src="technical-instruments/ai-builder-schema.js"></script>
+<script src="technical-instruments/condition-logic.js"></script>
+<script src="technical-instruments/ai-builder-document.js"></script>
 <script>
 /* =========================================================
    SUPABASE CONFIGURATION
@@ -9264,6 +9268,7 @@ function switchTechnicalInstrumentBuilder(kind){
 }
 
 function navigate(page){
+  window.TIOSAIBuilderClient?.beforeNavigate(page);
   if(page!=='journal')closeJournalReflection({restoreFocus:false});
   if(page!=='playbook' && $('#page-playbook')?.classList.contains('active')){
     clearTimeout(playbookDocumentSaveTimer);
@@ -11359,6 +11364,7 @@ function renderExecutionSecondaryItems(kind,doc){
   if(!items.length)return '<div class="execution-secondary-empty">This instrument has no mapped content yet.</div>';
   let index=0;
   return items.map((item,itemIndex)=>{
+    if(item.type==='condition-group')return window.TIOSConditionLogic.render(item,'execution',kind);
     if(item.type==='section')return `<div class="execution-map-section ${item.level===1?'level-1':(item.level===3?'level-3':'level-2')}"${instrumentTextPresentation(item)}>${(item.html||escapeHtml(item.label))}</div>`;
     if(item.type==='image')return instrumentReferenceImageHtml(item);
     if(item.type==='image-field')return instrumentImageFieldHtml(item,false,{kind,area:'execution'});
@@ -11409,6 +11415,7 @@ function renderExecutionMappingForm(){
   let checkIndex=0;
   const playbookHtml=playbook
     ? (items.length?items.map((item,itemIndex)=>{
+    if(item.type==='condition-group')return window.TIOSConditionLogic.render(item,'execution','playbook');
     if(item.type==='image')return instrumentReferenceImageHtml(item);
     if(item.type==='image-field')return instrumentImageFieldHtml(item,false,{kind:'playbook',area:'execution'});
     if(item.type==='section'){
@@ -11701,7 +11708,7 @@ function updateExecutionMappingScore(){
   const checkSelector=`[data-execution-${prefix}-check]`;
   const choiceSelector=`[data-execution-${prefix}-choice]`;
   const groupSelector=`[data-execution-${prefix}-choice-group]`;
-  const checks=section?[...section.querySelectorAll(checkSelector)]:[];
+  const checks=section?[...section.querySelectorAll(checkSelector)].filter(input=>!input.closest('[data-ti-ai-group]')):[];
   const choiceGroups=section?[...section.querySelectorAll(groupSelector)]:[];
   const scoreFields=section?[...section.querySelectorAll('[data-execution-response-type="score"][data-execution-reflection-id]')]:[];
   const score=$('#executionMapScore');
@@ -11709,10 +11716,12 @@ function updateExecutionMappingScore(){
   const label=$('#executionMapScoreLabel'),conditions=$('#executionMapConditionScore');
   if(!score||!meta)return;
 
-  const total=checks.length+choiceGroups.length;
+  const logic=window.TIOSConditionLogic?.scores(section)||{total:0,followed:0};
+  if(logic.invalid){score.textContent='—';meta.textContent='Repair the missing or invalid condition prerequisite before scoring.';if(conditions)conditions.hidden=true;return}
+  const total=checks.length+choiceGroups.length+logic.total;
   const followedChecks=checks.filter(item=>item.checked).length;
   const satisfiedChoices=choiceGroups.filter(group=>[...group.querySelectorAll(choiceSelector+':checked')].some(input=>input.closest(groupSelector)===group)).length;
-  const followed=followedChecks+satisfiedChoices;
+  const followed=followedChecks+satisfiedChoices+logic.followed;
   const conditionPct=total?followed/total*100:null;
   if(label)label.textContent=scoreFields.length?'Live score total':'Live execution match';
   if(conditions){
@@ -13445,6 +13454,8 @@ function normalizePlaybookDocument(raw={}){
   base.instrumentState=String(raw.instrumentState||base.instrumentState||'active');
   base.createdAt=raw.createdAt || base.createdAt || new Date().toISOString();
   base.updatedAt=raw.updatedAt || base.updatedAt || new Date().toISOString();
+  base.strategyVersion=Number(raw.strategyVersion)||0;
+  base.strategyVersionId=String(raw.strategyVersionId||'');
   Object.assign(base,instrumentTemplateDocumentState('playbook',raw));
   return base;
 }
@@ -13547,6 +13558,8 @@ function playbookStructuredPreviewItems(documentHtml,renderContext={}){
     if(node.nodeType===3){const label=node.textContent.trim();if(label)items.push({type:'content',label});return}
     if(node.nodeType!==1)return;
     const tag=node.tagName?.toLowerCase();
+    const conditionItem=window.TIOSConditionLogic?.item(node);
+    if(conditionItem){items.push(conditionItem);return}
     const presentation={colors:playbookStyleColorsFromTarget(node),style:playbookVisualStyleFromTarget(node),html:instrumentInlineHtml(node,renderContext,host)};
     const hasMedia=Boolean(node.querySelector(instrumentMediaSelector()));
 
@@ -13634,6 +13647,7 @@ function playbookStructuredPreviewItems(documentHtml,renderContext={}){
       const listGroup='list_'+(++listGroupIndex);
       [...node.children].forEach(li=>{
         if(li.tagName?.toLowerCase()!=='li')return;
+        if(window.TIOSConditionLogic?.item(li)){readNode(li);return}
 
         // Tables inserted while the caret was inside a list may be nested in the LI.
         // Preserve the table structure instead of flattening all cell text into one rule.
@@ -13730,6 +13744,7 @@ function renderPlaybookExecutionPreview(){
   }
 
   body.innerHTML=items.map((item,itemIndex)=>{
+    if(item.type==='condition-group')return window.TIOSConditionLogic.render(item,'preview','playbook');
     if(item.type==='image')return instrumentReferenceImageHtml(item);
     if(item.type==='image-field')return instrumentImageFieldHtml(item,false,{kind:'playbook',area:'preview'});
     if(item.type==='section'){
@@ -13806,7 +13821,7 @@ function renderPlaybookExecutionPreview(){
     }
     return '';
   }).join('');
-  const measurableCount=checkCount+choiceCount+instrumentImagePatternConditionCount(body);
+  const measurableCount=checkCount+choiceCount+items.filter(item=>item.type==='condition-group').length+instrumentImagePatternConditionCount(body);
   meta.textContent=`Preview only · ${measurableCount} condition${measurableCount===1?'':'s'} · ${linkedCount} linked instrument${linkedCount===1?'':'s'}`;
   hydratePlaybookImages(body);
 }
@@ -13929,6 +13944,7 @@ function collectPlaybookDocumentFromEditor(){
 }
 
 function savePlaybookDocument({quiet=false}={}){
+  if(window.TIOSAIBuilderClient?.isPreview('playbook'))return;
   const next=collectPlaybookDocumentFromEditor();
   if(!next)return;
   const module=playbookModule();
@@ -13943,6 +13959,7 @@ function savePlaybookDocument({quiet=false}={}){
 }
 
 function schedulePlaybookDocumentSave(){
+  if(window.TIOSAIBuilderClient?.isPreview('playbook'))return;
   const state=$('#playbookDraftSaveState');
   if(state)state.textContent='Saving…';
   clearTimeout(playbookDocumentSaveTimer);
@@ -14031,9 +14048,11 @@ function focusPlaybookEditor(){
 function syncPlaybookLiveModel(){
   updatePlaybookWordCount();
   renderPlaybookExecutionPreview();
+  if(window.TIOSAIBuilderClient?.isPreview('playbook'))return;
 
   const next=collectPlaybookDocumentFromEditor();
   if(next){
+    if(window.TIOSAIWorkspace&&window.TIOSAIWorkspace.semantic(next)===window.TIOSAIWorkspace.semantic(currentPlaybookDocument()))return;
     playbookDocuments=playbookDocuments.map(item=>item.id===next.id?next:item);
     schedulePlaybookDocumentSave();
   }
@@ -15095,7 +15114,8 @@ function secondaryNormalizeDoc(kind,raw={}){
     tags:Array.isArray(raw.tags)?raw.tags.map(String):[],
     instrumentState:String(raw.instrumentState||'draft'),
     createdAt:String(raw.createdAt||now),
-    updatedAt:String(raw.updatedAt||now)
+    updatedAt:String(raw.updatedAt||now),
+    strategyVersion:Number(raw.strategyVersion)||0,strategyVersionId:String(raw.strategyVersionId||'')
   };
 }
 function loadSecondaryDocuments(kind,{refresh=false}={}){
@@ -15422,6 +15442,7 @@ function collectSecondaryDocument(kind){
   };
 }
 function saveSecondaryDocument(kind,{quiet=false}={}){
+  if(window.TIOSAIBuilderClient?.isPreview(kind))return;
   const next=collectSecondaryDocument(kind); if(!next)return;
   if(!quiet){next.templateDraft=false;next.templateSaveConfirmed=true}
   const state=secondaryState(kind);
@@ -15432,6 +15453,7 @@ function saveSecondaryDocument(kind,{quiet=false}={}){
   if(!quiet)showStatus(secondaryConfig(kind).singular+' saved');
 }
 function scheduleSecondarySave(kind){
+  if(window.TIOSAIBuilderClient?.isPreview(kind))return;
   const state=secondaryState(kind);
   const saveState=secondaryFind(kind,'[data-ti-save-state]'); if(saveState)saveState.textContent='Saving…';
   clearTimeout(state.saveTimer);
@@ -15596,6 +15618,7 @@ function openSecondaryTableModal(kind){
 
 function secondaryPreviewHtml(kind,items){
   return items.map((item,itemIndex)=>{
+    if(item.type==='condition-group')return window.TIOSConditionLogic.render(item,'preview',kind);
     if(item.type==='image')return instrumentReferenceImageHtml(item);
     if(item.type==='image-field')return instrumentImageFieldHtml(item,false,{kind,area:'preview'});
     if(item.type==='section')return '<div class="playbook-preview-section level-'+(item.level||2)+'"'+instrumentTextPresentation(item)+'>'+(item.html||escapeHtml(item.label))+'</div>';
@@ -15635,7 +15658,7 @@ function renderSecondaryPreview(kind){
   body.innerHTML=items.length?secondaryPreviewHtml(kind,items):'<div class="playbook-preview-empty">Start building this instrument to see its Execution Quality model.</div>';
   const meta=secondaryFind(kind,'[data-ti-preview-meta]');
   if(meta){
-    const measurable=(kind==='psych'?items.reduce((count,item)=>count+(item.type==='reflection-group'?item.prompts.length:['psych-prompt','choice','check'].includes(item.type)?1:0),0):items.filter(x=>x.type==='check'||x.type==='choice').length)+instrumentImagePatternConditionCount(body);
+    const measurable=(kind==='psych'?items.reduce((count,item)=>count+(item.type==='reflection-group'?item.prompts.length:['psych-prompt','choice','check','condition-group'].includes(item.type)?1:0),0):items.filter(x=>x.type==='check'||x.type==='choice'||x.type==='condition-group').length)+instrumentImagePatternConditionCount(body);
     meta.textContent='Preview only · '+measurable+' '+(kind==='psych'?'prompt':'condition')+(measurable===1?'':'s')+' · mapped separately';
   }
   hydratePlaybookImages(body);
@@ -16178,6 +16201,7 @@ function saveInstrumentImageFieldFromModal(event){
 // The existing image database holds the binary for all three builders.
 function serializeInstrumentDocument(editor){
   if(!editor)return '';
+  window.TIOSAIDocument?.refreshMetadata(editor);
   refreshInstrumentImageFieldRelations(editor);
   const clone=editor.cloneNode(true);
   clone.querySelectorAll('.ti-picture-selected').forEach(picture=>picture.classList.remove('ti-picture-selected'));
@@ -19356,6 +19380,8 @@ window.getTiosConversationContext=function(){
 };
 </script>
 <script src="tios-dashboard.js"></script>
+<script src="technical-instruments/ai-builder-workspace.js"></script>
+<script src="technical-instruments/ai-builder.js"></script>
 </body>
 </html>
 

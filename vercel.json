@@ -1,0 +1,7 @@
+{
+  "buildCommand": "node scripts/verify-ai-builder-provider.cjs",
+  "outputDirectory": ".",
+  "functions": {
+    "api/tios-ai-builder.js": { "maxDuration": 60 }
+  }
+}
