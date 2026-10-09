@@ -14,9 +14,10 @@ body:has(#appShell:not(.hidden) #page-dashboard.active) .main{height:100dvh;min-
 #page-dashboard .day,#page-dashboard .week-total{min-height:0}
 #page-dashboard .right-side{display:flex;flex-direction:column;min-height:0;min-width:0}
 #page-dashboard .account-overview{flex:0 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
+#page-dashboard .account-overview[hidden]{display:none!important}
 .account-overview-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
 .account-overview-head h3{margin:0}
-.account-chart-toggle{display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;padding:8px 10px;border:1px solid #3a4b64;border-radius:9px;background:#18263b;color:#e9f2ff;font-size:11px;font-weight:700}
+.account-chart-toggle{display:flex;flex:0 0 auto;width:100%;min-height:40px;align-items:center;justify-content:center;gap:6px;white-space:nowrap;padding:8px 10px;border:1px solid #3a4b64;border-radius:11px;background:#18263b;color:#e9f2ff;font-size:12px;font-weight:700}
 .account-chart-toggle:hover{border-color:#6ea8ff;background:#20344e}
 .account-chart-toggle[aria-expanded="true"]{background:#263d5b;border-color:#6ea8ff}
 .account-chart-toggle:focus-visible,.tios-conversation button:focus-visible,.tios-conversation textarea:focus-visible{outline:2px solid #6ea8ff;outline-offset:2px}
@@ -45,7 +46,6 @@ body:has(#appShell:not(.hidden) #page-dashboard.active) .main{height:100dvh;min-
 .tios-conversation-status{padding:0 12px 8px;margin:0;color:#aab8cb;font-size:10px}
 .tios-conversation-status:empty{display:none}
 @keyframes tiosConversationReveal{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
-@media(min-width:861px){#page-dashboard .right-side.conversation-open .account-overview{flex-shrink:0}#page-dashboard .right-side.conversation-open .account-overview .side-row{padding:7px 0;font-size:12px}}
 @media(max-width:1100px) and (min-width:861px){#page-dashboard .dashboard-layout{grid-template-columns:minmax(0,1fr) 310px}.month-title{min-width:125px;font-size:16px}}
 @media(max-width:860px){
   body:has(#appShell:not(.hidden) #page-dashboard.active) .mobile-top{flex:0 0 auto;margin-bottom:8px}
@@ -58,8 +58,6 @@ body:has(#appShell:not(.hidden) #page-dashboard.active) .main{height:100dvh;min-
   #page-dashboard .account-overview-head{margin-bottom:0}
   #page-dashboard .account-overview .side-row{padding:5px 0;font-size:11px}
   #page-dashboard .account-overview .settings-row input{max-width:100px;padding:5px}
-  #page-dashboard .right-side.conversation-open .account-overview{flex:0 0 auto;padding-bottom:7px}
-  #page-dashboard .right-side.conversation-open .account-overview-details{display:none}
   .tios-conversation{min-height:0}
   .tios-conversation-head{padding:9px 12px}
   .tios-conversation-head h3{font-size:12px}
@@ -76,8 +74,6 @@ body:has(#appShell:not(.hidden) #page-dashboard.active) .main{height:100dvh;min-
   #page-dashboard .month-nav{width:100%;justify-content:space-between}
 }
 @media(max-height:650px){
-  #page-dashboard .right-side.conversation-open .account-overview{max-height:33%;flex-shrink:1}
-  #page-dashboard .right-side.conversation-open .account-overview-details{max-height:62px;overflow:auto;overscroll-behavior:contain}
   .tios-conversation-prompts{display:none}
   .tios-conversation-head{padding:8px 12px}
   .tios-conversation-compose{padding:7px 10px}

@@ -46,6 +46,11 @@ async function run(){
     };
     assert.equal(await page.getByRole('heading',{name:'Key Performance',exact:true}).count(),0);
     assert.equal(await page.locator('#tiosConversation').isVisible(),false);
+    assert.equal(await page.locator('.account-overview').isVisible(),true);
+    const originalBalance=await page.locator('#startingBalance').inputValue();
+    const chartButton=await page.locator('#openAccountChart').boundingBox(),overviewBox=await page.locator('.account-overview').boundingBox();
+    assert.ok(chartButton.y+chartButton.height<=overviewBox.y,'Open Chart sits above Account Overview');
+    assert.equal(chartButton.width,overviewBox.width,'Open Chart spans the right column');
     await assertFixed();
     await page.evaluate(()=>{viewDate=new Date(2026,7,1);renderDashboard()});
     assert.equal(await page.locator('#calendarGrid > *').count(),56);
@@ -53,13 +58,14 @@ async function run(){
     await page.evaluate(()=>{viewDate=new Date(2026,9,1);renderDashboard()});
     await page.getByRole('button',{name:'Open Chart',exact:true}).click();
     assert.equal(await page.getByRole('button',{name:'Close Chart',exact:true}).getAttribute('aria-expanded'),'true');
+    assert.equal(await page.locator('.account-overview').isVisible(),false);
     assert.equal(await page.getByRole('textbox',{name:'Message T-IOS',exact:true}).evaluate(el=>document.activeElement===el),true);
     await assertFixed();
     await send('How did I perform this month?');
     assert.match(await log.innerText(),/Net P&L: \$150\.00/);assert.match(await log.innerText(),/Win rate: 50\.0%/);assert.match(await log.innerText(),/1\.50%/);
     await send('What do my execution reviews show?');assert.match(await log.innerText(),/no comparable execution reviews/);
     await screenshot('desktop-conversation.png');
-    console.log('PASS Open Chart expands below Account Overview, sends messages and reports actual recorded outcomes');
+    console.log('PASS Open Chart replaces Account Overview, sends messages and reports actual recorded outcomes');
     await page.getByRole('textbox',{name:'Message T-IOS',exact:true}).fill('What evidence is missing?');
     await page.getByRole('textbox',{name:'Message T-IOS',exact:true}).press('Shift+Enter');
     assert.match(await page.getByRole('textbox',{name:'Message T-IOS',exact:true}).inputValue(),/\n$/);
@@ -67,6 +73,8 @@ async function run(){
     await send('<img src=x onerror="window.qaInjected=true">');
     assert.equal(await log.locator('img').count(),0);assert.match(await log.innerText(),/general AI conversation/);
     await page.getByRole('button',{name:'Close conversation',exact:true}).click();assert.equal(await page.locator('#tiosConversation').isVisible(),false);
+    assert.equal(await page.locator('.account-overview').isVisible(),true);
+    assert.equal(await page.locator('#startingBalance').inputValue(),originalBalance);
     assert.equal(await page.getByRole('button',{name:'Open Chart',exact:true}).evaluate(el=>document.activeElement===el),true);
     await page.getByRole('button',{name:'Open Chart',exact:true}).click();assert.match(await log.innerText(),/Net P&L/);
     await page.getByRole('button',{name:'New conversation',exact:true}).click();assert.equal(await page.locator('.tios-conversation-message').count(),1);

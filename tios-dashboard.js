@@ -4,6 +4,7 @@
   const panel=document.getElementById('tiosConversation');
   if(!panel)return;
   const toggle=document.getElementById('openAccountChart');
+  const overview=toggle.closest('.right-side').querySelector('.account-overview');
   const list=document.getElementById('tiosConversationMessages');
   const form=document.getElementById('tiosConversationForm');
   const input=document.getElementById('tiosConversationInput');
@@ -32,7 +33,7 @@
     return data;
   }
   function open(value){
-    sync();panel.hidden=!value;toggle.setAttribute('aria-expanded',String(value));toggle.textContent=value?'Close Chart':'Open Chart';
+    sync();panel.hidden=!value;overview.hidden=value;toggle.setAttribute('aria-expanded',String(value));toggle.textContent=value?'Close Chart':'Open Chart';
     toggle.closest('.right-side').classList.toggle('conversation-open',value);
     if(value){input.focus({preventScroll:true});list.scrollTop=list.scrollHeight}else if(toggle.getClientRects().length)toggle.focus({preventScroll:true});
   }
