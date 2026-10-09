@@ -91,7 +91,7 @@
 #appScreen .app{display:grid!important;height:100%!important;min-height:0!important;overflow:hidden;grid-template-rows:auto minmax(0,1fr)}
 #appScreen .main{height:100%!important;min-height:0!important;overflow:hidden!important;display:flex;flex-direction:column}
 #appScreen .main > .home-layout{height:100%;min-height:0!important;flex:1 1 auto;align-items:stretch!important}
-#appScreen .home-sidebar{display:grid!important;height:100%!important;min-height:0!important;overflow:hidden!important;grid-template-rows:minmax(0,1fr)!important}
+#appScreen .home-sidebar{display:grid!important;height:100%!important;min-height:0!important;position:relative;z-index:6;overflow:visible!important;grid-template-rows:minmax(0,1fr)!important}
 #appScreen .hios-development{height:100%;min-height:0;display:flex;flex-direction:column;overflow:hidden}
 .hios-development-head,.hios-development-intro,.hios-development-note{flex:0 0 auto}
 .hios-domain-grid{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;align-content:start;overscroll-behavior:contain;touch-action:pan-y;scrollbar-width:thin;scrollbar-color:#4d607d transparent;padding:3px 4px 3px 3px;margin-left:-3px}
@@ -108,7 +108,7 @@
 }
 @media(min-width:900px){
   .home-layout.auto-zoom-enabled .hios-development[data-home-panel="c"]{transform:scale(1)!important;transform-origin:top right;transition:transform .2s,border-color .2s,box-shadow .2s}
-  .home-layout.auto-zoom-enabled .hios-development[data-home-panel="c"].hios-panel-zoomed{transform:scale(1.025)!important;z-index:30!important;border-color:#627d9f;box-shadow:0 12px 28px #0208124d}
+  .home-layout.auto-zoom-enabled .hios-development[data-home-panel="c"].hios-panel-zoomed{transform:scale(1.025)!important;height:calc(100% / 1.025)!important;z-index:30!important;border-color:#627d9f;box-shadow:0 12px 28px #0208124d}
 }
 @media(max-width:950px){
   #appScreen .app{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr)}

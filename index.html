@@ -3445,15 +3445,7 @@ function renderGoalsDashboardViews(){
 
       const overallHtml=`<div class="goal-row overall-daily"><div class="goal-head"><span class="goal-area-copy"><span>Overall Today</span><small>${hiosEscape(overallDetail)}</small></span><b>${overallProgress}%</b></div><div class="bar"><span style="width:${overallProgress}%"></span></div></div>`;
 
-      const categoryHtml=domainProgress.map(item=>{
-        const progress=Math.max(0,Math.min(100,Number(item.progress)||0));
-        const expected=Math.max(0,Number(item.expected)||0);
-        const completed=Math.max(0,Math.min(expected,Number(item.completed)||0));
-        const detail=expected?`${completed} of ${expected} done today`:'No tasks expected today';
-        return `<div class="goal-row"><div class="goal-head"><span class="goal-area-copy"><span>${hiosEscape(item.domain)}</span><small>${hiosEscape(detail)}</small></span><b>${progress}%</b></div><div class="bar"><span style="width:${progress}%"></span></div></div>`;
-      }).join('');
-
-      progressRoot.innerHTML=overallHtml+categoryHtml;
+      progressRoot.innerHTML=overallHtml;
     }else{
       progressRoot.innerHTML='<div class="sub" style="margin-top:12px">Add a Goals-IOS category to begin daily progress tracking.</div>';
     }

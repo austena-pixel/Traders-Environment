@@ -14,6 +14,11 @@ older standalone `h-ios.html` route and the internal T-IOS/G-IOS pages are uncha
   width. Category progress remains scrollable when many categories are active.
   The heading and description marked B in the follow-up screenshot are removed
   to reduce the height of the top row; the progress calculations and toggle remain.
+  The subsequent circled category breakdown is removed from the homepage;
+  **Overall Today** still combines tasks across active categories. Goals-IOS
+  retains its category views. The zoomed intelligence pane can expand outside
+  its outer container and paints in front of the calendar, while its own list
+  continues to scroll internally and its bottom stays within the viewport.
 - The combined former B/D sidebar contains a vertical Intelligence Development
   list grouped by product. T-IOS holds Trading Edge and Execution Quality rows;
   G-IOS holds Goals Intelligence; H-IOS holds Cross-Intelligence. Each product has

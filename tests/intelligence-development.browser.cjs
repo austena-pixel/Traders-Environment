@@ -56,6 +56,8 @@ async function run(){
     assert.equal(await page.locator('#hiosSignOut').isVisible(),true);
     assert.equal(await page.locator('.top-k-panel .goal-status-copy').count(),0);
     assert.match(await page.locator('#hiosGoalProgressList').innerText(),/50%/);
+    assert.equal(await page.locator('#hiosGoalProgressList .goal-row').count(),1);
+    assert.doesNotMatch(await page.locator('#hiosGoalProgressList').innerText(),/Trading/);
     assert.equal(await page.locator('#hiosIntelligenceUnread').isVisible(),false);
     passed('real task priorities coexist with independent pending maturity and an empty unread indicator');
 
@@ -118,6 +120,21 @@ async function run(){
     assert.equal(await page.locator('.hios-development').evaluate(el=>el.classList.contains('hios-panel-zoomed')),true);
     assert.equal(await page.locator('.top-k-panel').evaluate(el=>el.classList.contains('hios-panel-zoomed')),false);
     await page.waitForFunction(()=>new DOMMatrix(getComputedStyle(document.querySelector('.hios-development')).transform).a>1.01);
+    await page.waitForFunction(()=>{
+      const panel=document.querySelector('.hios-development');
+      const scale=new DOMMatrix(getComputedStyle(panel).transform).a;
+      return Math.abs(scale-1.025)<0.0001;
+    });
+    const zoomLayer=await page.evaluate(()=>{
+      const panel=document.querySelector('.hios-development');
+      const sidebar=document.querySelector('.home-sidebar');
+      const calendar=document.querySelector('.calendar-card');
+      const box=panel.getBoundingClientRect(),outer=sidebar.getBoundingClientRect();
+      const hit=document.elementFromPoint((box.left+outer.left)/2,box.top+24);
+      return {outsideParent:box.left<outer.left,visibleOutsideParent:!!hit?.closest('.hios-development'),aboveCalendar:Number(getComputedStyle(sidebar).zIndex)>Number(getComputedStyle(calendar).zIndex),withinViewport:box.bottom<=innerHeight+1,pageScroll:scrollY};
+    });
+    assert.deepEqual(zoomLayer,{outsideParent:true,visibleOutsideParent:true,aboveCalendar:true,withinViewport:true,pageScroll:0});
+    if(output){fs.mkdirSync(output,{recursive:true});await page.screenshot({path:path.join(output,'zoom-front.png')})}
     await page.locator('.calendar-day.today').hover();
     assert.equal(await page.locator('.calendar-day.today').evaluate(el=>el.classList.contains('hios-day-hover')),true);
     await page.locator('#autoZoomToggle').click();
@@ -128,7 +145,7 @@ async function run(){
     await page.locator('#productCatalogList [data-product-id="healthios"] .catalog-actions button').last().click();
     assert.equal(await page.locator('#productSidebarNav [data-product-id="healthios"]').count(),0);
     await page.keyboard.press('Escape');
-    passed('Auto Zoom panel/day behavior and Add Product/remove/sidebar rendering');
+    passed('intelligence zoom is unclipped and in front of the calendar, with Auto Zoom/day and Add Product behavior preserved');
 
     await page.locator('#productSidebarNav [data-product-id="gios"]').click();
     await page.waitForURL('**/g-ios.html');
