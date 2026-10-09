@@ -27,7 +27,7 @@ global.fetch=async(url,options)=>{
   if(String(url)==='https://ai-gateway.vercel.sh/v1/chat/completions'){
     calls.push(JSON.parse(options.body));const next=queue.shift();if(!next)throw Error('No test model response queued.');
     if(next.delay)await new Promise(r=>setTimeout(r,next.delay));
-    if(next.status)return json({error:{message:'Private provider diagnostic must not reach UI'}},next.status);
+    if(next.status)return json({error:{type:next.type,message:'Private provider diagnostic must not reach UI'}},next.status);
     return json({model:'openai/gpt-4.1-mini',choices:[{finish_reason:'stop',message:{content:JSON.stringify(next.answer)}}]});
   }
   throw Error('Unexpected external request: '+url);
@@ -138,7 +138,9 @@ async function run(){
     await page.goto(url,{waitUntil:'load'});await initialize();await switchTo('checklist');assert.equal((await snapshot('checklist')).id,logicSaved.id);assert.match(await model('checklist').textContent(),/At least one requirement/);await switchTo('psych');assert.equal((await snapshot('psych')).id,scoring.id);assert.equal(await editor('psych').locator('[data-ti-response-type="score"]').count(),3);
     pass('approved logic, score IDs and versions survive reload and instrument switching');
     await switchTo('playbook');quota=false;await send('playbook','Add a condition.',playbook());assert.match(await panel('playbook').locator('[data-ai-error]').textContent(),/usage limit/);quota=true;queue.length=0;
-    await send('playbook','Create a new method.',null,{status:402});assert.match(await panel('playbook').locator('[data-ai-error]').textContent(),/credit or budget/);assert.equal(await panel('playbook').locator('[data-ai-proposal]').isVisible(),false);
+    for(const [status,type,expected]of [[402,null,/add AI Gateway Credits/],[403,'customer_verification_required',/valid payment method/],[402,'quota_for_entity_exceeded',/spend budget/]]){
+      await send('playbook','Create a new method.',null,{status,type});const message=await panel('playbook').locator('[data-ai-error]').textContent();assert.match(message,expected);assert.doesNotMatch(message,/Private provider diagnostic/);assert.equal(await panel('playbook').locator('[data-ai-proposal]').isVisible(),false);
+    }
     pass('quota and unavailable-provider states show actionable errors without fake AI answers');
     await panel('playbook').locator('[data-ai-new]').click();await send('playbook','Create the imbalance method.',playbook());
     for(const viewport of [{width:1920,height:1080},{width:1440,height:900},{width:1024,height:600},{width:768,height:900},{width:390,height:844},{width:320,height:568}]){

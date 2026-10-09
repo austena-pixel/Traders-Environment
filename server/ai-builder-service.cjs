@@ -47,6 +47,10 @@ async function generate(input,config,fetcher=fetch){
     body:JSON.stringify({model:config.model,max_tokens:6500,messages:[{role:'system',content:SYSTEM},...input.history,{role:'user',content:JSON.stringify({instruction:input.message,workingContext:input.context})}],response_format:{type:'json_schema',json_schema:{name:'tios_instrument_proposal',strict:true,schema:contract.responseSchema}}})
   },fetcher);
   if(!response.ok){
+    const errorType=data.error?.type||data.error?.code;
+    if(response.status===403&&errorType==='customer_verification_required')throw new ServiceError(503,'gateway_verification_required','AI Gateway requires account verification. The owner must add a valid payment method in Vercel AI Gateway. Manual editing is available.');
+    if(response.status===402&&errorType==='quota_for_entity_exceeded')throw new ServiceError(503,'gateway_budget_limit','AI Gateway has reached a spend budget. The owner must review the team or project budget in Vercel AI Gateway.');
+    if(response.status===402)throw new ServiceError(503,'gateway_credit_balance','AI Gateway has no usable credit balance. The owner must add AI Gateway Credits in Vercel. Manual editing is available.');
     if(response.status===402||response.status===403)throw new ServiceError(503,'gateway_account_action','AI Gateway needs an account, credit or budget update. The owner must check AI Gateway in Vercel.');
     if(response.status===401)throw new ServiceError(503,'gateway_authentication','AI Gateway authentication is unavailable. The owner must check the Vercel project configuration.');
     if(response.status===429)throw new ServiceError(429,'provider_busy','The AI provider is busy. Try again shortly.');

@@ -37,10 +37,17 @@ test('gateway request is structured, bounded and server-side; no fallback simula
   let body;const result=await service.generate(request,config,async(url,options)=>{assert.equal(url,'https://ai-gateway.vercel.sh/v1/chat/completions');body=JSON.parse(options.body);assert.equal(options.headers.Authorization,'Bearer qa-secret');return response({model:'openai/gpt-4.1-mini',choices:[{finish_reason:'stop',message:{content:JSON.stringify(answer)}}]})});
   assert.equal(body.response_format.json_schema.strict,true);assert.equal(body.max_tokens,6500);assert.equal(result.service.provider,'Vercel AI Gateway');assert.equal(JSON.stringify(result).includes('qa-secret'),false);
   await assert.rejects(service.generate(request,{...config,token:null}),e=>e.status===503);
-  for(const [status,code]of [[401,'gateway_authentication'],[402,'gateway_account_action'],[403,'gateway_account_action'],[429,'provider_busy'],[500,'generation_failed']])await assert.rejects(service.generate(request,config,async()=>response({error:{message:'qa-secret'}},status)),e=>e.code===code&&!e.message.includes('qa-secret'));
+  for(const [status,code]of [[401,'gateway_authentication'],[402,'gateway_credit_balance'],[403,'gateway_account_action'],[429,'provider_busy'],[500,'generation_failed']])await assert.rejects(service.generate(request,config,async()=>response({error:{message:'qa-secret'}},status)),e=>e.code===code&&!e.message.includes('qa-secret'));
   await assert.rejects(service.generate(request,config,async()=>response({choices:[{finish_reason:'length',message:{content:'{}'}}]})),e=>e.code==='incomplete_generation');
   await assert.rejects(service.generate(request,config,async()=>response({choices:[{finish_reason:'stop',message:{content:'{}'}}]})),e=>e.code==='invalid_proposal');
   await assert.rejects(service.generate(request,config,async()=>response({choices:[{finish_reason:'stop',message:{refusal:'No'}}]})),e=>e.code==='provider_refusal');
+});
+test('Gateway verification, credit and budget failures provide precise owner actions without raw diagnostics',async()=>{
+  for(const [status,type,code,message]of [
+    [403,'customer_verification_required','gateway_verification_required',/valid payment method/],
+    [402,'quota_for_entity_exceeded','gateway_budget_limit',/spend budget/],
+    [402,'insufficient_credits','gateway_credit_balance',/add AI Gateway Credits/]
+  ])await assert.rejects(service.generate(request,config,async()=>response({error:{type,message:'private diagnostic qa-secret'}},status)),e=>e.status===503&&e.code===code&&message.test(e.message)&&!e.message.includes('qa-secret'));
 });
 function res(){return {headers:{},setHeader(k,v){this.headers[k]=v},status(n){this.statusCode=n;return this},json(v){this.body=v;return this}}}
 test('API blocks wrong origins, missing authentication, oversized input and non-JSON methods',async()=>{
