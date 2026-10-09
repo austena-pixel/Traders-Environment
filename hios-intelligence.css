@@ -2,19 +2,18 @@
 .hios-top-row > .hios-intelligence{display:block!important;min-width:0;min-height:0!important}
 .hios-top-row > .hios-intelligence .hios-intelligence-main{
   display:grid!important;grid-template-columns:minmax(0,1fr);
-  align-items:center;min-height:160px;padding:16px 24px!important;
+  align-items:center;min-height:0;padding:12px 24px!important;
 }
 .hios-intelligence-copy h2{font-size:20px;line-height:1.25}
 .hios-intelligence-copy p{font-size:11px;line-height:1.5;overflow-wrap:anywhere}
 .hios-intelligence-copy .hios-priority-tasks{color:#d8e6f7;margin-top:9px}
 .top-k-panel.goal-status-card{display:block!important;min-width:0;min-height:0!important;padding:12px 14px 15px!important;overflow:hidden!important}
 .top-k-panel .goal-status-head{display:block}
-.top-k-panel .goal-status-copy h3{margin:0;color:#e6edf7;font-size:12px;line-height:1.4}
-.top-k-panel .goal-status-copy .sub{font-size:10px;line-height:1.5;color:#96a5ba;margin-top:5px}
-.top-k-panel .auto-zoom-toggle{margin-top:8px;height:26px;min-width:94px;font-size:9px;padding:0 9px}
+.top-k-panel .auto-zoom-toggle{margin-top:0;height:26px;min-width:94px;font-size:9px;padding:0 9px}
 .top-k-panel #hiosGoalProgressList{max-height:128px!important;overflow-y:auto!important;overflow-x:hidden!important;padding-right:4px;scrollbar-width:thin;scrollbar-color:#344359 transparent}
 .top-k-panel .goal-head{font-size:10px;gap:8px}
 .top-k-panel .goal-head > *{min-width:0;overflow-wrap:anywhere}
+.top-k-panel .goal-head b{white-space:nowrap;flex:0 0 auto}
 .top-k-panel .bar{height:5px}
 .top-k-panel .alert{padding:8px;margin:9px 0 0;font-size:10px}
 .top-k-panel .alert span{font-size:10px;line-height:1.5}
@@ -41,12 +40,14 @@
 .hios-domain-name{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;font-size:11px;line-height:1.4;font-weight:650}
 .hios-domain-name > span{color:#7a8da8;font-size:13px;font-weight:400}
 .hios-domain-level{font-size:10px;line-height:1.4;color:#c4d0e1}
-.hios-level-segments{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;margin:2px 0}
-.hios-level-segments i{height:5px;border-radius:2px;background:#253246;border:1px solid #344055}
-.hios-level-segments i.established{background:rgb(var(--intel-accent));border-color:rgb(var(--intel-accent))}
+.hios-level-progress{min-width:0;margin:2px 0}
+.hios-level-progress-meta{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;font-size:9px;line-height:1.4;color:#8e9fb8}
+.hios-level-progress-meta b{font-weight:600;text-align:right;color:#b9c8dd}
+.hios-level-progress-track{height:6px;border-radius:999px;background:#253246;border:1px solid #344055;overflow:hidden}
+.hios-level-progress-track > span{display:block;height:100%;border-radius:inherit;background:rgb(var(--intel-accent,131 181 244))}
 .hios-domain-status{color:#98a7bd;font-size:9px;line-height:1.4}
 .hios-development-note{font-size:9px;color:#96a5ba;margin-top:12px;line-height:1.5}
-.hios-domain:focus-visible,.hios-product-capabilities-button:focus-visible,.sidebar-signout:focus-visible,.hios-intel-notifications:focus-visible,.hios-drawer-close:focus-visible,.hios-intel-drawer summary:focus-visible{outline:2px solid #95b9f2;outline-offset:3px}
+.hios-domain:focus-visible,.hios-domain-grid:focus-visible,.hios-calendar:focus-visible,.hios-intelligence-copy:focus-visible,.hios-product-capabilities-button:focus-visible,.sidebar-signout:focus-visible,.hios-intel-notifications:focus-visible,.hios-drawer-close:focus-visible,.hios-intel-drawer summary:focus-visible{outline:2px solid #95b9f2;outline-offset:3px}
 .hios-intel-drawer{position:fixed;inset:0 0 0 auto;margin:0;width:min(620px,100%);max-width:100%;height:100dvh;max-height:100dvh;padding:0;border:0;border-left:1px solid #344057;color:#e2e9f3;background:#0e141e;box-shadow:-20px 0 80px #0006;overflow:hidden}
 .hios-intel-drawer[open]{display:flex;flex-direction:column;animation:hiosDrawerIn .18s ease-out}
 .hios-intel-drawer::backdrop{background:rgba(3,6,11,.68);backdrop-filter:blur(3px)}
@@ -58,8 +59,8 @@
 .hios-intel-drawer-body section+section{margin-top:23px;padding-top:21px;border-top:1px solid #253044}
 .hios-intel-drawer-body h3{margin:0 0 10px;font-size:13px;color:#e2eaf7}
 .hios-intel-drawer-body p{font-size:12px;line-height:1.65;color:#aebbd0;margin:8px 0;overflow-wrap:anywhere}
-.hios-intel-drawer-body .hios-level-segments{margin:13px 0 10px}
-.hios-intel-drawer-body .hios-level-segments i{height:6px}
+.hios-intel-drawer-body .hios-level-progress{margin:13px 0 10px}
+.hios-intel-drawer-body .hios-level-progress-track{height:8px}
 .hios-intel-label{display:inline-block;font-size:10px;line-height:1.5;padding:4px 8px;border-radius:7px;border:1px solid #36435a;color:#c0cce0;background:#182233}
 .hios-intel-label.available{color:#a9e3ca;background:#143127;border-color:#315b4b}
 .hios-intel-label.preliminary{color:#ead4a4;background:#30281c;border-color:#594d35}
@@ -85,6 +86,20 @@
 .hios-intel-events li{padding:16px 0;border-bottom:1px solid #29354a}
 .hios-intel-events b{font-size:13px}.hios-intel-events time{font-size:10px;color:#9aadca}
 @keyframes hiosDrawerIn{from{transform:translateX(18px);opacity:.75}to{transform:none;opacity:1}}
+/* Constrain the workspace to the viewport. Only individual panes may scroll. */
+#appScreen{position:fixed;inset:0;height:100dvh!important;min-height:0!important;overflow:hidden!important}
+#appScreen .app{display:grid!important;height:100%!important;min-height:0!important;overflow:hidden;grid-template-rows:auto minmax(0,1fr)}
+#appScreen .main{height:100%!important;min-height:0!important;overflow:hidden!important;display:flex;flex-direction:column}
+#appScreen .main > .home-layout{height:100%;min-height:0!important;flex:1 1 auto;align-items:stretch!important}
+#appScreen .home-sidebar{display:grid!important;height:100%!important;min-height:0!important;overflow:hidden!important;grid-template-rows:minmax(0,1fr)!important}
+#appScreen .hios-development{height:100%;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.hios-development-head,.hios-development-intro,.hios-development-note{flex:0 0 auto}
+.hios-domain-grid{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;align-content:start;overscroll-behavior:contain;touch-action:pan-y;scrollbar-width:thin;scrollbar-color:#4d607d transparent;padding:3px 4px 3px 3px;margin-left:-3px}
+#appScreen .calendar-card{display:grid;height:100%;min-height:0;grid-template-rows:auto auto minmax(0,1fr);overflow:hidden!important}
+#appScreen .hios-calendar{min-height:0;min-width:0;grid-template-rows:repeat(6,minmax(0,1fr));overflow:visible!important}
+#appScreen .calendar-weekdays{min-width:0}
+#appScreen .calendar-day{min-height:0;display:flex;flex-direction:column}
+#appScreen .calendar-events{min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;flex:1 1 auto}
 @media(min-width:951px){
   .hios-top-row{overflow:visible!important}
   .hios-top-row::after{display:none}
@@ -96,12 +111,52 @@
   .home-layout.auto-zoom-enabled .hios-development[data-home-panel="c"].hios-panel-zoomed{transform:scale(1.025)!important;z-index:30!important;border-color:#627d9f;box-shadow:0 12px 28px #0208124d}
 }
 @media(max-width:950px){
-  .hios-top-row > .hios-intelligence .hios-intelligence-main{min-height:0;padding:16px!important}
-  .top-k-panel.goal-status-card{border:1px solid #273248;border-radius:14px;margin-bottom:12px}
+  #appScreen .app{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr)}
+  .hios-top-row{display:grid;grid-template-columns:minmax(130px,.8fr) minmax(0,1.2fr);gap:8px;padding:8px!important;border-radius:0 0 14px 14px}
+  .hios-top-row > .hios-intelligence{margin-bottom:0}
+  .hios-top-row > .hios-intelligence .hios-intelligence-main{min-height:0;padding:10px!important}
+  .hios-intelligence-copy h2{font-size:16px}
+  .hios-intelligence-copy p{font-size:10px;margin-top:6px}
+  .top-k-panel.goal-status-card{border:1px solid #273248;border-radius:12px;margin:0;padding:8px!important}
+  .top-k-panel #hiosGoalProgressList{max-height:90px!important}
+  .top-k-panel .overall-daily .goal-head{display:block}
+  .top-k-panel .overall-daily .goal-head b{display:block;text-align:right;margin-top:3px;font-size:12px}
+  .top-k-panel .goal-area-copy > span{font-size:10px}
+  .top-k-panel .goal-area-copy small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .top-k-panel .goal-status-head{display:flex;align-items:center;flex-wrap:wrap}
   .top-k-panel .auto-zoom-toggle{margin-top:0}
-  #appScreen .sidebar .side-foot{position:static;margin:10px 0 0;padding:0 2px}
+  #appScreen .sidebar{min-height:0;height:auto;position:relative;padding:8px 12px}
+  #appScreen .sidebar .nav{gap:4px}
+  #appScreen .sidebar-add-product{min-width:130px;padding:8px 10px;font-size:11px}
+  #appScreen .product-nav-heading{padding-top:4px;padding-bottom:2px}
+  #appScreen .product-nav{margin-top:0;gap:6px;padding-bottom:2px}
+  #appScreen .product-nav .product-nav-item{min-height:43px;padding:5px 8px;font-size:11px}
+  #appScreen .product-nav .product-icon{height:28px;width:28px;border-radius:9px}
+  #appScreen .product-nav .product-icon svg{height:19px;width:19px}
+  #appScreen .sidebar .side-foot{position:absolute;top:8px;right:12px;left:auto;bottom:auto;margin:0;padding:0}
+  #appScreen .sidebar .side-foot > span{display:none}
+  #appScreen .main{padding:8px 12px}
+  #appScreen .home-layout{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:8px!important}
+  #appScreen .calendar-head{padding:7px 9px;gap:6px;flex-wrap:wrap}
+  #appScreen .calendar-head h3{font-size:12px;margin:0}
+  #appScreen .calendar-head p{display:none}
+  #appScreen .calendar-nav{gap:6px}
+  #appScreen .calendar-nav strong{font-size:11px;min-width:102px}
+  #appScreen .calendar-nav-btn{height:25px;width:25px}
+  #appScreen .calendar-day{padding:3px}
+  #appScreen .hios-calendar{grid-template-rows:repeat(6,minmax(28px,1fr));overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#4d607d transparent}
+  #appScreen .calendar-date{font-size:9px!important;margin-bottom:2px!important}
+  #appScreen .calendar-weekdays > div{padding:4px 2px!important;font-size:8px!important}
+  #appScreen .hios-development{padding:10px}
+  .hios-development-intro{margin-bottom:7px}
+  .hios-development-note{margin-top:7px}
   #appScreen .main,#appScreen .app,.hios-top-row{min-width:0}
+}
+@media(max-width:950px) and (max-height:700px){
+  .hios-intelligence-copy{max-height:100px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+  .hios-development-intro,.hios-development-note{display:none}
+  #appScreen .hios-development{padding:8px}
+  .hios-development-head{margin-bottom:6px}
 }
 @media(max-width:640px){
   .hios-domain{padding:10px}

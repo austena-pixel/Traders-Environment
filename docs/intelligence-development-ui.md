@@ -8,18 +8,33 @@ older standalone `h-ios.html` route and the internal T-IOS/G-IOS pages are uncha
 - Concise Priority Intelligence using the existing daily-task and dated-commitment
   calculations. Calendar, daily progress and product navigation retain their
   existing calculations and storage keys.
-- Daily Progress Status now occupies section A. Its old controls/counts have
+- Daily Progress Status now occupies the upper-left panel. Its old controls/counts have
   been removed, with Sign out retained in the product sidebar. Auto Zoom follows
   the moved progress panel and the intelligence panel without changing calendar
   width. Category progress remains scrollable when many categories are active.
+  The heading and description marked B in the follow-up screenshot are removed
+  to reduce the height of the top row; the progress calculations and toggle remain.
 - The combined former B/D sidebar contains a vertical Intelligence Development
   list grouped by product. T-IOS holds Trading Edge and Execution Quality rows;
   G-IOS holds Goals Intelligence; H-IOS holds Cross-Intelligence. Each product has
   a **View available capabilities** button listing existing tools and proposed
   advanced capabilities for its domains. The former Today's Focus panel is
   replaced; daily-task totals remain in Priority Intelligence.
-- Four independently assessed domains, six segments (Levels 0–5), a native modal
+- A fixed viewport workspace. The intelligence list marked A scrolls by wheel,
+  touch or keyboard within its own region. Daily category progress and product
+  navigation have separate scroll areas. The document and main calendar layout
+  do not scroll. On smaller screens the calendar and intelligence panes stack
+  inside the remaining viewport; calendar task lists scroll inside their cells.
+  The calendar date grid can scroll internally on short mobile screens so its
+  dates retain a readable minimum height.
+- Four independently assessed domains, one continuous progress bar for the
+  current level, a native modal
   details drawer, evidence overview, capability presentation and transparency.
+- The six proposed maturity stages remain available in the details drawer.
+  Within-level progress requires a separate, current assessment for the same
+  level and an explained basis. It is not inferred from the number of levels,
+  record counts or product scores. Missing progress is explicitly pending rather
+  than displayed as an assessed 0%.
 - Explicit **Not yet assessed** states. Unknown assessment is distinct from an
   established Level 0. No record count, existing execution score or subscription
   is converted into a maturity level.
@@ -78,6 +93,24 @@ populate transparency only while the assessment is current. Quality assessment
 may include `summary`, `reliabilityVerified` and `unverified` counts, which must
 refer to the engine's assessed domain, never raw unrelated record totals.
 
+Maturity may optionally include `levelProgress`:
+
+```js
+{
+  assessmentId: '<current progress assessment>',
+  assessedAt: '<assessment timestamp>',
+  validUntil: '<expiry timestamp>',
+  level: '<integer matching the assessed current level>',
+  percent: '<finite number from 0 to 100>',
+  basis: '<explanation of the assessed requirements or coverage>'
+}
+```
+
+This is a display contract for a future domain-specific assessment engine.
+No progress engine or scientifically validated percentage scale is implemented.
+The percentage represents assessed progress within one level, not overall
+personal intelligence. Stale, mismatched or unsupported values remain pending.
+
 Readiness statuses are `unavailable`, `collecting`, `preliminary`, `available`
 and `suspended`. Availability additionally requires `permissionGranted: true`
 and `safetyValidated: true`. An optional `requiredPlan: 'pro'` displays
@@ -123,7 +156,9 @@ external writes. They exercise responsive rendering, modal keyboard behavior,
 product groups and capability lists, source ownership, pending/expired states,
 genuine-event counting, cross-session
 callbacks, calendar interactions, product navigation, G-IOS task completion and
-Auto Zoom. They do not establish live Supabase authentication or engine validity.
+Auto Zoom, independent wheel/keyboard scrolling with a fixed document and
+single-level progress. They do not establish live Supabase authentication or
+engine validity.
 
 The new unit tests and browser flow pass. The existing evidence-contract suite
 has one baseline failure: “Stage 1C routes only selected G-IOS evidence metrics

@@ -33,6 +33,15 @@
   function assessedLevel(value,now=Date.now()){
     return currentAssessment(value,now)&&Number.isInteger(value.level)&&value.level>=0&&value.level<=5?value.level:null;
   }
+  function assessedLevelProgress(value,now=Date.now()){
+    const level=assessedLevel(value,now),progress=value?.levelProgress;
+    // Progress is supplied for this specific level by the assessment engine.
+    // It is never calculated from the level number or raw evidence counts.
+    if(level===null||!currentAssessment(progress,now)||progress.level!==level||
+      !Number.isFinite(progress.percent)||progress.percent<0||progress.percent>100||
+      typeof progress.basis!=='string'||!progress.basis.trim())return null;
+    return {level,percent:progress.percent,basis:progress.basis};
+  }
   function capabilityPresentation(readiness,entitlement,now=Date.now()){
     if(!currentAssessment(readiness,now))return {label:'Awaiting assessment',tone:'pending',available:false};
     if(readiness.status==='suspended')return {label:'Suspended',tone:'suspended',available:false};
@@ -63,5 +72,5 @@
       seen.add(event.id);return !read.has(event.id)&&event.readAt==null;
     });
   }
-  return Object.freeze({LEVELS,DOMAINS,EVENT_TYPES,emptyState,currentAssessment,assessedLevel,capabilityPresentation,ownedExecutionEvidence,unreadEvents});
+  return Object.freeze({LEVELS,DOMAINS,EVENT_TYPES,emptyState,currentAssessment,assessedLevel,assessedLevelProgress,capabilityPresentation,ownedExecutionEvidence,unreadEvents});
 });

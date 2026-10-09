@@ -2450,10 +2450,6 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
       <!-- Section A: daily progress, moved from the right-hand sidebar. -->
       <section class="top-k-panel goal-status-card" data-home-panel="b" aria-label="Daily Progress Status">
         <div class="goal-status-head">
-          <div class="goal-status-copy">
-            <h3>Daily Progress Status</h3>
-            <div class="sub">Today’s completed tasks across active Goals-IOS categories.</div>
-          </div>
           <button class="auto-zoom-toggle" id="autoZoomToggle" type="button" aria-pressed="false">
             Auto Zoom <span id="autoZoomState">Off</span>
           </button>
@@ -2463,7 +2459,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 
       <section class="hios-intelligence" aria-label="Priority Intelligence">
         <div class="hios-intelligence-main">
-          <div class="hios-intelligence-copy">
+          <div class="hios-intelligence-copy" role="region" aria-label="Priority Intelligence summary" tabindex="0">
             <div class="hios-intelligence-kicker">Priority Intelligence</div>
             <h2>Your attention today</h2>
             <p id="hiosPriorityTasks" class="hios-priority-tasks">Loading today’s priorities.</p>
@@ -2508,7 +2504,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
             </div>
           </div>
           <div class="calendar-weekdays"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
-          <div class="hios-calendar" id="hiosCalendar"></div>
+          <div class="hios-calendar" id="hiosCalendar" role="region" aria-label="Calendar dates" tabindex="0"></div>
         </div>
 
         <aside class="home-sidebar">
@@ -2522,7 +2518,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
               </button>
             </div>
             <p class="hios-development-intro">Independent understanding across your products.</p>
-            <div class="hios-domain-grid" id="hiosDomainGrid"></div>
+            <div class="hios-domain-grid" id="hiosDomainGrid" role="region" aria-label="Product intelligence development" tabindex="0"></div>
             <div class="hios-development-note">Levels require reliable evidence and validation. Select an intelligence to inspect its development.</div>
           </section>
         </aside>

@@ -43,8 +43,9 @@ async function run(){
     assert.equal(await page.locator('#appScreen').isVisible(),true);
     assert.equal(await page.locator('.hios-domain').count(),4);
     assert.equal(await page.locator('.hios-domain-level').filter({hasText:'Not yet assessed'}).count(),4);
-    assert.equal(await page.locator('.hios-domain .hios-level-segments i').count(),24);
-    assert.equal(await page.locator('.hios-domain i.established').count(),0);
+    assert.equal(await page.locator('.hios-domain .hios-level-progress-track').count(),4);
+    assert.equal(await page.locator('.hios-level-segments').count(),0);
+    assert.equal(await page.locator('.hios-domain [aria-valuenow]').count(),0);
     assert.match(await page.locator('#hiosPriorityTasks').innerText(),/1 active task.*1 high priority/);
     assert.equal(await page.locator('.top-k-panel #hiosGoalProgressList').count(),1);
     assert.equal(await page.locator('.home-sidebar #hiosDomainGrid').count(),1);
@@ -53,6 +54,7 @@ async function run(){
     assert.equal(await page.locator('[data-intelligence-product="tios"] .hios-domain').count(),2);
     assert.equal(await page.locator('[data-intelligence-capabilities]').count(),3);
     assert.equal(await page.locator('#hiosSignOut').isVisible(),true);
+    assert.equal(await page.locator('.top-k-panel .goal-status-copy').count(),0);
     assert.match(await page.locator('#hiosGoalProgressList').innerText(),/50%/);
     assert.equal(await page.locator('#hiosIntelligenceUnread').isVisible(),false);
     passed('real task priorities coexist with independent pending maturity and an empty unread indicator');
@@ -138,9 +140,27 @@ async function run(){
     passed('sidebar navigation to G-IOS, actual Done action and refreshed H-IOS priorities/progress in section A');
 
     const png=async (name,fullPage=true)=>{if(output){fs.mkdirSync(output,{recursive:true});await page.screenshot({path:path.join(output,name),fullPage})}};
-    for(const width of [1920,1440,1280,1024,768,390,320]){
-      await page.setViewportSize({width,height:900});
+    await page.setViewportSize({width:1440,height:600});
+    const intelligenceList=page.locator('#hiosDomainGrid');
+    assert.equal(await intelligenceList.evaluate(el=>el.scrollHeight>el.clientHeight),true);
+    await intelligenceList.hover();
+    await page.mouse.wheel(0,650);
+    await page.waitForFunction(()=>document.getElementById('hiosDomainGrid').scrollTop>0);
+    await page.mouse.wheel(0,1800);
+    assert.deepEqual(await page.evaluate(()=>({page:scrollY,main:document.querySelector('.main').scrollTop,sidebar:document.querySelector('.home-sidebar').scrollTop})),{page:0,main:0,sidebar:0});
+    await intelligenceList.focus();
+    await page.keyboard.press('Home');
+    await page.waitForFunction(()=>document.getElementById('hiosDomainGrid').scrollTop===0);
+    await page.keyboard.press('End');
+    await page.waitForFunction(()=>document.getElementById('hiosDomainGrid').scrollTop>0);
+    passed('section A scrolls by wheel and keyboard without scrolling the page or calendar/main container');
+    for(const [width,height] of [[1920,900],[1440,900],[1280,768],[1024,600],[768,900],[390,844],[320,568]]){
+      await page.setViewportSize({width,height});
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,`${width}px page overflow`);
+      assert.equal(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight+1),true,`${width}x${height}px page must remain fixed`);
+      assert.equal(await page.locator('.main').evaluate(el=>getComputedStyle(el).overflowY),'hidden');
+      assert.ok(await intelligenceList.evaluate(el=>el.clientHeight)>=50,`${width}x${height}px intelligence list remains usable`);
+      if(width<=950)assert.ok(await page.locator('.calendar-day').first().evaluate(el=>el.getBoundingClientRect().height)>=28,'short-screen calendar dates remain readable');
       assert.equal(await page.locator('.hios-domain').count(),4);
       const clipped=await page.locator('.hios-domain, .hios-development, .hios-product-intelligence, .hios-product-intelligence-head, .hios-intelligence-copy, .top-k-panel').evaluateAll(elements=>elements.filter(el=>el.scrollWidth>el.clientWidth+1).map(el=>el.className));
       assert.deepEqual(clipped,[],`${width}px intelligence clipping`);
@@ -161,9 +181,12 @@ async function run(){
         return section.width-main.width;
       });
       assert.ok(fill<=45,`${width}px intelligence should use the available section width`);
+      await intelligenceList.evaluate(el=>{el.scrollTop=0});
       if(width===1440)await png('desktop.png');
       if(width===768)await png('tablet.png');
       if(width===390)await png('mobile.png');
+      if(width===320)await png('small-mobile.png');
+      if(width===1024)await png('short-desktop.png');
       await page.locator('[data-intelligence-domain="goals"]').click();
       await page.waitForFunction(()=>getComputedStyle(document.getElementById('hiosIntelligenceDialog')).transform==='none');
       assert.equal(await page.locator('#hiosIntelligenceDialog').evaluate(el=>el.scrollWidth<=el.clientWidth+1),true,`${width}px drawer overflow`);
@@ -173,7 +196,7 @@ async function run(){
       if(width===390)await png('drawer-mobile.png',false);
       await page.locator('#hiosIntelligenceClose').click();
     }
-    passed('1920/1440/1280/1024/768/390/320px overview and drawer without page overflow or clipping');
+    passed('1920/1440/1280/1024/768/390/320px fixed workspace and drawer without page overflow or clipping');
 
     await page.setViewportSize({width:1440,height:900});
     await page.locator('#hiosIntelligenceNotifications').click();
@@ -183,12 +206,16 @@ async function run(){
     await page.evaluate(user=>{
       const base={assessmentId:'qa-assessment',assessedAt:new Date(Date.now()-1000).toISOString(),validUntil:new Date(Date.now()+3600000).toISOString()};
       window.qaAssessment=base;
-      window.HIOSIntelligenceUI.connect({load:async()=>({schema:'hios.intelligence-development.v1',userId:user,maturity:{goals:{...base,level:2}},readiness:{'goals.future.0':{...base,status:'available',permissionGranted:true,safetyValidated:true,requiredPlan:'pro'}},notifications:[{id:'qa-event',userId:user,type:'capability-available',occurredAt:base.assessedAt,title:'QA engine event'},{id:'wrong-user-event',userId:'other',type:'capability-available',occurredAt:base.assessedAt}]})});
+      window.HIOSIntelligenceUI.connect({load:async()=>({schema:'hios.intelligence-development.v1',userId:user,maturity:{goals:{...base,level:2,levelProgress:{...base,level:2,percent:80,basis:'QA validated requirements for this level'}}},readiness:{'goals.future.0':{...base,status:'available',permissionGranted:true,safetyValidated:true,requiredPlan:'pro'}},notifications:[{id:'qa-event',userId:user,type:'capability-available',occurredAt:base.assessedAt,title:'QA engine event'},{id:'wrong-user-event',userId:'other',type:'capability-available',occurredAt:base.assessedAt}]})});
     },user);
     await page.waitForFunction(()=>document.querySelector('[data-intelligence-domain="goals"] .hios-domain-level').textContent.startsWith('Level 2'));
+    assert.equal(await page.locator('[data-intelligence-domain="goals"] .hios-level-progress-track').count(),1);
+    assert.equal(await page.locator('[data-intelligence-domain="goals"] .hios-level-progress-track').getAttribute('aria-valuenow'),'80');
+    assert.equal(await page.locator('[data-intelligence-domain="goals"] .hios-level-progress-track > span').evaluate(el=>el.style.width),'80%');
     assert.equal(await page.locator('#hiosIntelligenceUnread').innerText(),'1');
     await page.locator('[data-intelligence-domain="goals"]').click();
     assert.match(await page.locator('#hiosIntelligenceBody').innerText(),/Ready — Pro Required/);
+    assert.match(await page.locator('#hiosIntelligenceBody').innerText(),/Progress basis: QA validated requirements for this level/);
     await page.keyboard.press('Escape');
     await page.locator('#hiosIntelligenceNotifications').click();
     assert.match(await page.locator('#hiosIntelligenceBody').innerText(),/QA engine event/);
@@ -196,8 +223,8 @@ async function run(){
     await page.keyboard.press('Escape');
     await page.evaluate(user=>window.HIOSIntelligenceUI.connect({load:async()=>({schema:'hios.intelligence-development.v1',userId:user,maturity:{goals:{...window.qaAssessment,level:4,validUntil:new Date(Date.now()-1).toISOString()}}})}),user);
     await page.waitForFunction(()=>document.querySelector('[data-intelligence-domain="goals"] .hios-domain-level').textContent==='Not yet assessed');
-    assert.equal(await page.locator('.hios-domain i.established').count(),0);
-    passed('supplied assessment display, independent Pro readiness, real unread events, read markers and expired assessment fallback');
+    assert.equal(await page.locator('.hios-domain [aria-valuenow]').count(),0);
+    passed('one-level assessed progress, independent Pro readiness, real unread events, read markers and expired assessment fallback');
 
     await page.evaluate(user=>{
       let resolve;const pending=new Promise(r=>resolve=r);
@@ -211,7 +238,7 @@ async function run(){
     assert.match(await page.locator('.hios-source-records').innerText(),/qa-other-user-evidence/);
     assert.doesNotMatch(await page.locator('.hios-source-records').innerText(),/qa-owned-evidence/);
     await page.keyboard.press('Escape');
-    assert.equal(await page.locator('.hios-domain i.established').count(),0);
+    assert.equal(await page.locator('.hios-domain [aria-valuenow]').count(),0);
     await page.evaluate(()=>window.HIOSIntelligenceUI.setSessionUser(null));
     assert.equal(await page.locator('#hiosIntelligenceUnread').isVisible(),false);
     passed('account switch clears assessments, rejects stale callbacks and scopes evidence to the new user');

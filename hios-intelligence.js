@@ -20,8 +20,10 @@
   const connected=domain=>domain.productId==='hios'||(typeof window.isProductAdded==='function'&&window.isProductAdded(domain.productId));
   function readJson(key,fallback){try{return JSON.parse(localStorage.getItem(key)||'null')??fallback}catch{return fallback}}
   function readKey(){return state.userId?'hios_intelligence_read_v1:'+encodeURIComponent(state.userId):null}
-  function segments(level){
-    return `<div class="hios-level-segments" role="img" aria-label="${level===null?'No maturity level established':`Level ${level} of 5 established`}">${model.LEVELS.map((_,i)=>`<i class="${level!==null&&i<=level?'established':''}" aria-hidden="true"></i>`).join('')}</div>`;
+  function levelProgress(value){
+    const level=model.assessedLevel(value),progress=model.assessedLevelProgress(value);
+    const label=progress?`${progress.percent}%`:level===null?'Awaiting assessment':'Progress not yet assessed';
+    return `<div class="hios-level-progress"><div class="hios-level-progress-meta"><span>${level===null?'Level not yet established':`Current level ${level} progress`}</span><b>${esc(label)}</b></div><div class="hios-level-progress-track" role="progressbar" aria-label="${level===null?'Intelligence development':`Current level ${level} progress`}" aria-valuemin="0" aria-valuemax="100" ${progress?`aria-valuenow="${progress.percent}"`:''} aria-valuetext="${esc(label)}"><span style="width:${progress?.percent??0}%" aria-hidden="true"></span></div></div>`;
   }
   function assessment(domain){return state.maturity[domain.id]}
   function levelLabel(level){return level===null?'Not yet assessed':`Level ${level} · ${model.LEVELS[level].name}`}
@@ -42,6 +44,7 @@
   }
   function overview(domain){
     const value=assessment(domain),level=model.assessedLevel(value);
+    const progress=model.assessedLevelProgress(value);
     const quality=state.evidenceQuality[domain.id];
     const qualityCurrent=model.currentAssessment(quality);
     const records=sourceRecords(domain);
@@ -54,7 +57,8 @@
     const evidenceList=records?.length?`<details><summary>Inspect received source records</summary><ul class="hios-source-records">${records.slice().sort((a,b)=>Date.parse(b.observedAt)-Date.parse(a.observedAt)).slice(0,5).map(row=>`<li>Execution rule assessment · ${esc(row.subject.type)} ${esc(row.subject.id)}<small>Evidence ${esc(row.id)} · ${esc(new Date(row.observedAt).toLocaleString())}</small></li>`).join('')}</ul>${records.length>5?'<p>Showing the five most recently received records.</p>':''}</details>`:'';
     return `<section style="--intel-accent:${domain.accent}">
       <h3>Intelligence overview</h3><p>${esc(domain.purpose)}</p>
-      <span class="hios-intel-label">${esc(levelLabel(level))}</span>${segments(level)}
+      <span class="hios-intel-label">${esc(levelLabel(level))}</span>${levelProgress(value)}
+      ${progress?`<p>Progress basis: ${esc(progress.basis)}</p>`:''}
       <p>${assessed?esc(model.LEVELS[level].description):existing}</p>
       <p>${assessed?`Assessment recorded ${esc(new Date(value.assessedAt).toLocaleDateString())}.`:'Awaiting evidence assessment.'} ${connected(domain)?'':'Connect the product through Add Product to use its existing tools.'}</p>
       <details><summary>Maturity development · Six proposed stages</summary><ol class="hios-maturity-stages">${stages}</ol><p>This framework requires validation. Stages represent stronger evidence-based understanding; adding records alone does not establish a level.</p>
@@ -102,7 +106,7 @@
     const domainRow=domain=>{
       const level=model.assessedLevel(assessment(domain));
       const status=connected(domain)?(level===null?'Awaiting evidence assessment':'Validated assessment received'):'Product not connected';
-      return `<button class="hios-domain" type="button" data-intelligence-domain="${domain.id}" style="--intel-accent:${domain.accent}" aria-haspopup="dialog" aria-label="${domain.product} ${esc(domain.name)}: ${esc(levelLabel(level))}"><span class="hios-domain-name">${esc(domain.name)}<span aria-hidden="true">↗</span></span><span class="hios-domain-level">${esc(levelLabel(level))}</span>${segments(level)}<span class="hios-domain-status">${esc(status)}</span></button>`;
+      return `<button class="hios-domain" type="button" data-intelligence-domain="${domain.id}" style="--intel-accent:${domain.accent}" aria-haspopup="dialog" aria-label="${domain.product} ${esc(domain.name)}: ${esc(levelLabel(level))}"><span class="hios-domain-name">${esc(domain.name)}<span aria-hidden="true">↗</span></span><span class="hios-domain-level">${esc(levelLabel(level))}</span>${levelProgress(assessment(domain))}<span class="hios-domain-status">${esc(status)}</span></button>`;
     };
     const markup=products.map(group=>`<section class="hios-product-intelligence" data-intelligence-product="${group.id}" style="--intel-accent:${group.domains[0].accent}"><div class="hios-product-intelligence-head"><h4>${group.domains[0].product}</h4><button class="hios-product-capabilities-button" type="button" data-intelligence-capabilities="${group.id}" aria-haspopup="dialog" aria-label="${group.domains[0].product}: View available capabilities">View available capabilities</button></div><div class="hios-product-intelligence-domains">${group.domains.map(domainRow).join('')}</div></section>`).join('');
     if(lastGridHtml!==markup){

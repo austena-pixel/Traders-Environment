@@ -19,6 +19,17 @@ test('expired, undated and future assessments return to pending',()=>{
   assert.equal(model.assessedLevel({...assessed,level:4,assessedAt:'2026-10-09T12:00:00Z'},now),null);
   assert.equal(model.assessedLevel({level:4,assessmentId:'a'},now),null);
 });
+test('one-level progress uses a current assessment for the same level with an explained basis',()=>{
+  const progress={...assessed,level:2,percent:80,basis:'Assessed contextual coverage against domain requirements'};
+  const value={...assessed,level:2,levelProgress:progress};
+  assert.deepEqual(model.assessedLevelProgress(value,now),{level:2,percent:80,basis:progress.basis});
+  assert.equal(model.assessedLevelProgress({...assessed,level:2,count:1000},now),null);
+  for(const patch of [{level:1},{percent:101},{percent:-1},{percent:'80'},{percent:NaN},{basis:''},{validUntil:'2026-10-08T12:00:00Z'}])
+    assert.equal(model.assessedLevelProgress({...value,levelProgress:{...progress,...patch}},now),null);
+  assert.equal(model.assessedLevelProgress({...value,validUntil:'2026-10-08T12:00:00Z'},now),null);
+  assert.equal(model.assessedLevelProgress({...value,levelProgress:{...progress,percent:0}},now).percent,0);
+  assert.equal(model.assessedLevelProgress({...value,levelProgress:{...progress,percent:100}},now).percent,100);
+});
 test('readiness and subscription access remain separate, with permission and safety gates',()=>{
   const ready={...assessed,status:'available',permissionGranted:true,safetyValidated:true};
   assert.equal(model.capabilityPresentation(ready,null,now).label,'Available');
