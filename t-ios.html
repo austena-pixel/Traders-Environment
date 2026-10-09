@@ -4937,25 +4937,28 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 .execution-map-context>.execution-map-control{
   display:flex;
   flex-direction:column;
-  flex:1 0 150px;
-  min-height:150px;
+  flex:0 0 auto;
+  min-height:0;
   margin-bottom:0;
 }
 .execution-map-context>.execution-map-control select{
-  flex:1 1 0;
-  min-height:110px;
+  flex:0 0 180px;
+  height:180px;
+  min-height:180px;
   padding:0;
+  font-size:12px;
 }
 .execution-map-context>.execution-map-control option{
-  min-height:29px;
-  padding:7px 9px;
+  height:40px;
+  min-height:40px;
+  padding:10px 9px;
 }
 #executionMapTradeSelect optgroup{font-style:normal;font-weight:800}
 #executionMapTradeSelect optgroup option{font-weight:400}
 .execution-map-context-details{
   flex:0 1 auto;
   min-height:0;
-  margin-top:auto;
+  margin-top:0;
   overflow-y:auto;
   overscroll-behavior:contain;
 }
@@ -7121,7 +7124,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
         <aside class="panel execution-map-context">
           <label class="execution-map-control">
             <span>Trades</span>
-            <select id="executionMapTradeSelect" aria-label="Trade to review" size="5"></select>
+            <select id="executionMapTradeSelect" aria-label="Trade to review" size="4"></select>
           </label>
           <div class="execution-map-context-details">
           <div class="execution-map-context-head">
@@ -9793,8 +9796,9 @@ function compareTradeChronology(a,b){
 
 function journalTradeNumbers(){
   const numbers=new Map();
-  journalDayGroups(trades).forEach(group=>{
-    group.trades.sort(compareTradeChronology).forEach((trade,index)=>numbers.set(String(trade.id),index+1));
+  let number=0;
+  journalDayGroups(trades).sort((a,b)=>a.date===b.date?0:a.date==='undated'?1:b.date==='undated'?-1:a.date.localeCompare(b.date)).forEach(group=>{
+    group.trades.sort(compareTradeChronology).forEach(trade=>numbers.set(String(trade.id),++number));
   });
   return numbers;
 }
