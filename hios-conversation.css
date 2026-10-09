@@ -1,0 +1,53 @@
+/* Open Chart replaces the intelligence panel without changing its data. */
+#appScreen .home-sidebar{grid-template-rows:auto minmax(0,1fr)!important;gap:10px}
+#appScreen .hios-development[hidden],#appScreen .hios-conversation[hidden]{display:none!important}
+.hios-chart-toggle{display:flex;align-items:center;justify-content:center;flex:0 0 auto;width:100%;min-height:40px;padding:8px 10px;border:1px solid #3a4b64;border-radius:11px;background:#18263b;color:#e9f2ff;font-size:12px;font-weight:700;cursor:pointer}
+.hios-chart-toggle:hover{border-color:#6ea8ff;background:#20344e}
+.hios-chart-toggle[aria-expanded="true"]{border-color:#6ea8ff;background:#263d5b}
+.hios-chart-toggle:focus-visible,.hios-conversation button:focus-visible,.hios-conversation textarea:focus-visible{outline:2px solid #95b9f2;outline-offset:2px}
+#appScreen .hios-conversation{height:100%;min-height:0;padding:0;overflow:hidden;border:1px solid #273248;border-radius:18px;color:#e6edf7}
+.hios-conversation[hidden]{display:none!important}
+.hios-conversation{flex:1 1 0;min-height:0;display:flex;flex-direction:column;animation:hiosConversationReveal .22s ease-out;background:linear-gradient(180deg,#111a27,#0b111a)}
+.hios-conversation-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 14px;border-bottom:1px solid var(--line);flex:0 0 auto}
+.hios-conversation-head h3{margin:0;font-size:14px}
+.hios-conversation-head small{display:block;margin-top:4px;color:#9eadc0;font-size:10px}
+.hios-conversation-tools{display:flex;gap:5px}
+.hios-conversation-tools button{width:28px;height:28px;display:grid;place-items:center;border:1px solid var(--line);border-radius:8px;background:#121c2a;color:#cbd8e8;font-size:16px}
+.hios-conversation-messages{flex:1 1 0;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:14px;display:flex;flex-direction:column;gap:12px;overflow-wrap:anywhere}
+.hios-conversation-message{flex:0 0 auto;max-width:100%;font-size:12px;line-height:1.65}
+.hios-conversation-message b{display:block;margin-bottom:4px;color:#9ebae0;font-size:9px;letter-spacing:.04em}
+.hios-conversation-message p{margin:0;white-space:pre-wrap}
+.hios-conversation-message[data-role="user"]{align-self:flex-end;max-width:94%;padding:9px 11px;border:1px solid #30455f;border-radius:12px 12px 3px 12px;background:#1c2d44;color:#f1f5fc}
+.hios-conversation-message[data-role="user"] b{color:#c5d5e9}
+.hios-conversation-prompts{display:flex;flex-wrap:wrap;gap:5px;padding:0 12px 10px;flex:0 0 auto}
+.hios-conversation-prompts button{padding:6px 8px;border:1px solid #304159;border-radius:999px;background:#142033;color:#c7d8ed;font-size:10px}
+.hios-conversation-compose{flex:0 0 auto;border-top:1px solid var(--line);padding:10px 12px 9px}
+.hios-conversation-input-row{display:flex;align-items:flex-end;gap:7px}
+.hios-conversation-compose textarea{display:block;flex:1 1 0;min-width:0;resize:none;max-height:96px;min-height:54px;padding:9px 10px;border:1px solid #334760;border-radius:10px;background:#0a111b;color:#f3f6fb;font-size:12px;line-height:1.5;overflow:auto}
+.hios-conversation-compose textarea::placeholder{color:#8f9bad}
+.hios-conversation-send{flex:0 0 auto;width:36px;height:36px;border:1px solid #6ea8ff;border-radius:10px;background:#294f81;color:#fff;font-size:19px}
+.hios-conversation-send:disabled{opacity:.4;cursor:default}
+.hios-conversation-compose small{display:block;margin-top:6px;color:#8f9bad;font-size:9px;line-height:1.4}
+.hios-conversation-status{padding:0 12px 8px;margin:0;color:#aab8cb;font-size:10px}
+.hios-conversation-status:empty{display:none}
+@keyframes hiosConversationReveal{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+
+@media(max-width:950px){
+  #appScreen .home-sidebar{gap:8px}
+  .hios-chart-toggle{min-height:34px;padding:7px 10px;font-size:11px}
+  #appScreen .home-layout{grid-template-rows:minmax(90px,1fr) minmax(155px,1.2fr)!important}
+  #appScreen .home-layout:has(.hios-conversation:not([hidden])){grid-template-rows:minmax(60px,.6fr) minmax(205px,1.4fr)!important}
+  .hios-conversation-head{padding:8px 10px}
+  .hios-conversation-head h3{font-size:12px;line-height:1.2}
+  .hios-conversation-head small{font-size:9px;line-height:1.3;margin-top:2px}
+  .hios-conversation-messages{padding:10px;gap:9px}
+  .hios-conversation-prompts{padding:0 10px 7px}
+  .hios-conversation-prompts button{font-size:9px}
+}
+@media(max-width:950px) and (max-height:700px){
+  .hios-conversation-prompts{display:none}
+  .hios-conversation-compose{padding:7px 10px}
+  .hios-conversation-compose textarea{min-height:40px;height:42px;padding:6px 8px}
+  .hios-conversation-compose small{margin-top:4px;font-size:8px;line-height:1.3}
+}
+@media(prefers-reduced-motion:reduce){.hios-conversation{animation:none}}

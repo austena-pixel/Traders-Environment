@@ -61,6 +61,52 @@ async function run(){
     assert.equal(await page.locator('#hiosIntelligenceUnread').isVisible(),false);
     passed('real task priorities coexist with independent pending maturity and an empty unread indicator');
 
+    const development=page.locator('.hios-development');
+    const developmentText=await development.innerText();
+    const originalGoals=await page.evaluate(()=>localStorage.getItem('hios_gios_goals_v2'));
+    const chart=page.getByRole('button',{name:'Open Chart',exact:true});
+    const chartBox=await chart.boundingBox(),developmentBox=await development.boundingBox();
+    assert.ok(chartBox.y+chartBox.height<=developmentBox.y,'Open Chart above Intelligence Development');
+    assert.equal(chartBox.width,developmentBox.width,'full-width chart button');
+    await chart.click();
+    assert.equal(await development.isVisible(),false);
+    assert.equal(await page.locator('#hiosConversation').isVisible(),true);
+    assert.equal(await page.getByRole('button',{name:'Close Chart',exact:true}).getAttribute('aria-expanded'),'true');
+    const chatInput=page.getByRole('textbox',{name:'Message H-IOS',exact:true});
+    const chatLog=page.getByRole('log',{name:'Conversation with H-IOS'});
+    await chatInput.fill('What is my progress today?');await chatInput.press('Enter');
+    assert.match(await chatLog.innerText(),/50%/);assert.match(await chatLog.innerText(),/1 active task/);
+    await chatInput.fill('Explain my intelligence development');await page.getByRole('button',{name:'Send message',exact:true}).click();
+    assert.match(await chatLog.innerText(),/Trading Edge Intelligence/);assert.match(await chatLog.innerText(),/Level not yet established/);
+    assert.doesNotMatch(await chatLog.innerText(),/Level [1-5] ·/);
+    if(output){fs.mkdirSync(output,{recursive:true});await page.screenshot({path:path.join(output,'hios-conversation.png')})}
+    await chatInput.fill('<img src=x onerror="window.qaInjected=true">');await chatInput.press('Enter');
+    assert.equal(await chatLog.locator('img').count(),0);
+    await chatInput.fill('Private multiline draft');await chatInput.press('Shift+Enter');
+    assert.match(await chatInput.inputValue(),/\n$/);
+    for(const [width,height] of [[1920,900],[1440,600],[1024,600],[768,900],[390,844],[320,568]]){
+      await page.setViewportSize({width,height});
+      const bounds=await page.locator('#hiosConversationForm').boundingBox();
+      assert.ok(bounds.x>=0&&bounds.x+bounds.width<=width+1&&bounds.y+bounds.height<=height+1,`${width}x${height} message input inside viewport`);
+      assert.ok((await chatLog.boundingBox()).height>=36,`${width}x${height} conversation scroll area usable`);
+      assert.equal(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight+1),true);
+      await chatLog.hover();await page.mouse.wheel(0,1200);
+      assert.equal(await page.evaluate(()=>scrollY),0);
+      if(width===390&&output)await page.screenshot({path:path.join(output,'hios-conversation-mobile.png')});
+    }
+    await page.setViewportSize({width:1440,height:900});
+    await page.getByRole('button',{name:'Close conversation',exact:true}).click();
+    assert.equal(await development.isVisible(),true);
+    assert.equal(await development.innerText(),developmentText);
+    assert.equal(await chart.evaluate(el=>document.activeElement===el),true);
+    await chart.click();await page.getByRole('button',{name:'Close Chart',exact:true}).click();
+    assert.equal(await development.isVisible(),true);
+    assert.equal(await page.evaluate(()=>localStorage.getItem('hios_gios_goals_v2')),originalGoals);
+    await chart.click();await page.getByRole('button',{name:'New conversation',exact:true}).click();
+    assert.equal(await page.locator('.hios-conversation-message').count(),1);
+    await page.getByRole('button',{name:'Close Chart',exact:true}).click();
+    passed('Open Chart replaces/restores Intelligence Development, factual replies, safe text, keyboard entry, internal scrolling and fixed mobile layout');
+
     const animation=page.locator('#hiosOperationLoop');
     const activeScene=()=>animation.locator('.hios-op-scene.active').getAttribute('data-op-scene');
     assert.equal(await animation.isVisible(),true);
@@ -290,7 +336,13 @@ async function run(){
     assert.doesNotMatch(await page.locator('.hios-source-records').innerText(),/qa-owned-evidence/);
     await page.keyboard.press('Escape');
     assert.equal(await page.locator('.hios-domain [aria-valuenow]').count(),0);
+    await page.getByRole('button',{name:'Open Chart',exact:true}).click();
+    await page.getByRole('textbox',{name:'Message H-IOS',exact:true}).fill('Private conversation draft');
     await page.evaluate(()=>window.HIOSIntelligenceUI.setSessionUser(null));
+    assert.equal(await page.locator('#hiosConversation').isVisible(),false);
+    assert.equal(await page.getByRole('textbox',{name:'Message H-IOS',exact:true,includeHidden:true}).inputValue(),'');
+    assert.equal(await page.locator('.hios-conversation-message[data-role="user"]').count(),0);
+
     assert.equal(await page.locator('#hiosIntelligenceUnread').isVisible(),false);
     passed('account switch clears assessments, rejects stale callbacks and scopes evidence to the new user');
     assert.deepEqual(errors,[]);

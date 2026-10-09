@@ -172,7 +172,9 @@
       close();reset();state=model.emptyState(next);
       const stored=readKey()?readJson(readKey(),[]):[];readIds=Array.isArray(stored)?stored.filter(id=>typeof id==='string'):[];
       render();loadAdapter();
+      window.dispatchEvent(new Event('hios:session-changed'));
     },
+    sessionUser:()=>state.userId,
     connect(provider){reset();adapter=provider||null;state=model.emptyState(state.userId);render();loadAdapter()},
     refresh:render
   });

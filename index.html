@@ -2232,6 +2232,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 </style>
 
 <link rel="stylesheet" href="hios-intelligence.css">
+<link rel="stylesheet" href="hios-conversation.css">
 <link rel="stylesheet" href="hios-themes.css" data-hios-theme-sheet>
 <script src="hios-themes.js"></script>
 </head>
@@ -2604,6 +2605,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
         </div>
 
         <aside class="home-sidebar">
+          <button type="button" class="hios-chart-toggle" id="hiosOpenChart" aria-expanded="false" aria-controls="hiosConversation">Open Chart</button>
           <!-- Combined former B/D area: one vertical product list. -->
           <section class="card hios-development" data-home-panel="c" aria-label="Intelligence Development">
             <div class="hios-development-head">
@@ -2616,6 +2618,28 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
             <p class="hios-development-intro">Independent understanding across your products.</p>
             <div class="hios-domain-grid" id="hiosDomainGrid" role="region" aria-label="Product intelligence development" tabindex="0"></div>
             <div class="hios-development-note">Levels require reliable evidence and validation. Select an intelligence to inspect its development.</div>
+          </section>
+          <section class="card hios-conversation" id="hiosConversation" aria-labelledby="hiosConversationTitle" hidden>
+            <header class="hios-conversation-head">
+              <div><h3 id="hiosConversationTitle">Talk to H·IOS</h3><small>Record-based · Your dashboard</small></div>
+              <div class="hios-conversation-tools">
+                <button type="button" data-hios-conversation-new aria-label="New conversation" title="New conversation">↻</button>
+                <button type="button" data-hios-conversation-close aria-label="Close conversation" title="Close conversation">×</button>
+              </div>
+            </header>
+            <div class="hios-conversation-messages" id="hiosConversationMessages" role="log" aria-label="Conversation with H-IOS" aria-live="polite" aria-relevant="additions" tabindex="0"></div>
+            <div class="hios-conversation-prompts">
+              <button type="button" data-hios-conversation-prompt="What is my progress today?">Today</button>
+              <button type="button" data-hios-conversation-prompt="Explain my intelligence development">My development</button>
+              <button type="button" data-hios-conversation-prompt="What is my next commitment?">Next commitment</button>
+            </div>
+            <form class="hios-conversation-compose" id="hiosConversationForm">
+              <div class="hios-conversation-input-row">
+                <textarea id="hiosConversationInput" rows="2" maxlength="2000" placeholder="Ask H·IOS about your dashboard…" aria-label="Message H-IOS" aria-describedby="hiosConversationHelp"></textarea>
+                <button class="hios-conversation-send" type="submit" aria-label="Send message" title="Send message" disabled>↑</button>
+              </div>
+              <small id="hiosConversationHelp">Enter to send · Shift + Enter for a new line · This visit only</small>
+            </form>
           </section>
         </aside>
       </section>
@@ -2751,6 +2775,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 <script src="hios-connection-layer.js"></script>
 <script src="core/intelligence-development.js"></script>
 <script src="hios-intelligence.js"></script>
+<script src="hios-conversation.js"></script>
 <script>
 /* SAME SUPABASE AUTH PROJECT USED BY Traders-IOS */
 const SUPABASE_URL = "https://tmxosoyqflmwqzjgnkez.supabase.co";
