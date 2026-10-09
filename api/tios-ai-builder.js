@@ -10,9 +10,9 @@ module.exports=async function handler(req,res){
     const origin=req.headers.origin;
     if(origin){let host;try{host=new URL(origin).host}catch{host=null}if(host!==req.headers.host)throw new service.ServiceError(403,'origin_not_allowed','Open the AI Builder from this T-IOS site.');}
     if(!String(req.headers['content-type']||'').toLowerCase().startsWith('application/json'))throw new service.ServiceError(415,'invalid_content_type','The request must contain JSON.');
-    if(Number(req.headers['content-length']||0)>96000)throw new service.ServiceError(413,'request_too_large','The builder request is too large.');
+    if(Number(req.headers['content-length']||0)>service.maxRequestBytes)throw new service.ServiceError(413,'request_too_large','The builder request is too large. Use smaller images.');
     const raw=typeof req.body==='string'?req.body:JSON.stringify(req.body);
-    if(!raw||Buffer.byteLength(raw)>96000)throw new service.ServiceError(413,'request_too_large','The builder request is too large.');
+    if(!raw||Buffer.byteLength(raw)>service.maxRequestBytes)throw new service.ServiceError(413,'request_too_large','The builder request is too large. Use smaller images.');
     let body;try{body=typeof req.body==='string'?JSON.parse(req.body):req.body}catch{throw new service.ServiceError(400,'invalid_json','The request is not valid JSON.')}
     const input=service.validateRequest(body);
     if(!config.url||!config.key)throw new service.ServiceError(503,'auth_not_configured','AI Builder authentication is not configured yet.');

@@ -29,7 +29,7 @@
     intent:enumeration(['create','edit']),kind:enumeration(['playbook','checklist','psych']),
     name:nullable(text(200)),description:nullable(text(1200)),operations:list(operation,48)
   });
-  const responseSchema=obj({message:text(4000),questions:list(text(500),4),proposal:nullable(proposal)});
+  const responseSchema=obj({message:text(4000),questions:list(text(500),3),proposal:nullable(proposal)});
   function validate(value,schema=responseSchema,path='response'){
     if(schema.anyOf){if(!schema.anyOf.some(s=>!validate(value,s,path).length))return [path+' has an unsupported value.'];return []}
     const errors=[],type=schema.type;

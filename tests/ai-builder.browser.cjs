@@ -39,6 +39,7 @@ const active=kind=>page.locator(config[kind].page),panel=kind=>page.locator('#ti
 async function send(kind,message,answer,extra={}){queue.push({answer,...extra});await panel(kind).locator('textarea').fill(message);await panel(kind).locator('[data-ai-send]').click();await page.waitForFunction(kind=>!document.querySelector('#tiAiBuilder_'+kind+' textarea').disabled,kind);}
 async function switchTo(kind){await page.evaluate(kind=>switchTechnicalInstrumentBuilder(kind),kind);if(!await panel(kind).isVisible())await active(kind).locator('[data-ai-toggle]').click();}
 async function snapshot(kind){return page.evaluate(kind=>{const w=window.TIOSAIWorkspace,s=w.capture(kind);return {html:s.doc.documentHtml,name:s.doc.name,id:s.id,store:localStorage.getItem(s.storageKey),key:s.storageKey}},kind)}
+async function attach(kind,extensions=['png']){await panel(kind).locator('[data-ai-file]').setInputFiles(extensions.map(extension=>path.join(__dirname,'fixtures/edge-reference.'+extension)));await page.waitForFunction(kind=>!document.querySelector('#tiAiBuilder_'+kind+' [data-ai-attachments]').textContent.includes('Preparing pictures'),kind)}
 async function run(){
   fs.mkdirSync(output,{recursive:true});
   const server=http.createServer(async(req,res)=>{
@@ -47,6 +48,7 @@ async function run(){
     }
     const filename=path.join(root,decodeURIComponent(req.url.split('?')[0]).replace(/^\//,''));
     if(!filename.startsWith(root+path.sep)||!fs.existsSync(filename)||!fs.statSync(filename).isFile()){res.writeHead(404);res.end();return}
+    const imageType={'.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp'}[path.extname(filename)];if(imageType){res.setHeader('Content-Type',imageType);res.end(fs.readFileSync(filename));return}
     res.setHeader('Content-Type',filename.endsWith('.js')?'application/javascript':filename.endsWith('.css')?'text/css':'text/html');
     const source=fs.readFileSync(filename,'utf8');res.end(filename.endsWith('t-ios.html')?source.replace(/<script src="https:\/\/cdn\.jsdelivr\.net\/[^\"]+"><\/script>/g,''):source);
   });
@@ -162,25 +164,64 @@ async function run(){
     pass('AI scoring instruments reuse the existing fields and correctly calculate 24/30 = 80%');
     await page.goto(url,{waitUntil:'load'});await initialize();await switchTo('checklist');assert.equal((await snapshot('checklist')).id,logicSaved.id);assert.match(await model('checklist').textContent(),/At least one requirement/);await switchTo('psych');assert.equal((await snapshot('psych')).id,scoring.id);assert.equal(await editor('psych').locator('[data-ti-response-type="score"]').count(),3);
     pass('approved logic, score IDs and versions survive reload and instrument switching');
-    await switchTo('playbook');quota=false;await send('playbook','Add a condition.',playbook());assert.match(await panel('playbook').locator('[data-ai-error]').textContent(),/usage limit/);quota=true;queue.length=0;
+    await switchTo('playbook');await panel('playbook').locator('[data-ai-new]').click();
+    await panel('playbook').locator('[data-ai-file]').setInputFiles({name:'script.svg',mimeType:'image/svg+xml',buffer:Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>')});
+    await page.waitForFunction(()=>document.querySelector('#tiAiBuilder_playbook [data-ai-error]').textContent.includes('valid PNG'));
+    assert.equal(await panel('playbook').locator('[data-ai-attachments] img').count(),0);assert.equal(await panel('playbook').locator('[data-ai-send]').isDisabled(),true);
+    await page.evaluate(()=>{const input=document.querySelector('#tiAiBuilder_playbook [data-ai-file]'),transfer=new DataTransfer();transfer.items.add(new File([new Uint8Array(12*1024*1024+1)],'oversized.png',{type:'image/png'}));input.files=transfer.files;input.dispatchEvent(new Event('change'))});
+    assert.match(await panel('playbook').locator('[data-ai-error]').textContent(),/12 MB/);
+    pass('unsupported files and oversized originals show clear errors before any model request');
+    await attach('playbook',['png','jpg','webp']);assert.equal(await panel('playbook').locator('[data-ai-attachments] img').count(),3);assert.equal(await panel('playbook').locator('[data-ai-attach]').isDisabled(),true);
+    await panel('playbook').locator('[data-ai-remove-image]').first().click();assert.equal(await panel('playbook').locator('[data-ai-attachments] img').count(),2);assert.equal(await panel('playbook').locator('[data-ai-attach]').isEnabled(),true);await attach('playbook');
+    pass('PNG, JPEG and WebP previews can be removed before sending and respect the three-image limit');
+    await panel('playbook').locator('[data-ai-new]').click();
+    await page.evaluate(async()=>{const response=await fetch('tests/fixtures/edge-reference.png'),blob=await response.blob(),bitmap=await createImageBitmap(blob),canvas=document.createElement('canvas');canvas.width=4000;canvas.height=2400;canvas.getContext('2d').drawImage(bitmap,0,0,4000,2400);bitmap.close();const larger=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));window.qaOptimized=await TIOSAIImages.prepare(new File([larger],'large-reference.png',{type:'image/png'}))});
+    const optimized=await page.evaluate(async()=>{const image=await createImageBitmap(await (await fetch(qaOptimized.dataUrl)).blob());const result={optimized:qaOptimized.optimized,width:image.width,height:image.height,bytes:atob(qaOptimized.dataUrl.split(',')[1]).length};image.close();return result});
+    assert.equal(optimized.optimized,true);assert.ok(Math.max(optimized.width,optimized.height)<=2048);assert.ok(optimized.bytes<=650000);
+    pass('large valid pictures are resized and optimized before sending');
+    const imageBaseline=await snapshot('playbook');await attach('playbook');
+    await send('playbook','',{message:'The risk limit is readable. Which entry confirmation should I use?',questions:['What confirms your entry?'],proposal:null});
+    const firstImage=calls.at(-1).messages.at(-1).content.find(part=>part.type==='image_url').image_url.url;
+    assert.match(firstImage,/^data:image\/png;base64,/);assert.equal(await panel('playbook').locator('.ti-ai-message.user img').count(),1);assert.equal(await panel('playbook').locator('[data-ai-attachments] img').count(),0);assert.equal((await snapshot('playbook')).store,imageBaseline.store);
+    const imageRule=()=>proposal('playbook','Image Risk Rule',[op(node('image_risk','Risk no more than 0.73% of account equity.','rule',{condition:{...risk,value:0.73}}))]);
+    await send('playbook','Only build the risk rule from my picture for now.',imageRule());assert.equal(calls.at(-1).messages.at(-1).content.find(part=>part.type==='image_url').image_url.url,firstImage);
+    assert.equal((await snapshot('playbook')).store,imageBaseline.store);assert.match(await model('playbook').textContent(),/0.73%/);await panel('playbook').locator('[data-ai-apply]').click();
+    const imageSaved=await snapshot('playbook');assert.notEqual(imageSaved.id,imageBaseline.id);assert.doesNotMatch(imageSaved.store,/data:image/);
+    await send('playbook','Add a note to the method in my picture.',proposal('playbook',null,[op(node('image_note','Use the documented risk limit.','note'))],'edit'));
+    assert.equal(calls.at(-1).messages.at(-1).content.find(part=>part.type==='image_url').image_url.url,firstImage);await panel('playbook').locator('[data-ai-discard]').click();assert.equal((await snapshot('playbook')).store,imageSaved.store);
+    pass('image-only input reaches the multimodal API, clarification keeps the picture, and Apply/Discard preserve approval and subsequent image context');
+    await attach('playbook',['jpg']);await switchTo('checklist');assert.equal(await panel('checklist').locator('img').count(),0);await switchTo('playbook');assert.equal(await panel('playbook').locator('[data-ai-attachments] img').count(),1);
+    await page.evaluate(id=>selectPlaybookDocument(id),imageBaseline.id);await switchTo('playbook');assert.equal(await panel('playbook').locator('img').count(),0);
+    await page.evaluate(id=>selectPlaybookDocument(id),imageSaved.id);await switchTo('playbook');assert.equal(await panel('playbook').locator('[data-ai-attachments] img').count(),1);
+    pass('pending and submitted pictures stay with their instrument type and document');
+    await panel('playbook').locator('[data-ai-new]').click();assert.equal(await panel('playbook').locator('img').count(),0);await send('playbook','Explain the current risk rule.',{message:'Your current limit is documented.',questions:[],proposal:null});assert.equal(typeof calls.at(-1).messages.at(-1).content,'string');
+    await page.evaluate(()=>{window.qaOriginalBitmap=window.createImageBitmap;window.createImageBitmap=async(...args)=>{const image=await qaOriginalBitmap(...args);await new Promise(resolve=>setTimeout(resolve,450));return image}});
+    await panel('playbook').locator('[data-ai-file]').setInputFiles(path.join(__dirname,'fixtures/edge-reference.png'));assert.equal(await panel('playbook').locator('[data-ai-send]').isDisabled(),true);await panel('playbook').locator('[data-ai-new]').click();await page.waitForTimeout(550);assert.equal(await panel('playbook').locator('img').count(),0);await page.evaluate(()=>{window.createImageBitmap=qaOriginalBitmap});
+    pass('New chat clears references and ignores a picture still being processed');
+    await attach('playbook');queue.push({answer:imageRule(),delay:700});await panel('playbook').locator('[data-ai-send]').click();await page.waitForFunction(()=>document.querySelector('#tiAiBuilder_playbook textarea').disabled);assert.equal(await panel('playbook').locator('[data-ai-attach]').isDisabled(),true);await panel('playbook').locator('[data-ai-cancel]').click();assert.equal(await panel('playbook').locator('textarea').isEnabled(),true);await page.waitForTimeout(750);assert.equal(await panel('playbook').locator('[data-ai-proposal]').isVisible(),false);await panel('playbook').locator('[data-ai-new]').click();
+    pass('Stop cancels an image request and ignores its late response without saving');
+    await page.goto(url,{waitUntil:'load'});await initialize();await switchTo('playbook');assert.equal((await snapshot('playbook')).id,imageSaved.id);assert.match(await model('playbook').textContent(),/0.73%/);assert.equal(await panel('playbook').locator('img').count(),0);
+    pass('approved image-derived rules survive reload while private reference pictures remain session-only');
+    quota=false;await send('playbook','Add a condition.',playbook());assert.match(await panel('playbook').locator('[data-ai-error]').textContent(),/usage limit/);quota=true;queue.length=0;
     for(const [status,type,expected]of [[402,null,/add AI Gateway Credits/],[403,'customer_verification_required',/valid payment method/],[402,'quota_for_entity_exceeded',/spend budget/]]){
       await send('playbook','Create a new method.',null,{status,type});const message=await panel('playbook').locator('[data-ai-error]').textContent();assert.match(message,expected);assert.doesNotMatch(message,/Private provider diagnostic/);assert.equal(await panel('playbook').locator('[data-ai-proposal]').isVisible(),false);
     }
     pass('quota and unavailable-provider states show actionable errors without fake AI answers');
-    await panel('playbook').locator('[data-ai-new]').click();await send('playbook','Create the imbalance method.',playbook());
+    await panel('playbook').locator('[data-ai-new]').click();await send('playbook','Create the imbalance method.',playbook());await attach('playbook',['png','jpg','webp']);
     for(const viewport of [{width:1920,height:1080},{width:1440,height:900},{width:1024,height:600},{width:768,height:900},{width:390,height:844},{width:320,height:568}]){
       await page.setViewportSize(viewport);await panel('playbook').scrollIntoViewIfNeeded();
       const bounds=await panel('playbook').evaluate(el=>{const p=el.getBoundingClientRect().toJSON(),input=el.querySelector('textarea').getBoundingClientRect().toJSON(),send=el.querySelector('[data-ai-send]').getBoundingClientRect().toJSON();return {width:document.documentElement.scrollWidth,inner:innerWidth,p,input,send}});
-      assert.ok(bounds.width<=bounds.inner+1,'No page horizontal overflow at '+viewport.width);assert.ok(bounds.input.width>=70,'Composer remains usable at '+viewport.width);assert.ok(bounds.send.right<=bounds.p.right+1,'Send stays inside its panel');assert.equal(await panel('playbook').locator('[data-ai-apply]').isVisible(),true);
+      assert.ok(bounds.width<=bounds.inner+1,'No page horizontal overflow at '+viewport.width);assert.ok(bounds.input.width>=70,'Composer remains usable at '+viewport.width);assert.ok(bounds.send.right<=bounds.p.right+1,'Send stays inside its panel');assert.ok(bounds.send.bottom<=bounds.p.bottom+1,'Send stays vertically inside its panel at '+viewport.width);assert.equal(await panel('playbook').locator('[data-ai-apply]').isVisible(),true);
       if(viewport.width===1440)await page.screenshot({path:path.join(output,'ai-builder-preview.png')});if(viewport.width===390)await page.screenshot({path:path.join(output,'ai-builder-mobile.png')});
     }
     pass('desktop, short screens, tablet and narrow mobile retain usable chat and approval controls without horizontal overflow');
     await page.setViewportSize({width:1600,height:1000});await panel('playbook').locator('[data-ai-close]').click();assert.equal(await panel('playbook').isVisible(),false);assert.equal(await editor('playbook').getAttribute('contenteditable'),'true');assert.equal(await editor('playbook').isVisible(),true);assert.equal(await active('playbook').locator('.playbook-word-ribbon').isVisible(),true);assert.equal(await active('playbook').locator('.playbook-word-statusbar').isVisible(),true);assert.equal(await active('playbook').locator('[data-ai-toggle]').getAttribute('aria-expanded'),'false');
-    await active('playbook').locator('[data-ai-toggle]').click();await panel('playbook').locator('textarea').fill('Private account draft');const accountStore=await snapshot('playbook');
+    await active('playbook').locator('[data-ai-toggle]').click();await panel('playbook').locator('textarea').fill('Private account draft');assert.equal(await panel('playbook').locator('[data-ai-attachments] img').count(),3);const accountStore=await snapshot('playbook');
     await page.evaluate(()=>{window.dispatchEvent(new Event('tios:conversation-scope-changing'));tradingAccount={...tradingAccount,id:'qa-account-2'};renderPlaybookWorkspace()});
     await active('playbook').locator('[data-ai-toggle]').click();assert.equal(await panel('playbook').locator('textarea').inputValue(),'');assert.doesNotMatch(await panel('playbook').locator('[data-ai-messages]').textContent(),/Private account draft|Imbalance Method/);assert.notEqual((await snapshot('playbook')).key,accountStore.key);assert.equal(await page.evaluate(key=>localStorage.getItem(key),accountStore.key),accountStore.store);
-    pass('changing accounts clears AI context, loads an independent document library and preserves the earlier account store');
-    await panel('playbook').locator('textarea').fill('Private draft');await page.evaluate(()=>{currentUser=null;setLoggedInUI(false)});assert.equal(await panel('playbook').locator('textarea').inputValue(),'');assert.equal(await panel('playbook').locator('[data-ai-messages]').textContent().then(t=>t.includes('Private draft')),false);
+    assert.equal(await panel('playbook').locator('img').count(),0);await send('playbook','Capture this new account method.',{message:'Please describe your method.',questions:['What is the method?'],proposal:null});assert.equal(typeof calls.at(-1).messages.at(-1).content,'string');
+    pass('changing accounts clears text and images, loads an independent library and sends no earlier-account pictures');
+    await panel('playbook').locator('textarea').fill('Private draft');await attach('playbook');await page.evaluate(()=>{currentUser=null;setLoggedInUI(false)});assert.equal(await panel('playbook').locator('textarea').inputValue(),'');assert.equal(await panel('playbook').locator('[data-ai-messages]').textContent().then(t=>t.includes('Private draft')),false);assert.equal(await panel('playbook').locator('img').count(),0);
     pass('closing restores manual editing; signing out clears drafts, histories, proposals and undo context');
     assert.deepEqual(errors,[]);console.log('All '+checks+' AI Builder browser checks passed.');
   }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));global.fetch=originalFetch}
