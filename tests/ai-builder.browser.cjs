@@ -37,7 +37,7 @@ let page,browser;
 const config={playbook:{page:'#page-playbook',editor:'#playbookDocumentEditor',title:'#playbookDraftTitle',model:'#playbookExecutionPreviewBody'},checklist:{page:'#page-checklists',editor:'[data-ti-editor]',title:'[data-ti-title]',model:'[data-ti-preview-body]'},psych:{page:'#page-reflections',editor:'[data-ti-editor]',title:'[data-ti-title]',model:'[data-ti-preview-body]'}};
 const active=kind=>page.locator(config[kind].page),panel=kind=>page.locator('#tiAiBuilder_'+kind),editor=kind=>active(kind).locator(config[kind].editor),model=kind=>active(kind).locator(config[kind].model);
 async function send(kind,message,answer,extra={}){queue.push({answer,...extra});await panel(kind).locator('textarea').fill(message);await panel(kind).locator('[data-ai-send]').click();await page.waitForFunction(kind=>!document.querySelector('#tiAiBuilder_'+kind+' textarea').disabled,kind);}
-async function switchTo(kind){await page.evaluate(kind=>switchTechnicalInstrumentBuilder(kind),kind);await active(kind).locator('[data-ai-toggle]').click();}
+async function switchTo(kind){await page.evaluate(kind=>switchTechnicalInstrumentBuilder(kind),kind);if(!await panel(kind).isVisible())await active(kind).locator('[data-ai-toggle]').click();}
 async function snapshot(kind){return page.evaluate(kind=>{const w=window.TIOSAIWorkspace,s=w.capture(kind);return {html:s.doc.documentHtml,name:s.doc.name,id:s.id,store:localStorage.getItem(s.storageKey),key:s.storageKey}},kind)}
 async function run(){
   fs.mkdirSync(output,{recursive:true});
@@ -66,7 +66,20 @@ async function run(){
     },userId)}
     await initialize();await active('playbook').locator('[data-ai-toggle]').click();
     assert.equal(await panel('playbook').isVisible(),true);assert.equal(await active('playbook').locator('[data-ai-toggle]').getAttribute('aria-expanded'),'true');
-    pass('AI Builder opens natively beside the existing Workspace and Live Model');
+    assert.equal(await editor('playbook').isVisible(),false);
+    assert.equal(await active('playbook').locator('.playbook-word-ribbon').isVisible(),false);
+    assert.equal(await active('playbook').locator('.playbook-word-statusbar').isVisible(),false);
+    const fill=await panel('playbook').evaluate(el=>({chat:el.getBoundingClientRect().height,main:el.parentElement.getBoundingClientRect().height,log:el.querySelector('[data-ai-messages]').getBoundingClientRect().height}));
+    assert.ok(Math.abs(fill.chat-fill.main)<4);assert.ok(fill.log>400);
+    pass('AI Builder fills the manual workspace beside Live Model, with the ribbon, document and status bar hidden');
+    await panel('playbook').locator('textarea').fill('Keep this conversation draft');
+    await panel('playbook').locator('.ti-ai-types button').filter({hasText:'Rules'}).click();
+    assert.equal(await panel('checklist').isVisible(),true);assert.equal(await editor('checklist').isVisible(),false);
+    await panel('checklist').locator('.ti-ai-types button').filter({hasText:'Psychological Reflection'}).click();
+    assert.equal(await panel('psych').isVisible(),true);assert.equal(await editor('psych').isVisible(),false);
+    await panel('psych').locator('.ti-ai-types button').filter({hasText:'Playbook'}).click();
+    assert.equal(await panel('playbook').locator('textarea').inputValue(),'Keep this conversation draft');
+    pass('instrument buttons stay available in AI mode and restore each conversation draft');
     const baseline=await snapshot('playbook');
     await send('playbook','Create a breakout strategy with confirmation.',{message:'What exactly counts as confirmation?',questions:['Which candle or price condition confirms your entry?'],proposal:null});
     assert.match(await panel('playbook').textContent(),/Which candle/);assert.equal((await snapshot('playbook')).store,baseline.store);assert.equal(await panel('playbook').locator('[data-ai-proposal]').isVisible(),false);
@@ -76,12 +89,21 @@ async function run(){
     await page.waitForTimeout(800);assert.equal((await snapshot('playbook')).store,baseline.store);
     assert.equal(calls.at(-1).response_format.json_schema.strict,true);assert.equal(calls.at(-1).messages[1].role,'user');
     pass('structured creation previews in both existing views and stays unsaved despite autosave timers');
+    const pending=await snapshot('playbook'),chatHistory=await panel('playbook').locator('[data-ai-messages]').textContent();
+    await panel('playbook').locator('textarea').fill('A follow-up draft');
+    await panel('playbook').locator('[data-ai-review]').click();
+    assert.equal(await panel('playbook').isVisible(),false);assert.equal(await editor('playbook').isVisible(),true);
+    assert.equal(await editor('playbook').getAttribute('contenteditable'),'false');assert.equal((await snapshot('playbook')).store,pending.store);
+    await active('playbook').locator('[data-ai-review-back]').click();
+    assert.equal(await editor('playbook').isVisible(),false);assert.equal(await panel('playbook').locator('textarea').inputValue(),'A follow-up draft');
+    assert.equal(await panel('playbook').locator('[data-ai-messages]').textContent(),chatHistory);
+    pass('document review is a separate read-only view and returning to chat preserves the unsaved proposal, draft and history');
     const followup=proposal('playbook',null,[op(node('exit_heading','Exit','heading')),op(node('exit','Exit when price reaches my named target.'))],'edit');
     await send('playbook','Add my named target as the exit condition.',followup);const context=JSON.parse(calls.at(-1).messages.at(-1).content).workingContext;
     assert.ok(context.blocks.some(b=>b.id==='risk'));assert.equal(context.unapprovedNewInstrument,true);assert.match(await editor('playbook').textContent(),/Exit when price/);
-    await panel('playbook').locator('[data-ai-discard]').click();assert.equal((await snapshot('playbook')).store,baseline.store);assert.equal((await snapshot('playbook')).html,baseline.html);assert.equal(await editor('playbook').getAttribute('contenteditable'),'true');
+    await panel('playbook').locator('[data-ai-review]').click();await active('playbook').locator('[data-ai-review-discard]').click();assert.equal(await panel('playbook').isVisible(),true);assert.equal((await snapshot('playbook')).store,baseline.store);assert.equal((await snapshot('playbook')).html,baseline.html);assert.equal(await editor('playbook').getAttribute('contenteditable'),'true');
     pass('ongoing refinement carries unapproved context; Discard restores the original instrument and store');
-    await send('playbook','Create the imbalance playbook.',playbook());await panel('playbook').locator('[data-ai-apply]').click();
+    await send('playbook','Create the imbalance playbook.',playbook());await panel('playbook').locator('[data-ai-review]').click();await active('playbook').locator('[data-ai-review-apply]').click();assert.equal(await panel('playbook').isVisible(),true);
     let applied=await snapshot('playbook');assert.notEqual(applied.id,baseline.id);let saved=JSON.parse(applied.store).find(d=>d.id===applied.id);assert.equal(saved.strategyVersion,1);assert.ok(saved.strategyVersionId);assert.equal(saved.templateDraft,false);assert.equal(JSON.parse(applied.store).find(d=>d.id===baseline.id).documentHtml,baseline.html);
     assert.match(saved.documentHtml,/&quot;type&quot;:&quot;risk_limit&quot;/);assert.match(await model('playbook').textContent(),/Risk no more than 1%/);
     pass('Apply creates an approved version using the existing scoped store and preserves unrelated instruments');
@@ -132,7 +154,10 @@ async function run(){
     await group('exclusive_group').locator('input').nth(0).check();await group('exclusive_group').locator('input').nth(1).check();assert.equal(await group('exclusive_group').locator('input:checked').count(),1);await group('dependent').locator('input').check();assert.equal(await page.locator('#executionMapScore').textContent(),'100.0%');
     pass('AND, OR, exclusive selection and prerequisite gating work in actual Execution Quality scoring');
     await switchTo('psych');await send('psych','Create Patience, Discipline and Emotional Control, each out of 10.',proposal('psych','Discipline Scores',['Patience','Discipline','Emotional Control'].map((label,i)=>op(node('score_'+i,label,'score')))));await panel('psych').locator('[data-ai-apply]').click();
-    const scoring=await snapshot('psych');await page.evaluate(()=>{navigate('execution');viewExecutionInstrumentSection('psych')});const scores=page.locator('#executionMapFormBody [data-execution-response-type="score"]');assert.equal(await scores.count(),3);
+    const scoring=await snapshot('psych');await page.evaluate(()=>{navigate('execution');viewExecutionInstrumentSection('psych')});
+    // Earlier type switching saved an empty reflection; existing journal mappings retain their selected instrument.
+    await page.locator('#executionMapPsychSelect').selectOption(scoring.id);
+    const scores=page.locator('#executionMapFormBody [data-execution-response-type="score"]');assert.equal(await scores.count(),3);
     for(const [i,value]of ['8','9','7'].entries())await scores.nth(i).fill(value);assert.equal(await page.locator('#executionMapScore').textContent(),'80.0%');assert.match(await page.locator('#executionMapScoreMeta').textContent(),/24 \/ 30 points/);
     pass('AI scoring instruments reuse the existing fields and correctly calculate 24/30 = 80%');
     await page.goto(url,{waitUntil:'load'});await initialize();await switchTo('checklist');assert.equal((await snapshot('checklist')).id,logicSaved.id);assert.match(await model('checklist').textContent(),/At least one requirement/);await switchTo('psych');assert.equal((await snapshot('psych')).id,scoring.id);assert.equal(await editor('psych').locator('[data-ti-response-type="score"]').count(),3);
@@ -150,7 +175,7 @@ async function run(){
       if(viewport.width===1440)await page.screenshot({path:path.join(output,'ai-builder-preview.png')});if(viewport.width===390)await page.screenshot({path:path.join(output,'ai-builder-mobile.png')});
     }
     pass('desktop, short screens, tablet and narrow mobile retain usable chat and approval controls without horizontal overflow');
-    await page.setViewportSize({width:1600,height:1000});await panel('playbook').locator('[data-ai-close]').click();assert.equal(await panel('playbook').isVisible(),false);assert.equal(await editor('playbook').getAttribute('contenteditable'),'true');assert.equal(await active('playbook').locator('[data-ai-toggle]').getAttribute('aria-expanded'),'false');
+    await page.setViewportSize({width:1600,height:1000});await panel('playbook').locator('[data-ai-close]').click();assert.equal(await panel('playbook').isVisible(),false);assert.equal(await editor('playbook').getAttribute('contenteditable'),'true');assert.equal(await editor('playbook').isVisible(),true);assert.equal(await active('playbook').locator('.playbook-word-ribbon').isVisible(),true);assert.equal(await active('playbook').locator('.playbook-word-statusbar').isVisible(),true);assert.equal(await active('playbook').locator('[data-ai-toggle]').getAttribute('aria-expanded'),'false');
     await active('playbook').locator('[data-ai-toggle]').click();await panel('playbook').locator('textarea').fill('Private account draft');const accountStore=await snapshot('playbook');
     await page.evaluate(()=>{window.dispatchEvent(new Event('tios:conversation-scope-changing'));tradingAccount={...tradingAccount,id:'qa-account-2'};renderPlaybookWorkspace()});
     await active('playbook').locator('[data-ai-toggle]').click();assert.equal(await panel('playbook').locator('textarea').inputValue(),'');assert.doesNotMatch(await panel('playbook').locator('[data-ai-messages]').textContent(),/Private account draft|Imbalance Method/);assert.notEqual((await snapshot('playbook')).key,accountStore.key);assert.equal(await page.evaluate(key=>localStorage.getItem(key),accountStore.key),accountStore.store);

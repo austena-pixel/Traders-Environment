@@ -8,6 +8,19 @@
   const text=(el,value)=>{if(el&&el.textContent!==value)el.textContent=value};
   function session(kind){const id=workspace.identity(kind);if(!cache.has(id))cache.set(id,{history:[],draft:''});return cache.get(id)}
   function isPreview(kind){return Boolean(preview?.snapshot.kind===kind&&workspace.sameContext(preview.snapshot))}
+  function setMode(kind,mode){
+    const page=workspace.page(kind),main=page?.querySelector('.playbook-word-main'),panel=panels.get(kind),button=page?.querySelector('[data-ai-toggle]');
+    if(!main||!panel)return;
+    main.classList.toggle('ti-ai-active',mode==='chat');
+    main.classList.toggle('ti-ai-document-review',mode==='review');
+    panel.hidden=mode!=='chat';
+    button?.setAttribute('aria-expanded',String(mode==='chat'));
+    text(button,mode==='chat'?'Manual editor':mode==='review'?'Back to AI chat':'AI Builder Chat');
+  }
+  function resizeInput(panel){
+    const input=panel.querySelector('textarea');
+    input.style.height='auto';input.style.height=Math.min(160,Math.max(72,input.scrollHeight))+'px';
+  }
   function restorePreview(){
     if(!preview)return;
     const previous=preview;preview=null;
@@ -31,12 +44,18 @@
   function update(kind){
     const panel=panels.get(kind);if(!panel)return;
     const busy=request?.kind===kind,proposed=isPreview(kind),entry=undoEntries.at(-1);
+    const main=panel.closest('.playbook-word-main');
+    if(!proposed&&main.classList.contains('ti-ai-document-review'))setMode(kind,'chat');
+    main.querySelector('[data-ai-review-apply]').disabled=!proposed||Boolean(busy);
+    panel.querySelector('[data-ai-review]').disabled=Boolean(busy);
+    panel.querySelector('[data-ai-messages]').setAttribute('aria-busy',String(Boolean(busy)));
+    if(!panel.hidden)resizeInput(panel);
     panel.querySelector('[data-ai-send]').disabled=busy||!panel.querySelector('textarea').value.trim();
     panel.querySelector('textarea').disabled=Boolean(busy);
     panel.querySelector('[data-ai-cancel]').hidden=!busy;
     panel.querySelector('[data-ai-proposal]').hidden=!proposed;
     panel.querySelector('[data-ai-undo]').disabled=!entry||entry.scope!==workspace.scope()||entry.after.id!==workspace.current(kind)?.id||Boolean(preview)||Boolean(request);
-    text(panel.querySelector('[data-ai-state]'),busy?'Preparing a structured proposal…':proposed?'Unsaved preview · review the Workspace and Live Model':'Changes need your approval');
+    text(panel.querySelector('[data-ai-state]'),busy?'Preparing your proposal…':proposed?'Unsaved proposal · review the Live Model or document':'Changes need your approval');
     if(proposed)text(panel.querySelector('[data-ai-summary]'),(preview.isNew?'Create':'Edit')+' '+label[kind]+': '+preview.draft.name+' · '+preview.operations+' proposed change'+(preview.operations===1?'':'s'));
     text(panel.querySelector('[data-ai-context]'),label[kind]+' · '+(workspace.current(kind)?.name||'New instrument'));
   }
@@ -76,7 +95,7 @@
         preview={snapshot:targetSnapshot,draft,isNew:proposal.intent==='create'||Boolean(inheritedCreate&&targetKind===kind),operations:proposal.operations.length};
         workspace.display(targetKind,draft,true);renderHistory(targetKind);update(targetKind);
       }
-      const service=panel.querySelector('[data-ai-service]');text(service,'Live AI response · '+(result.service?.model||'AI Gateway'));
+      text(panel.querySelector('[data-ai-service]'),'AI connected');
     }catch(failure){if(failure.name!=='AbortError'&&scope===workspace.scope()&&(request===run||moved)){error(errorKind,failure.message);const state=session(errorKind);state.draft=message;panels.get(errorKind).querySelector('textarea').value=message}}
     finally{if(request===run)request=null;update(kind)}
   }
@@ -97,8 +116,8 @@
   function undo(kind){clearError(kind);const entry=undoEntries.at(-1);if(!entry)return;
     try{workspace.undo(entry);undoEntries.pop();append(kind,'assistant','The previous applied AI change was undone and saved.')}catch(failure){error(kind,failure.message)}update(kind);
   }
-  function open(kind){ensure(kind);const panel=panels.get(kind);panel.hidden=false;panel.querySelector('textarea').value=session(kind).draft;workspace.page(kind).querySelector('[data-ai-toggle]').setAttribute('aria-expanded','true');renderHistory(kind);update(kind);panel.querySelector('textarea').focus({preventScroll:true})}
-  function close(kind){abort();if(isPreview(kind))restorePreview();const panel=panels.get(kind);if(!panel)return;panel.hidden=true;const button=workspace.page(kind).querySelector('[data-ai-toggle]');button?.setAttribute('aria-expanded','false');button?.focus({preventScroll:true})}
+  function open(kind){ensure(kind);const panel=panels.get(kind);setMode(kind,'chat');panel.querySelector('textarea').value=session(kind).draft;resizeInput(panel);renderHistory(kind);update(kind);panel.querySelector('textarea').focus({preventScroll:true})}
+  function close(kind){abort();if(isPreview(kind))restorePreview();setMode(kind,'manual');workspace.page(kind)?.querySelector('[data-ai-toggle]')?.focus({preventScroll:true})}
   function ensure(kind){
     const page=workspace.page(kind),main=page?.querySelector('.playbook-word-main');if(!main||page.querySelector('[data-ai-toggle]'))return;
     const button=document.createElement('button');button.type='button';button.className='btn ti-ai-toggle';button.dataset.aiToggle=kind;button.textContent='AI Builder Chat';button.setAttribute('aria-expanded','false');button.setAttribute('aria-controls','tiAiBuilder_'+kind);
@@ -106,20 +125,35 @@
     const panel=document.createElement('section');panel.className='ti-ai-builder';panel.id='tiAiBuilder_'+kind;panel.hidden=true;panel.setAttribute('aria-label','AI Trading Edge Builder');
     panel.innerHTML='<header class="ti-ai-head"><div><strong>AI Trading Edge Builder</strong><small data-ai-context></small></div><div><button type="button" data-ai-new title="Start a new conversation">New chat</button><button type="button" data-ai-undo disabled>Undo AI change</button><button type="button" data-ai-close aria-label="Close AI Builder">×</button></div></header><div class="ti-ai-status"><span data-ai-state></span><small data-ai-service>Server-side AI · approval required</small></div><div class="ti-ai-error" data-ai-error role="alert" hidden></div><div class="ti-ai-messages" data-ai-messages role="log" aria-live="polite" aria-relevant="additions text" tabindex="0"></div><div class="ti-ai-proposal" data-ai-proposal hidden><span data-ai-summary></span><div><button type="button" class="primary" data-ai-apply>Apply Changes</button><button type="button" data-ai-discard>Discard Changes</button></div></div><form class="ti-ai-form"><label class="sr-only" for="tiAiInput_'+kind+'">Describe your instrument or changes</label><textarea id="tiAiInput_'+kind+'" rows="2" maxlength="4000" placeholder="Describe your strategy or a change to this instrument…"></textarea><button type="button" data-ai-cancel hidden>Stop</button><button type="submit" data-ai-send disabled>Send</button></form><small class="ti-ai-foot">Enter to send · Shift+Enter for a new line · Conversation stays in this session · Strategy profitability requires separate validation.</small>';
     main.insertBefore(panel,main.querySelector('.playbook-word-document-stage'));panels.set(kind,panel);
+    const manual=panel.querySelector('[data-ai-close]');manual.textContent='Manual editor';manual.setAttribute('aria-label','Return to manual editor');
+    text(panel.querySelector('[data-ai-service]'),'Ready to build with you');
+    const types=document.createElement('nav');types.className='ti-ai-types';types.setAttribute('aria-label','Instrument type');
+    for(const type of Object.keys(label)){const choice=document.createElement('button');choice.type='button';choice.textContent=label[type];choice.setAttribute('aria-pressed',String(type===kind));choice.addEventListener('click',()=>{if(type!==kind){workspace.navigate(type);open(type)}});types.append(choice)}
+    panel.querySelector('.ti-ai-head').after(types);
+    const reviewButton=document.createElement('button');reviewButton.type='button';reviewButton.dataset.aiReview='';reviewButton.textContent='Review document';
+    panel.querySelector('[data-ai-proposal]>div').prepend(reviewButton);
+    const reviewHead=document.createElement('div');reviewHead.className='ti-ai-review-head';
+    reviewHead.innerHTML='<span>AI proposal · not saved</span><div><button type="button" data-ai-review-back>Back to AI chat</button><button type="button" data-ai-review-apply>Apply Changes</button><button type="button" data-ai-review-discard>Discard Changes</button></div>';
+    main.insertBefore(reviewHead,panel);
+    reviewButton.addEventListener('click',()=>{if(isPreview(kind)){setMode(kind,'review');reviewHead.querySelector('[data-ai-review-back]').focus({preventScroll:true})}});
+    reviewHead.querySelector('[data-ai-review-back]').addEventListener('click',()=>open(kind));
+    reviewHead.querySelector('[data-ai-review-apply]').addEventListener('click',()=>apply(kind));
+    const discard=()=>{restorePreview();append(kind,'assistant','Proposal discarded. Your saved instrument was not changed.')};
+    reviewHead.querySelector('[data-ai-review-discard]').addEventListener('click',discard);
     button.addEventListener('click',()=>panel.hidden?open(kind):close(kind));
     panel.querySelector('[data-ai-close]').addEventListener('click',()=>close(kind));
     panel.querySelector('[data-ai-cancel]').addEventListener('click',abort);
     panel.querySelector('[data-ai-apply]').addEventListener('click',()=>apply(kind));
-    panel.querySelector('[data-ai-discard]').addEventListener('click',()=>{restorePreview();append(kind,'assistant','Proposal discarded. Your saved instrument was not changed.')});
+    panel.querySelector('[data-ai-discard]').addEventListener('click',discard);
     panel.querySelector('[data-ai-undo]').addEventListener('click',()=>undo(kind));
     panel.querySelector('[data-ai-new]').addEventListener('click',()=>{abort();restorePreview();session(kind).history=[];session(kind).draft='';panel.querySelector('textarea').value='';clearError(kind);renderHistory(kind);update(kind)});
     panel.querySelector('form').addEventListener('submit',event=>{event.preventDefault();send(kind)});
-    panel.querySelector('textarea').addEventListener('input',()=>{session(kind).draft=panel.querySelector('textarea').value;update(kind)});
+    panel.querySelector('textarea').addEventListener('input',()=>{resizeInput(panel);session(kind).draft=panel.querySelector('textarea').value;update(kind)});
     panel.querySelector('textarea').addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();send(kind)}});
     renderHistory(kind);update(kind);
   }
   function refresh(){
-    const next=workspace.userId();if(next!==user){abort();preview=null;cache.clear();undoEntries.length=0;user=next;for(const [kind,panel]of panels){panel.hidden=true;panel.querySelector('textarea').value='';workspace.release(kind);workspace.page(kind)?.querySelector('[data-ai-toggle]')?.setAttribute('aria-expanded','false');clearError(kind);renderHistory(kind)}}
+    const next=workspace.userId();if(next!==user){abort();preview=null;cache.clear();undoEntries.length=0;user=next;for(const [kind,panel]of panels){setMode(kind,'manual');panel.querySelector('textarea').value='';workspace.release(kind);clearError(kind);renderHistory(kind)}}
     if(request&&request.identity!==workspace.identity(request.kind))abort();
     if(preview&&!workspace.sameContext(preview.snapshot)){const kind=preview.snapshot.kind;preview=null;workspace.release(kind)}
     for(const kind of ['playbook','checklist','psych']){ensure(kind);update(kind)}
@@ -127,6 +161,6 @@
   root.TIOSAIBuilderClient=Object.freeze({isPreview,beforeNavigate});
   for(const kind of ['playbook','checklist','psych']){const target=workspace.page(kind);if(target)new MutationObserver(refresh).observe(target,{attributes:true,attributeFilter:['class'],childList:true})}
   root.addEventListener('tios:auth-ui',refresh);root.addEventListener('storage',event=>{if(preview&&event.key===preview.snapshot.storageKey)error(preview.snapshot.kind,'This instrument changed in another tab. Discard this proposal before continuing.')});
-  root.addEventListener('tios:conversation-scope-changing',()=>{abort();restorePreview();cache.clear();undoEntries.length=0;for(const [kind,panel]of panels){panel.hidden=true;panel.querySelector('textarea').value='';workspace.page(kind)?.querySelector('[data-ai-toggle]')?.setAttribute('aria-expanded','false');clearError(kind);renderHistory(kind);update(kind)}});
+  root.addEventListener('tios:conversation-scope-changing',()=>{abort();restorePreview();cache.clear();undoEntries.length=0;for(const [kind,panel]of panels){setMode(kind,'manual');panel.querySelector('textarea').value='';clearError(kind);renderHistory(kind);update(kind)}});
   refresh();
 })(window);
