@@ -9729,7 +9729,7 @@ function filteredJournalTrades(){
     if(a.trade_date!==b.trade_date){
       return b.trade_date.localeCompare(a.trade_date);
     }
-    return (b.created_at||'').localeCompare(a.created_at||'');
+    return compareTradeChronology(a,b);
   });
 }
 
@@ -9775,6 +9775,28 @@ function journalDayGroups(source=[]){
   });
 
   return groups;
+}
+
+function compareTradeChronology(a,b){
+  const time=trade=>{
+    for(const value of [trade.closed_at,trade.created_at]){
+      const timestamp=Date.parse(value||'');
+      if(Number.isFinite(timestamp))return timestamp;
+    }
+    return Infinity;
+  };
+  const byTime=time(a)-time(b);
+  if(byTime)return byTime;
+  const byPosition=String(a.mt5_position_id||a.id||'').localeCompare(String(b.mt5_position_id||b.id||''),undefined,{numeric:true});
+  return byPosition||String(a.id||'').localeCompare(String(b.id||''));
+}
+
+function journalTradeNumbers(){
+  const numbers=new Map();
+  journalDayGroups(trades).forEach(group=>{
+    group.trades.sort(compareTradeChronology).forEach((trade,index)=>numbers.set(String(trade.id),index+1));
+  });
+  return numbers;
 }
 
 function journalDayHeaderHtml(group){
@@ -9836,9 +9858,9 @@ function journalReflectionEntries(tradeId){
   return entries;
 }
 
-function journalPsychologyCellHtml(trade,index){
+function journalPsychologyCellHtml(trade,number){
   const count=journalReflectionEntries(trade.id).length;
-  const label=`View psychological reflection for Trade ${index+1}, ${trade.instrument||'Unknown instrument'}, ${formatDate(trade.trade_date)}`;
+  const label=`View psychological reflection for Trade ${number}, ${trade.instrument||'Unknown instrument'}, ${formatDate(trade.trade_date)}`;
   return `<div class="journal-psychology-cell"><button class="btn small journal-reflection-button${count?' has-reflections':''}" type="button" data-journal-reflection="${escapeHtml(trade.id)}" aria-label="${escapeHtml(label)}" title="${count?count+' saved response'+(count===1?'':'s'):'No saved reflection yet'}">View reflection</button>${trade.psychology?'<small>'+escapeHtml(trade.psychology)+'</small>':''}</div>`;
 }
 
@@ -9924,6 +9946,7 @@ function renderJournal(){
 
   const start=(journalPage-1)*JOURNAL_PAGE_SIZE;
   const pageItems=filtered.slice(start,start+JOURNAL_PAGE_SIZE);
+  const tradeNumbers=journalTradeNumbers();
 
   const body=$('#journalBody');
   body.innerHTML='';
@@ -9942,13 +9965,14 @@ function renderJournal(){
     journalDayGroups(pageItems).forEach(group=>{
       body.insertAdjacentHTML('beforeend',journalDayHeaderHtml(group));
 
-      group.trades.forEach((t,index)=>{
+      group.trades.forEach(t=>{
         const pnl=Number(t.pnl)||0;
+        const number=tradeNumbers.get(String(t.id));
         const tr=document.createElement('tr');
         tr.className='journal-trade-row';
 
         tr.innerHTML=`
-          <td><span class="journal-trade-number">Trade ${index+1}</span></td>
+          <td><span class="journal-trade-number">Trade ${number}</span></td>
           <td><strong>${escapeHtml(t.instrument||'—')}</strong></td>
           <td>
             <span class="direction-badge ${t.direction==='Buy'?'buy':'sell'}">
@@ -9958,7 +9982,7 @@ function renderJournal(){
           <td>${escapeHtml(t.setup||'—')}</td>
           <td class="${pnlClass(pnl)}"><strong>${signedMoney(pnl)}</strong></td>
           <td>${journalExecutionBadge(t.id,t.execution_score)}</td>
-          <td>${journalPsychologyCellHtml(t,index)}</td>
+          <td>${journalPsychologyCellHtml(t,number)}</td>
           <td>${journalEdgeBadge(t.id)}</td>
           <td title="${escapeHtml(t.notes||'')}">${escapeHtml((t.notes||'—').slice(0,55))}${(t.notes||'').length>55?'…':''}</td>
           <td>
@@ -11312,14 +11336,15 @@ function renderExecutionMappingControls(){
   const playbook=executionMappingPlaybook();
   const checklist=executionMappingSecondary('checklist');
   const psych=executionMappingSecondary('psych');
+  const tradeNumbers=journalTradeNumbers();
 
   tradeSelect.innerHTML=trades.length
     ? journalDayGroups(trades).sort((a,b)=>a.date===b.date?0:a.date==='undated'?1:b.date==='undated'?-1:b.date.localeCompare(a.date)).map(group=>{
         const day=group.date==='undated'?'Undated trades':formatDate(group.date);
         const count=group.trades.length;
-        const options=group.trades.map(item=>{
-          const label=[item.instrument,item.direction].filter(Boolean).join(' · ');
-          return `<option value="${escapeHtml(String(item.id))}" ${String(item.id)===String(trade?.id)?'selected':''}>${escapeHtml(label||'Trade')}</option>`;
+        const options=group.trades.sort(compareTradeChronology).map(item=>{
+          const label=['Trade '+tradeNumbers.get(String(item.id)),item.instrument,item.direction].filter(Boolean).join(' · ');
+          return `<option value="${escapeHtml(String(item.id))}" ${String(item.id)===String(trade?.id)?'selected':''}>${escapeHtml(label)}</option>`;
         }).join('');
         return `<optgroup label="${escapeHtml(day+' · '+count+' trade'+(count===1?'':'s'))}">${options}</optgroup>`;
       }).join('')
@@ -11365,7 +11390,7 @@ function renderExecutionMappingTradeContext(){
   const tradeTitle=$('#executionMapTradeTitle');
   if(tradeTitle){
     if(trade){
-      const instrument=escapeHtml(trade.instrument||'Trade');
+      const instrument='Trade '+journalTradeNumbers().get(String(trade.id))+' · '+escapeHtml(trade.instrument||'Trade');
       const directionHtml=direction
         ? ` · <span class="execution-trade-direction ${directionClass}">${escapeHtml(direction)}</span>`
         : '';
