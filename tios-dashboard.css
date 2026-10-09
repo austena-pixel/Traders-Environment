@@ -1,0 +1,87 @@
+/* Fixed dashboard; only the calendar, account details and conversation scroll. */
+html:has(#appShell:not(.hidden) #page-dashboard.active){height:100%;overflow:hidden;overscroll-behavior:none}
+body:has(#appShell:not(.hidden) #page-dashboard.active){height:100dvh;min-height:0;overflow:hidden}
+body:has(#appShell:not(.hidden) #page-dashboard.active) .shell{height:100dvh;min-height:0;overflow:hidden}
+body:has(#appShell:not(.hidden) #page-dashboard.active) .sidebar{height:100dvh;min-height:0;overflow:hidden}
+body:has(#appShell:not(.hidden) #page-dashboard.active) .main{height:100dvh;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+#page-dashboard.active{flex:1 1 0;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+#page-dashboard .dashboard-intelligence{flex:0 0 auto;max-height:28%;overflow:auto;overscroll-behavior:contain}
+#page-dashboard .dashboard-layout{flex:1 1 0;min-height:0;grid-template-columns:minmax(0,1fr) 340px;grid-template-rows:minmax(0,1fr)}
+#page-dashboard .dashboard-calendar{display:flex;flex-direction:column;min-width:0;min-height:0}
+#page-dashboard .calendar-head{flex:0 0 auto;gap:8px}
+#page-dashboard .calendar-wrap{flex:1 1 0;min-height:0;overscroll-behavior:contain;scrollbar-width:thin}
+#page-dashboard .calendar-grid{min-width:730px;min-height:100%;grid-template-columns:repeat(7,minmax(80px,1fr)) 120px;grid-template-rows:38px repeat(var(--tios-calendar-weeks,5),minmax(86px,1fr))}
+#page-dashboard .day,#page-dashboard .week-total{min-height:0}
+#page-dashboard .right-side{display:flex;flex-direction:column;min-height:0;min-width:0}
+#page-dashboard .account-overview{flex:0 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.account-overview-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.account-overview-head h3{margin:0}
+.account-chart-toggle{display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;padding:8px 10px;border:1px solid #3a4b64;border-radius:9px;background:#18263b;color:#e9f2ff;font-size:11px;font-weight:700}
+.account-chart-toggle:hover{border-color:#6ea8ff;background:#20344e}
+.account-chart-toggle[aria-expanded="true"]{background:#263d5b;border-color:#6ea8ff}
+.account-chart-toggle:focus-visible,.tios-conversation button:focus-visible,.tios-conversation textarea:focus-visible{outline:2px solid #6ea8ff;outline-offset:2px}
+.tios-conversation[hidden]{display:none!important}
+.tios-conversation{flex:1 1 0;min-height:0;display:flex;flex-direction:column;animation:tiosConversationReveal .22s ease-out;background:linear-gradient(180deg,#111a27,#0b111a)}
+.tios-conversation-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 14px;border-bottom:1px solid var(--line);flex:0 0 auto}
+.tios-conversation-head h3{margin:0;font-size:14px}
+.tios-conversation-head small{display:block;margin-top:4px;color:#9eadc0;font-size:10px}
+.tios-conversation-tools{display:flex;gap:5px}
+.tios-conversation-tools button{width:28px;height:28px;display:grid;place-items:center;border:1px solid var(--line);border-radius:8px;background:#121c2a;color:#cbd8e8;font-size:16px}
+.tios-conversation-messages{flex:1 1 0;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:14px;display:flex;flex-direction:column;gap:12px;overflow-wrap:anywhere}
+.tios-conversation-message{flex:0 0 auto;max-width:100%;font-size:12px;line-height:1.65}
+.tios-conversation-message b{display:block;margin-bottom:4px;color:#9ebae0;font-size:9px;letter-spacing:.04em}
+.tios-conversation-message p{margin:0;white-space:pre-wrap}
+.tios-conversation-message[data-role="user"]{align-self:flex-end;max-width:94%;padding:9px 11px;border:1px solid #30455f;border-radius:12px 12px 3px 12px;background:#1c2d44;color:#f1f5fc}
+.tios-conversation-message[data-role="user"] b{color:#c5d5e9}
+.tios-conversation-prompts{display:flex;flex-wrap:wrap;gap:5px;padding:0 12px 10px;flex:0 0 auto}
+.tios-conversation-prompts button{padding:6px 8px;border:1px solid #304159;border-radius:999px;background:#142033;color:#c7d8ed;font-size:10px}
+.tios-conversation-compose{flex:0 0 auto;border-top:1px solid var(--line);padding:10px 12px 9px}
+.tios-conversation-input-row{display:flex;align-items:flex-end;gap:7px}
+.tios-conversation-compose textarea{display:block;flex:1 1 0;min-width:0;resize:none;max-height:96px;min-height:54px;padding:9px 10px;border:1px solid #334760;border-radius:10px;background:#0a111b;color:#f3f6fb;font-size:12px;line-height:1.5;overflow:auto}
+.tios-conversation-compose textarea::placeholder{color:#8f9bad}
+.tios-conversation-send{flex:0 0 auto;width:36px;height:36px;border:1px solid #6ea8ff;border-radius:10px;background:#294f81;color:#fff;font-size:19px}
+.tios-conversation-send:disabled{opacity:.4;cursor:default}
+.tios-conversation-compose small{display:block;margin-top:6px;color:#8f9bad;font-size:9px;line-height:1.4}
+.tios-conversation-status{padding:0 12px 8px;margin:0;color:#aab8cb;font-size:10px}
+.tios-conversation-status:empty{display:none}
+@keyframes tiosConversationReveal{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@media(min-width:861px){#page-dashboard .right-side.conversation-open .account-overview{flex-shrink:0}#page-dashboard .right-side.conversation-open .account-overview .side-row{padding:7px 0;font-size:12px}}
+@media(max-width:1100px) and (min-width:861px){#page-dashboard .dashboard-layout{grid-template-columns:minmax(0,1fr) 310px}.month-title{min-width:125px;font-size:16px}}
+@media(max-width:860px){
+  body:has(#appShell:not(.hidden) #page-dashboard.active) .mobile-top{flex:0 0 auto;margin-bottom:8px}
+  #page-dashboard .dashboard-layout{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(100px,1fr) auto;gap:9px}
+  #page-dashboard .right-side{max-height:44dvh;gap:8px}
+  #page-dashboard .dashboard-layout:has(.conversation-open){grid-template-rows:minmax(70px,1fr) minmax(230px,1.4fr)}
+  #page-dashboard .right-side.conversation-open{height:100%;max-height:none}
+  #page-dashboard .right-side .panel{margin-bottom:0}
+  #page-dashboard .account-overview{padding:10px 12px}
+  #page-dashboard .account-overview-head{margin-bottom:0}
+  #page-dashboard .account-overview .side-row{padding:5px 0;font-size:11px}
+  #page-dashboard .account-overview .settings-row input{max-width:100px;padding:5px}
+  #page-dashboard .right-side.conversation-open .account-overview{flex:0 0 auto;padding-bottom:7px}
+  #page-dashboard .right-side.conversation-open .account-overview-details{display:none}
+  .tios-conversation{min-height:0}
+  .tios-conversation-head{padding:9px 12px}
+  .tios-conversation-head h3{font-size:12px}
+  .tios-conversation-head small{margin-top:2px;font-size:9px}
+  .tios-conversation-prompts{padding-bottom:6px}
+  .tios-conversation-messages{padding:10px 12px;gap:9px}
+  #page-dashboard .dashboard-intelligence .intelligence-hero{padding:10px 12px}
+  #page-dashboard .dashboard-intelligence .intelligence-hero h2{font-size:15px}
+  #page-dashboard .dashboard-intelligence .personal-intelligence-copy{font-size:11px;margin:5px 0 0}
+  #page-dashboard .intelligence-hero-top{flex-direction:row;gap:8px}
+  #page-dashboard .intelligence-status{font-size:9px;padding:5px 7px}
+  #page-dashboard .calendar-head{padding:8px 10px}
+  #page-dashboard .calendar-head>div:first-child{display:none}
+  #page-dashboard .month-nav{width:100%;justify-content:space-between}
+}
+@media(max-height:650px){
+  #page-dashboard .right-side.conversation-open .account-overview{max-height:33%;flex-shrink:1}
+  #page-dashboard .right-side.conversation-open .account-overview-details{max-height:62px;overflow:auto;overscroll-behavior:contain}
+  .tios-conversation-prompts{display:none}
+  .tios-conversation-head{padding:8px 12px}
+  .tios-conversation-compose{padding:7px 10px}
+  .tios-conversation-compose textarea{min-height:42px;height:44px}
+  .tios-conversation-messages{padding:8px 12px}
+}
+@media(prefers-reduced-motion:reduce){.tios-conversation{animation:none}}

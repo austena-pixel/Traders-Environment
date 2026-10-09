@@ -5920,6 +5920,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 .mobile-product-brand .product-mark{width:29px;height:29px;border-radius:9px}
 .mobile-product-brand .product-mark svg{width:18px;height:18px}
 </style>
+<link rel="stylesheet" href="tios-dashboard.css">
 <link rel="stylesheet" href="hios-themes.css" data-hios-theme-sheet>
 <script src="hios-themes.js"></script>
 </head>
@@ -6089,7 +6090,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
       </div>
 
       <div class="dashboard-layout">
-        <section class="panel">
+        <section class="panel dashboard-calendar">
           <div class="calendar-head">
             <div>
               <div style="font-size:12px;color:var(--muted)">Trading Calendar</div>
@@ -6109,8 +6110,12 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
         <aside class="right-side">
 
-          <section class="panel side-section">
-            <h3>Account Overview</h3>
+          <section class="panel side-section account-overview">
+            <div class="account-overview-head">
+              <h3>Account Overview</h3>
+              <button type="button" class="account-chart-toggle" id="openAccountChart" aria-expanded="false" aria-controls="tiosConversation">Open Chart</button>
+            </div>
+            <div class="account-overview-details">
             <div class="side-row">
               <span>Initial balance</span>
               <div class="settings-row">
@@ -6121,6 +6126,30 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <div class="side-row"><span>Current equity</span><strong id="currentEquity">R0.00</strong></div>
             <div class="side-row"><span>All-time P&amp;L</span><strong id="allTimePnl">R0.00</strong></div>
             <div class="side-row"><span>All-time trades</span><strong id="allTimeTrades">0</strong></div>
+            </div>
+          </section>
+          <section class="panel tios-conversation" id="tiosConversation" aria-labelledby="tiosConversationTitle" hidden>
+            <header class="tios-conversation-head">
+              <div><h3 id="tiosConversationTitle">Talk to T·IOS</h3><small id="tiosConversationScope">Record-based · Selected account</small></div>
+              <div class="tios-conversation-tools">
+                <button type="button" data-conversation-new aria-label="New conversation" title="New conversation">↻</button>
+                <button type="button" data-conversation-close aria-label="Close conversation" title="Close conversation">×</button>
+              </div>
+            </header>
+            <div class="tios-conversation-messages" id="tiosConversationMessages" role="log" aria-label="Conversation with T-IOS" aria-live="polite" aria-relevant="additions" tabindex="0"></div>
+            <div class="tios-conversation-prompts">
+              <button type="button" data-conversation-prompt="How did I perform this month?">This month</button>
+              <button type="button" data-conversation-prompt="What do my execution reviews show?">Execution</button>
+              <button type="button" data-conversation-prompt="What evidence is still missing?">Evidence</button>
+            </div>
+            <p class="tios-conversation-status" id="tiosConversationStatus" role="status"></p>
+            <form class="tios-conversation-compose" id="tiosConversationForm">
+              <div class="tios-conversation-input-row">
+                <textarea id="tiosConversationInput" rows="2" maxlength="2000" placeholder="Ask T·IOS about your records…" aria-label="Message T-IOS" aria-describedby="tiosConversationHelp"></textarea>
+                <button class="tios-conversation-send" type="submit" aria-label="Send message" title="Send message" disabled>↑</button>
+              </div>
+              <small id="tiosConversationHelp">Enter to send · Shift + Enter for a new line · This visit only</small>
+            </form>
           </section>
 </aside>
       </div>
@@ -7609,6 +7638,7 @@ let mt5RealtimeChannel = null;
 let mt5TradeRefreshInFlight = false;
 let mt5TradeRefreshQueued = false;
 let trades = [];
+let tiosConversationReady = false;
 let psychologySessions = [];
 let identityScores = [];
 let ruleChecks = [];
@@ -7744,9 +7774,11 @@ function formatReturnPct(value,digits=2){
 }
 
 function setLoggedInUI(loggedIn){
+  if(!loggedIn)tiosConversationReady=false;
   if(!loggedIn)closeJournalReflection({restoreFocus:false});
   $('#authScreen').classList.toggle('hidden', loggedIn);
   $('#appShell').classList.toggle('hidden', !loggedIn);
+  window.dispatchEvent(new Event('tios:auth-ui'));
 }
 
 
@@ -8643,6 +8675,8 @@ async function switchTradingAccount(accountId){
   const next=tradingAccounts.find(a=>a.id===accountId);
   if(!next || next.id===tradingAccount?.id) return;
 
+  tiosConversationReady=false;
+  window.dispatchEvent(new Event('tios:conversation-scope-changing'));
   tradingAccount=next;
   localStorage.setItem(
     `te_active_account_${currentUser.id}`,
@@ -9475,6 +9509,7 @@ function renderCalendar(){
   for(let d=1;d<=daysInMonth;d++) cells.push(d);
   while(cells.length%7!==0) cells.push(null);
 
+  grid.style.setProperty('--tios-calendar-weeks',cells.length/7);
   for(let row=0;row<cells.length/7;row++){
     let weekPnl=0;
 
@@ -19113,6 +19148,8 @@ if(intelligenceRefreshBtn){
 function renderDashboard(){
   renderCalendar();
   renderMetrics();
+  tiosConversationReady=Boolean(currentUser && tradingAccount);
+  window.dispatchEvent(new Event('tios:dashboard-updated'));
 }
 
 function renderAll(){
@@ -19290,6 +19327,36 @@ initializeSupabase();
   </div>
 </div>
 
+<script>
+// Read-only boundary for the dashboard conversation. Never publishes chat as evidence.
+window.getTiosConversationContext=function(){
+  const today=new Date(),monday=new Date(today);
+  monday.setDate(today.getDate()-((today.getDay()+6)%7));
+  const model=tiosConversationReady?buildExecutionIntelligenceModel():null;
+  return {
+    ready:tiosConversationReady,
+    userId:currentUser?.id||null,
+    accountId:tradingAccount?.id||null,
+    accountName:tradingAccount?accountDisplayName(tradingAccount):'Selected account',
+    currency:String(tradingAccount?.currency||'USD').toUpperCase(),
+    initialBalance:initialAccountBalance(),
+    equity:tradingAccount?.current_equity!=null&&Number.isFinite(Number(tradingAccount.current_equity))?Number(tradingAccount.current_equity):null,
+    today:localDateString(today),weekStart:localDateString(monday),
+    month:localDateString(viewDate).slice(0,7),
+    monthLabel:viewDate.toLocaleDateString(undefined,{month:'long',year:'numeric'}),
+    trades:tiosConversationReady?trades.filter(t=>!t.is_deleted&&(!t.account_id||t.account_id===tradingAccount.id)&&(!t.user_id||t.user_id===currentUser.id)).map(t=>({
+      date:String(t.trade_date||'').slice(0,10),
+      pnl:t.pnl!==null&&t.pnl!==undefined&&String(t.pnl).trim()!==''&&Number.isFinite(Number(t.pnl))?Number(t.pnl):null
+    })):[],
+    execution:{
+      reviewed:model?.sample.reviewedTrades||0,checks:model?.sample.totalChecks||0,
+      adherence:model?.execution.adherencePct??null,averageScore:model?.execution.averageScorePct??null,
+      weakest:(model?.currentWeakestCriteria||[]).map(item=>({label:item.label,misses:item.misses,checks:item.checks}))
+    }
+  };
+};
+</script>
+<script src="tios-dashboard.js"></script>
 </body>
 </html>
 
