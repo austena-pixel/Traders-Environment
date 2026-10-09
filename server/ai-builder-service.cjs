@@ -43,7 +43,7 @@ async function reserve(token,config,fetcher=fetch){
   const {response,data}=await fetchJson(config.url+'/rest/v1/rpc/tios_ai_reserve_request',{method:'POST',headers:{apikey:config.key,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:'{}'},fetcher);
   if(!response.ok)throw new ServiceError(503,'usage_control_unavailable','AI usage controls are unavailable. Try again later; manual editing is available.');
   const result=Array.isArray(data)?data[0]:data;
-  if(!result?.allowed){const error=new ServiceError(429,'usage_limit','AI Builder usage limit reached. Try again later; manual editing is available.');error.retryAfter=Math.min(86400,Math.max(1,Number(result?.retry_after)||60));throw error}
+  if(!result?.allowed){const retryAfter=Math.min(86400,Math.max(1,Number(result?.retry_after)||60));const error=new ServiceError(429,'usage_limit',retryAfter>60?'AI Builder daily usage limit reached.':'AI Builder usage limit reached.');error.retryAfter=retryAfter;throw error}
 }
 async function generate(input,config,fetcher=fetch){
   if(!config.model||!config.token)throw new ServiceError(503,'ai_not_configured','AI Builder is not configured yet. The owner must enable AI Gateway authentication and select a model in Vercel.');

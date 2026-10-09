@@ -17,13 +17,13 @@ const playbook=()=>proposal('playbook','Imbalance Method',[
   op(node('entry_heading','Entry Requirements','heading')),op(node('entry','Price reaches my area of interest.','rule',{dependsOn:'market',condition:{type:'observation',verification:'subjective',field:null,operator:null,value:null,unit:null,timeframe:null,parameters:[]}})),
   op(node('risk_heading','Risk Management','heading')),op(node('risk','Risk no more than 1% of equity.','rule',{condition:risk}))
 ]);
-let queue=[],calls=[],checks=0,quota=true;
+let queue=[],calls=[],checks=0,quota=true,quotaRetryAfter=60,requests=0;
 const pass=message=>{checks++;console.log('PASS '+message)};
 const originalFetch=global.fetch;
 const json=(data,status=200)=>({ok:status>=200&&status<300,status,json:async()=>data});
 global.fetch=async(url,options)=>{
   if(String(url).endsWith('/auth/v1/user'))return json({id:userId,is_anonymous:false});
-  if(String(url).includes('/rpc/tios_ai_reserve_request'))return json([{allowed:quota,retry_after:60}]);
+  if(String(url).includes('/rpc/tios_ai_reserve_request'))return json([{allowed:quota,retry_after:quotaRetryAfter}]);
   if(String(url)==='https://ai-gateway.vercel.sh/v1/chat/completions'){
     calls.push(JSON.parse(options.body));const next=queue.shift();if(!next)throw Error('No test model response queued.');
     if(next.delay)await new Promise(r=>setTimeout(r,next.delay));
@@ -44,6 +44,7 @@ async function run(){
   fs.mkdirSync(output,{recursive:true});
   const server=http.createServer(async(req,res)=>{
     if(req.url.startsWith('/api/tios-ai-builder')){
+      if(req.method==='POST')requests++;
       let body='';for await(const chunk of req)body+=chunk;req.body=body;res.status=n=>{res.statusCode=n;return res};res.json=value=>res.end(JSON.stringify(value));await handler(req,res);return;
     }
     const filename=path.join(root,decodeURIComponent(req.url.split('?')[0]).replace(/^\//,''));
@@ -55,7 +56,7 @@ async function run(){
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   try{
     browser=await chromium.launch({executablePath:process.env.TIOS_TEST_BROWSER,headless:true,args:['--no-sandbox','--no-zygote','--single-process','--disable-gpu','--disable-software-rasterizer']});
-    page=await browser.newPage({viewport:{width:1600,height:1000}});page.setDefaultTimeout(12000);
+    page=await browser.newPage({viewport:{width:1600,height:1000},timezoneId:'Africa/Johannesburg'});page.setDefaultTimeout(12000);
     const errors=[];page.on('pageerror',e=>errors.push(e.message));
     await page.addInitScript(()=>{window.supabase={createClient:()=>({auth:{getSession:()=>new Promise(()=>{})}})}});
     const url='http://127.0.0.1:'+server.address().port+'/t-ios.html';await page.goto(url,{waitUntil:'load'});
@@ -202,7 +203,16 @@ async function run(){
     pass('Stop cancels an image request and ignores its late response without saving');
     await page.goto(url,{waitUntil:'load'});await initialize();await switchTo('playbook');assert.equal((await snapshot('playbook')).id,imageSaved.id);assert.match(await model('playbook').textContent(),/0.73%/);assert.equal(await panel('playbook').locator('img').count(),0);
     pass('approved image-derived rules survive reload while private reference pictures remain session-only');
-    quota=false;await send('playbook','Add a condition.',playbook());assert.match(await panel('playbook').locator('[data-ai-error]').textContent(),/usage limit/);quota=true;queue.length=0;
+    quota=false;quotaRetryAfter=7200;await attach('playbook');const limitedSnapshot=await snapshot('playbook'),beforeLimit=requests;await send('playbook','Add a condition.',playbook());
+    assert.match(await panel('playbook').locator('[data-ai-error]').textContent(),/daily usage limit.*Try again at/);assert.equal(await panel('playbook').locator('[data-ai-send]').isDisabled(),true);assert.match(await panel('playbook').locator('[data-ai-send]').textContent(),/Retry in 2h/);assert.equal(await panel('playbook').locator('textarea').inputValue(),'Add a condition.');assert.equal(await panel('playbook').locator('.ti-ai-message.user img').count(),1);assert.equal((await snapshot('playbook')).store,limitedSnapshot.store);
+    await panel('playbook').locator('textarea').press('Enter');await switchTo('checklist');await panel('checklist').locator('textarea').fill('Try from another instrument.');assert.equal(await panel('checklist').locator('[data-ai-send]').isDisabled(),true);await switchTo('playbook');assert.equal(requests,beforeLimit+1);
+    quota=true;queue.length=0;await page.evaluate(()=>{window.qaOriginalNow=Date.now;Date.now=()=>qaOriginalNow()+7201000});await page.waitForFunction(()=>!document.querySelector('#tiAiBuilder_playbook [data-ai-send]').disabled);await page.evaluate(()=>{Date.now=qaOriginalNow});assert.equal(requests,beforeLimit+1);assert.equal(await panel('playbook').locator('[data-ai-error]').isVisible(),false);
+    // Existing instrument navigation saves its timestamp. Compare the retry against that saved version.
+    const retryBaseline=await snapshot('playbook');assert.equal(retryBaseline.html,limitedSnapshot.html);assert.equal(retryBaseline.name,limitedSnapshot.name);
+    await send('playbook','Build the risk rule from my retained picture.',imageRule());assert.equal(calls.at(-1).messages.at(-1).content.filter(part=>part.type==='image_url').length,1);await panel('playbook').locator('[data-ai-discard]').click();assert.equal((await snapshot('playbook')).store,retryBaseline.store);
+    pass('daily limit shows a local reset time and countdown, keeps the picture and draft, blocks repeated sends across instruments, and permits a manual retry after expiry');
+    quota=false;quotaRetryAfter=60;await send('playbook','Try another small change.',playbook());quota=true;queue.length=0;await panel('playbook').locator('[data-ai-new]').click();await panel('playbook').locator('textarea').fill('New chat still respects the allowance.');assert.equal(await panel('playbook').locator('[data-ai-send]').isDisabled(),true);await page.evaluate(()=>{window.qaOriginalNow=Date.now;Date.now=()=>qaOriginalNow()+61000});await page.waitForFunction(()=>!document.querySelector('#tiAiBuilder_playbook [data-ai-send]').disabled);await page.evaluate(()=>{Date.now=qaOriginalNow});
+    pass('New chat cannot bypass the short-term request limit and expiry makes no automatic model request');
     for(const [status,type,expected]of [[402,null,/add AI Gateway Credits/],[403,'customer_verification_required',/valid payment method/],[402,'quota_for_entity_exceeded',/spend budget/]]){
       await send('playbook','Create a new method.',null,{status,type});const message=await panel('playbook').locator('[data-ai-error]').textContent();assert.match(message,expected);assert.doesNotMatch(message,/Private provider diagnostic/);assert.equal(await panel('playbook').locator('[data-ai-proposal]').isVisible(),false);
     }

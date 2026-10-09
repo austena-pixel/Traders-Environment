@@ -2,7 +2,7 @@
   'use strict';
   const workspace=root.TIOSAIWorkspace,documents=root.TIOSAIDocument,contract=root.TIOSAIContract,images=root.TIOSAIImages;
   const cache=new Map(),panels=new Map(),undoEntries=[];
-  let preview=null,request=null,user=null;
+  let preview=null,request=null,user=null,quota=null,retryTimer=null;
   const label={playbook:'Playbook',checklist:'Rules',psych:'Psychological Reflection'};
   const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const text=(el,value)=>{if(el&&el.textContent!==value)el.textContent=value};
@@ -38,7 +38,7 @@
     const card=document.createElement('figure');card.className='ti-ai-image';const img=document.createElement('img');img.src=attachment.dataUrl;img.alt='Reference image: '+attachment.name;const caption=document.createElement('figcaption');caption.textContent=attachment.name;card.append(img,caption);return card;
   }
   function renderAttachments(kind){
-    const panel=panels.get(kind);if(!panel)return;const state=session(kind),strip=panel.querySelector('[data-ai-attachments]');strip.replaceChildren();strip.hidden=!state.attachments.length&&!state.preparing;
+    const panel=panels.get(kind);if(!panel)return;const state=session(kind),strip=panel.querySelector('[data-ai-attachments]'),key=[workspace.identity(kind),state.preparing,state.references.length,Boolean(request?.kind===kind),...state.attachments.map(a=>a.id)].join('|');if(strip.dataset.renderKey===key)return;strip.dataset.renderKey=key;strip.replaceChildren();strip.hidden=!state.attachments.length&&!state.preparing;
     for(const attachment of state.attachments){const card=imageCard(attachment),remove=document.createElement('button');remove.type='button';remove.dataset.aiRemoveImage=attachment.id;remove.textContent='Remove';remove.setAttribute('aria-label','Remove '+attachment.name);remove.disabled=Boolean(request?.kind===kind||state.preparing);remove.addEventListener('click',()=>{state.attachments=state.attachments.filter(a=>a.id!==attachment.id);clearError(kind);update(kind)});card.append(remove);strip.append(card)}
     if(state.preparing){const status=document.createElement('span');status.className='ti-ai-image-loading';status.textContent='Preparing pictures…';status.setAttribute('role','status');strip.append(status)}
     const count=state.references.length;text(panel.querySelector('[data-ai-image-hint]'),count?count+' reference image'+(count===1?'':'s')+' in this chat · '+(images.limits.count-count)+' more available':'PNG, JPG or WebP · up to 3 per chat · 12 MB each');
@@ -69,21 +69,31 @@
     panel.querySelector('[data-ai-review]').disabled=Boolean(busy);
     panel.querySelector('[data-ai-messages]').setAttribute('aria-busy',String(Boolean(busy)));
     if(!panel.hidden)resizeInput(panel);
-    panel.querySelector('[data-ai-send]').disabled=Boolean(busy||state.preparing||(!panel.querySelector('textarea').value.trim()&&!state.attachments.length));
+    const remaining=quotaRemaining();
+    panel.querySelector('[data-ai-send]').disabled=Boolean(busy||state.preparing||remaining||(!panel.querySelector('textarea').value.trim()&&!state.attachments.length));
+    text(panel.querySelector('[data-ai-send]'),remaining?'Retry in '+retryLabel(remaining):'Send');
     panel.querySelector('[data-ai-attach]').disabled=Boolean(busy||state.preparing||state.references.length+state.attachments.length>=images.limits.count);
     panel.querySelector('[data-ai-file]').disabled=Boolean(busy||state.preparing);
     panel.querySelector('textarea').disabled=Boolean(busy);
     panel.querySelector('[data-ai-cancel]').hidden=!busy;
     panel.querySelector('[data-ai-proposal]').hidden=!proposed;
     panel.querySelector('[data-ai-undo]').disabled=!entry||entry.scope!==workspace.scope()||entry.after.id!==workspace.current(kind)?.id||Boolean(preview)||Boolean(request);
-    text(panel.querySelector('[data-ai-state]'),busy?'Reading your request and preparing a proposal…':state.preparing?'Preparing pictures…':proposed?'Unsaved proposal · review the Live Model or document':'Changes need your approval');
+    text(panel.querySelector('[data-ai-state]'),busy?'Reading your request and preparing a proposal…':state.preparing?'Preparing pictures…':remaining?'Request limit · you can retry in '+retryLabel(remaining):proposed?'Unsaved proposal · review the Live Model or document':'Changes need your approval');
     if(proposed)text(panel.querySelector('[data-ai-summary]'),(preview.isNew?'Create':'Edit')+' '+label[kind]+': '+preview.draft.name+' · '+preview.operations+' proposed change'+(preview.operations===1?'':'s'));
     text(panel.querySelector('[data-ai-context]'),label[kind]+' · '+(workspace.current(kind)?.name||'New instrument'));
   }
-  function error(kind,message){const panel=panels.get(kind);if(panel){text(panel.querySelector('[data-ai-error]'),message);panel.querySelector('[data-ai-error]').hidden=false}}
-  function clearError(kind){const panel=panels.get(kind);if(panel)panel.querySelector('[data-ai-error]').hidden=true}
+  function quotaRemaining(){return quota?.user===workspace.userId()?Math.max(0,Math.ceil((quota.until-Date.now())/1000)):0}
+  function retryLabel(seconds){return seconds>=3600?Math.ceil(seconds/3600)+'h':seconds>=60?Math.ceil(seconds/60)+'m':seconds+'s'}
+  function clearQuota(){quota=null;if(retryTimer){clearInterval(retryTimer);retryTimer=null}}
+  function holdQuota(seconds){
+    clearQuota();quota={user:workspace.userId(),until:Date.now()+Math.min(86400,Math.ceil(seconds))*1000};
+    retryTimer=setInterval(()=>{if(!quotaRemaining()){clearQuota();for(const [kind,panel]of panels)if(panel.querySelector('[data-ai-error]').dataset.errorCode==='usage_limit')clearError(kind)}for(const kind of panels.keys())update(kind)},1000);
+    return new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:seconds>60?'short':'medium'}).format(new Date(quota.until));
+  }
+  function error(kind,message,code=''){const panel=panels.get(kind);if(panel){const target=panel.querySelector('[data-ai-error]');text(target,message);target.dataset.errorCode=code;target.hidden=false}}
+  function clearError(kind){const panel=panels.get(kind);if(panel){const target=panel.querySelector('[data-ai-error]');target.hidden=true;delete target.dataset.errorCode}}
   async function send(kind){
-    if(request)return;const panel=panels.get(kind),input=panel.querySelector('textarea'),message=input.value.trim(),state=session(kind),added=state.attachments.slice();if(state.preparing||(!message&&!added.length))return;
+    if(request||quotaRemaining())return;const panel=panels.get(kind),input=panel.querySelector('textarea'),message=input.value.trim(),state=session(kind),added=state.attachments.slice();if(state.preparing||(!message&&!added.length))return;
     clearError(kind);
     const identity=workspace.identity(kind),scope=workspace.scope(),epoch=state.epoch,controller=new AbortController(),run={kind,identity,controller};request=run;update(kind);
     let errorKind=kind,moved=false;
@@ -97,7 +107,7 @@
       const response=await fetch('/api/tios-ai-builder',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+auth},body:JSON.stringify({message,history,...(references.length?{images:references}:{}),context:{kind,name:working.name,description:working.description||'',blocks:documents.summarize(working.documentHtml),unapprovedNewInstrument:Boolean(inheritedCreate)}}),signal:controller.signal});
       let result;try{result=await response.json()}catch{throw Error('The AI service is unavailable. Try again later; your instrument was not changed.')}
       if(request!==run||identity!==workspace.identity(kind))return;
-      if(!response.ok)throw Error(result.error?.message||'The AI service could not prepare the instrument.');
+      if(!response.ok){const failure=Error(result.error?.message||'The AI service could not prepare the instrument.');failure.code=result.error?.code;const retryAfter=Number(result.error?.retryAfter||response.headers.get('Retry-After'));if(failure.code==='usage_limit'&&Number.isFinite(retryAfter)&&retryAfter>0)failure.message+=' Try again at '+holdQuota(retryAfter)+'. Your pictures and draft are kept.';throw failure}
       const answer={message:result.message,questions:result.questions,proposal:result.proposal};
       if(contract.validateResponse(answer).length)throw Error('The AI response failed validation. No changes were saved.');
       if(!workspace.unchanged(snapshot,{preview:isPreview(kind)}))throw Error('Your instrument changed while AI was responding. Ask again using the current version.');
@@ -116,7 +126,7 @@
         workspace.display(targetKind,draft,true);renderHistory(targetKind);update(targetKind);
       }
       text(panel.querySelector('[data-ai-service]'),'AI connected');
-    }catch(failure){if(failure.name!=='AbortError'&&scope===workspace.scope()&&(request===run||moved)){error(errorKind,failure.message);const current=session(errorKind);current.draft=message||(current.references.length?'Build from these reference images.':'');panels.get(errorKind).querySelector('textarea').value=current.draft}}
+    }catch(failure){if(failure.name!=='AbortError'&&scope===workspace.scope()&&(request===run||moved)){error(errorKind,failure.message,failure.code);const current=session(errorKind);current.draft=message||(current.references.length?'Build from these reference images.':'');panels.get(errorKind).querySelector('textarea').value=current.draft}}
     finally{if(request===run)request=null;update(kind)}
   }
   function apply(kind){
@@ -182,7 +192,7 @@
     renderHistory(kind);update(kind);
   }
   function refresh(){
-    const next=workspace.userId();if(next!==user){abort();preview=null;cache.clear();undoEntries.length=0;user=next;for(const [kind,panel]of panels){setMode(kind,'manual');panel.querySelector('textarea').value='';workspace.release(kind);clearError(kind);renderHistory(kind)}}
+    const next=workspace.userId();if(next!==user){clearQuota();abort();preview=null;cache.clear();undoEntries.length=0;user=next;for(const [kind,panel]of panels){setMode(kind,'manual');panel.querySelector('textarea').value='';workspace.release(kind);clearError(kind);renderHistory(kind)}}
     if(request&&request.identity!==workspace.identity(request.kind))abort();
     if(preview&&!workspace.sameContext(preview.snapshot)){const kind=preview.snapshot.kind;preview=null;workspace.release(kind)}
     for(const kind of ['playbook','checklist','psych']){ensure(kind);update(kind)}

@@ -24,6 +24,7 @@ module.exports=async function handler(req,res){
     res.status(200).json(await service.generate(input,config));
   }catch(error){
     if(error.retryAfter)res.setHeader('Retry-After',String(error.retryAfter));
-    res.status(error instanceof service.ServiceError?error.status:500).json({error:{code:error instanceof service.ServiceError?error.code:'unexpected_failure',message:error instanceof service.ServiceError?error.message:'The AI request failed. No instrument changes were saved.'}});
+    const retry=error instanceof service.ServiceError&&error.code==='usage_limit'&&error.retryAfter?{retryAfter:error.retryAfter,resetAt:new Date(Date.now()+error.retryAfter*1000).toISOString()}:{};
+    res.status(error instanceof service.ServiceError?error.status:500).json({error:{code:error instanceof service.ServiceError?error.code:'unexpected_failure',message:error instanceof service.ServiceError?error.message:'The AI request failed. No instrument changes were saved.',...retry}});
   }
 };

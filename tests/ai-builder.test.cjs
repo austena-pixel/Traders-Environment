@@ -34,6 +34,7 @@ test('authentication rejects missing, expired and anonymous sessions',async()=>{
 });
 test('durable quota failure stops generation and exposes no secret',async()=>{
   await assert.rejects(service.reserve('qa',config,async()=>response([{allowed:false,retry_after:42}])),e=>e.status===429&&e.retryAfter===42);
+  await assert.rejects(service.reserve('qa',config,async()=>response([{allowed:false,retry_after:7200}])),e=>e.status===429&&e.retryAfter===7200&&/daily/.test(e.message));
   await assert.rejects(service.reserve('qa',config,async()=>response({},500)),e=>e.status===503);
 });
 test('gateway request is structured, bounded and server-side; no fallback simulation',async()=>{
@@ -94,5 +95,9 @@ test('API accepts image bodies above the old text-only bound and rejects oversiz
     assert.ok(Buffer.byteLength(raw)>96000);const result=res();await handler({method:'POST',headers:{host:'app.example','content-type':'application/json',authorization:'Bearer qa-user'},body:raw},result);assert.equal(result.statusCode,200);assert.equal(generated,1);
     const oversized=res();await handler({method:'POST',headers:{host:'app.example','content-type':'application/json',authorization:'Bearer qa-user'},body:'x'.repeat(service.maxRequestBytes+1)},oversized);assert.equal(oversized.statusCode,413);assert.equal(generated,1);
   }finally{global.fetch=original}
+});
+test('quota response supplies the real retry delay and reset time without calling the paid model',async()=>{
+  const original=global.fetch;let generated=0;global.fetch=async url=>{if(url.endsWith('/auth/v1/user'))return response({id:'qa-user'});if(url.includes('/rpc/'))return response([{allowed:false,retry_after:7200}]);generated++;throw Error('A blocked request must not reach the model')};
+  try{const before=Date.now(),result=res();await handler({method:'POST',headers:{host:'app.example','content-type':'application/json',authorization:'Bearer qa-user'},body:{...request,images:[picture()]}},result);assert.equal(result.statusCode,429);assert.equal(result.headers['Retry-After'],'7200');assert.equal(result.body.error.code,'usage_limit');assert.match(result.body.error.message,/daily/);assert.equal(result.body.error.retryAfter,7200);const reset=Date.parse(result.body.error.resetAt);assert.ok(reset>=before+7200000&&reset<=Date.now()+7200000);assert.equal(generated,0)}finally{global.fetch=original}
 });
 module.exports={node,operation};
