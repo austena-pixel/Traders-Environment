@@ -50,7 +50,7 @@ async function run(){
   await page.addInitScript(({owner,firstTrade})=>{
     const stored=localStorage.getItem('reflection-browser-backend');
     const backend=window.__reflectionBackend=stored?JSON.parse(stored):{reviews:[{id:'legacy-review',user_id:owner,trade_id:firstTrade,notes:'Keep historical notes'}],checks:[{id:'legacy-check',user_id:owner,review_id:'legacy-review',criterion_key:'check__old',criterion_label:'Original condition',complied:true,comment:'Keep historical comment',sort_order:1}],writes:[]};
-    window.__reflectionFailSave=false;window.__reflectionHoldSave=false;
+    window.__reflectionFailSave=false;window.__reflectionHoldSave=false;window.__reflectionUnverifiedSave=false;
     const persist=()=>localStorage.setItem('reflection-browser-backend',JSON.stringify(backend));
     window.supabase={createClient:()=>({auth:{getSession:()=>new Promise(()=>{})},from:table=>{
       let op='read',payload=null,conflict=null,one=false;const filters=[];
@@ -69,12 +69,12 @@ async function run(){
             if(rows.some(row=>row.trade_id===payload.trade_id))return {data:null,error:{code:'23505'}};
             const row={...payload,id:'review-'+backend.writes.length};rows.push(row);persist();return {data:{...row},error:null};
           }
-          if(conflict!=='review_id,criterion_key'||!payload.every(row=>row.criterion_key.startsWith('text__ti__')&&row.user_id===owner))throw new Error('Unexpected reflection payload');
+          if(conflict!=='review_id,criterion_key'||!payload.every(row=>(row.criterion_key.startsWith('text__ti__')||row.criterion_key.startsWith('text__ti_state__'))&&row.user_id===owner))throw new Error('Unexpected reflection payload');
           const result=payload.map(row=>{
             const existing=rows.find(saved=>saved.review_id===row.review_id&&saved.criterion_key===row.criterion_key);
             if(existing){Object.assign(existing,row);return {...existing}}
             const saved={...row,id:'response-'+rows.length};rows.push(saved);return {...saved};
-          });persist();return {data:result,error:null};
+          });persist();return {data:window.__reflectionUnverifiedSave?result.slice(1):result,error:null};
         })().then(resolve,reject)
       };return query;
     }})};persist();
@@ -351,10 +351,13 @@ async function run(){
     for(const [slot,color] of [['background','#e7efff'],['border','#1265c9'],['text','#14253f'],['accent','#805ac2']]){
       await active(kind).locator('['+config[kind].ribbon+'-style-color="'+slot+'"]').evaluate((el,value)=>{el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}))},color);
     }
-    const liveBoxes=model(kind).locator('[data-ti-response-type="score"]');
-    assert.equal(await liveBoxes.first().evaluate(el=>getComputedStyle(el).borderTopWidth),'2px');
-    assert.equal(await liveBoxes.first().evaluate(el=>getComputedStyle(el).borderTopColor),'rgb(18, 101, 201)');
-    assert.equal(await liveBoxes.first().evaluate(el=>getComputedStyle(el).textAlign),'center');
+    // Autosave can replace the Live Model between locator resolution and
+    // evaluate. Read the current node and its styles in one browser task.
+    await page.waitForFunction(({pageSelector,modelSelector})=>{
+      const el=document.querySelector(pageSelector)?.querySelector(modelSelector)?.querySelector('[data-ti-response-type="score"]');
+      if(!el)return false;const style=getComputedStyle(el);
+      return style.borderTopWidth==='2px'&&style.borderTopColor==='rgb(18, 101, 201)'&&style.textAlign==='center';
+    },{pageSelector:config[kind].page,modelSelector:config[kind].model});
     await snapshot(kind+'-score-builder');await mapped(kind);
     scoreDocuments[kind]=await page.evaluate(()=>executionMappingReflectionContext.documentId);
     assert.equal(await responses().count(),3);assert.equal(await responses().first().getAttribute('type'),'number');
@@ -394,6 +397,7 @@ async function run(){
     assert.equal(await page.locator('#executionMapConditionScore').textContent(),'Conditions: 100.0% · 1 of 1 met.');
     await page.locator('#executionMapFormBody input[type="checkbox"]').uncheck();assert.equal(await page.locator('#executionMapScore').textContent(),'58.3%');
     assert.equal(await page.locator('#executionMapConditionScore').textContent(),'Conditions: 0.0% · 0 of 1 met.');
+    assert.ok((await page.locator('#executionMapReflectionSaveState').textContent()).includes('Unsaved'));await save();
     assert.ok((await page.locator('#executionMapReflectionSaveState').textContent()).includes('Scores saved for this trade'));
     pass(kind+' Score layouts, alignment, spacing, borders, presets and custom colors map immediately; 10, fractional and zero ratings save independently of condition percentages');
 
@@ -528,6 +532,122 @@ async function run(){
   await choices.last().check();assert.deepEqual(await choices.evaluateAll(nodes=>nodes.map(node=>node.checked)),[false,true]);assert.equal(await page.locator('#executionMapScore').textContent(),'93.3%');
   await snapshot('scores-with-exclusive-choice');
   pass('Either / Or remains exclusive and keeps its compliance percentage separate from the 28/30 Score total');
+
+  // Exercise real generated forms, not only written reflection fields. Rules
+  // and choice-based reflections previously had no Save button or trade restore.
+  const form=()=>page.locator('#executionMapFormBody');
+  const ticks=()=>form().locator('input[type="checkbox"]');
+  const alternatives=()=>form().locator('input[type="radio"]');
+  const comments=()=>form().locator('input[type="text"]');
+  const currentAnswers=()=>form().locator('input[type="checkbox"],input[type="radio"],input[type="text"]').evaluateAll(nodes=>nodes.map(node=>['checkbox','radio'].includes(node.type)?node.checked:node.value));
+  const emptyAnswers=[false,'',false,false,''];
+  const formHtml='<p data-playbook-node="rule">Wait for confirmation.</p><div data-playbook-node="choice" class="pb-doc-choice"><div class="pb-doc-choice-options"><div class="pb-doc-choice-option"><span data-choice-option>Balance</span></div><div class="pb-doc-choice-option"><span data-choice-option>Imbalance</span></div></div></div>';
+  for(const kind of Object.keys(config)){
+    await open(kind);await put(kind,formHtml);await mapped(kind);
+    await page.locator('#executionMapTradeSelect').selectOption(firstTrade);
+    assert.equal(await responses().count(),0);assert.equal(await ticks().count(),1);assert.equal(await alternatives().count(),2);assert.equal(await comments().count(),2);
+    assert.equal(await saveResponses().isVisible(),true);
+    assert.equal(await saveResponses().textContent(),'Save '+({playbook:'execution',checklist:'rules',psych:'reflections'}[kind]));
+    assert.deepEqual(await currentAnswers(),emptyAnswers);
+    await ticks().check();await alternatives().first().check();await comments().first().fill(kind+' trade one comment');
+    const firstAnswers=await currentAnswers();await save();
+    assert.ok((await page.locator('#executionMapReflectionSaveState').textContent()).includes('saved for this trade'));
+    assert.equal(await page.locator('#executionMapScore').textContent(),'100.0%');
+    await page.locator('#executionMapTradeSelect').selectOption(secondTrade);assert.deepEqual(await currentAnswers(),emptyAnswers);
+    assert.equal(await page.locator('#executionMapScore').textContent(),'0.0%');
+    await alternatives().last().check();await comments().last().fill(kind+' trade two comment');const secondAnswers=await currentAnswers();await save();
+    await page.locator('#executionMapTradeSelect').selectOption(firstTrade);assert.deepEqual(await currentAnswers(),firstAnswers);
+    await page.locator('#executionMapTradeSelect').selectOption(secondTrade);assert.deepEqual(await currentAnswers(),secondAnswers);
+    pass(kind+' condition-only forms expose Save and keep checks, exclusive choices, comments and live scores separate for each trade');
+
+    await page.reload({waitUntil:'load'});await hydrate();await page.evaluate(kind=>{executionMappingActiveInstrument=kind;navigate('execution')},kind);
+    await page.locator('#executionMapTradeSelect').selectOption(firstTrade);assert.deepEqual(await currentAnswers(),firstAnswers);
+    await page.locator('#executionMapTradeSelect').selectOption(secondTrade);assert.deepEqual(await currentAnswers(),secondAnswers);
+    pass(kind+' saved form responses on both trades survive a full reload');
+
+    await alternatives().last().click();assert.deepEqual(await alternatives().evaluateAll(nodes=>nodes.map(node=>node.checked)),[false,false]);await save();
+    await page.locator('#executionMapTradeSelect').selectOption(firstTrade);await page.locator('#executionMapTradeSelect').selectOption(secondTrade);
+    assert.deepEqual(await alternatives().evaluateAll(nodes=>nodes.map(node=>node.checked)),[false,false]);
+    pass(kind+' deselecting Either / Or is saved and does not reappear when returning to the trade');
+
+    await comments().first().fill('Unsaved '+kind+' draft');await page.locator('#executionMapTradeSelect').selectOption(firstTrade);
+    assert.deepEqual(await currentAnswers(),firstAnswers);await page.locator('#executionMapTradeSelect').selectOption(secondTrade);
+    assert.equal(await comments().first().inputValue(),'Unsaved '+kind+' draft');
+    await page.evaluate(()=>window.__reflectionFailSave=true);await save();
+    assert.ok((await page.locator('#executionMapReflectionSaveState').textContent()).includes('not saved'));
+    assert.equal(await comments().first().inputValue(),'Unsaved '+kind+' draft');
+    await page.evaluate(()=>window.__reflectionFailSave=false);await save();
+    pass(kind+' unsaved form drafts stay with their trade and survive a failed save for retry');
+
+    await comments().first().fill('Snapshot '+kind);await page.evaluate(()=>{window.__reflectionHoldSave=true;window.__reflectionReleaseSave=null});await saveResponses().click();
+    await page.waitForFunction(()=>typeof window.__reflectionReleaseSave==='function');
+    await comments().first().fill('Edited while saving '+kind);await page.locator('#executionMapTradeSelect').selectOption(firstTrade);
+    assert.deepEqual(await currentAnswers(),firstAnswers);
+    await page.evaluate(()=>{window.__reflectionHoldSave=false;window.__reflectionReleaseSave()});await page.waitForFunction(()=>!executionMappingReflectionSaving);
+    assert.deepEqual(await currentAnswers(),firstAnswers);await page.locator('#executionMapTradeSelect').selectOption(secondTrade);
+    assert.equal(await comments().first().inputValue(),'Edited while saving '+kind);
+    assert.ok((await page.locator('#executionMapReflectionSaveState').textContent()).includes('Unsaved'));await save();
+    pass(kind+' switching trades and editing during a pending save preserves the newer draft without changing the other trade');
+
+    const beforeReset=await state();await page.locator('#executionMapResetBtn').click();assert.deepEqual(await currentAnswers(),emptyAnswers);assert.deepEqual(await state(),beforeReset);
+    await page.reload({waitUntil:'load'});await hydrate();await page.evaluate(kind=>{executionMappingActiveInstrument=kind;navigate('execution')},kind);await page.locator('#executionMapTradeSelect').selectOption(secondTrade);
+    assert.equal(await comments().first().inputValue(),'Edited while saving '+kind);
+    await page.locator('#executionMapResetBtn').click();await save();
+    await page.reload({waitUntil:'load'});await hydrate();await page.evaluate(kind=>{executionMappingActiveInstrument=kind;navigate('execution')},kind);await page.locator('#executionMapTradeSelect').selectOption(secondTrade);
+    assert.deepEqual(await currentAnswers(),emptyAnswers);await page.locator('#executionMapTradeSelect').selectOption(firstTrade);assert.deepEqual(await currentAnswers(),firstAnswers);
+    pass(kind+' Reset changes only the draft until Save; a saved reset clears that trade and preserves the other');
+  }
+
+  await comments().first().fill('Needs verification');await page.evaluate(()=>window.__reflectionUnverifiedSave=true);await save();
+  assert.ok((await page.locator('#executionMapReflectionSaveState').textContent()).includes('could not be verified'));assert.equal(await comments().first().inputValue(),'Needs verification');
+  await page.evaluate(()=>window.__reflectionUnverifiedSave=false);await save();
+  assert.ok((await page.locator('#executionMapReflectionSaveState').textContent()).includes('saved for this trade'));
+  pass('A partial database response does not report success or discard answers; retry verifies the complete save');
+
+  const beforeOwnerChange=await state();
+  await page.evaluate(()=>{currentUser={id:'another-user'};renderExecutionMappingForm()});assert.deepEqual(await currentAnswers(),[]);
+  await hydrate();await page.evaluate(()=>renderExecutionMappingForm());assert.equal(await comments().first().inputValue(),'Needs verification');
+  await page.evaluate(()=>{tradingAccount={id:'another-account'};trades=[];renderExecutionMappingControls();renderExecutionMappingForm()});
+  assert.equal(await saveResponses().isDisabled(),true);assert.deepEqual(await currentAnswers(),[]);
+  await hydrate();await page.evaluate(()=>{renderExecutionMappingControls();renderExecutionMappingForm()});assert.equal(await comments().first().inputValue(),'Needs verification');
+  assert.deepEqual(await state(),beforeOwnerChange);
+  pass('Another owner or an account without the selected trade cannot restore or save that trade’s answers');
+
+  await page.locator('#executionBackToInstrumentsBtn').click();await open('psych');await put('psych',formHtml.replace('Wait for confirmation.','Use the revised rule.'));await mapped('psych');
+  assert.deepEqual(await currentAnswers(),emptyAnswers);assert.deepEqual(await state(),beforeOwnerChange);
+  pass('Changing the form definition does not silently assign old answers to revised rules, and historical saved data stays intact');
+
+  await open('psych');
+  await editor('psych').evaluate(async el=>{
+    const canvas=document.createElement('canvas');canvas.width=8;canvas.height=8;const ctx=canvas.getContext('2d');ctx.fillStyle='#245b8f';ctx.fillRect(0,0,8,8);
+    await savePlaybookMediaRecord({key:'reflection-save-picture',dataUrl:canvas.toDataURL('image/png'),name:'Representative pattern'});
+    const patterns=[{id:'first-picture',label:'First pattern',imageKey:'reflection-save-picture'},{id:'second-picture',label:'Second pattern',imageKey:'reflection-save-picture'}];
+    el.innerHTML=instrumentImageFieldHtml({id:'saved-pattern-choice',label:'Choose a pattern',stage:'other',selection:'choice',patterns},true,{kind:'psych'})+instrumentImageFieldHtml({id:'saved-pattern-checks',label:'Independent patterns',stage:'other',selection:'check',patterns},true,{kind:'psych'});
+    el.dispatchEvent(new Event('input',{bubbles:true}));
+  });await mapped('psych');await page.locator('#executionMapTradeSelect').selectOption(firstTrade);
+  await form().locator('[data-ti-picture-view]').first().waitFor();await alternatives().first().check();await ticks().last().check();const firstPictures=await currentAnswers();await save();
+  const beforeView=await state();await form().locator('[data-ti-picture-view]').first().click();assert.equal(await page.locator('#playbookImageViewer').getAttribute('aria-hidden'),'false');
+  await page.keyboard.press('Escape');assert.deepEqual(await currentAnswers(),firstPictures);assert.deepEqual(await state(),beforeView);
+  assert.ok((await page.locator('#executionMapReflectionSaveState').textContent()).includes('saved for this trade'));
+  await page.locator('#executionMapTradeSelect').selectOption(secondTrade);assert.deepEqual(await currentAnswers(),[false,false,false,false]);await alternatives().last().check();await ticks().first().check();const secondPictures=await currentAnswers();await save();
+  await page.reload({waitUntil:'load'});await hydrate();await page.evaluate(()=>{executionMappingActiveInstrument='psych';navigate('execution')});
+  await form().locator('[data-ti-picture-view]').first().waitFor();await page.locator('#executionMapTradeSelect').selectOption(firstTrade);assert.deepEqual(await currentAnswers(),firstPictures);
+  await page.locator('#executionMapTradeSelect').selectOption(secondTrade);assert.deepEqual(await currentAnswers(),secondPictures);
+  pass('Picture choices and independent picture checks save separately per trade, survive image hydration and reload, and View picture never changes or saves an answer');
+  const afterForms=await state();assert.equal(afterForms.reviews.find(row=>row.id==='legacy-review').notes,'Keep historical notes');
+  assert.equal(afterForms.checks.find(row=>row.id==='legacy-check').comment,'Keep historical comment');assert.equal(await page.evaluate(()=>trades[0].execution_score),7);
+  await page.evaluate(()=>navigate('journal'));await journalButton(firstTrade).click();
+  assert.ok(!(await journalBody().textContent()).includes('tios.execution-form'));assert.equal(await journalBody().locator('textarea,input').count(),0);
+  assert.ok((await journalBody().locator('dd').allTextContents()).includes('First pattern'));assert.ok((await journalBody().locator('dd').allTextContents()).includes('Selected'));
+  assert.ok(!(await journalBody().textContent()).includes('checklist trade one comment'));
+  assert.ok((await journalButton(firstTrade).getAttribute('class')).includes('has-reflections'));
+  const viewedFirst=await journalBody().locator('dd').allTextContents();const beforeReading=await state();
+  await page.locator('#journalReflectionClose').click();await journalButton(secondTrade).click();
+  assert.ok((await journalBody().locator('dd').allTextContents()).includes('Second pattern'));
+  assert.notDeepEqual(await journalBody().locator('dd').allTextContents(),viewedFirst);assert.deepEqual(await state(),beforeReading);
+  assert.deepEqual(await page.evaluate(()=>[null,'{}','{"schema":"tios.execution-form.v1","kind":"psych","documentId":"bad","definition":"not json","controls":[]}',JSON.stringify({schema:'tios.execution-form.v1',kind:'psych',documentId:String.fromCharCode(0xd800),definition:'[]',controls:[]})].map(comment=>journalSavedFormReflectionEntries({criterion_key:'text__ti_state__psych__bad',comment}))),[[],[],[],[]]);
+  pass('Journal shows each trade’s saved psychological checks and picture choices in readable text, hides Rules and storage JSON, rejects malformed state and never writes while viewing');
+  pass('New form saves preserve historical notes, condition rows and trade scores');
   assert.deepEqual(errors,[]);pass('No browser console or JavaScript runtime errors');
   console.log(checks+' reflection browser scenarios passed');
  }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve))}

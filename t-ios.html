@@ -7197,7 +7197,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           </div>
 
           <div class="execution-map-footer">
-            <span id="executionMapReflectionSaveState" role="status">Mapping test only — these responses are not saved yet.</span>
+            <span id="executionMapReflectionSaveState" role="status">Select a trade and save your responses.</span>
             <div class="execution-map-footer-actions">
               <button class="btn primary" type="button" id="executionMapSaveReflectionsBtn" hidden>Save reflections</button>
               <button class="btn" type="button" id="executionMapResetBtn">Reset Inputs</button>
@@ -9793,6 +9793,24 @@ function journalDayHeaderHtml(group){
   return `<tr class="journal-day-divider"><td colspan="10"><div class="journal-day-divider-inner"><div class="journal-day-title"><strong>${escapeHtml(dateLabel)}</strong><span>${total} trade${total===1?'':'s'}</span></div><div class="journal-day-execution">${executionSummary}<span class="journal-day-stat coverage">Reviewed ${reviewed}/${total} · ${coverage.toFixed(0)}%</span></div></div></td></tr>`;
 }
 
+function journalSavedFormReflectionEntries(row){
+  let saved,definition,documentKey;
+  try{saved=JSON.parse(row.comment);definition=JSON.parse(saved.definition);documentKey=encodeURIComponent(saved.documentId)}catch(error){return []}
+  if(saved.schema!=='tios.execution-form.v1'||saved.kind!=='psych'||typeof saved.documentId!=='string'||row.criterion_key!=='text__ti_state__psych__'+documentKey||!Array.isArray(definition)||!Array.isArray(saved.controls)||definition.length!==saved.controls.length)return [];
+  if(definition.some((field,index)=>!field||!['checkbox','radio','text','textarea'].includes(field.type)||!saved.controls[index]||(['checkbox','radio'].includes(field.type)?typeof saved.controls[index].checked!=='boolean':typeof saved.controls[index].value!=='string')))return [];
+  const seenChoices=new Set(),group='psych:'+documentKey;
+  return definition.flatMap((field,index)=>{
+    const control=saved.controls[index];let label=field.label||'Reflection',answer='';
+    if(field.type==='checkbox')answer=control.checked?'Selected':'Not selected';
+    else if(field.type==='radio'){
+      const name=field.name||String(index);if(seenChoices.has(name))return [];seenChoices.add(name);
+      const selected=definition.find((option,optionIndex)=>option.type==='radio'&&(option.name||String(optionIndex))===name&&saved.controls[optionIndex].checked);
+      label=field.groupLabel||'Choice';answer=selected?(selected.label||selected.option||'Selected'):'No option selected';
+    }else answer=control.value.trim();
+    return answer?[{group,documentId:saved.documentId,label,answer}]:[];
+  });
+}
+
 function journalReflectionEntries(tradeId){
   const owner=currentUser?.id;
   if(!owner||!trades.some(trade=>trade.id===tradeId))return [];
@@ -9803,6 +9821,7 @@ function journalReflectionEntries(tradeId){
     .sort((a,b)=>Number(a.sort_order||0)-Number(b.sort_order||0))
     .flatMap(row=>{
       const key=String(row.criterion_key||'');
+      if(key.startsWith('text__ti_state__'))return journalSavedFormReflectionEntries(row);
       if(!key.startsWith('text__ti__'))return [{group:'execution',label:row.criterion_label||'Reflection',answer:String(row.comment)}];
       const parts=key.split('__');
       if(parts.length<5||parts[2]!=='psych')return [];
@@ -10558,6 +10577,7 @@ function executionChecklistRowsForReview(reviewId){
 function executionReflectionStructureForReview(review){
   if(!review)return null;
   const rows=executionChecksForReview(review.id)
+    .filter(row=>!String(row.criterion_key||'').startsWith('text__ti_state__'))
     .slice()
     .sort((a,b)=>
       Number(a.sort_order||0)-Number(b.sort_order||0)||
@@ -11619,12 +11639,63 @@ function executionMappingReflectionKey(scope,promptId){
 }
 function executionMappingSavedReflection(scope,key){
   const review=executionReviews.find(item=>item.trade_id===scope.tradeId&&item.user_id===scope.userId);
-  return review?executionChecks.find(item=>item.review_id===review.id&&item.criterion_key===key):null;
+  return review?executionChecks.find(item=>item.review_id===review.id&&item.user_id===scope.userId&&item.criterion_key===key):null;
+}
+function executionMappingStateKey(scope){
+  // Form state is not a written reflection or a quantitative evidence row.
+  return 'text__ti_state__'+scope.kind+'__'+encodeURIComponent(scope.documentId);
+}
+function executionMappingStateFields(){
+  return $$('#executionMapFormBody input[type="checkbox"], #executionMapFormBody input[type="radio"], #executionMapFormBody input[type="text"], #executionMapFormBody textarea')
+    .filter(field=>!field.hasAttribute('data-execution-reflection-id'));
+}
+function executionMappingStateDefinition(fields){
+  return JSON.stringify(fields.map(field=>{
+    const condition=field.closest('[data-ti-condition-id]'),group=field.closest('[data-ti-ai-group]');
+    const label=field.closest('label');
+    return {
+      type:field.type,name:field.name,id:field.id,
+      label:field.getAttribute('aria-label')||field.closest('.execution-map-reflection')?.querySelector('label')?.textContent?.trim()||field.placeholder||label?.querySelector('span')?.textContent?.trim()||'',
+      groupLabel:field.closest('.execution-map-choice')?.querySelector('.execution-map-choice-head strong')?.textContent?.trim()||field.closest('.ti-image-field')?.querySelector('.ti-image-field-name')?.textContent?.trim()||'',
+      option:['checkbox','radio'].includes(field.type)?field.value:'',
+      pictures:label?[...label.querySelectorAll('[data-playbook-image-key]')].map(image=>image.dataset.playbookImageKey):[],
+      condition:condition?.dataset.tiConditionId||'',dependsOn:condition?.dataset.tiDependsOn||'',
+      logic:group?.dataset.tiLogic||'',groupDependsOn:group?.dataset.tiDependsOn||''
+    };
+  }));
+}
+function executionMappingStateValue(scope){
+  const fields=executionMappingStateFields();
+  if(!scope||!fields.length)return null;
+  return JSON.stringify({schema:'tios.execution-form.v1',kind:scope.kind,documentId:scope.documentId,
+    definition:executionMappingStateDefinition(fields),
+    controls:fields.map(field=>['checkbox','radio'].includes(field.type)?{checked:field.checked}:{value:field.value})
+  });
+}
+function restoreExecutionMappingState(scope,draft){
+  const fields=executionMappingStateFields();
+  const key=scope?executionMappingStateKey(scope):'';
+  const raw=scope?(draft?.get(key)??executionMappingSavedReflection(scope,key)?.comment):null;
+  let saved=null;
+  try{saved=JSON.parse(raw)}catch(error){}
+  const valid=Boolean(scope&&saved?.schema==='tios.execution-form.v1'&&saved.kind===scope.kind&&saved.documentId===scope.documentId&&saved.definition===executionMappingStateDefinition(fields)&&Array.isArray(saved.controls)&&saved.controls.length===fields.length);
+  fields.forEach((field,index)=>{
+    const answer=valid?saved.controls[index]:null;
+    if(['checkbox','radio'].includes(field.type))field.checked=answer?.checked===true;
+    else field.value=typeof answer?.value==='string'?answer.value:'';
+  });
+}
+function executionMappingSaveNoun(fields){
+  const scoreCount=fields.filter(field=>field.dataset.executionResponseType==='score').length;
+  if(fields.length)return scoreCount===fields.length?'scores':scoreCount?'responses':'reflections';
+  return executionMappingReflectionContext?.kind==='checklist'?'rules':executionMappingReflectionContext?.kind==='playbook'?'execution':'reflections';
 }
 function captureExecutionMappingReflectionDraft(){
   const scope=executionMappingReflectionContext;if(!scope)return;
   const answers=new Map();
   $$('#executionMapFormBody [data-execution-reflection-key]').forEach(field=>answers.set(field.dataset.executionReflectionKey,field.value));
+  const state=executionMappingStateValue(scope);
+  if(state!==null)answers.set(executionMappingStateKey(scope),state);
   if(answers.size)executionMappingReflectionDrafts.set(scope.key,answers);
 }
 function restoreExecutionMappingReflections(){
@@ -11639,46 +11710,51 @@ function restoreExecutionMappingReflections(){
     field.value=draft?.has(key)?draft.get(key):(field.dataset.executionResponseType==='score'?(score?String(score.value):''):saved);
     field.disabled=!scope?.tradeId;
   });
-  updateExecutionMappingReflectionState();
+  restoreExecutionMappingState(scope,draft);
   updateExecutionMappingScore();
+  updateExecutionMappingReflectionState();
 }
 function updateExecutionMappingReflectionState(){
   const scope=executionMappingReflectionContext,fields=$$('#executionMapFormBody [data-execution-reflection-id]');
   const button=$('#executionMapSaveReflectionsBtn'),status=$('#executionMapReflectionSaveState');
   if(!button||!status)return;
-  button.hidden=!fields.length;
+  const state=executionMappingStateValue(scope),stateKey=scope?executionMappingStateKey(scope):'';
+  const savedState=scope?executionMappingSavedReflection(scope,stateKey):null;
+  const hasFields=Boolean(fields.length||state!==null);
+  button.hidden=!hasFields;
   const scoreCount=fields.filter(field=>field.dataset.executionResponseType==='score').length;
-  const noun=scoreCount===fields.length&&scoreCount?'scores':scoreCount?'responses':'reflections';
+  const noun=executionMappingSaveNoun(fields);
   const title=noun[0].toUpperCase()+noun.slice(1);button.textContent='Save '+noun;
-  const dirty=Boolean(scope&&fields.some(field=>{
+  const dirty=Boolean(scope&&((state!==null&&state!==savedState?.comment)||fields.some(field=>{
     if(executionScoreFieldError(field))return true;
     const saved=executionMappingSavedReflection(scope,field.dataset.executionReflectionKey)?.comment||'';
     const score=field.dataset.executionResponseType==='score'?executionScoreResponseFromComment(saved):null;
     const stored=field.dataset.executionResponseType==='score'?(score?JSON.stringify({type:'score',value:score.value,max:score.max}):''):saved.trim();
     return (executionResponseComment(field)||'')!==stored;
-  }));
-  const hasSaved=Boolean(scope&&fields.some(field=>executionMappingSavedReflection(scope,field.dataset.executionReflectionKey)));
-  button.disabled=executionMappingReflectionSaving||!scope?.userId||!scope?.tradeId||!fields.length||(!dirty&&!hasSaved);
-  if(!fields.length)status.textContent='Mapping test only — these responses are not saved yet.';
+  })));
+  const hasSaved=Boolean(savedState||scope&&fields.some(field=>executionMappingSavedReflection(scope,field.dataset.executionReflectionKey)));
+  button.disabled=executionMappingReflectionSaving||!scope?.userId||!scope?.tradeId||!hasFields||(!dirty&&!hasSaved);
+  if(!hasFields)status.textContent='This instrument has no responses to save.';
   else if(!scope?.tradeId)status.textContent='Select a trade to record your '+noun+'.';
   else if(executionMappingReflectionSaving)status.textContent='Saving '+noun+'…';
   else if(executionMappingReflectionError?.key===scope.key)status.textContent=executionMappingReflectionError.message;
-  else status.textContent=(dirty?'Unsaved '+noun+'.':hasSaved?title+' saved for this trade.':scoreCount?'Enter your '+noun+', then Save.':'Write your reflections, then Save.')+' Conditions remain a mapping preview.';
+  else status.textContent=(dirty?'Unsaved '+noun+'.':hasSaved?title+' saved for this trade.':scoreCount?'Enter your '+noun+', then Save.':'Complete your '+noun+', then Save.')+(state!==null?' Save includes conditions, choices and comments for the selected trade.':'');
 }
 async function saveExecutionMappingReflections(){
   if(executionMappingReflectionSaving)return;
   captureExecutionMappingReflectionDraft();
   const scope=executionMappingReflectionContext;
   const fields=$$('#executionMapFormBody [data-execution-reflection-id]');
-  if(!scope?.userId||scope.userId!==currentUser?.id||!scope.tradeId||!fields.length)return;
+  const state=executionMappingStateValue(scope);
+  if(!scope?.userId||scope.userId!==currentUser?.id||!scope.tradeId||!trades.some(trade=>trade.id===scope.tradeId)||(!fields.length&&state===null))return;
   const invalid=fields.find(field=>executionScoreFieldError(field));
   if(invalid){
     executionMappingReflectionError={key:scope.key,message:(invalid.dataset.executionReflectionLabel||'Score')+': '+executionScoreFieldError(invalid)};
     updateExecutionMappingReflectionState();invalid.focus();invalid.reportValidity();return;
   }
-  const scoreCount=fields.filter(field=>field.dataset.executionResponseType==='score').length;
-  const noun=scoreCount===fields.length?'Scores':scoreCount?'Responses':'Reflections';
+  const baseNoun=executionMappingSaveNoun(fields),noun=baseNoun[0].toUpperCase()+baseNoun.slice(1);
   const answers=fields.map(field=>({key:field.dataset.executionReflectionKey,label:field.dataset.executionReflectionLabel||'Reflection',value:field.value.trim(),comment:executionResponseComment(field)}));
+  if(state!==null)answers.push({key:executionMappingStateKey(scope),label:'Saved '+scope.kind+' form responses',value:state,comment:state});
   if(!answers.some(answer=>answer.value||executionMappingSavedReflection(scope,answer.key)))return;
   executionMappingReflectionSaving=true;executionMappingReflectionError=null;updateExecutionMappingReflectionState();
   try{
@@ -11703,7 +11779,7 @@ async function saveExecutionMappingReflections(){
     }));
     const saved=await db.from('trade_execution_checks').upsert(rows,{onConflict:'review_id,criterion_key'}).select();
     if(saved.error)throw saved.error;
-    if(!Array.isArray(saved.data)||saved.data.length!==rows.length)throw new Error('The response save could not be verified. Please retry.');
+    if(!Array.isArray(saved.data)||saved.data.length!==rows.length||rows.some(expected=>!saved.data.some(row=>row.review_id===expected.review_id&&row.user_id===scope.userId&&row.criterion_key===expected.criterion_key&&row.comment===expected.comment&&row.complied===expected.complied)))throw new Error('The response save could not be verified. Please retry.');
     if(currentUser?.id===scope.userId&&String(tradingAccount?.id||'')===String(scope.accountId)){
       if(!executionReviews.some(item=>item.id===review.id))executionReviews.unshift(review);
       const keys=new Set(rows.map(row=>row.criterion_key));
@@ -11771,7 +11847,7 @@ function updateExecutionMappingScore(){
   }
 
   score.textContent=conditionPct.toFixed(1)+'%';
-  meta.textContent=`${followed} of ${total} planned condition${total===1?'':'s'} met in this mapping test.`;
+  meta.textContent=`${followed} of ${total} planned condition${total===1?'':'s'} met for this trade.`;
 }
 
 function resetExecutionMappingInputs(){
@@ -11884,10 +11960,14 @@ function initExecutionMappingWorkspace(){
 
   $('#executionMapFormBody')?.addEventListener('change',event=>{
     if(event.target.matches('input[type="checkbox"], input[type="radio"], [data-execution-response-type="score"]'))updateExecutionMappingScore();
+    if(event.target.matches('input,textarea')){
+      executionMappingReflectionError=null;
+      captureExecutionMappingReflectionDraft();updateExecutionMappingReflectionState();
+    }
   });
 
   $('#executionMapFormBody')?.addEventListener('input',event=>{
-    if(!event.target.matches('[data-execution-reflection-id]'))return;
+    if(!event.target.matches('input,textarea'))return;
     executionMappingReflectionError=null;
     captureExecutionMappingReflectionDraft();updateExecutionMappingReflectionState();
     if(event.target.matches('[data-execution-response-type="score"]'))updateExecutionMappingScore();
