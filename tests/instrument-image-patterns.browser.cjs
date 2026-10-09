@@ -69,7 +69,7 @@ async function run(){
   let browser;
   try{
     browser=await chromium.launch({executablePath:process.env.TIOS_TEST_BROWSER||undefined,headless:true,args:['--no-sandbox','--no-zygote','--single-process','--disable-gpu','--disable-software-rasterizer']});
-    page=await browser.newPage({viewport:{width:1700,height:1150}});page.setDefaultTimeout(10000);
+    page=await browser.newPage({viewport:{width:1700,height:1150},hasTouch:true});page.setDefaultTimeout(10000);
     const errors=[];page.on('pageerror',error=>errors.push(error.message));page.on('console',message=>{if(message.type()==='error')errors.push(message.text())});
     await page.addInitScript(()=>{window.supabase={createClient:()=>({auth:{getSession:()=>new Promise(()=>{})}})}});
     await page.goto('http://127.0.0.1:'+server.address().port+'/t-ios.html',{waitUntil:'load'});
@@ -183,6 +183,9 @@ async function run(){
       }
       pass(kind+' unnamed representative pictures retain empty labels, stable IDs and images through save, reload and editing');
       pass(kind+' autosave, manual Save, document/builder switching and reload keep modes, identities and picture keys');
+      // Current reflection controls correctly require a selected trade.
+      // Seed an isolated trade; this test never invokes database persistence.
+      await page.evaluate(()=>{trades=[{id:'pattern-qa-trade',instrument:'QA market',direction:'Buy',trade_date:'2026-10-09',pnl:0}];executionMappingTradeId='pattern-qa-trade'});
       await active(kind).locator(kind==='playbook'?'#playbookPreviewOpenExecutionBtn':'[data-ti-action="preview"]').click();
       const mapped=page.locator('#executionMapFormBody [data-execution-instrument-section="'+kind+'"]');
       assert.equal(await page.locator('#executionMapFormBody [data-execution-instrument-section]').count(),1);
@@ -192,6 +195,43 @@ async function run(){
       await mapped.locator('.execution-psych-prompt textarea').fill('Review response.');await assertScore(0,8);
       await mappedChoice.locator('img').first().click();await assertScore(1,8);await mappedChoice.locator('img').last().click();await assertScore(1,8);
       assert.equal(await mappedChoice.locator('input[type="radio"]').first().isChecked(),false);assert.equal(await mappedChoice.locator('input[type="radio"]').last().isChecked(),true);
+      const choiceRadios=mappedChoice.locator('input[type="radio"]');
+      await choiceRadios.last().click();assert.equal(await mappedChoice.locator('input[type="radio"]:checked').count(),0);await assertScore(0,8);
+      await mappedChoice.locator('img').first().click();await mappedChoice.locator('img').first().click();
+      assert.deepEqual(await choiceRadios.evaluateAll(inputs=>inputs.map(input=>input.checked)),[false,false]);await assertScore(0,8);
+      await choiceRadios.first().focus();await page.keyboard.press('Space');await assertScore(1,8);
+      await page.keyboard.press('Space');assert.equal(await choiceRadios.first().isChecked(),false);await assertScore(0,8);
+      await choiceRadios.first().focus();await page.keyboard.press('ArrowRight');await assertScore(1,8);
+      assert.deepEqual(await choiceRadios.evaluateAll(inputs=>inputs.map(input=>input.checked)),[false,true]);
+      await page.keyboard.press('Space');await assertScore(0,8);
+      pass(kind+' picture Either / Or clears by radio, picture card and keyboard, keeps arrow navigation and updates scoring');
+      const views=mappedChoice.locator('[data-ti-picture-view]');await views.first().waitFor();
+      await views.first().click();assert.equal(await page.locator('#playbookImageViewer').getAttribute('aria-hidden'),'false');
+      assert.equal(await page.locator('#playbookImageViewerImg').getAttribute('src'),await mappedChoice.locator('img').first().getAttribute('src'));
+      assert.deepEqual(await choiceRadios.evaluateAll(inputs=>inputs.map(input=>input.checked)),[false,false]);await assertScore(0,8);
+      await page.keyboard.press('Tab');assert.equal(await page.locator('[data-playbook-image-viewer-close]').evaluate(el=>el===document.activeElement),true);
+      await page.keyboard.press('Escape');assert.equal(await views.first().evaluate(el=>el===document.activeElement),true);
+      await choiceRadios.last().click();await views.first().focus();await page.keyboard.press('Enter');await assertScore(1,8);
+      assert.deepEqual(await choiceRadios.evaluateAll(inputs=>inputs.map(input=>input.checked)),[false,true]);
+      assert.equal(await page.locator('#playbookImageViewerImg').getAttribute('alt'),patterns[0].label);
+      if(kind==='playbook')await screenshot('image-pattern-viewer');
+      await page.locator('[data-playbook-image-viewer-close]').click();
+      pass(kind+' View picture opens the matching image by mouse and keyboard, preserves empty or selected answers and restores focus');
+      if(kind==='playbook'){
+        await page.setViewportSize({width:390,height:844});
+        await page.evaluate(()=>{window.choicePointerTypes=[];document.querySelector('#executionMapFormBody').addEventListener('pointerdown',event=>window.choicePointerTypes.push(event.pointerType))});
+        await choiceRadios.last().tap();await assertScore(0,8);
+        await choiceRadios.last().tap();await assertScore(1,8);
+        await views.first().tap();assert.equal(await page.locator('#playbookImageViewer').getAttribute('aria-hidden'),'false');await assertScore(1,8);
+        assert.deepEqual(await choiceRadios.evaluateAll(inputs=>inputs.map(input=>input.checked)),[false,true]);
+        assert.equal(await page.evaluate(()=>window.choicePointerTypes.includes('touch')),true);
+        const bounds=await page.locator('#playbookImageViewerImg').boundingBox();assert.ok(bounds.width<=390&&bounds.height<=844);
+        const closeBounds=await page.locator('[data-playbook-image-viewer-close]').boundingBox();
+        assert.ok(closeBounds.x>=0&&closeBounds.y>=0&&closeBounds.x+closeBounds.width<=390&&closeBounds.y+closeBounds.height<=844,'The whole Close control stays inside the phone viewport');
+        await screenshot('image-pattern-viewer-mobile');await page.locator('[data-playbook-image-viewer-close]').tap();
+        await page.setViewportSize({width:1700,height:1150});
+        pass('Touch can clear and reselect an Either / Or picture, then open it without changing the answer on a narrow screen');
+      }
       const mappedChecks=mapped.locator('[data-ti-image-field-id="'+checkId+'"] input[type="checkbox"]');
       await mappedChecks.first().check();await assertScore(2,8);await mappedChecks.last().check();await assertScore(3,8);
       await mappedChecks.first().uncheck();await assertScore(2,8);await mappedChecks.first().check();await assertScore(3,8);

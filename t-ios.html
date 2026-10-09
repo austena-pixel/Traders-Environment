@@ -3476,7 +3476,7 @@ textarea{resize:vertical;min-height:90px}
 }
 .playbook-image-viewer-shell{
   position:relative;
-  width:min(1180px,96vw);
+  width:min(1180px,100%);
   max-height:92vh;
   display:grid;
   place-items:center;
@@ -4425,6 +4425,9 @@ label.ti-image-pattern{cursor:pointer}
 .ti-image-pattern-picture img:not([src]){display:none}
 .ti-image-pattern-picture-status{padding:10px;text-align:center;font-size:10px;color:#8fa4ba}
 .ti-image-pattern-picture-status[hidden]{display:none}
+.ti-picture-view-btn{display:block;align-self:flex-end;margin:6px 0 0 auto;min-height:32px;padding:5px 9px;border:1px solid #526a7d;border-radius:5px;background:#101923;color:#edf4fa;font:11px Arial,sans-serif;cursor:zoom-in}
+.ti-picture-view-btn:hover{background:#233547}
+.ti-picture-view-btn:focus-visible{outline:2px solid #6ac8bc;outline-offset:2px}
 .playbook-word-editor .ti-image-pattern{border-color:#bdcedb;background:#fff}
 .playbook-word-editor .ti-image-field-selection-note,.playbook-word-editor .ti-image-pattern-picture-status{color:#5a748b}
 .ti-image-pattern-design-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:12px 0 8px;font-size:12px}
@@ -11405,7 +11408,7 @@ function renderExecutionSecondaryItems(kind,doc){
       const key=(kind==='checklist'?'checklist':'psych')+'_choice_'+(++index);
       const layout=normalizePlaybookListLayout(item.layout);
       const styleAttrs=playbookStyleRenderAttributes(item.colors,item.style);
-      return `<div class="execution-map-choice" data-execution-${kind}-choice-group="${key}"><div class="execution-map-choice-head">${item.label?'<strong>'+escapeHtml(item.label)+'</strong>':''}<small>Choose one</small></div><div class="execution-map-choice-options" data-playbook-list-layout="${layout}"${styleAttrs}>${item.options.map((option,optionIndex)=>`<label><input type="radio" name="${key}" value="${escapeHtml(item.optionValues?.[optionIndex]||option)}" aria-label="${escapeHtml(option||'Picture option '+(optionIndex+1))}" data-execution-${kind}-choice><span>${item.optionHtml?.[optionIndex]||escapeHtml(option)}</span></label>`).join('')}</div><input class="execution-map-rule-comment" type="text" placeholder="Optional comment"></div>`;
+      return `<div class="execution-map-choice" data-execution-${kind}-choice-group="${key}"><div class="execution-map-choice-head">${item.label?'<strong>'+escapeHtml(item.label)+'</strong>':''}<small>Choose one · select again to clear</small></div><div class="execution-map-choice-options" data-playbook-list-layout="${layout}"${styleAttrs}>${item.options.map((option,optionIndex)=>`<label><input type="radio" name="${key}" value="${escapeHtml(item.optionValues?.[optionIndex]||option)}" aria-label="${escapeHtml(option||'Picture option '+(optionIndex+1))}" data-execution-${kind}-choice><span>${item.optionHtml?.[optionIndex]||escapeHtml(option)}</span></label>`).join('')}</div><input class="execution-map-rule-comment" type="text" placeholder="Optional comment"></div>`;
     }
     if(item.type==='table'){
       return `<div class="execution-map-table-block"><b>TABLE CONTEXT</b><div class="execution-map-table-scroll"><table class="execution-map-table">${item.rows.map((row,rowIndex)=>{const tag=item.hasHeader&&rowIndex===0?'th':'td';return '<tr>'+row.map(cell=>'<'+tag+'>'+escapeHtml(cell||'—')+'</'+tag+'>').join('')+'</tr>'}).join('')}</table></div></div>`;
@@ -11490,7 +11493,7 @@ function renderExecutionMappingForm(){
         <div class="execution-map-choice" data-execution-map-choice-group="${key}">
           <div class="execution-map-choice-head">
             ${item.label?'<strong>'+escapeHtml(item.label)+'</strong>':''}
-            <small>Choose one condition</small>
+            <small>Choose one condition · select again to clear</small>
           </div>
           <div class="execution-map-choice-options" data-playbook-list-layout="${layout}"${styleAttrs}>
             ${item.options.map((option,index)=>`
@@ -11789,6 +11792,41 @@ function viewExecutionInstrumentSection(kind){
 function initExecutionMappingWorkspace(){
   if(executionMappingInitialized)return;
   executionMappingInitialized=true;
+
+  const formBody=$('#executionMapFormBody');
+  let pressedChoice=null;
+  const rememberChoice=event=>{
+    const target=event.target;
+    const input=target.matches('input[type="radio"]')?target:target.closest('label')?.querySelector('input[type="radio"]');
+    pressedChoice=input&&!input.disabled&&input.checked?input:null;
+  };
+  const clearChoice=input=>{
+    input.checked=false;
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+    input.dispatchEvent(new Event('change',{bubbles:true}));
+  };
+  // Native radio activation happens before click. Remember its earlier state
+  // for direct clicks and label activation, including touch.
+  formBody?.addEventListener('pointerdown',rememberChoice);
+  formBody?.addEventListener('pointercancel',()=>{pressedChoice=null});
+  formBody?.addEventListener('keydown',event=>{
+    pressedChoice=null;
+    const input=event.target;
+    if(event.key!==' '||!input.matches('input[type="radio"]')||input.disabled)return;
+    // Browsers may not emit another click for Space on a checked radio.
+    if(event.repeat||input.checked){
+      event.preventDefault();
+      if(!event.repeat)clearChoice(input);
+    }
+  });
+  formBody?.addEventListener('click',event=>{
+    const input=event.target;
+    if(!input.matches('input[type="radio"]'))return;
+    const clear=pressedChoice===input&&!input.disabled;
+    pressedChoice=null;
+    if(!clear)return;
+    clearChoice(input);
+  });
 
   setExecutionTopSectionCollapsed(localStorage.getItem(TIOS_EXECUTION_TOP_SECTION_KEY)==='1',{persist:false});
   $('#executionMapTopToggle')?.addEventListener('click',()=>{
@@ -15959,12 +15997,13 @@ function instrumentImageFieldPatternsHtml(item,editable,{kind='playbook',area='p
   const prefix=kind==='playbook'?'map':kind;
   const patterns=normalizeInstrumentImagePatterns(item.patterns).map((pattern,index)=>{
     const tag=execution?'label':'div';
+    const controlId=name+'_'+pattern.id;
     const scoreAttr=execution?(selection==='choice'?` data-execution-${prefix}-choice`:` data-execution-${prefix}-check="${escapeHtml(name+'_'+pattern.id)}"`):' disabled';
-    const control=editable?'<span aria-hidden="true">'+(selection==='choice'?'○':'□')+'</span>':`<input type="${selection==='choice'?'radio':'checkbox'}" name="${escapeHtml(name)}" value="${escapeHtml(pattern.id)}" aria-label="${escapeHtml(pattern.label||'Pattern '+(index+1))}" data-ti-image-pattern-response${scoreAttr}>`;
-    return `<${tag} class="ti-image-pattern" data-ti-image-pattern-id="${escapeHtml(pattern.id)}">${instrumentImagePatternPictureHtml(pattern)}<span class="ti-image-pattern-label">${control}<span>${escapeHtml(pattern.label)}</span></span></${tag}>`;
+    const control=editable?'<span aria-hidden="true">'+(selection==='choice'?'○':'□')+'</span>':`<input id="${escapeHtml(controlId)}" type="${selection==='choice'?'radio':'checkbox'}" name="${escapeHtml(name)}" value="${escapeHtml(pattern.id)}" aria-label="${escapeHtml(pattern.label||'Pattern '+(index+1))}" data-ti-image-pattern-response${scoreAttr}>`;
+    return `<${tag}${execution?' for="'+escapeHtml(controlId)+'"':''} class="ti-image-pattern" data-ti-image-pattern-id="${escapeHtml(pattern.id)}">${instrumentImagePatternPictureHtml(pattern)}<span class="ti-image-pattern-label">${control}<span>${escapeHtml(pattern.label)}</span></span></${tag}>`;
   }).join('');
   const groupAttr=execution&&selection==='choice'?` data-execution-${prefix}-choice-group="${escapeHtml(name)}"`:'';
-  return `<div class="ti-image-field-selection-note">${instruction}</div><div class="ti-image-field-patterns" role="group" aria-label="${escapeHtml((item.label?item.label+': ':'')+instruction)}"${groupAttr}>${patterns}</div>`;
+  return `<div class="ti-image-field-selection-note">${instruction}${execution&&selection==='choice'?' · select again to clear':''}</div><div class="ti-image-field-patterns" role="group" aria-label="${escapeHtml((item.label?item.label+': ':'')+instruction)}"${groupAttr}>${patterns}</div>`;
 }
 function instrumentImagePatternConditionCount(root){
   return [...root.querySelectorAll('.ti-image-field-patterns')].reduce((total,group)=>
@@ -16337,6 +16376,13 @@ function initInstrumentImageEditor(kind){
   if(document.body.dataset.referenceImageViewerReady!=='1'){
     document.body.dataset.referenceImageViewerReady='1';
     const openImage=event=>{
+      const view=event.target.closest('[data-ti-picture-view]');
+      if(view){
+        if(event.type!=='click'||view.disabled)return;
+        const image=view.closest('.ti-image-pattern,[data-playbook-image-key]')?.querySelector('img');
+        if(image?.getAttribute('src')){event.preventDefault();openPlaybookImageViewer(image.src,image.alt)}
+        return;
+      }
       const image=event.target.closest('[data-ti-reference-open]');
       if(event.defaultPrevented||event.type==='click'&&image?.closest('#playbookDocumentEditor,[data-ti-editor],.execution-map-rule-main,.execution-map-choice-options label'))return;
       if(image?.getAttribute('src')){event.preventDefault();openPlaybookImageViewer(image.src,image.alt)}
@@ -16428,6 +16474,16 @@ async function storePlaybookDemoImage(file,ruleId,options={}){
   return key;
 }
 
+function addExecutionPictureViewControl(node,image){
+  if(!image?.getAttribute('src')||!node.closest('#executionMapFormBody'))return;
+  const host=node.closest('.ti-image-pattern')||node;
+  if(host.querySelector('[data-ti-picture-view]'))return;
+  const button=document.createElement('button');
+  button.type='button';button.className='ti-picture-view-btn';button.dataset.tiPictureView='';
+  button.textContent='View picture';button.setAttribute('aria-label','View picture: '+image.alt);
+  host.append(button);
+}
+
 async function hydratePlaybookImages(root=document){
   const nodes=[...root.querySelectorAll('[data-playbook-image-key]')];
 
@@ -16469,11 +16525,13 @@ async function hydratePlaybookImages(root=document){
           }
         }
         const status=node.querySelector('.ti-reference-image-status');if(status)status.hidden=true;
+        addExecutionPictureViewControl(node,image);
         return;
       }
       if(node.classList.contains('ti-image-pattern-picture')){
         const image=node.querySelector('img');if(image)image.src=record.dataUrl;
         const status=node.querySelector('.ti-image-pattern-picture-status');if(status)status.hidden=true;
+        addExecutionPictureViewControl(node,image);
         return;
       }
 
@@ -16525,14 +16583,17 @@ function playbookReviewImagesHtml(rule){
   return `<div class="playbook-demo-images">${keys.map(key=>`<button type="button" class="playbook-demo-thumb" data-playbook-demo-open data-playbook-image-key="${escapeHtml(key)}" aria-label="Open demonstration image"><span class="playbook-media-loading">Loading demo…</span></button>`).join('')}</div>`;
 }
 
+let playbookImageViewerPreviousFocus=null;
 function openPlaybookImageViewer(src,alt='Playbook demonstration image'){
   const viewer=$('#playbookImageViewer');
   const image=$('#playbookImageViewerImg');
   if(!viewer||!image||!src)return;
+  if(!viewer.classList.contains('show'))playbookImageViewerPreviousFocus=document.activeElement;
   image.src=src;
   image.alt=alt;
   viewer.classList.add('show');
   viewer.setAttribute('aria-hidden','false');
+  viewer.querySelector('[data-playbook-image-viewer-close]')?.focus({preventScroll:true});
 }
 function closePlaybookImageViewer(){
   const viewer=$('#playbookImageViewer');
@@ -16540,6 +16601,8 @@ function closePlaybookImageViewer(){
   if(viewer)viewer.classList.remove('show');
   if(viewer)viewer.setAttribute('aria-hidden','true');
   if(image)image.removeAttribute('src');
+  if(playbookImageViewerPreviousFocus?.isConnected)playbookImageViewerPreviousFocus.focus({preventScroll:true});
+  playbookImageViewerPreviousFocus=null;
 }
 
 const PLAYBOOK_STORAGE_BASE='tios_playbooks_v3';
@@ -17517,6 +17580,9 @@ function setEdgeFocusMode(enabled){
 }
 $('#edgeFocusReviewBtn')?.addEventListener('click',()=>setEdgeFocusMode(!$('#page-playbook').classList.contains('playbook-focus-mode')));
 document.addEventListener('keydown',event=>{
+  if(event.key==='Tab'&&$('#playbookImageViewer')?.classList.contains('show')){
+    event.preventDefault();$('#playbookImageViewer [data-playbook-image-viewer-close]')?.focus();return;
+  }
   if(event.key!=='Escape')return;
   if($('#playbookImageViewer')?.classList.contains('show')){closePlaybookImageViewer();return}
   if($('#page-playbook')?.classList.contains('playbook-focus-mode')&&!$('#edgePlaybookModal')?.classList.contains('show'))setEdgeFocusMode(false);
@@ -19360,7 +19426,7 @@ initializeSupabase();
 </script>
 
 
-<div class="playbook-image-viewer" id="playbookImageViewer" aria-hidden="true">
+<div class="playbook-image-viewer" id="playbookImageViewer" role="dialog" aria-modal="true" aria-label="Picture viewer" aria-hidden="true">
   <div class="playbook-image-viewer-shell">
     <button class="playbook-image-viewer-close" type="button" data-playbook-image-viewer-close aria-label="Close image">×</button>
     <img id="playbookImageViewerImg" alt="Playbook demonstration image">
