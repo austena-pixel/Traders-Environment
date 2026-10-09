@@ -29,19 +29,20 @@
 .hios-intel-notifications [hidden]{display:none}
 .hios-intel-unread{min-width:15px;border-radius:6px;background:#a6c7fa;color:#091323;padding:1px 4px;font-size:10px;font-weight:750}
 .hios-domain-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
-.hios-product-intelligence{min-width:0;padding:11px;border:1px solid #2b3545;border-radius:12px;background:rgba(8,15,25,.48)}
+.hios-product-intelligence{min-width:0;padding:9px;border:1px solid #2b3545;border-radius:12px;background:rgba(8,15,25,.48)}
 .hios-product-intelligence-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
 .hios-product-intelligence-head h4{font-size:12px;line-height:1.4;color:rgb(var(--intel-accent));letter-spacing:.03em;margin:0}
 .hios-product-capabilities-button{border:1px solid rgb(var(--intel-accent)/.28);border-radius:7px;background:rgb(var(--intel-accent)/.06);color:#c8d9f1;font-size:9px;line-height:1.5;min-height:28px;padding:5px 8px;cursor:pointer}
 .hios-product-capabilities-button:hover{border-color:rgb(var(--intel-accent)/.6);background:rgb(var(--intel-accent)/.1)}
-.hios-product-intelligence-domains{display:grid;gap:7px}
-.hios-domain{display:flex;flex-direction:column;align-items:stretch;gap:5px;min-width:0;width:100%;text-align:left;padding:9px;border:1px solid #253246;border-radius:8px;background:#0e1724;color:#dce6f5;cursor:pointer;transition:border-color .16s,background .16s}
+.hios-product-intelligence-domains{display:grid;gap:6px}
+.hios-domain{display:flex;flex-direction:column;align-items:stretch;gap:3px;min-width:0;width:100%;text-align:left;padding:7px 8px;border:1px solid #253246;border-radius:8px;background:#0e1724;color:#dce6f5;cursor:pointer;transition:border-color .16s,background .16s}
 .hios-domain:hover{border-color:rgb(var(--intel-accent)/.5);background:rgb(var(--intel-accent)/.06)}
 .hios-domain-name{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;font-size:11px;line-height:1.4;font-weight:650}
 .hios-domain-name > span{color:#7a8da8;font-size:13px;font-weight:400}
-.hios-domain-level{font-size:10px;line-height:1.4;color:#c4d0e1}
-.hios-level-progress{min-width:0;margin:2px 0}
-.hios-level-progress-meta{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;font-size:9px;line-height:1.4;color:#8e9fb8}
+.hios-domain-level{font-size:13px;line-height:1.35;font-weight:650;color:#dce6f5}
+.hios-level-progress{min-width:0;margin:1px 0}
+.hios-level-progress-meta{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:3px 8px;margin-bottom:4px;font-size:9px;line-height:1.4;color:#8e9fb8}
+.hios-level-progress-meta > span{font-size:12px;line-height:1.35;font-weight:650;color:#c4d0e1}
 .hios-level-progress-meta b{font-weight:600;text-align:right;color:#b9c8dd}
 .hios-level-progress-track{height:6px;border-radius:999px;background:#253246;border:1px solid #344055;overflow:hidden}
 .hios-level-progress-track > span{display:block;height:100%;border-radius:inherit;background:rgb(var(--intel-accent,131 181 244))}
@@ -161,7 +162,7 @@
   .hios-development-head{margin-bottom:6px}
 }
 @media(max-width:640px){
-  .hios-domain{padding:10px}
+  .hios-domain{padding:7px 8px}
   .hios-intel-drawer-head{padding:20px 18px 16px}.hios-intel-drawer-body{padding:18px}
   .hios-intel-drawer-head h2{font-size:19px}
   .hios-evidence-facts{gap:12px;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}

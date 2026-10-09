@@ -42,7 +42,7 @@ async function run(){
     await page.goto(url,{waitUntil:'load'});
     assert.equal(await page.locator('#appScreen').isVisible(),true);
     assert.equal(await page.locator('.hios-domain').count(),4);
-    assert.equal(await page.locator('.hios-domain-level').filter({hasText:'Not yet assessed'}).count(),4);
+    assert.equal(await page.locator('.hios-domain-level').count(),0);
     assert.equal(await page.locator('.hios-domain .hios-level-progress-track').count(),4);
     assert.equal(await page.locator('.hios-level-segments').count(),0);
     assert.equal(await page.locator('.hios-domain [aria-valuenow]').count(),0);
@@ -239,7 +239,7 @@ async function run(){
     assert.equal(await page.locator('#hiosIntelligenceUnread').isVisible(),false);
     await page.keyboard.press('Escape');
     await page.evaluate(user=>window.HIOSIntelligenceUI.connect({load:async()=>({schema:'hios.intelligence-development.v1',userId:user,maturity:{goals:{...window.qaAssessment,level:4,validUntil:new Date(Date.now()-1).toISOString()}}})}),user);
-    await page.waitForFunction(()=>document.querySelector('[data-intelligence-domain="goals"] .hios-domain-level').textContent==='Not yet assessed');
+    await page.waitForFunction(()=>!document.querySelector('[data-intelligence-domain="goals"] .hios-domain-level'));
     assert.equal(await page.locator('.hios-domain [aria-valuenow]').count(),0);
     passed('one-level assessed progress, independent Pro readiness, real unread events, read markers and expired assessment fallback');
 
