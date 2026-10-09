@@ -61,6 +61,38 @@ async function run(){
     assert.equal(await page.locator('#hiosIntelligenceUnread').isVisible(),false);
     passed('real task priorities coexist with independent pending maturity and an empty unread indicator');
 
+    const animation=page.locator('#hiosOperationLoop');
+    const activeScene=()=>animation.locator('.hios-op-scene.active').getAttribute('data-op-scene');
+    assert.equal(await animation.isVisible(),true);
+    await animation.getByRole('button',{name:'Pause animation',exact:true}).click();
+    for(let index=0;index<5;index++){
+      await animation.locator(`[data-op-dot="${index}"]`).click();
+      assert.equal(await activeScene(),String(index));
+      assert.equal(await animation.locator('[aria-hidden="false"][data-op-scene]').count(),1);
+      assert.equal(await animation.locator('[data-op-dot][aria-pressed="true"]').count(),1);
+    }
+    await page.locator('.hios-intelligence-copy').hover();
+    await page.locator('#hiosDomainGrid').focus();
+    await page.waitForTimeout(4400);
+    assert.equal(await activeScene(),'4','explicit pause survives leaving the animation');
+    await animation.getByRole('button',{name:'Resume animation',exact:true}).click();
+    await page.locator('.hios-intelligence-copy').hover();
+    await page.locator('#hiosDomainGrid').focus();
+    await page.waitForFunction(()=>document.querySelector('#hiosOperationLoop .hios-op-scene.active').dataset.opScene==='0',{},{timeout:6000});
+    await animation.hover();
+    await page.waitForTimeout(4400);
+    assert.equal(await activeScene(),'0','hover pauses scene rotation');
+    await page.emulateMedia({reducedMotion:'reduce'});
+    await page.locator('.hios-intelligence-copy').hover();
+    assert.equal(await animation.locator('.op-hub').evaluate(el=>getComputedStyle(el).animationName),'none');
+    await animation.locator('[data-op-dot="1"]').click();
+    assert.equal(await activeScene(),'1','manual controls remain available with reduced motion');
+    await page.emulateMedia({reducedMotion:'no-preference'});
+    await animation.locator('[data-op-dot="0"]').click();
+    await page.locator('.hios-intelligence-copy').hover();
+    await page.locator('#hiosDomainGrid').focus();
+    passed('restored five-scene animation, manual scene controls, persistent pause, automatic rotation, hover pause and reduced motion');
+
     for(const domain of ['trading-edge','execution','goals','cross']){
       await page.locator(`[data-intelligence-domain="${domain}"]`).click();
       assert.equal(await page.locator('#hiosIntelligenceDialog').evaluate(el=>el.open),true);
@@ -182,6 +214,8 @@ async function run(){
       const clipped=await page.locator('.hios-domain, .hios-development, .hios-product-intelligence, .hios-product-intelligence-head, .hios-intelligence-copy, .top-k-panel').evaluateAll(elements=>elements.filter(el=>el.scrollWidth>el.clientWidth+1).map(el=>el.className));
       assert.deepEqual(clipped,[],`${width}px intelligence clipping`);
       if(width>=951){
+        assert.equal(await animation.isVisible(),true);
+        assert.deepEqual(await animation.locator('.hios-op-copy, .hios-op-visual').evaluateAll(elements=>elements.filter(el=>el.scrollWidth>el.clientWidth+1).map(el=>el.className)),[],`${width}px animation clipping`);
         const layout=await page.evaluate(()=>{
           const calendar=document.querySelector('.calendar-card').getBoundingClientRect();
           const intelligence=document.querySelector('.hios-development').getBoundingClientRect();

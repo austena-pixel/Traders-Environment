@@ -2465,6 +2465,100 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
             <p id="hiosPriorityTasks" class="hios-priority-tasks">Loading today’s priorities.</p>
             <p id="hiosIntelligenceSummary">Review your calendar for upcoming commitments.</p>
           </div>
+
+          <!-- Restored ecosystem animation in the top-right header. -->
+          <div class="hios-op-loop" id="hiosOperationLoop" role="region" aria-label="H·IOS ecosystem animation">
+            <div class="hios-op-scenes">
+
+              <article class="hios-op-scene active" data-op-scene="0">
+                <div class="hios-op-copy">
+                  <div class="hios-op-kicker">Connected Intelligence</div>
+                  <h3>One ecosystem. Shared context.</h3>
+                  <p>A view of how authorized product context can inform focus, calendar and progress.</p>
+                </div>
+                <div class="hios-op-visual" aria-hidden="true">
+                  <div class="op-network">
+                    <div class="op-network-inputs"><div class="op-chip">Goals-IOS</div><div class="op-chip">Traders-IOS</div><div class="op-chip">Students-IOS</div></div>
+                    <div class="op-hub">H·IOS</div>
+                    <div class="op-network-outputs"><div class="op-chip">Focus</div><div class="op-chip">Calendar</div><div class="op-chip">Progress</div></div>
+                    <div class="op-network-lines"><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="r1"></i><i class="r2"></i></div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="hios-op-scene" data-op-scene="1">
+                <div class="hios-op-copy">
+                  <div class="hios-op-kicker">Goal Intelligence</div>
+                  <h3>From direction to daily action.</h3>
+                  <p>Organize long-term goals into milestones, weekly priorities and daily actions.</p>
+                </div>
+                <div class="hios-op-visual" aria-hidden="true">
+                  <div class="op-goal-flow">
+                    <div class="op-stage"><b>Yearly</b><span>Direction</span></div>
+                    <div class="op-stage"><b>Monthly</b><span>Milestones</span></div>
+                    <div class="op-stage"><b>Weekly</b><span>Priorities</span></div>
+                    <div class="op-stage"><b>Daily</b><span>Action</span></div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="hios-op-scene" data-op-scene="2">
+                <div class="hios-op-copy">
+                  <div class="hios-op-kicker">Priority Intelligence</div>
+                  <h3>Know what matters now.</h3>
+                  <p>Review daily tasks, their priorities and upcoming commitments.</p>
+                </div>
+                <div class="hios-op-visual" aria-hidden="true">
+                  <div class="op-priority-wrap">
+                    <div class="op-ranks">
+                      <div class="op-rank"><b>1</b><i></i><small>Act now</small></div>
+                      <div class="op-rank"><b>2</b><i></i><small>Next</small></div>
+                      <div class="op-rank"><b>3</b><i></i><small>Maintain</small></div>
+                    </div>
+                    <div class="op-priority-engine">RANK<br>&amp;<br>ALIGN</div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="hios-op-scene" data-op-scene="3">
+                <div class="hios-op-copy">
+                  <div class="hios-op-kicker">Intelligence Calendar</div>
+                  <h3>One timeline for commitments.</h3>
+                  <p>Bring dated goals, reviews and milestones into one calendar.</p>
+                </div>
+                <div class="hios-op-visual" aria-hidden="true">
+                  <div class="op-calendar-demo">
+                    <div class="op-calendar-inputs"><div class="op-calendar-item">Goal milestone</div><div class="op-calendar-item">Assessment</div><div class="op-calendar-item">Trading review</div></div>
+                    <div class="op-calendar-grid"><i></i><i class="hot"></i><i></i><i></i><i></i><i></i><i class="hot"></i><i></i><i></i><i></i><i></i><i class="hot"></i></div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="hios-op-scene" data-op-scene="4">
+                <div class="hios-op-copy">
+                  <div class="hios-op-kicker">Adaptive Feedback</div>
+                  <h3>Learn from outcomes.</h3>
+                  <p>Planned: validate outcomes before adapting personal assistance.</p>
+                </div>
+                <div class="hios-op-visual" aria-hidden="true">
+                  <div class="op-feedback">
+                    <div class="op-feedback-ring"></div>
+                    <div class="op-feedback-center">H·IOS<br>LOOP</div>
+                    <span class="op-feedback-label plan">PLAN</span><span class="op-feedback-label execute">EXECUTE</span><span class="op-feedback-label measure">MEASURE</span><span class="op-feedback-label adapt">ADAPT</span>
+                  </div>
+                </div>
+              </article>
+
+            </div>
+            <div class="hios-op-dots" role="group" aria-label="H·IOS operation scenes">
+              <button class="hios-op-toggle" type="button" aria-label="Pause animation" aria-pressed="false" title="Pause animation">Ⅱ</button>
+              <button class="hios-op-dot active" type="button" aria-label="Connected Intelligence" data-op-dot="0"></button>
+              <button class="hios-op-dot" type="button" aria-label="Goal Intelligence" data-op-dot="1"></button>
+              <button class="hios-op-dot" type="button" aria-label="Priority Intelligence" data-op-dot="2"></button>
+              <button class="hios-op-dot" type="button" aria-label="Intelligence Calendar" data-op-dot="3"></button>
+              <button class="hios-op-dot" type="button" aria-label="Adaptive Feedback" data-op-dot="4"></button>
+            </div>
+          </div>
         </div>
       </section>
     </div>
@@ -4031,5 +4125,6 @@ restoreExistingSession();
 
 
 </script>
+<script src="hios-operation-loop.js"></script>
 </body>
 </html>
