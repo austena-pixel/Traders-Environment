@@ -6109,54 +6109,6 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
         <aside class="right-side">
 
-          <section class="panel side-section dashboard-key-performance">
-            <h3>Key Performance</h3>
-
-            <div class="side-row dashboard-stat-row">
-              <div class="dashboard-stat-label">
-                <span>Monthly P&amp;L</span>
-                <small id="monthNameMetric">Selected month</small>
-              </div>
-              <strong class="dashboard-stat-value" id="monthlyPnl">R0.00</strong>
-            </div>
-
-            <div class="side-row dashboard-stat-row">
-              <div class="dashboard-stat-label"><span>Trades this month</span></div>
-              <strong class="dashboard-stat-value neutral" id="totalTrades">0</strong>
-            </div>
-
-            <div class="side-row dashboard-stat-row">
-              <div class="dashboard-stat-label"><span>Win rate</span></div>
-              <strong class="dashboard-stat-value neutral" id="winRate">0%</strong>
-            </div>
-
-            <div class="side-row dashboard-stat-row">
-              <div class="dashboard-stat-label"><span>Monthly Return</span></div>
-              <strong class="dashboard-stat-value neutral" id="monthlyReturn">0.00%</strong>
-            </div>
-
-            <div class="side-row dashboard-stat-row">
-              <div class="dashboard-stat-label"><span>Profit factor</span></div>
-              <strong class="dashboard-stat-value neutral" id="profitFactor">0.00</strong>
-            </div>
-
-            <div class="side-row dashboard-stat-row">
-              <div class="dashboard-stat-label">
-                <span>Best day</span>
-                <small id="bestDayDate">—</small>
-              </div>
-              <strong class="dashboard-stat-value neutral" id="bestDay">R0.00</strong>
-            </div>
-
-            <div class="side-row dashboard-stat-row">
-              <div class="dashboard-stat-label">
-                <span>Worst day</span>
-                <small id="worstDayDate">—</small>
-              </div>
-              <strong class="dashboard-stat-value neutral" id="worstDay">R0.00</strong>
-            </div>
-          </section>
-
           <section class="panel side-section">
             <h3>Account Overview</h3>
             <div class="side-row">
@@ -9508,7 +9460,6 @@ function renderCalendar(){
     year:'numeric'
   });
 
-  $('#monthNameMetric').textContent=$('#monthTitle').textContent;
 
   const first=new Date(year,month,1);
   const daysInMonth=new Date(year,month+1,0).getDate();
@@ -9573,48 +9524,6 @@ function renderCalendar(){
 }
 
 function renderMetrics(){
-  const mt=monthTrades();
-
-  const pnl=mt.reduce((s,t)=>s+(Number(t.pnl)||0),0);
-  const wins=mt.filter(t=>Number(t.pnl)>0).length;
-  const grossProfit=mt
-    .filter(t=>Number(t.pnl)>0)
-    .reduce((s,t)=>s+Number(t.pnl),0);
-
-  const grossLoss=Math.abs(
-    mt.filter(t=>Number(t.pnl)<0)
-      .reduce((s,t)=>s+Number(t.pnl),0)
-  );
-
-  const pf=grossLoss ? grossProfit/grossLoss : (grossProfit>0 ? Infinity : 0);
-
-  $('#monthlyPnl').textContent=signedMoney(pnl);
-  $('#monthlyPnl').className='value '+pnlClass(pnl);
-
-  $('#totalTrades').textContent=mt.length;
-  $('#winRate').textContent=(mt.length?(wins/mt.length*100):0).toFixed(1)+'%';
-
-  const monthReturn=returnPctFromPnl(pnl);
-  $('#monthlyReturn').textContent=formatReturnPct(monthReturn);
-  $('#monthlyReturn').className='dashboard-stat-value '+(monthReturn===null?'neutral':pnlClass(monthReturn));
-
-  $('#profitFactor').textContent=pf===Infinity?'∞':pf.toFixed(2);
-
-  const dm=dayPnlMap(mt);
-  const days=Object.entries(dm);
-  const sorted=[...days].sort((a,b)=>b[1].pnl-a[1].pnl);
-
-  const best=sorted[0];
-  const worst=sorted[sorted.length-1];
-
-  $('#bestDay').textContent=best?signedMoney(best[1].pnl):money(0);
-  $('#bestDay').className='value '+(best?pnlClass(best[1].pnl):'neutral');
-  $('#bestDayDate').textContent=best?formatDate(best[0]):'—';
-
-  $('#worstDay').textContent=worst?signedMoney(worst[1].pnl):money(0);
-  $('#worstDay').className='value '+(worst?pnlClass(worst[1].pnl):'neutral');
-  $('#worstDayDate').textContent=worst?formatDate(worst[0]):'—';
-
   const allPnl=trades.reduce((s,t)=>s+(Number(t.pnl)||0),0);
 
   $('#allTimePnl').textContent=signedMoney(allPnl);
