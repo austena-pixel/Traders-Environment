@@ -9,6 +9,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="trade-evidence.css">
 
 <style>
 :root{
@@ -7207,6 +7208,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <span>Mark the planned conditions you followed.</span>
           </div>
 
+          <button class="btn small" id="executionMapEvidenceBtn" type="button" data-trade-evidence-open="" hidden>Setup pictures</button>
+
           <div class="execution-map-score">
             <span id="executionMapScoreLabel">Live execution match</span>
             <strong id="executionMapScore">—</strong>
@@ -7597,6 +7600,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
         </div>
       </div>
 
+      <div id="tradeSetupEvidence"></div>
+
       <div class="form-actions">
         <button type="button" class="btn" id="cancelBtn">Cancel</button>
         <button type="submit" class="btn primary" id="saveTradeBtn">Save Trade</button>
@@ -7662,6 +7667,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
 
 <script src="core/evidence-contract.js"></script>
+<script src="trade-evidence.js"></script>
 <script src="hios-connection-layer.js"></script>
 <script src="technical-instruments/playbooks.js"></script>
 <script src="technical-instruments/checklists.js"></script>
@@ -7729,6 +7735,13 @@ const JOURNAL_PAGE_SIZE = 25;
 
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
+
+const tradeEvidence = window.TIOSTradeEvidence.create({
+  getClient:()=>db,
+  getUser:()=>currentUser,
+  getTrade:id=>trades.find(trade=>trade.id===id),
+  getNumber:id=>journalTradeNumbers().get(String(id))
+});
 
 const money = n => '$' + Number(n || 0).toLocaleString(undefined,{
   minimumFractionDigits:2,
@@ -8356,6 +8369,7 @@ async function initializeSupabase(){
 
   db.auth.onAuthStateChange(async (event, authSession)=>{
     if(event === 'SIGNED_OUT'){
+      tradeEvidence.reset();
       currentUser = null;
       window.location.replace('index.html?view=home');
       return;
@@ -10043,6 +10057,7 @@ function renderJournal(){
           <td title="${escapeHtml(t.notes||'')}">${escapeHtml((t.notes||'—').slice(0,55))}${(t.notes||'').length>55?'…':''}</td>
           <td>
             <div class="table-actions">
+              <button class="btn small" type="button" data-trade-evidence-open="${escapeHtml(t.id)}">Setup pictures</button>
               <button class="btn small edit-trade" data-id="${t.id}">Edit</button>
               <button class="btn small danger delete-trade" data-id="${t.id}">Delete</button>
             </div>
@@ -10128,6 +10143,7 @@ function resetTradeForm(){
   editingTradeId=null;
   $('#tradeForm').reset();
   $('#saveTradeBtn').textContent='Save Trade';
+  tradeEvidence.mount($('#tradeSetupEvidence'),null);
 }
 
 function openTradeModal(date){
@@ -10143,6 +10159,7 @@ function openTradeModal(date){
 
 function openEditTrade(trade){
   editingTradeId=trade.id;
+  tradeEvidence.mount($('#tradeSetupEvidence'),trade.id);
 
   $('#tradeDate').value=trade.trade_date || '';
   $('#instrument').value=trade.instrument || '';
@@ -10193,10 +10210,13 @@ function renderDayTrades(date){
       <span>${escapeHtml(t.setup||'No setup')}</span>
       <span class="${pnlClass(Number(t.pnl))}">${signedMoney(Number(t.pnl))}</span>
       <span>${formatReturnPct(tradeReturnPct(t))}</span>
-      <button class="btn danger small" type="button">Delete</button>
+      <div class="table-actions">
+        <button class="btn small" type="button" data-trade-evidence-open="${escapeHtml(t.id)}">Setup pictures</button>
+        <button class="btn danger small" type="button">Delete</button>
+      </div>
     `;
 
-    row.querySelector('button').addEventListener('click',()=>{
+    row.querySelector('button.danger').addEventListener('click',()=>{
       deleteTrade(t, date);
     });
 
@@ -11497,6 +11517,9 @@ function renderExecutionMappingControls(){
 function renderExecutionMappingTradeContext(){
   const periodMode=executionMappingIsPeriod();
   const trade=periodMode?null:executionMappingTrade();
+  const evidenceButton=$('#executionMapEvidenceBtn');
+  evidenceButton.hidden=!trade;
+  evidenceButton.dataset.tradeEvidenceOpen=trade?.id||'';
   $('.execution-map-context-details').classList.toggle('trade-context',Boolean(trade));
   $('#executionMapPeriodContext').hidden=!periodMode;
   $('#executionMapPeriodContext').classList.toggle('session-review',periodMode&&executionMappingRuleScope==='session');

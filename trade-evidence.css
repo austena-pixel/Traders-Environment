@@ -1,0 +1,43 @@
+.trade-evidence{margin:20px 0 4px;container-type:inline-size}
+.trade-evidence h3{margin:0;font-size:16px;color:var(--text,#edf2f7)}
+.trade-evidence-intro{margin:7px 0 16px;font-size:12px;color:var(--muted,#8b9bad);line-height:1.5}
+.trade-evidence-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.trade-evidence [hidden]{display:none!important}
+.trade-evidence-upload [data-evidence-placeholder]{display:flex;flex-direction:column;align-items:center;gap:7px}
+.trade-evidence-card{display:flex;flex-direction:column;min-width:0;padding:10px;border:1px solid var(--line,#273244);border-radius:10px;background:var(--panel,#0c1118)}
+.trade-evidence-upload{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;width:100%;height:190px;padding:8px;border:0;border-radius:6px;background:transparent;color:var(--muted,#8b9bad);font:inherit;font-size:12px;cursor:pointer;overflow:hidden}
+.trade-evidence-upload:hover{background:var(--panel2,#121925)}
+.trade-evidence-upload svg{width:27px;height:27px;opacity:.75}
+.trade-evidence-upload img{display:block;width:100%;height:100%;object-fit:contain}
+.trade-evidence-label{display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:12px;font-size:10px;color:var(--muted,#8b9bad)}
+.trade-evidence-label>span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.trade-evidence-label input{width:100%;min-width:0;text-align:center;border:1px solid transparent;border-radius:5px;padding:5px 3px;background:transparent;color:var(--text,#edf2f7);font:inherit;font-size:16px;font-weight:650;box-shadow:none}
+.trade-evidence-label.responsibility{margin-top:4px}
+.trade-evidence-label.responsibility input{font-size:12px;font-weight:400;color:var(--muted,#8b9bad)}
+.trade-evidence-label input:hover,.trade-evidence-label input:focus{border-color:var(--line,#273244);background:var(--panel2,#121925)}
+.trade-evidence-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:5px;margin-top:10px}
+.trade-evidence-actions button{padding:5px 8px;font-size:10px}
+.trade-evidence-status{min-height:30px;margin:9px 0 0;font-size:11px;line-height:1.4;text-align:center;color:var(--muted,#8b9bad);overflow-wrap:anywhere}
+.trade-evidence-status:empty{display:none}
+.trade-evidence-status.error{color:#ef9b9b}
+.trade-evidence-card button:disabled,.trade-evidence-card input:disabled{opacity:.5;cursor:default}
+.trade-evidence-card :focus-visible,.trade-evidence-dialog :focus-visible,.trade-evidence-viewer :focus-visible{outline:2px solid var(--accent,#6eaeff);outline-offset:2px}
+.trade-evidence-dialog .modal-card{width:min(980px,100%)}
+.trade-evidence-dialog .trade-evidence{margin:0;padding:18px}
+.trade-evidence-dialog .trade-evidence-upload{height:205px}
+.trade-evidence-viewer{position:fixed;inset:0;z-index:220;display:flex;flex-direction:column;background:#080c12;color:#edf2f7}
+.trade-evidence-viewer[hidden]{display:none}
+.trade-evidence-viewer-head{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid #273244;background:#0c1118;flex-wrap:wrap}
+.trade-evidence-viewer-head strong{font-size:14px;overflow-wrap:anywhere}
+.trade-evidence-viewer-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.trade-evidence-viewer-controls button{min-width:38px;min-height:38px;border:1px solid #354357;border-radius:7px;background:#141d2b;color:#edf2f7;font:inherit;cursor:pointer;padding:6px 10px}
+.trade-evidence-viewer-controls output{min-width:48px;text-align:center;font-size:12px}
+.trade-evidence-viewport{position:relative;flex:1;min-height:0;overflow:hidden;touch-action:none;cursor:grab;outline-offset:-3px}
+.trade-evidence-viewport:active{cursor:grabbing}
+.trade-evidence-viewport img{position:absolute;left:0;top:0;max-width:none;max-height:none;transform-origin:0 0;user-select:none;pointer-events:none}
+.trade-evidence-viewer-message{position:absolute;left:12px;top:12px;right:12px;z-index:1;color:#bbc7d5;font-size:13px;pointer-events:none}
+.trade-evidence-viewer-foot{margin:0;padding:8px 16px;font-size:11px;color:#99a9bd;flex:0 0 auto}
+#executionMapEvidenceBtn{align-self:flex-start}
+#executionMapEvidenceBtn[hidden]{display:none}
+@container (max-width:550px){.trade-evidence-grid{grid-template-columns:minmax(0,1fr)}.trade-evidence-upload,.trade-evidence-dialog .trade-evidence-upload{height:210px}}
+@media(max-width:600px){.trade-evidence-viewer-head{padding:10px}.trade-evidence-viewer-controls{gap:4px}.trade-evidence-viewer-foot{padding:8px 10px}}
