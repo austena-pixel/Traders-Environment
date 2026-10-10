@@ -64,7 +64,10 @@
       panel.setAttribute('aria-hidden',String(controlsCollapsed));
       workspace.querySelectorAll('[data-charts-action="toggle-panel"]').forEach(btn=>{
         btn.setAttribute('aria-expanded',String(!controlsCollapsed));
-        btn.textContent=btn.classList.contains('charts-panel-dismiss')?'Hide controls':controlsCollapsed?'Show controls':'Hide controls';
+        if(btn.classList.contains('charts-reveal-controls')){
+          btn.hidden=!controlsCollapsed;
+          btn.textContent='Show controls';
+        }else btn.textContent='Hide controls';
       });
     }
     function removeInstance(id){
@@ -128,7 +131,9 @@
     }
     function refreshWidgets(){host.querySelectorAll('[data-chart-id]').forEach(card=>mountChart(card))}
     function cardMarkup(chart,index){return `<section class="charts-card" data-chart-id="${escape(chart.id)}" aria-label="Chart ${index+1}">
-            <div class="charts-card-top"><strong>Chart ${index+1}</strong><button class="btn small" type="button" data-charts-action="expand" aria-expanded="false">Expand</button></div>
+            <div class="charts-card-top"><strong>Chart ${index+1}</strong><div class="charts-card-actions">
+              ${index===0?`<button class="btn small charts-reveal-controls" type="button" data-charts-action="toggle-panel" aria-controls="chartsPanel" aria-expanded="${!controlsCollapsed}" ${controlsCollapsed?'':'hidden'}>Show controls</button><a class="btn small charts-tv-link" href="https://www.tradingview.com/chart/" target="_blank" rel="noopener">Open TradingView ↗</a>`:''}
+              <button class="btn small" type="button" data-charts-action="expand" aria-expanded="false">Expand</button></div></div>
             <form class="charts-controls">
               <label class="charts-symbol">Instrument<input data-chart-field="symbol" aria-label="Chart ${index+1} instrument" value="${escape(chart.symbol)}" maxlength="81" placeholder="FX:EURUSD" list="charts-symbols" required spellcheck="false" autocomplete="off"></label>
               <label>Timeframe<select data-chart-field="interval" aria-label="Chart ${index+1} timeframe">${P.intervals.map(([value,label])=>`<option value="${value}" ${chart.interval===value?'selected':''}>${label}</option>`).join('')}</select></label>
@@ -177,10 +182,9 @@
       if(!visible||!prefs)return;
       closeExpanded(false);dispose();
       host.innerHTML=`
-        <div class="charts-head"><div><h1>Charts</h1><p class="muted">Your market analysis workspace</p></div><a class="btn small" href="https://www.tradingview.com/chart/" target="_blank" rel="noopener">Open TradingView ↗</a></div>
         <div class="charts-workbench ${controlsCollapsed?'charts-panel-collapsed':''}">
           <aside class="charts-panel" id="chartsPanel" aria-label="Charts workspace controls" aria-hidden="${controlsCollapsed}">
-            <div class="charts-panel-head"><strong>Chart controls</strong><button class="btn small charts-panel-dismiss" type="button" data-charts-action="toggle-panel" aria-controls="chartsPanel" aria-expanded="${!controlsCollapsed}">Hide controls</button></div>
+            <div class="charts-panel-head"><strong>Charts</strong><button class="btn small charts-panel-dismiss" type="button" data-charts-action="toggle-panel" aria-controls="chartsPanel" aria-expanded="${!controlsCollapsed}">Hide controls</button></div>
             <div class="charts-panel-scroll">
               <div class="charts-toolbar">
           <div class="charts-section-title">Layout</div>
@@ -201,8 +205,7 @@
             </div>
           </aside>
           <div class="charts-view">
-            <div class="charts-view-head"><button class="btn small" type="button" data-charts-action="toggle-panel" aria-controls="chartsPanel" aria-expanded="${!controlsCollapsed}">${controlsCollapsed?'Show controls':'Hide controls'}</button><span class="muted">TradingView chart workspace</span></div>
-        <div class="charts-grid" data-charts-mode="${prefs.layout}" data-chart-count="${activeCharts().length}" style="--chart-count:${activeCharts().length}">
+            <div class="charts-grid" data-charts-mode="${prefs.layout}" data-chart-count="${activeCharts().length}" style="--chart-count:${activeCharts().length}">
           ${activeCharts().map(cardMarkup).join('')}
         </div>
           </div>
