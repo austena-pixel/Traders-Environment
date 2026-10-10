@@ -13,13 +13,35 @@ function json(data,status=200,headers={}){return new Response(JSON.stringify(dat
 function cors(origin){return origin===ORIGIN?{'access-control-allow-origin':ORIGIN,'access-control-allow-methods':'GET,POST,DELETE,OPTIONS','access-control-allow-headers':'authorization,content-type','access-control-max-age':'3600','vary':'Origin'}:{};}
 function clean(value,max,required=false){if(typeof value!=='string'||value.length>max||(required&&!value.trim()))deny('Invalid capture details.');return value.trim();}
 function validId(id){return typeof id==='string'&&UUID.test(id);}
+function databaseUrl(env,path){
+  let origin;
+  try{origin=new URL(env.SUPABASE_URL);}catch(_){deny('Supabase URL is invalid in Cloudflare variables.',503);}
+  if(origin.protocol!=='https:'||origin.hostname!=='tmxosoyqflmwqzjgnkez.supabase.co')
+    deny('Supabase URL points to the wrong project. Check SUPABASE_URL in Worker settings.',503);
+  return new URL(path,origin);
+}
 async function database(env,token,path,options={}){
-  const result=await fetch(new URL(path,env.SUPABASE_URL),{
-    ...options,redirect:'error',headers:{apikey:env.SUPABASE_PUBLISHABLE_KEY,authorization:'Bearer '+token,accept:'application/json',...(options.headers||{})}
-  });
-  if(!result.ok)deny('The trade database rejected the operation.',result.status===401||result.status===403?401:502);
-  const value=await result.text();
-  return value?JSON.parse(value):null;
+  let result;
+  try{
+    result=await fetch(databaseUrl(env,path),{
+      ...options,redirect:'error',headers:{apikey:env.SUPABASE_PUBLISHABLE_KEY,authorization:'Bearer '+token,accept:'application/json',...(options.headers||{})}
+    });
+  }catch(e){
+    if(Number.isInteger(e?.status))throw e;
+    console.error('TIOS_CAPTURE_SUPABASE_NETWORK',e?.name||'Error',e?.message||'Unknown network error');
+    deny('Cloudflare cannot reach Supabase. Check SUPABASE_URL and Worker logs.',502);
+  }
+  if(!result.ok){
+    console.error('TIOS_CAPTURE_SUPABASE_HTTP',result.status,path.split('?')[0]);
+    deny('Supabase rejected this '+(options.method||'GET')+' request (HTTP '+result.status+'). Check your Worker publishable key and trade permissions.',result.status===401||result.status===403?401:502);
+  }
+  try{
+    const value=await result.text();
+    return value?JSON.parse(value):null;
+  }catch(e){
+    console.error('TIOS_CAPTURE_SUPABASE_JSON',e?.name||'Error');
+    deny('Supabase returned an unexpected response.',502);
+  }
 }
 async function authenticate(req,env){
   const auth=req.headers.get('authorization')||'';
@@ -65,7 +87,12 @@ async function upload(req,env,auth){
   const bytes=new Uint8Array(await file.arrayBuffer());
   if(!realImage(bytes,file.type))deny('Invalid image data.',415);
   const id=crypto.randomUUID(),key=auth.id+'/'+tradeId+'/'+id+'/capture.'+TYPES[file.type];
-  await env.TIOS_EVIDENCE_BUCKET.put(key,bytes,{httpMetadata:{contentType:file.type}});
+  try{
+    await env.TIOS_EVIDENCE_BUCKET.put(key,bytes,{httpMetadata:{contentType:file.type}});
+  }catch(e){
+    console.error('TIOS_CAPTURE_R2_WRITE',e?.name||'Error',e?.message||'R2 write failure');
+    deny('Cloudflare R2 could not store this screenshot. Check the TIOS_EVIDENCE_BUCKET binding.',502);
+  }
   try{
     const payload={id,user_id:auth.id,trade_id:tradeId,category,custom_label:custom,note,chart_id:chartId,
       symbol,timeframe,capture_method:method,image_path:key,mime_type:file.type,file_size:bytes.byteLength,
@@ -100,8 +127,22 @@ export default {
     const origin=req.headers.get('origin'),corsHeaders=cors(origin),url=new URL(req.url);
     if(req.method==='OPTIONS')return new Response(null,{status:origin===ORIGIN?204:403,headers:corsHeaders});
     if(origin&&origin!==ORIGIN)return json({error:'Origin is not allowed.'},403);
-    if(req.method==='GET'&&url.pathname==='/health')
-      return json({ok:true,configured:Boolean(env.TIOS_EVIDENCE_BUCKET&&env.SUPABASE_URL&&env.SUPABASE_PUBLISHABLE_KEY)},200,corsHeaders);
+    if(req.method==='GET'&&url.pathname==='/health'){
+      const configured=Boolean(env.TIOS_EVIDENCE_BUCKET&&env.SUPABASE_URL&&env.SUPABASE_PUBLISHABLE_KEY);
+      let supabase='not_checked';
+      if(configured){
+        try{
+          const backend=await fetch(databaseUrl(env,'/auth/v1/health'),{
+            method:'GET',headers:{apikey:env.SUPABASE_PUBLISHABLE_KEY},redirect:'error'
+          });
+          supabase=backend.ok?'reachable':'http_'+backend.status;
+        }catch(e){
+          console.error('TIOS_CAPTURE_HEALTH',e?.name||'Error',e?.message||'Unexpected error');
+          supabase=Number.isInteger(e?.status)?'configuration_error':'network_error';
+        }
+      }
+      return json({ok:true,configured,supabase},200,corsHeaders);
+    }
     try{
       if(!env.TIOS_EVIDENCE_BUCKET||!env.SUPABASE_URL||!env.SUPABASE_PUBLISHABLE_KEY)deny('Screenshot service not configured.',503);
       if(new URL(env.SUPABASE_URL).protocol!=='https:')deny('Invalid storage configuration.',503);
@@ -122,6 +163,9 @@ export default {
       const headers=new Headers(result.headers);
       Object.entries(corsHeaders).forEach(([k,v])=>headers.set(k,v));
       return new Response(result.body,{status:result.status,headers});
-    }catch(e){return json({error:Number.isInteger(e?.status)?e.message:'Screenshot service unavailable.'},Number.isInteger(e?.status)?e.status:500,corsHeaders);}
+    }catch(e){
+      if(!Number.isInteger(e?.status))console.error('TIOS_CAPTURE_UNEXPECTED',e?.name||'Error',e?.message||'Unknown runtime failure');
+      return json({error:Number.isInteger(e?.status)?e.message:'Cloudflare Worker error. Open Worker Observability → Logs for TIOS_CAPTURE_UNEXPECTED.'},Number.isInteger(e?.status)?e.status:500,corsHeaders);
+    }
   }
 };
