@@ -5,6 +5,9 @@
   window.TIOSCharts={create({host,getClient,getUser,getAccounts,getSelectedAccount,getNumber,loadPublicTicks=async()=>{
     if(!window.TIOSDerivPublicTicks)await import('./core/deriv-public-ticks.js');
     return window.TIOSDerivPublicTicks;
+  },loadInstruments=async()=>{
+    if(!window.TIOSChartInstruments)await import('./core/chart-instruments.js');
+    return window.TIOSChartInstruments;
   }}){
     let visible=false,userId=null,prefs=null,loaded=false,loading=false,saving=false;
     let revision=null,saved=null,generation=0,expanded=null,focusBeforeExpand=null,previousOverflow='';
@@ -12,6 +15,43 @@
     const instances=new Map();
     const verification=window.TIOSMarketVerification.create({getClient,getUser,getAccounts,getSelectedAccount,getNumber});
     let pendingEvidenceTrade=null;
+    let sidebarMode='settings',instrumentWorkspace=null,instrumentLoadEpoch=0;
+    function renderSidebar(){
+      const settings=host.querySelector('.charts-toolbar'),instruments=host.querySelector('[data-charts-instruments]');
+      if(!settings||!instruments)return;
+      const recording=sidebarMode==='instruments';settings.hidden=recording;instruments.hidden=!recording;
+      host.querySelector('[data-charts-sidebar-title]').textContent=recording?'Instruments':'Charts';
+      const button=host.querySelector('[data-charts-action="instruments"]');
+      button.textContent=recording?'Chart settings':'Instruments';button.setAttribute('aria-pressed',String(recording));
+      verification.setControlsVisible(!controlsCollapsed&&!expanded&&!recording);
+    }
+    async function mountInstruments(){
+      const panel=host.querySelector('[data-charts-instruments]');if(!panel)return;
+      const id=userId,epoch=generation,attempt=++instrumentLoadEpoch;
+      panel.textContent='Loading your instrument recording forms…';
+      try{
+        if(!instrumentWorkspace){
+          const module=await loadInstruments();
+          if(attempt!==instrumentLoadEpoch||!alive(id,epoch)||!visible||sidebarMode!=='instruments')return;
+          if(typeof module?.create!=='function')throw Error('Unavailable instrument workspace');
+          instrumentWorkspace=module.create({getUser});
+        }
+        if(attempt!==instrumentLoadEpoch||!alive(id,epoch)||!visible||sidebarMode!=='instruments')return;
+        instrumentWorkspace.mount(panel);
+      }catch(_){
+        if(attempt!==instrumentLoadEpoch||!alive(id,epoch)||!visible||sidebarMode!=='instruments')return;
+        instrumentWorkspace?.unmount();
+        panel.textContent='Instrument forms could not be opened. Your saved records are preserved.';
+        const retry=document.createElement('button');retry.type='button';retry.className='btn small';retry.dataset.chartsAction='retry-instruments';retry.textContent='Retry';panel.appendChild(retry);
+      }
+    }
+    function setSidebarMode(mode){
+      if(!visible||!loaded)return;
+      instrumentLoadEpoch++;instrumentWorkspace?.unmount();sidebarMode=mode;
+      renderSidebar();
+      const scroll=host.querySelector('.charts-panel-scroll');if(scroll)scroll.scrollTop=0;
+      if(mode==='instruments')mountInstruments();
+    }
     let quoteFeed=null,quoteState=null,quoteShown=false,quoteLoading=false,quoteMarket='v75_1s',quoteMarketChosen=false,quoteLoadEpoch=0,quoteRetryTimer=null;
     const quoteActive=()=>quoteLoading||['connecting','catalogue','awaiting_ticks','streaming','stale'].includes(quoteState?.status);
     const canQuote=()=>visible&&loaded&&getUser()?.id===userId&&!document.hidden&&!expanded;
@@ -158,7 +198,7 @@
       const panel=workspace.querySelector('.charts-panel');
       panel.inert=controlsCollapsed;
       panel.setAttribute('aria-hidden',String(controlsCollapsed));
-      verification.setControlsVisible(!controlsCollapsed);
+      verification.setControlsVisible(!controlsCollapsed&&sidebarMode==='settings');
       workspace.querySelectorAll('[data-charts-action="toggle-panel"]').forEach(btn=>{
         btn.setAttribute('aria-expanded',String(!controlsCollapsed));
         if(btn.classList.contains('charts-reveal-controls')){
@@ -181,7 +221,7 @@
       host.querySelectorAll('.charts-grid [data-chart-id],.charts-panel,.charts-head,.charts-view-head').forEach(node=>node.inert=false);
       const panel=host.querySelector('.charts-panel');
       if(panel)panel.inert=controlsCollapsed;
-      verification.setControlsVisible(!controlsCollapsed);
+      verification.setControlsVisible(!controlsCollapsed&&sidebarMode==='settings');
       document.body.style.overflow=previousOverflow;
       expanded=null;
       renderPublicQuote();
@@ -291,11 +331,11 @@
     }
     function render(){
       if(!visible||!prefs)return;
-      closeExpanded(false);dispose();
+      instrumentLoadEpoch++;instrumentWorkspace?.unmount();closeExpanded(false);dispose();
       host.innerHTML=`
         <div class="charts-workbench ${controlsCollapsed?'charts-panel-collapsed':''}">
           <aside class="charts-panel" id="chartsPanel" aria-label="Charts workspace controls" aria-hidden="${controlsCollapsed}">
-            <div class="charts-panel-head"><strong>Charts</strong><button class="btn small charts-panel-dismiss" type="button" data-charts-action="toggle-panel" aria-controls="chartsPanel" aria-expanded="${!controlsCollapsed}">Hide controls</button></div>
+            <div class="charts-panel-head"><strong data-charts-sidebar-title>Charts</strong><button class="btn small" type="button" data-charts-action="instruments" aria-controls="chartsInstruments" aria-pressed="false">Instruments</button><button class="btn small charts-panel-dismiss" type="button" data-charts-action="toggle-panel" aria-controls="chartsPanel" aria-expanded="${!controlsCollapsed}">Hide controls</button></div>
             <div class="charts-panel-scroll">
               <div class="charts-toolbar">
           <div class="charts-section-title">Layout</div>
@@ -320,6 +360,7 @@
           <div class="charts-save"><button type="button" class="btn primary" data-charts-action="save">Save preferences</button><span data-charts-status role="status" aria-live="polite"></span><button type="button" class="btn small" data-charts-action="reload" hidden>Reload saved preferences</button></div>
           <p class="charts-help">Save defaults with these controls. Changes inside TradingView stay in this chart session. Market data availability and delays depend on the instrument.</p>
               </div>
+              <div class="charts-instruments" id="chartsInstruments" data-charts-instruments aria-label="Record instrument responses" hidden></div>
             </div>
           </aside>
           <div class="charts-view">
@@ -340,9 +381,11 @@
       host.querySelector('.charts-panel').inert=controlsCollapsed;
       changed();refreshWidgets();
       renderPublicQuote();
-      verification.setControlsVisible(!controlsCollapsed);
+      verification.setControlsVisible(!controlsCollapsed&&sidebarMode==='settings');
       verification.mount(host.querySelector('.charts-toolbar'));
-      if(pendingEvidenceTrade){if(controlsCollapsed)toggleControls();verification.openTrade(pendingEvidenceTrade);pendingEvidenceTrade=null;}
+      renderSidebar();
+      if(sidebarMode==='instruments')mountInstruments();
+      if(pendingEvidenceTrade){setSidebarMode('settings');if(controlsCollapsed)toggleControls();verification.openTrade(pendingEvidenceTrade);pendingEvidenceTrade=null;}
     }
     async function load(){
       if(loading)return;
@@ -422,6 +465,8 @@
       const button=event.target.closest('[data-charts-action]');if(!button)return;
       const action=button.dataset.chartsAction;
       if(action==='toggle-panel')toggleControls();
+      if(action==='instruments')setSidebarMode(sidebarMode==='settings'?'instruments':'settings');
+      if(action==='retry-instruments')mountInstruments();
       if(action==='prefer-deriv')applyPreferredDeriv();
       if(action==='start-public-quote')startPublicQuote();
       if(action==='stop-public-quote')stopPublicQuote();
@@ -431,7 +476,7 @@
       if(action==='reset-chart')resetChart(button.closest('[data-chart-id]'));
       if(action==='retry-chart')mountChart(button.closest('[data-chart-id]'),true);
       if(action==='dismiss-status')cardMessage(button.closest('[data-chart-id]'),'');
-      if(action==='reload'&&!saving){if(quoteActive())stopPublicQuote('Paused while chart preferences reload. Press Start when they are loaded.');closeExpanded(false);dispose();load()}
+      if(action==='reload'&&!saving){instrumentLoadEpoch++;instrumentWorkspace?.unmount();if(quoteActive())stopPublicQuote('Paused while chart preferences reload. Press Start when they are loaded.');closeExpanded(false);dispose();load()}
     });
     document.addEventListener('visibilitychange',()=>{
       if(document.hidden&&quoteActive())stopPublicQuote('Paused while T-IOS was in the background. Press Start to reconnect.');
@@ -469,11 +514,12 @@
       },
       openTrade(trade){
         if(!loaded){pendingEvidenceTrade=trade;return;}
+        if(sidebarMode==='instruments')setSidebarMode('settings');
         if(controlsCollapsed)toggleControls();
         verification.openTrade(trade);
       },
-      hide(){capture();verification.hide();visible=false;stopPublicQuote('Paused while Charts is closed. Press Start to reconnect.');closeExpanded(false);dispose();host.replaceChildren()},
-      reset(){api.hide();quoteFeed?.dispose();quoteFeed=null;quoteState=null;quoteShown=false;quoteMarket='v75_1s';quoteMarketChosen=false;verification.reset();pendingEvidenceTrade=null;generation++;userId=null;prefs=null;loaded=false;loading=false;saving=false;revision=null;saved=null}
+      hide(){capture();instrumentLoadEpoch++;instrumentWorkspace?.unmount();verification.hide();visible=false;stopPublicQuote('Paused while Charts is closed. Press Start to reconnect.');closeExpanded(false);dispose();host.replaceChildren()},
+      reset(){api.hide();instrumentWorkspace?.reset();instrumentWorkspace=null;sidebarMode='settings';quoteFeed?.dispose();quoteFeed=null;quoteState=null;quoteShown=false;quoteMarket='v75_1s';quoteMarketChosen=false;verification.reset();pendingEvidenceTrade=null;generation++;userId=null;prefs=null;loaded=false;loading=false;saving=false;revision=null;saved=null}
     };
     return api;
   }};
