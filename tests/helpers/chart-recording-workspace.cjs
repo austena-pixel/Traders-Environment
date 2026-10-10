@@ -9,7 +9,7 @@ function installRecordingWorkspace(e){
  w.document.body.insertAdjacentHTML('beforeend',block('    <section class="page" id="page-execution">','\n\n\n\n\n    <!-- INTELLIGENCE -->'));
  const workspace=w.document.querySelector('#page-execution .execution-map-layout');
  const documents={
-  playbook:[{id:'pb',name:'Entry plan',documentHtml:JSON.stringify([{type:'check',label:'Entry condition'},{type:'psych-prompt',reflectionId:'pb-note',label:'Entry context'}])}],
+  playbook:[{id:'pb',name:'Entry plan',documentHtml:JSON.stringify([{type:'check',label:'Entry condition'},{type:'choice',label:'Market context',layout:'squares',options:['Balance','Imbalance'],optionHtml:['<span style="color:#000;font-size:22px">Balance</span>','Imbalance']},{type:'psych-prompt',reflectionId:'pb-note',label:'Entry context'}])}],
   checklist:[{id:'rules',name:'Trade rules',ruleScope:'trade',documentHtml:JSON.stringify([{type:'check',label:'Respect risk'}])},
     ...['session','daily','weekly','monthly'].map(ruleScope=>({id:ruleScope,name:ruleScope+' rules',ruleScope,documentHtml:JSON.stringify([{type:'check',label:'Period rule'},{type:'psych-prompt',reflectionId:'period-note',label:'Period behaviour'}])}))],
   psych:[{id:'psych',name:'Mindset',documentHtml:JSON.stringify([{type:'psych-prompt',reflectionId:'psych-note',label:'What happened?'},{type:'psych-prompt',reflectionId:'score_discipline',responseType:'score',label:'Discipline'}])}]
