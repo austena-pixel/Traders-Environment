@@ -25,6 +25,18 @@ are controlled by TradingView, so the Return button remains available.
 
 Charts now uses a scrollable left controls panel beside the main chart display. Layout, chart count, appearance, timezone, per-chart instrument/timeframe/responsibility settings, and Save preferences live in the panel. Use **Hide controls** to reclaim the full chart width and **Show controls** to restore it. On narrow screens, the panel stacks above the chart and begins collapsed. Individual chart configurations are collapsible, keeping the working chart area unobstructed. Existing chart frames remain mounted when the controls panel is hidden or shown.
 
+## Deriv synthetic-index stage 1
+
+The left Charts sidebar now includes an optional Deriv symbol chooser for each chart.
+The two separate instruments are:
+
+- **Volatility 75 (1s) Index** — `DERIV:VOLATILITY_75_1S_INDEX` ↔ observed Deriv MT5 `Volatility 75 (1s) Index.0`
+- **Volatility 75 Index** — `DERIV:VOLATILITY_75_INDEX` ↔ observed Deriv MT5 `Volatility 75 Index.0`
+
+These are name mappings only: historical candle equivalence, feed synchronization and order-price parity have **not** been verified.
+"Use V75 (1s) as my default" switches the symbols in both the Single and Multiple layouts, without changing independent timeframes or roles. This is an **explicit per-user action**; users must then press Save preferences. Existing saved symbols, chart counts, journals, MT5 bridge connections and trade data are not altered by this update.
+The manual TradingView instrument field remains available for other symbols. No automatic order execution, chart capture, chart-to-trade pairing, or MT5 API changes are included.
+
 ## Official widget boundary
 
 This feature uses TradingView's free **Advanced Real-Time Chart embed widget**,

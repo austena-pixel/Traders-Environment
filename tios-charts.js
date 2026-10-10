@@ -31,6 +31,25 @@
         chart.responsibility=panel.querySelector('[data-chart-field="responsibility"]').value;
       });
     }
+    function syncDerivHint(panel){
+      if(!panel)return;
+      const input=panel.querySelector('[data-chart-field="symbol"]');
+      const hint=panel.querySelector('[data-deriv-mapping]');
+      const select=panel.querySelector('[data-deriv-preset]');
+      if(!input||!hint||!select)return;
+      const mapping=P.derivBySymbol(input.value);
+      select.value=mapping?.symbol||'';
+      hint.textContent=mapping?'MT5: '+mapping.mt5Symbol+' (name mapping only; price data not verified)':'Manual symbol — no automatic Deriv MT5 mapping';
+    }
+    function applyPreferredDeriv(){
+      if(!loaded||saving)return;
+      capture();
+      for(const mode of ['single','multiple']){
+        for(const chart of prefs.charts[mode])chart.symbol=P.preferredDerivSymbol;
+      }
+      render();
+      status('Volatility 75 (1s) selected for both layouts. Save preferences to make it your default.');
+    }
     function cardForControl(target){
       const panel=target.closest('[data-charts-setup-id]');
       return [...host.querySelectorAll('.charts-grid [data-chart-id]')]
@@ -51,7 +70,26 @@
       description.className='charts-setup-caption';
       description.textContent=chart?.responsibility||'Configure chart';
       title.append(label,description);
+      const instrument=form.querySelector('.charts-symbol');
+      const preset=document.createElement('label');
+      preset.className='charts-deriv-picker';
+      preset.textContent='Deriv synthetic indices';
+      const select=document.createElement('select');
+      select.dataset.derivPreset='';
+      select.setAttribute('aria-label','Chart '+(index+1)+' Deriv synthetic index');
+      const manual=document.createElement('option');manual.value='';manual.textContent='Manual instrument';
+      select.append(manual,...P.derivSymbols.map(item=>{
+        const option=document.createElement('option');option.value=item.symbol;option.textContent=item.label;return option;
+      }));
+      preset.appendChild(select);
+      instrument.before(preset);
+      const hint=document.createElement('div');
+      hint.className='charts-deriv-mapping';
+      hint.dataset.derivMapping='';
+      hint.setAttribute('aria-live','polite');
+      form.appendChild(hint);
       panel.append(title,form);
+      syncDerivHint(panel);
       host.querySelector('.charts-panel-settings').appendChild(panel);
     }
     function toggleControls(){
@@ -196,6 +234,9 @@
           <div class="charts-section-title">Appearance</div>
           <label class="charts-setting">Chart theme<select data-charts-setting="theme"><option value="dark" ${prefs.theme==='dark'?'selected':''}>Dark</option><option value="light" ${prefs.theme==='light'?'selected':''}>Light</option></select></label>
           <label class="charts-setting">Timezone<select data-charts-setting="timezone">${P.timezones.map(([value,label])=>`<option value="${value}" ${prefs.timezone===value?'selected':''}>${label}</option>`).join('')}</select></label>
+          <div class="charts-section-title">Deriv preferences</div>
+          <button class="btn small charts-deriv-default" type="button" data-charts-action="prefer-deriv">Use V75 (1s) as my default</button>
+          <p class="charts-deriv-note">Sets the instrument for all charts in both layouts. Your timeframe and responsibility settings remain unchanged. Save preferences to persist.</p>
           <div class="charts-section-title">Chart setup</div>
           <div class="charts-panel-settings"></div>
           <div class="charts-section-title">Preferences</div>
@@ -259,6 +300,7 @@
     host.addEventListener('input',event=>{
       if(!event.target.matches('[data-chart-field]'))return;
       capture();changed();
+      if(event.target.dataset.chartField==='symbol')syncDerivHint(event.target.closest('[data-charts-setup-id]'));
       const card=cardForControl(event.target);
       if(event.target.dataset.chartField==='responsibility'){
         const summary=event.target.closest('[data-charts-setup-id]')?.querySelector('.charts-setup-caption');
@@ -267,6 +309,14 @@
       }
     });
     host.addEventListener('change',event=>{
+      if(event.target.matches('[data-deriv-preset]')){
+        if(!event.target.value)return;
+        const panel=event.target.closest('[data-charts-setup-id]');
+        panel.querySelector('[data-chart-field="symbol"]').value=event.target.value;
+        capture();syncDerivHint(panel);changed();
+        mountChart(cardForControl(event.target));
+        return;
+      }
       if(event.target.matches('[data-charts-count]')){resizeMultiple(Number(event.target.value));return}
       if(event.target.matches('[data-charts-setting]')){
         prefs[event.target.dataset.chartsSetting]=event.target.value;changed();refreshWidgets();
@@ -280,6 +330,7 @@
       const button=event.target.closest('[data-charts-action]');if(!button)return;
       const action=button.dataset.chartsAction;
       if(action==='toggle-panel')toggleControls();
+      if(action==='prefer-deriv')applyPreferredDeriv();
       if(action==='save')save();
       if(action==='expand')expand(button.closest('[data-chart-id]'));
       if(action==='retry-chart')mountChart(button.closest('[data-chart-id]'),true);

@@ -124,3 +124,9 @@ body.charts-workspace .main{padding:8px 10px}
   body.charts-workspace .main{padding:6px}
   #chartsWorkspace .charts-card-actions .charts-tv-link{display:none}
 }
+
+/* Optional Deriv MT5-to-TradingView symbol catalogue (Charts only). */
+#chartsWorkspace .charts-deriv-picker{grid-column:1/-1}
+#chartsWorkspace .charts-deriv-mapping{grid-column:1/-1;font-size:10px;line-height:1.4;color:var(--muted);overflow-wrap:anywhere}
+#chartsWorkspace .charts-deriv-default{width:100%;white-space:normal;text-align:center;line-height:1.35;min-height:36px}
+#chartsWorkspace .charts-deriv-note{font-size:10px;line-height:1.45;color:var(--muted);margin:0}

@@ -21,3 +21,25 @@ test('official widget configuration requests supported analysis controls without
  assert.equal(config.interval,'5');assert.equal(config.allow_symbol_change,true);assert.equal(config.hide_side_toolbar,false);assert.equal(config.autosize,true);assert.equal(config.save_image,false);
  assert.equal(config.support_host,'https://www.tradingview.com');assert.equal(Object.keys(config).some(k=>/token|password|user|api_key/.test(k)),false);
 });
+
+test('Deriv Volatility 75 variants map to distinct observed MT5 symbol names',()=>{
+ const [one,standard]=P.derivSymbols;
+ assert.equal(one.symbol,'DERIV:VOLATILITY_75_1S_INDEX');
+ assert.equal(one.mt5Symbol,'Volatility 75 (1s) Index.0');
+ assert.equal(standard.symbol,'DERIV:VOLATILITY_75_INDEX');
+ assert.equal(standard.mt5Symbol,'Volatility 75 Index.0');
+ assert.notEqual(one.symbol,standard.symbol);
+ assert.equal(P.derivByMt5Symbol('volatility 75 (1s) index.0')?.symbol,one.symbol);
+ assert.equal(P.derivByMt5Symbol('Volatility 75 Index.0')?.symbol,standard.symbol);
+ assert.equal(P.derivBySymbol('DERIV:VOLATILITY_75_1S_INDEX')?.mt5Symbol,one.mt5Symbol);
+ assert.equal(P.derivBySymbol('FX:EURUSD'),null);
+});
+test('Deriv choices work within existing version-one preferences without changing defaults for other users',()=>{
+ const p=P.defaults();
+ assert.equal(p.charts.single[0].symbol,'FX:EURUSD');
+ p.charts.single[0].symbol=P.preferredDerivSymbol;
+ p.charts.multiple.forEach(chart=>chart.symbol=P.preferredDerivSymbol);
+ assert.equal(P.validate(p),null);
+ assert.deepEqual(p.charts.multiple.map(chart=>chart.interval),['240','60','5']);
+ assert.equal(P.widgetSettings(p.charts.single[0],p).symbol,P.preferredDerivSymbol);
+});
