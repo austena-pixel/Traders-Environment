@@ -21,6 +21,10 @@ one chart without recreating it; **Return to layout** closes it. Escape also
 closes it when focus is in T-IOS. Keyboard events inside a cross-origin chart
 are controlled by TradingView, so the Return button remains available.
 
+## Compact left controls panel
+
+Charts now uses a scrollable left controls panel beside the main chart display. Layout, chart count, appearance, timezone, per-chart instrument/timeframe/responsibility settings, and Save preferences live in the panel. Use **Hide controls** to reclaim the full chart width and **Show controls** to restore it. On narrow screens, the panel stacks above the chart and begins collapsed. Individual chart configurations are collapsible, keeping the working chart area unobstructed. Existing chart frames remain mounted when the controls panel is hidden or shown.
+
 ## Official widget boundary
 
 This feature uses TradingView's free **Advanced Real-Time Chart embed widget**,
