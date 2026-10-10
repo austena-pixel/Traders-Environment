@@ -36,7 +36,15 @@
     clock.addEventListener('click',()=>{
       const opening=!development.classList.contains('hios-development-open');
       setDevelopmentOpen(opening);
-      if(opening)document.getElementById('hiosDomainGrid')?.focus({preventScroll:true});
+      if(opening){
+        document.getElementById('hiosDomainGrid')?.focus({preventScroll:true});
+        const seen=capabilityEventIds();
+        if(seen.length){
+          readIds=[...new Set([...readIds,...seen])];
+          try{const key=readKey();if(key)localStorage.setItem(key,JSON.stringify(readIds))}catch{}
+          render();
+        }
+      }
     });
     document.addEventListener('keydown',event=>{if(event.key==='Escape'&&development.classList.contains('hios-development-open')&&!dialog.open){setDevelopmentOpen(false);clock.focus();}});
     document.addEventListener('pointerdown',event=>{if(development.classList.contains('hios-development-open')&&!development.contains(event.target)&&!clock.contains(event.target)&&!dialog.open)setDevelopmentOpen(false);});
