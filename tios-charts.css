@@ -111,3 +111,16 @@ body.charts-workspace .main{height:100vh;height:100dvh;min-height:0;display:flex
   #chartsWorkspace .charts-layout{flex-basis:auto}
   #chartsWorkspace .charts-card{min-height:440px}
 }
+
+/* Keep chart content at the top: controls are inside the sidebar or compact chart header. */
+body.charts-workspace .main{padding:8px 10px}
+#chartsWorkspace{gap:0}
+#chartsWorkspace .charts-card-top{min-height:34px;padding:4px 8px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+#chartsWorkspace .charts-card-actions{display:flex;align-items:center;justify-content:flex-end;gap:5px;min-width:0}
+#chartsWorkspace .charts-card-actions .btn{font-size:11px;padding:5px 8px;white-space:nowrap}
+#chartsWorkspace .charts-card-actions .charts-tv-link{font-size:10px}
+#chartsWorkspace .charts-grid{margin:0}
+@media(max-width:860px){
+  body.charts-workspace .main{padding:6px}
+  #chartsWorkspace .charts-card-actions .charts-tv-link{display:none}
+}
