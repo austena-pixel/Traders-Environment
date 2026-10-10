@@ -388,7 +388,7 @@
     function cardMarkup(chart,index){return `<section class="charts-card" data-chart-id="${escape(chart.id)}" aria-label="Chart ${index+1}">
             <div class="charts-card-top"><strong>Chart ${index+1}</strong><div class="charts-card-actions">
               ${index===0?`<button class="btn small charts-reveal-controls" type="button" data-charts-action="toggle-panel" aria-controls="chartsPanel" aria-expanded="${!controlsCollapsed}" ${controlsCollapsed?'':'hidden'}>Show controls</button><button class="btn small charts-account-link" type="button" data-charts-action="manage-deriv-account" title="Manage the selected Deriv MT5 account inside T-IOS">Deriv account</button><a class="btn small charts-tv-link" href="https://www.tradingview.com/chart/?symbol=${escape(encodeURIComponent(chart.symbol))}" target="_blank" rel="noopener noreferrer" data-charts-tv-chart title="Open the T-IOS configured symbol on TradingView in a new tab; widget toolbar changes are not tracked">Open TradingView ↗</a>`:''}
-              <button class="btn small" type="button" data-charts-action="reset-chart" title="Reload this chart to its saved instrument, or the configured instrument if no saved chart exists">Reset instrument</button><button class="btn small" type="button" data-charts-action="expand" aria-expanded="false">Expand</button></div></div>
+              <button class="btn small" type="button" data-charts-action="capture" title="Capture this chart as evidence for a trade">Capture</button><button class="btn small" type="button" data-charts-action="reset-chart" title="Reload this chart to its saved instrument, or the configured instrument if no saved chart exists">Reset instrument</button><button class="btn small" type="button" data-charts-action="expand" aria-expanded="false">Expand</button></div></div>
             <form class="charts-controls">
               <label class="charts-symbol">Instrument<input data-chart-field="symbol" aria-label="Chart ${index+1} instrument" value="${escape(chart.symbol)}" maxlength="81" placeholder="FX:EURUSD" list="charts-symbols" required spellcheck="false" autocomplete="off"></label>
               <label>Timeframe<select data-chart-field="interval" aria-label="Chart ${index+1} timeframe">${P.intervals.map(([value,label])=>`<option value="${value}" ${chart.interval===value?'selected':''}>${label}</option>`).join('')}</select></label>
@@ -804,6 +804,12 @@
       if(action==='stop-public-quote')stopPublicQuote();
       if(action==='hide-public-quote'){quoteShown=false;stopPublicQuote();}
       if(action==='save')save();
+      if(action==='capture'){
+        const card=button.closest('[data-chart-id]');
+        const chart=activeCharts().find(item=>item.id===card?.dataset.chartId);
+        if(chart&&window.TIOSChartCaptureController)window.TIOSChartCaptureController.open(chart,null);
+        return;
+      }
       if(action==='expand')expand(button.closest('[data-chart-id]'));
       if(action==='reset-chart')resetChart(button.closest('[data-chart-id]'));
       if(action==='retry-chart')mountChart(button.closest('[data-chart-id]'),true);
