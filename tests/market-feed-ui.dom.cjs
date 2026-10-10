@@ -13,11 +13,13 @@ function environment(){
  const trade={id:'trade',user_id:'owner',account_id:'account',source:'mt5',instrument:'Volatility 75 (1s) Index.0',opened_at:new Date(Date.parse(opening)+1800000).toISOString(),mt5_position_id:'position',is_deleted:false};
  const tables={chart_workspace_preferences:[{user_id:'owner',configuration:prefs,revision:1,schema_version:1}],trades:[trade],mt5_market_symbols:[],mt5_market_candles:[{id:'candle',account_id:'account',user_id:'owner',instrument_key:'v75_1s',mt5_symbol:trade.instrument,timeframe:'H1',candle_open_at:opening,ohlc:bar,clock_confirmed:true,completed:true,retrieved_at:new Date().toISOString(),terminal_retrieved_at:new Date().toISOString(),broker_utc_offset_seconds:0}],mt5_candle_requests:[],market_feed_comparisons:[]};
  tables.mt5_market_candles.push({...tables.mt5_market_candles[0],id:'prior-candle',candle_open_at:F.lastClosedOpening('H1',Date.parse(trade.opened_at))});
- const writes=[];
- const client={from(table){const filters=[],q={method:'get',row:null,start:0,end:Infinity,singleRow:false,select(){return q},eq(k,v){filters.push([k,v]);return q},order(){return q},limit(n){q.end=n-1;return q},range(a,b){q.start=a;q.end=b;return q},maybeSingle(){q.singleRow=true;return q},single(){q.singleRow=true;return q},insert(row){q.method='insert';q.row=row;return q},update(row){q.method='update';q.row=row;return q},then(resolve,reject){return Promise.resolve().then(()=>{
+ const writes=[],reads=[];
+ const client={from(table){const filters=[],q={method:'get',row:null,start:0,end:Infinity,singleRow:false,columns:'*',select(columns='*'){q.columns=columns;return q},eq(k,v){filters.push([k,v]);return q},order(){return q},limit(n){q.end=n-1;return q},range(a,b){q.start=a;q.end=b;return q},maybeSingle(){q.singleRow=true;return q},single(){q.singleRow=true;return q},insert(row){q.method='insert';q.row=row;return q},update(row){q.method='update';q.row=row;return q},then(resolve,reject){return Promise.resolve().then(()=>{
+ if(q.method==='get')reads.push({table,columns:q.columns});
  let rows=(tables[table]||[]).filter(row=>filters.every(([k,v])=>row[k]===v));
  if(q.method==='insert'){
   writes.push({table,row:structuredClone(q.row)});const saved={...q.row,id:'saved-'+writes.length,created_at:new Date().toISOString()};
+  if(table==='mt5_candle_requests'){saved.status='queued';saved.expires_at=new Date(Date.now()+900000).toISOString();}
   if(table==='market_feed_comparisons'){saved.status='Unverified Market Data';saved.mt5_position_id='position';saved.mt5_deal_ids=['a','b'];saved.differences={open:0,high:0,low:0,close:0};saved.broker_source=q.row.broker_candle_id?'mt5_bridge':'manual_mt5_chart';saved.closed_before_recorded_entry=false;}
   tables[table].unshift(saved);rows=[saved];
  }
@@ -29,11 +31,12 @@ function environment(){
  const find=s=>w.document.querySelector(s),field=name=>find('[data-market-field="'+name+'"]');
  const change=(name,value)=>{field(name).value=value;field(name).dispatchEvent(new w.Event('change',{bubbles:true}))};
  const input=(name,value)=>{field(name).value=String(value);field(name).dispatchEvent(new w.Event('input',{bubbles:true}))};
- return {w,dom,controller,tables,writes,find,field,change,input,trade,setUser:v=>{user=v}};
+ const openEvidence=async()=>{const panel=find('.market-verification');panel.open=true;panel.dispatchEvent(new w.Event('toggle'));await settle();await settle();};
+ return {w,dom,controller,tables,writes,reads,find,field,change,input,trade,openEvidence,setUser:v=>{user=v}};
 }
 test('Charts retains chart display, exposes stale mapping honestly, calculates and saves linked evidence',async()=>{
  const e=environment();try{
- e.controller.show();await settle();await settle();
+ e.controller.show();await settle();await settle();await e.openEvidence();
  assert.equal(e.find('.charts-frame')!==null,true);assert.equal(e.find('[data-market-connection]').textContent.includes('Stale / offline'),true);
  assert.match(e.find('[data-market-mapping]').textContent,/Verified Mapping.*historical/);
  assert.equal(e.field('mt5_open').value,'100');assert.equal(e.field('mt5_open').readOnly,true);
@@ -52,7 +55,7 @@ test('Charts retains chart display, exposes stale mapping honestly, calculates a
 });
 test('manual fallback, market mismatch, reload to saved symbol and session disposal preserve isolation',async()=>{
  const e=environment();try{
- e.controller.show();await settle();await settle();e.change('mode','manual_mt5_chart');await settle();
+ e.controller.show();await settle();await settle();await e.openEvidence();e.change('mode','manual_mt5_chart');await settle();
  assert.equal(e.field('mt5_open').readOnly,false);
  for(const [name,value] of Object.entries({open:102,high:112,low:92,close:107})){e.input('mt5_'+name,value);e.input('tv_'+name,value-2)}
  assert.equal(e.find('[data-market-result]').textContent,'Mismatch');assert.match(e.find('[data-market-explanation]').textContent,/cause is unknown/);
@@ -63,7 +66,7 @@ test('manual fallback, market mismatch, reload to saved symbol and session dispo
  const frame=e.find('.charts-frame');e.find('[data-charts-action="toggle-panel"]').click();assert.equal(frame.isConnected,true);e.find('[data-charts-action="toggle-panel"]').click();assert.equal(frame.isConnected,true);
  e.find('[data-charts-layout="multiple"]').click();assert.equal(e.w.document.querySelectorAll('.charts-frame').length,3);assert.equal(e.field('mt5_open').value,'102');
  e.controller.hide();assert.equal(e.find('.charts-frame'),null);e.controller.show();await settle();assert.equal(e.field('mt5_open').value,'102');
- e.controller.reset();e.setUser({id:'other'});e.controller.show();await settle();await settle();assert.equal(e.field('tv_open').value,'');assert.equal(e.find('[data-market-history]').textContent.includes('Linked position'),false);
+ e.controller.reset();e.setUser({id:'other'});e.controller.show();await settle();await settle();await e.openEvidence();assert.equal(e.field('tv_open').value,'');assert.equal(e.find('[data-market-history]').textContent.includes('Linked position'),false);
  }finally{e.controller.reset();e.dom.window.close()}
 });
 test('day-trade modal yields to market evidence without resetting the journal draft',async()=>{
@@ -75,5 +78,53 @@ test('day-trade modal yields to market evidence without resetting the journal dr
  Object.assign(e.w,{trades:[e.trade],currentUser:{id:'owner'},chartWorkspace:e.controller,$:s=>e.w.document.querySelector(s)});
  e.w.eval(handler);e.find('[data-market-evidence-trade]').click();await settle();await settle();
  assert.equal(e.find('#tradeModal').classList.contains('open'),false);assert.equal(e.find('#journalDraft').value,'unsaved reflection');assert.equal(e.field('trade').value,'trade');assert.equal(e.tables.trades.length,1);
+ }finally{e.controller.reset();e.dom.window.close()}
+});
+test('ordinary chart viewing has no verification queries; only a pending candle is polled',async()=>{
+ const e=environment(),timers=new Map();let nextTimer=0;
+ e.w.setTimeout=(callback,delay)=>{const id=++nextTimer;timers.set(id,{callback,delay});return id;};
+ e.w.clearTimeout=id=>timers.delete(id);
+ const tick=async()=>{const [id,timer]=timers.entries().next().value;timers.delete(id);timer.callback();await settle();await settle();};
+ try{
+  e.controller.show();await settle();await settle();
+  assert.deepEqual(e.reads.map(r=>r.table),['chart_workspace_preferences']);assert.equal(timers.size,0);
+  const frame=e.find('.charts-frame');await e.openEvidence();
+  const projection=e.reads.find(r=>r.table==='trades').columns;
+  assert.equal(projection.includes('*'),false);assert.match(projection,/mt5_position_id/);assert.equal(timers.size,0);
+  e.find('[data-market-action="request"]').click();await settle();await settle();
+  assert.equal(timers.size,1);assert.equal([...timers.values()][0].delay,3000);
+  let start=e.reads.length;await tick();
+  assert.deepEqual(e.reads.slice(start).map(r=>r.table),['mt5_market_candles','mt5_candle_requests']);
+  assert.equal(frame.isConnected,true);assert.equal(timers.size,1);
+  e.find('[data-charts-action="toggle-panel"]').click();assert.equal(timers.size,0);
+  start=e.reads.length;await settle();assert.equal(e.reads.length,start);
+  e.find('[data-charts-action="toggle-panel"]').click();await settle();await settle();assert.equal(timers.size,1);
+  Object.defineProperty(e.w.document,'hidden',{configurable:true,value:true});
+  e.w.document.dispatchEvent(new e.w.Event('visibilitychange'));assert.equal(timers.size,0);
+  start=e.reads.length;await settle();assert.equal(e.reads.length,start);
+  Object.defineProperty(e.w.document,'hidden',{configurable:true,value:false});
+  e.w.document.dispatchEvent(new e.w.Event('visibilitychange'));await settle();await settle();assert.equal(timers.size,1);
+  e.tables.mt5_candle_requests[0].status='completed';await tick();assert.equal(timers.size,0);
+  e.find('.market-verification').open=false;e.find('.market-verification').dispatchEvent(new e.w.Event('toggle'));
+  start=e.reads.length;await settle();assert.equal(e.reads.length,start);assert.equal(timers.size,0);
+  assert.equal(frame.isConnected,true);assert.equal(e.writes.some(r=>r.table==='trades'),false);
+ }finally{e.controller.reset();e.dom.window.close()}
+});
+test('reselecting the preferred instrument preserves running charts and manual evidence drafts',async()=>{
+ const e=environment();try{
+  e.controller.show();await settle();await settle();await e.openEvidence();
+  e.input('tv_open',321);e.find('[data-charts-layout="multiple"]').click();await settle();await settle();
+  const frames=[...e.w.document.querySelectorAll('.charts-frame')],reads=e.reads.length;
+  e.find('[data-charts-action="prefer-deriv"]').click();
+  assert.deepEqual([...e.w.document.querySelectorAll('.charts-frame')],frames);
+  assert.equal(e.reads.length,reads);assert.equal(e.field('tv_open').value,'321');assert.equal(e.find('.market-verification').open,true);
+  const setup=e.find('[data-charts-setup-id="entry"]'),symbol=setup.querySelector('[data-chart-field="symbol"]');
+  symbol.value='DERIV:VOLATILITY_75_INDEX';symbol.dispatchEvent(new e.w.Event('input',{bubbles:true}));
+  setup.querySelector('form').dispatchEvent(new e.w.Event('submit',{bubbles:true,cancelable:true}));
+  const changed=e.find('[data-chart-id="entry"] .charts-frame');assert.notEqual(changed,frames[2]);
+  e.find('[data-charts-action="prefer-deriv"]').click();
+  const after=[...e.w.document.querySelectorAll('.charts-frame')];assert.equal(after[0],frames[0]);assert.equal(after[1],frames[1]);assert.notEqual(after[2],changed);
+  assert.equal(JSON.parse(decodeURIComponent(new URL(after[2].src).hash.slice(1))).chart.symbol,P.preferredDerivSymbol);
+  assert.equal(e.field('tv_open').value,'321');assert.deepEqual(after.map(f=>JSON.parse(decodeURIComponent(new URL(f.src).hash.slice(1))).chart.interval),['240','60','5']);
  }finally{e.controller.reset();e.dom.window.close()}
 });

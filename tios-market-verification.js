@@ -6,12 +6,14 @@
   const iso=value=>value?new Date(value+'Z').toISOString():null;
   window.TIOSMarketVerification={create({getClient,getUser,getAccounts=()=>[],getSelectedAccount=()=>null,getNumber=()=>null}){
     const panel=document.createElement('details');panel.className='market-verification charts-setup';
-    let userId=null,epoch=0,shown=false,timer=null,busy=false,loading=false,refreshQueued=false;
+    let userId=null,epoch=0,shown=false,controlsVisible=true,openState=false,timer=null,busy=false,loading=false,refreshQueued=false;
     let accountId='',instrument='v75_1s',timeframe='H1',opening=F.lastClosedOpening('H1'),tradeId='',mode='mt5_bridge';
     let symbols=[],trades=[],candles=[],requests=[],history=[],draft={},selected=null,historyPage=0;
     const $=s=>panel.querySelector(s),live=(id,e)=>getUser()?.id===id&&userId===id&&epoch===e;
     const account=()=>getAccounts().find(a=>a.id===accountId);
     const symbol=()=> $('[data-market-field="symbol"]')?.value || draft.symbol || F.markets.find(m=>m.key===instrument)?.stem+'.0';
+    const active=()=>shown&&panel.isConnected&&controlsVisible&&panel.open&&!document.hidden;
+    const waiting=()=>mode==='mt5_bridge'&&requests.some(r=>r.mt5_symbol===symbol()&&r.timeframe===timeframe&&Date.parse(r.candle_open_at)===Date.parse(opening)&&r.status==='queued'&&Date.parse(r.expires_at)>Date.now());
     const tell=(message,error=false)=>{const n=$('[data-market-message]');if(n){n.textContent=message;n.classList.toggle('charts-status-error',error)}};
     function capture(){
       panel.querySelectorAll('[data-market-field]').forEach(n=>{draft[n.dataset.marketField]=n.type==='checkbox'?n.checked:n.value});
@@ -39,6 +41,7 @@
           <label>MT5 evidence source<select data-market-field="mode"><option value="mt5_bridge" ${mode==='mt5_bridge'?'selected':''}>Authenticated MT5 candle</option><option value="manual_mt5_chart" ${mode==='manual_mt5_chart'?'selected':''}>Manual MT5 observation (unverified)</option></select></label>
           <button class="btn small" type="button" data-market-action="request">Request completed MT5 candle</button>
           <div class="market-note" data-market-request></div>
+          <button class="btn small" type="button" data-market-action="refresh">Refresh saved evidence</button>
           <details class="market-install"><summary>Set up the read-only candle companion</summary><p>Keep the current trade bridge running. Compile this companion in MetaEditor and attach it to a second chart on the same MT5 account. Use your existing Connection ID and Bridge Key. Allow WebRequest to your Supabase project. Confirm the broker candle UTC offset for the requested date; the default is unconfirmed.</p><a href="mt5/TradersEnvironmentMarketData.mq5" download>Download candle companion</a><p class="market-note">Endpoint: mt5-market-data. No trading commands. Terminal compilation and live candle delivery must be checked in MT5.</p></details>
           <div class="market-ohlc"><table><caption>Original prices · difference = MT5 − TradingView</caption><thead><tr><th>Price</th><th>MT5</th><th>TradingView</th><th>Δ</th></tr></thead><tbody>${F.fields.map(f=>`<tr><th>${f[0].toUpperCase()+f.slice(1)}</th><td><input type="number" step="any" data-market-field="mt5_${f}" aria-label="MT5 ${f}" ${mode==='mt5_bridge'?'readonly':''} value="${escape(draft['mt5_'+f]||'')}"></td><td><input type="number" step="any" data-market-field="tv_${f}" aria-label="TradingView ${f}" value="${escape(draft['tv_'+f]||'')}"></td><td data-market-delta="${f}">—</td></tr>`).join('')}</tbody></table></div>
           <div class="market-note" data-market-provenance></div>
@@ -86,31 +89,35 @@
       $('[data-market-action="history-prev"]').disabled=historyPage===0;
       $('[data-market-action="history-next"]').disabled=history.length<20;
     }
-    async function load(){
-      if(!accountId||!getClient())return;
-      if(loading){refreshQueued=true;return}
+    async function load(poll=false){
+      if(!active()||!accountId||!getClient())return;
+      if(loading){if(!poll)refreshQueued=true;return}
       const id=userId,e=epoch,aid=accountId;loading=true;
       try{
-        const scoped=table=>getClient().from(table).select('*').eq('user_id',id).eq('account_id',aid);
+        const scoped=(table,columns='*')=>getClient().from(table).select(columns).eq('user_id',id).eq('account_id',aid);
         let historyQuery=scoped('market_feed_comparisons');
         if(tradeId)historyQuery=historyQuery.eq('trade_id',tradeId);
-        const results=await Promise.all([
+        const candleQuery=scoped('mt5_market_candles').eq('mt5_symbol',symbol()).eq('timeframe',timeframe).eq('candle_open_at',opening).order('retrieved_at',{ascending:false}).limit(10);
+        const requestQuery=scoped('mt5_candle_requests').order('created_at',{ascending:false}).limit(10);
+        const results=await Promise.all(poll?[candleQuery,requestQuery]:[
           scoped('mt5_market_symbols').order('mt5_symbol'),
-          scoped('trades').eq('source','mt5').eq('is_deleted',false).order('opened_at',{ascending:false}).limit(500),
-          scoped('mt5_market_candles').eq('mt5_symbol',symbol()).eq('timeframe',timeframe).eq('candle_open_at',opening).order('retrieved_at',{ascending:false}).limit(10),
-          scoped('mt5_candle_requests').order('created_at',{ascending:false}).limit(10),
+          scoped('trades','id,user_id,account_id,source,instrument,opened_at,trade_date,mt5_position_id').eq('source','mt5').eq('is_deleted',false).order('opened_at',{ascending:false}).limit(500),
+          candleQuery,
+          requestQuery,
           historyQuery.order('created_at',{ascending:false}).range(historyPage*20,historyPage*20+19)
         ]);
-        if(!live(id,e)||accountId!==aid)return;
+        if(!live(id,e)||accountId!==aid||!active())return;
         if(results.some(r=>r.error))throw Error('Saved market evidence could not be loaded. Retry; existing records are preserved.');
+        if(poll){[candles,requests]=results.map(r=>r.data||[]);update();return;}
         const choicesChanged=JSON.stringify([symbols.map(s=>s.mt5_symbol),trades.map(t=>t.id)])!==JSON.stringify([results[0].data.map(s=>s.mt5_symbol),results[1].data.map(t=>t.id)]);
         [symbols,trades,candles,requests,history]=results.map(r=>r.data||[]);
         if(choicesChanged){capture();render()}else update();
       }catch(error){if(live(id,e))tell(error.message,true)}
-      finally {if(live(id,e)){loading=false;if(refreshQueued){refreshQueued=false;load()}}}
+      finally {if(live(id,e)){loading=false;if(refreshQueued){refreshQueued=false;load()}else schedule()}}
     }
     function schedule(){
-      clearTimeout(timer);if(shown)timer=setTimeout(async()=>{if(!shown)return;await load();schedule()},10000);
+      clearTimeout(timer);timer=null;
+      if(active()&&waiting())timer=setTimeout(()=>load(true),3000);
     }
     async function request(){
       if(busy||!accountId)return;
@@ -156,6 +163,7 @@
     panel.addEventListener('click',event=>{
       const action=event.target.closest('[data-market-action]')?.dataset.marketAction;if(!action)return;
       if(action==='request')request();if(action==='save')save();
+      if(action==='refresh')load();
       if(action==='history-prev'||action==='history-next'){historyPage+=action==='history-next'?1:-1;load();}
       if(action==='latest'||action==='at-entry'){
         capture();const entry=trades.find(t=>t.id===tradeId)?.opened_at;
@@ -163,20 +171,33 @@
         opening=F.lastClosedOpening(timeframe,value);epoch++;loading=false;clearObserved();render();load();
       }
     });
+    panel.addEventListener('toggle',event=>{
+      if(event.target!==panel||panel.open===openState)return;openState=panel.open;
+      if(active()){if(!loading)load();}else{capture();clearTimeout(timer);timer=null;}
+    });
+    document.addEventListener('visibilitychange',()=>{
+      if(!active()){clearTimeout(timer);timer=null;return;}
+      load();
+    });
     const api={
       mount(parent){
         const id=getUser()?.id;if(!id)return;
         if(userId!==id){api.reset();userId=id;accountId=getSelectedAccount()?.platform==='MT5'?getSelectedAccount().id:getAccounts().find(a=>a.platform==='MT5')?.id||'';render();}
         shown=true;parent.appendChild(panel);load();schedule();
       },
+      setControlsVisible(value){
+        if(controlsVisible===value)return;controlsVisible=value;
+        if(!active()){clearTimeout(timer);timer=null;return;}
+        load();
+      },
       hide(){capture();shown=false;clearTimeout(timer);panel.remove();epoch++;loading=false;refreshQueued=false;busy=false;},
-      reset(){api.hide();userId=null;accountId='';instrument='v75_1s';timeframe='H1';opening=F.lastClosedOpening(timeframe);tradeId='';mode='mt5_bridge';symbols=[];trades=[];candles=[];requests=[];history=[];draft={};selected=null;historyPage=0;panel.replaceChildren();},
+      reset(){api.hide();panel.open=false;openState=false;userId=null;accountId='';instrument='v75_1s';timeframe='H1';opening=F.lastClosedOpening(timeframe);tradeId='';mode='mt5_bridge';symbols=[];trades=[];candles=[];requests=[];history=[];draft={};selected=null;historyPage=0;panel.replaceChildren();},
       openTrade(trade){
         if(!trade||trade.user_id!==getUser()?.id||trade.source!=='mt5'||!F.marketForSymbol(trade.instrument))return false;
         accountId=trade.account_id;instrument=F.marketForSymbol(trade.instrument).key;tradeId=trade.id;draft.symbol=trade.instrument;
-        epoch++;loading=false;historyPage=0;symbols=[];trades=[trade];candles=[];history=[];
+        epoch++;loading=false;refreshQueued=false;historyPage=0;symbols=[];trades=[trade];candles=[];requests=[];history=[];
         if(Number.isFinite(Date.parse(trade.opened_at)))opening=F.lastClosedOpening(timeframe,Date.parse(trade.opened_at));
-        clearObserved();render();panel.open=true;load();panel.scrollIntoView({block:'start'});return true;
+        clearObserved();render();panel.open=true;openState=true;load();panel.scrollIntoView({block:'start'});return true;
       }
     };
     return api;

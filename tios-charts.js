@@ -49,7 +49,10 @@
       for(const mode of ['single','multiple']){
         for(const chart of prefs.charts[mode])chart.symbol=P.preferredDerivSymbol;
       }
-      render();
+      host.querySelectorAll('[data-charts-setup-id]').forEach(panel=>{
+        panel.querySelector('[data-chart-field="symbol"]').value=P.preferredDerivSymbol;syncDerivHint(panel);
+      });
+      changed();refreshWidgets();
       status('Volatility 75 (1s) selected for both layouts. Save preferences to make it your default.');
     }
     function cardForControl(target){
@@ -102,6 +105,7 @@
       const panel=workspace.querySelector('.charts-panel');
       panel.inert=controlsCollapsed;
       panel.setAttribute('aria-hidden',String(controlsCollapsed));
+      verification.setControlsVisible(!controlsCollapsed);
       workspace.querySelectorAll('[data-charts-action="toggle-panel"]').forEach(btn=>{
         btn.setAttribute('aria-expanded',String(!controlsCollapsed));
         if(btn.classList.contains('charts-reveal-controls')){
@@ -124,6 +128,7 @@
       host.querySelectorAll('.charts-grid [data-chart-id],.charts-panel,.charts-head,.charts-view-head').forEach(node=>node.inert=false);
       const panel=host.querySelector('.charts-panel');
       if(panel)panel.inert=controlsCollapsed;
+      verification.setControlsVisible(!controlsCollapsed);
       document.body.style.overflow=previousOverflow;
       expanded=null;
       if(restoreFocus&&focusBeforeExpand?.isConnected)focusBeforeExpand.focus();
@@ -136,6 +141,7 @@
       backdrop.addEventListener('click',()=>closeExpanded());host.appendChild(backdrop);
       expanded=card;card.classList.add('charts-card-expanded');card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');
       host.querySelectorAll('.charts-grid [data-chart-id],.charts-panel,.charts-head,.charts-view-head').forEach(node=>{if(node!==card)node.inert=true});
+      verification.setControlsVisible(false);
       document.body.style.overflow='hidden';
       const button=card.querySelector('[data-charts-action="expand"]');button.textContent='Return to layout';button.setAttribute('aria-expanded','true');button.focus();
     }
@@ -266,6 +272,7 @@
       host.querySelectorAll('.charts-grid [data-chart-id]').forEach((card,index)=>relocateControls(card,index));
       host.querySelector('.charts-panel').inert=controlsCollapsed;
       changed();refreshWidgets();
+      verification.setControlsVisible(!controlsCollapsed);
       verification.mount(host.querySelector('.charts-toolbar'));
       if(pendingEvidenceTrade){if(controlsCollapsed)toggleControls();verification.openTrade(pendingEvidenceTrade);pendingEvidenceTrade=null;}
     }
