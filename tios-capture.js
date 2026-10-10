@@ -30,12 +30,35 @@ window.TIOSCaptureEvidence={
   function getPlaybooks(){return (getPlaybookDocuments?.()||[]).filter(p=>p&&!p.templateDraft);}
   function normalizeSections(list){
     if(!Array.isArray(list))return [];
-    return list.filter(s=>s&&typeof s==='object').map(s=>({category:String(s.category||''),label:String(s.label||'').trim().slice(0,90)})).filter(s=>Object.hasOwn(categories,s.category)&&(s.category!=='custom'||s.label)).slice(0,16);
+    return list.filter(s=>s&&typeof s==='object').map(s=>({category:String(s.category||''),label:String(s.label||'').trim().slice(0,90),headingId:String(s.headingId||'').slice(0,128)})).filter(s=>Object.hasOwn(categories,s.category)&&(s.category!=='custom'||s.label)).slice(0,16);
+  }
+  function headingList(playbook){
+    const html=new DOMParser().parseFromString(playbook?.documentHtml||'','text/html');
+    const seen=new Map();
+    return [...html.querySelectorAll('h1,h2,h3')].map(h=>{
+      const label=(h.textContent||'').replace(/\s+/g,' ').trim().slice(0,90);
+      if(!label)return null;
+      const key=label.toLowerCase(),occurrence=(seen.get(key)||0)+1;
+      seen.set(key,occurrence);
+      const hash=[...key].reduce((v,c)=>(Math.imul(v,31)+c.charCodeAt(0))|0,7).toString(36);
+      return {id:'heading-'+hash+'-'+occurrence,label};
+    }).filter(Boolean);
+  }
+  function selectedHeadings(playbook){
+    const selected=new Set(requirementsForPlaybook(playbook.id).map(s=>s.headingId).filter(Boolean));
+    return headingList(playbook).filter(h=>selected.has(h.id));
   }
   function editor(playbook){
     if(!playbook)return;
-    const sections=normalizeSections(requirementsForPlaybook(playbook.id));
-    pane('Evidence requirements · '+playbook.name,'<p>Select the screenshots this Playbook expects. These requirements do not score execution and will not delete existing evidence.</p><div data-capture-requirements>'+standardSections.map(k=>'<label class="tios-capture-requirement"><input type="checkbox" data-requirement="'+k+'" '+(sections.some(x=>x.category===k)?'checked':'')+'>'+esc(categories[k])+'</label>').join('')+'<label>Additional screenshot labels (one per line)<textarea rows="3" maxlength="700" data-capture-extra placeholder="e.g. Confirmation, Risk management">'+esc(sections.filter(x=>x.category==='custom').map(x=>x.label).join('\n'))+'</textarea></label></div><footer><button class="btn primary" type="button" data-requirements-save="'+esc(playbook.id)+'">Save requirements</button><button class="btn" type="button" data-capture-close>Cancel</button></footer>');
+    const all=normalizeSections(requirementsForPlaybook(playbook.id));
+    const selected=new Set(all.map(s=>s.headingId).filter(Boolean));
+    const legacy=all.filter(s=>!s.headingId);
+    const headings=headingList(playbook);
+    pane('Evidence requirements · '+playbook.name,
+      '<p>Select headings already written in this Playbook. Only those headings will be available to new screenshots.</p><div data-capture-requirements>'+
+      (headings.length?headings.map(h=>'<label class="tios-capture-requirement"><input type="checkbox" data-evidence-heading="'+esc(h.id)+'" '+(selected.has(h.id)?'checked':'')+'><span>'+esc(h.label)+'</span></label>').join(''):'<p>No headings found. Add H1, H2 or H3 headings to your Playbook first.</p>')+
+      (legacy.length?'<p class="tios-capture-status">Older evidence labels (kept for reference, not linked to an edge heading):</p>'+legacy.map(i=>'<p class="tios-capture-status">'+esc(i.label||categories[i.category])+' · legacy</p>').join(''):'')+
+      '</div><footer><button class="btn primary" type="button" data-requirements-save="'+esc(playbook.id)+'">Save requirements</button><button class="btn" type="button" data-capture-close>Cancel</button></footer>');
   }
   function selectedEvidencePlaybook(){
     const selected=getSelectedPlaybook?.();
@@ -44,11 +67,11 @@ window.TIOSCaptureEvidence={
   }
   function selectedEvidenceSections(){
     const playbook=selectedEvidencePlaybook();
-    return {playbook,sections:playbook?normalizeSections(requirementsForPlaybook(playbook.id)):[]};
+    return {playbook,sections:playbook?selectedHeadings(playbook).map(h=>({category:'custom',label:h.label,headingId:h.id})):[]};
   }
   function editRequirements(playbook){editor(playbook);}
   function requirementState(required,captures){
-    return normalizeSections(required).map(r=>({
+    return required.map(r=>({
       label:r.category==='custom'?r.label:categories[r.category],
       found:captures.some(c=>c.category===r.category&&(r.category!=='custom'||c.custom_label?.toLowerCase()===r.label.toLowerCase()))
     }));
@@ -178,7 +201,17 @@ window.TIOSCaptureEvidence={
       }))form.append(key,String(value));
       form.append('image',draft.file);
       status('Saving private screenshot…');
-      await request('/captures',{method:'POST',body:form});
+      const uploaded=await request('/captures',{method:'POST',body:form});
+      if(!uploaded?.capture?.id)throw Error('Screenshot save could not be verified.');
+      const pb=selectedEvidencePlaybook();
+      if(pb&&selected.headingId){
+        const {error}=await getClient().from('trade_capture_edge_links').upsert({
+          capture_id:uploaded.capture.id,user_id:getUser().id,trade_id:tradeId,
+          playbook_id:pb.id,playbook_name:pb.name.slice(0,160),
+          heading_id:selected.headingId,heading_text:selected.label
+        },{onConflict:'capture_id'});
+        if(error){uploading=false;end();alert('Screenshot saved, but the edge link could not be stored. Your image is safe.');return}
+      }
       uploading=false;end();
       alert('Screenshot saved to Trade '+(getNumber(tradeId)||'—')+'.');
     }catch(err){
@@ -206,9 +239,12 @@ window.TIOSCaptureEvidence={
     if(e.target.closest('[data-capture-tab]')){status('Choose this T-IOS tab in the browser sharing dialog.');try{present(await screenshot(),'tab')}catch(err){status(err.message,true)}return}
     const saveReq=e.target.closest('[data-requirements-save]');
     if(saveReq){
-      const fields=[...root.querySelectorAll('[data-requirement]:checked')].map(el=>({category:el.dataset.requirement,label:''}));
-      const extras=(root.querySelector('[data-capture-extra]')?.value||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean).slice(0,12).map(label=>({category:'custom',label}));
-      saveRequirements(saveReq.dataset.requirementsSave,normalizeSections([...fields,...extras]));end();return;
+      const pb=getPlaybooks().find(p=>p.id===saveReq.dataset.requirementsSave);
+      if(!pb){status('Playbook not found.',true);return}
+      const selected=new Set([...root.querySelectorAll('[data-evidence-heading]:checked')].map(x=>x.dataset.evidenceHeading));
+      const old=normalizeSections(requirementsForPlaybook(pb.id)).filter(s=>!s.headingId);
+      const requirements=headingList(pb).filter(h=>selected.has(h.id)).map(h=>({category:'custom',label:h.label,headingId:h.id}));
+      saveRequirements(pb.id,[...requirements,...old]);end();return;
     }
     if(e.target.closest('[data-capture-save]')){await save();return}
     const remove=e.target.closest('[data-capture-remove]');if(remove&&confirm('Remove this screenshot permanently?')){try{await request('/captures/'+remove.dataset.captureRemove,{method:'DELETE'});await gallery(scope.tradeId)}catch(err){status(err.message,true)}}
