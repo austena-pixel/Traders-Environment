@@ -53,7 +53,7 @@
   function widgetSettings(chart,prefs){
     return {autosize:true,symbol:chart.symbol,interval:chart.interval,timezone:prefs.timezone,
       theme:prefs.theme,style:'1',locale:'en',allow_symbol_change:true,hide_side_toolbar:false,
-      withdateranges:true,save_image:false,show_popup_button:true,popup_width:'1200',popup_height:'800',
+      withdateranges:true,hide_volume:true,studies:[],save_image:false,show_popup_button:true,popup_width:'1200',popup_height:'800',
       support_host:'https://www.tradingview.com'};
   }
   return {defaults,clone,validate,intervals,timezones,symbolPattern,widgetSettings,derivSymbols,preferredDerivSymbol,derivBySymbol,derivByMt5Symbol};
