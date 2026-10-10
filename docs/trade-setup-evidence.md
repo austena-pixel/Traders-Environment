@@ -1,8 +1,12 @@
 # Multi-Timeframe Setup Evidence
 
-Each individual trade has three independent chart slots, initially H4 / Context,
-H1 / Setup and M5 / Entry. The timeframe and responsibility are editable per
-trade and save on change. No chart is required, and removing an image keeps its
+Setup pictures are optional for each individual trade. Opening a trade without
+saved evidence shows **Create setup pictures**, without adding chart slots or
+writing evidence records. Choosing Create adds three independent chart slots,
+initially H4 / Context, H1 / Setup and M5 / Entry. The empty setup persists after
+refresh and sign-in. Existing evidence opens directly without requiring creation
+again. The timeframe and responsibility are editable per trade and save on
+change. No chart is required, and removing an image keeps its
 labels. This feature does not perform AI evaluation, change execution scores or
 change continuous trade numbering.
 
@@ -14,8 +18,10 @@ change continuous trade numbering.
 - After saving a new trade, use **Setup pictures** in its day list or Journal row.
   A draft trade cannot upload until it has a persisted trade ID.
 
-Click an empty card to select an image. Uploaded cards have View, Replace and
-Remove actions. Cards share three equal desktop columns and stack on small
+Choose **Create setup pictures** when you want to add chart evidence. You can
+keep trading and completing reflections without creating a setup or uploading
+any pictures. Click an empty card to select an image. Uploaded cards have View,
+Replace and Remove actions. Cards share three equal desktop columns and stack on small
 screens. The full image viewer supports Fit, 100% native resolution, zoom
 buttons, wheel zoom, touch pinch, drag panning, keyboard panning and Escape.
 Closing the viewer restores focus and leaves journal and reflection drafts
@@ -103,6 +109,12 @@ isolation, label persistence, refresh, full-image zoom/panning, safe replacement
 and removal, responsive layout, preserved journal drafts and denial of foreign
 and anonymous access. Fresh authenticated sessions restored each trade's
 separate viewable images and labels.
+
+The optional-creation update passed 20 live evidence checks plus the 78 code
+checks and 76 reflection/scoring/Playbook browser scenarios. Opening Journal
+or Edit Trade created no evidence records. Explicit creation persisted empty
+slots through refresh, worked independently per trade and on mobile, and kept
+older or concurrently saved labels intact.
 
 The fixture JSON shape is `{ "users": [{ "id": "...", "email": "...",
 "password": "..." }, { "id": "...", "email": "...", "password": "..." }],

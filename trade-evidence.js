@@ -78,6 +78,7 @@
     function applyRow(session,row){
       if(!active(session))return;
       const old=session.rows[row.slot-1],card=session.host.querySelector('[data-evidence-slot="'+row.slot+'"]');
+      if(!card)return;
       session.rows[row.slot-1]=row;
       for(const name of ['timeframe','responsibility']){
         const input=card.querySelector('[data-evidence-label="'+name+'"]');
@@ -96,28 +97,60 @@
       if(old.thumbnail_path!==row.thumbnail_path||!session.loaded)void preview(session,card,row);
     }
     function broadcast(scope,row){
-      for(const session of sessions.values())if(session.scope?.userId===scope.userId&&session.scope.tradeId===scope.tradeId)applyRow(session,row);
+      for(const session of sessions.values())if(session.scope?.userId===scope.userId&&session.scope.tradeId===scope.tradeId){
+        if(session.created)applyRow(session,row);else void load(session);
+      }
     }
     async function load(session){
-      if(!session.scope)return;
+      if(!session.scope||!active(session))return;
+      session.loaded=false;
       const cards=[...session.host.querySelectorAll('[data-evidence-slot]')];
       cards.forEach(card=>{busy(card,true);status(card,'Loading…')});
+      if(!session.created)renderChoice(session,'Loading…');
       try{
         const rows=checked(await session.scope.client.from(table).select('*').eq('trade_id',session.scope.tradeId).eq('user_id',session.scope.userId).order('slot'))||[];
         if(!active(session))return;
+        if(!rows.length){
+          session.created=false;session.loaded=true;session.rows=defaults.map(row=>({...row}));renderChoice(session);return;
+        }
+        if(!session.created)renderCards(session);
         defaults.forEach(base=>applyRow(session,rows.find(r=>r.slot===base.slot)||{...base}));session.loaded=true;
-        cards.forEach(card=>{busy(card,false);status(card,'');card.querySelector('[data-evidence-action="retry"]').hidden=true});
+        session.host.querySelectorAll('[data-evidence-slot]').forEach(card=>{busy(card,false);status(card,'');card.querySelector('[data-evidence-action="retry"]').hidden=true});
       }catch{
         if(!active(session))return;
+        if(!session.created){renderChoice(session,'Could not load setup pictures. Retry to continue.',true);return}
         cards.forEach(card=>{status(card,'Could not load setup pictures. Retry to continue.',true);const retry=card.querySelector('[data-evidence-action="retry"]');retry.hidden=false;retry.disabled=false});
       }
     }
+    async function createSetup(session){
+      if(!active(session)||!session.loaded||session.created||session.creating)return;
+      const scope=session.scope;session.creating=true;renderChoice(session,'Creating…');
+      try{
+        authorized(scope);
+        // Explicit opt-in persists the empty slots. Ignore existing rows so a
+        // concurrent creation or older saved evidence can never be overwritten.
+        checked(await scope.client.from(table).upsert(defaults.map(row=>({user_id:scope.userId,trade_id:scope.tradeId,...row})),{onConflict:'trade_id,slot',ignoreDuplicates:true}));
+        session.creating=false;
+        for(const current of sessions.values())if(current.scope?.userId===scope.userId&&current.scope.tradeId===scope.tradeId&&!current.created){
+          if(current===session)await load(current);else void load(current);
+        }
+      }catch(error){
+        if(active(session)){session.creating=false;renderChoice(session,error?.message||'Could not create setup pictures. Try again.',true)}
+      }finally{session.creating=false}
+    }
+    function renderCards(session){
+      const {host,scope}=session;session.created=true;
+      host.innerHTML='<h3>Multi-Timeframe Setup Evidence</h3><p class="trade-evidence-intro">'+escape(scope?label(scope)+' · Labels save automatically. PNG, JPG or WebP · up to 12 MB per chart.':'Save this trade first, then open its Setup pictures to upload charts.')+'</p><div class="trade-evidence-grid">'+defaults.map(row=>'<section class="trade-evidence-card" data-evidence-slot="'+row.slot+'" aria-label="Chart '+row.slot+'"><button type="button" class="trade-evidence-upload" data-evidence-action="upload" aria-label="Upload Chart '+row.slot+'"><img hidden alt=""><span data-evidence-placeholder>'+icon+'<span>Chart '+row.slot+'</span></span></button><label class="trade-evidence-label"><span>Timeframe</span><input data-evidence-label="timeframe" value="'+row.timeframe+'" maxlength="32" aria-label="Chart '+row.slot+' timeframe"></label><label class="trade-evidence-label responsibility"><span>Responsibility</span><input data-evidence-label="responsibility" value="'+row.responsibility+'" maxlength="120" aria-label="Chart '+row.slot+' responsibility"></label><input type="file" accept="image/png,image/jpeg,image/webp" data-evidence-file hidden aria-label="Choose Chart '+row.slot+' image"><div class="trade-evidence-actions"><button class="btn small" type="button" data-evidence-action="view" hidden>View</button><button class="btn small" type="button" data-evidence-action="upload">Upload</button><button class="btn small" type="button" data-evidence-action="remove" hidden>Remove</button><button class="btn small" type="button" data-evidence-action="labels" hidden>Save labels</button><button class="btn small" type="button" data-evidence-action="retry" hidden>Retry</button></div><p class="trade-evidence-status" role="status"></p></section>').join('')+'</div>';
+    }
+    function renderChoice(session,text='',error=false){
+      const {host,scope}=session;
+      host.innerHTML='<h3>Multi-Timeframe Setup Evidence</h3><p class="trade-evidence-intro">'+escape(scope?label(scope):'Optional chart screenshots for this trade.')+'</p><div class="trade-evidence-choice"><p>Choose whether to add chart evidence to this trade. You can upload one, two or all three pictures.</p><button class="btn small" type="button" data-evidence-action="create"'+(!scope||!session.loaded||session.creating?' disabled':'')+'>Create setup pictures</button><button class="btn small" type="button" data-evidence-action="retry"'+(error&&!session.loaded?'':' hidden')+'>Retry</button></div><p class="trade-evidence-status'+(error?' error':'')+'" role="status">'+escape(scope?text:'Save this trade first to create setup pictures.')+'</p>';
+    }
     function mount(host,id){
       if(!host)return;
-      const scope=scopeFor(id),session={host,scope,loaded:false,rows:defaults.map(d=>({...d}))};
-      sessions.set(host,session);host.classList.add('trade-evidence');
-      host.innerHTML='<h3>Multi-Timeframe Setup Evidence</h3><p class="trade-evidence-intro">'+escape(scope?label(scope)+' · Labels save automatically. PNG, JPG or WebP · up to 12 MB per chart.':'Save this trade first, then open its Setup pictures to upload charts.')+'</p><div class="trade-evidence-grid">'+defaults.map(row=>'<section class="trade-evidence-card" data-evidence-slot="'+row.slot+'" aria-label="Chart '+row.slot+'"><button type="button" class="trade-evidence-upload" data-evidence-action="upload" aria-label="Upload Chart '+row.slot+'"><img hidden alt=""><span data-evidence-placeholder>'+icon+'<span>Chart '+row.slot+'</span></span></button><label class="trade-evidence-label"><span>Timeframe</span><input data-evidence-label="timeframe" value="'+row.timeframe+'" maxlength="32" aria-label="Chart '+row.slot+' timeframe"></label><label class="trade-evidence-label responsibility"><span>Responsibility</span><input data-evidence-label="responsibility" value="'+row.responsibility+'" maxlength="120" aria-label="Chart '+row.slot+' responsibility"></label><input type="file" accept="image/png,image/jpeg,image/webp" data-evidence-file hidden aria-label="Choose Chart '+row.slot+' image"><div class="trade-evidence-actions"><button class="btn small" type="button" data-evidence-action="view" hidden>View</button><button class="btn small" type="button" data-evidence-action="upload">Upload</button><button class="btn small" type="button" data-evidence-action="remove" hidden>Remove</button><button class="btn small" type="button" data-evidence-action="labels" hidden>Save labels</button><button class="btn small" type="button" data-evidence-action="retry" hidden>Retry</button></div><p class="trade-evidence-status" role="status"></p></section>').join('')+'</div>';
-      if(!scope){host.querySelectorAll('button,input').forEach(el=>{el.disabled=true});return}
+      const scope=scopeFor(id),session={host,scope,loaded:false,created:false,creating:false,rows:defaults.map(d=>({...d}))};
+      sessions.set(host,session);host.classList.add('trade-evidence');renderChoice(session);
+      if(!scope)return;
       if(!host.dataset.evidenceBound){
         host.dataset.evidenceBound='true';
         host.addEventListener('input',event=>{
@@ -132,11 +165,13 @@
         host.addEventListener('keydown',event=>{if(event.key==='Enter'&&event.target.matches('[data-evidence-label]')){event.preventDefault();event.target.blur()}});
         host.addEventListener('click',event=>{
           const button=event.target.closest('[data-evidence-action]'),current=sessions.get(host),card=button?.closest('[data-evidence-slot]');
-          if(!button||button.disabled||!current?.scope||!card)return;
+          if(!button||button.disabled||!current?.scope)return;
           const action=button.dataset.evidenceAction;
+          if(action==='create'){void createSetup(current);return}
+          if(action==='retry'){void load(current);return}
+          if(!card)return;
           if(action==='upload')card.querySelector('[data-evidence-file]').click();
           else if(action==='view')void openViewer(current,current.rows[Number(card.dataset.evidenceSlot)-1],button);
-          else if(action==='retry')void load(current);
           else void mutate(current,card,action);
         });
       }

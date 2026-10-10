@@ -33,6 +33,10 @@ async function settled(slot,scope=dialog()){
 }
 async function open(id){
   await page.locator('#journalBody [data-trade-evidence-open="'+id+'"]').click();
+  await page.waitForFunction(()=>document.querySelector('.trade-evidence-dialog [data-evidence-action="create"]:not(:disabled)')||document.querySelector('.trade-evidence-dialog [data-evidence-slot="1"]')?.getAttribute('aria-busy')==='false');
+}
+async function createSetup(){
+  await dialog().locator('[data-evidence-action="create"]').click();
   await settled(1);assert.equal(await dialog().locator('[data-evidence-slot]').count(),3);
 }
 async function upload(slot,name='edge-reference.png',scope=dialog()){
@@ -102,6 +106,23 @@ async function screenshot(name){if(process.env.TIOS_TEST_SCREENSHOT_DIR){fs.mkdi
     const numbers=await page.locator('.journal-trade-number').allTextContents();assert.deepEqual([...numbers].sort(),['Trade 1','Trade 2']);assert.equal(originalDownloads,0);
     pass('trade lists retain continuous numbering and download no original evidence images');
     await open(config.trades[0]);
+    assert.equal(await dialog().locator('[data-evidence-slot]').count(),0);
+    assert.equal((await rows(owner,config.trades[0])).length,0);
+    await screenshot('evidence-optional-desktop');
+    await dialog().locator('[data-evidence-dialog-close]').click();
+    await page.evaluate(id=>openEditTrade(trades.find(t=>t.id===id)),config.trades[0]);
+    await page.locator('#tradeSetupEvidence [data-evidence-action="create"]').waitFor({state:'visible'});
+    await page.waitForFunction(()=>!document.querySelector('#tradeSetupEvidence [data-evidence-action="create"]').disabled);
+    assert.equal(await page.locator('#tradeSetupEvidence [data-evidence-slot]').count(),0);
+    await page.locator('#cancelBtn').click();assert.equal((await rows(owner,config.trades[0])).length,0);
+    pass('opening Journal or Edit Trade shows an optional Create button without creating chart slots or evidence records');
+    await open(config.trades[0]);await createSetup();
+    const emptySetup=await rows(owner,config.trades[0]);assert.equal(emptySetup.length,3);assert.ok(emptySetup.every(row=>row.original_path===null));
+    await dialog().locator('[data-evidence-dialog-close]').click();await page.reload();
+    await page.waitForFunction(()=>currentUser&&trades.length===2&&document.querySelector('#statusBar')?.textContent==='Journal loaded');
+    await page.locator('.nav-btn[data-page="journal"]').click();await open(config.trades[0]);
+    assert.equal(await dialog().locator('[data-evidence-slot]').count(),3);assert.equal(await dialog().locator('[data-evidence-action="create"]').count(),0);
+    pass('explicit creation persists three empty optional chart slots through refresh without requiring an image');
     assert.deepEqual(await dialog().locator('[data-evidence-label="timeframe"]').evaluateAll(inputs=>inputs.map(el=>el.value)),['H4','H1','M5']);
     assert.deepEqual(await dialog().locator('[data-evidence-label="responsibility"]').evaluateAll(inputs=>inputs.map(el=>el.value)),['Context','Setup','Entry']);
     assert.equal(await dialog().locator('.trade-evidence-grid').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length),3);
@@ -114,8 +135,18 @@ async function screenshot(name){if(process.env.TIOS_TEST_SCREENSHOT_DIR){fs.mkdi
     await card(1).locator('[data-evidence-label="responsibility"]').fill('Trend and key levels');await card(1).locator('[data-evidence-label="responsibility"]').blur();await settled(1);
     assert.equal((await rows(owner,config.trades[0]))[0].responsibility,'Trend and key levels');pass('timeframe and responsibility edits save independently of trade notes and scores');
     await dialog().locator('[data-evidence-dialog-close]').click();await open(config.trades[1]);
+    assert.equal(await dialog().locator('[data-evidence-slot]').count(),0);assert.equal((await rows(owner,config.trades[1])).length,0);
+    await page.setViewportSize({width:390,height:844});
+    assert.equal(await dialog().locator('[data-evidence-action="create"]').isVisible(),true);
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+    await screenshot('evidence-optional-mobile');await page.setViewportSize({width:1440,height:900});
+    pass('another trade independently offers creation, including on mobile, without inheriting the first trade’s setup');
+    const concurrent=await api(owner,'/rest/v1/'+table,{method:'POST',body:{user_id:owner.user.id,trade_id:config.trades[1],slot:1,timeframe:'W1',responsibility:'Existing context'}});assert.ok(concurrent.ok);
+    await createSetup();assert.equal(await card(1).locator('[data-evidence-label="timeframe"]').inputValue(),'W1');
+    assert.equal((await rows(owner,config.trades[1]))[0].responsibility,'Existing context');
+    pass('creating a setup preserves older or concurrently saved timeframe labels');
     assert.equal(await dialog().locator('[data-evidence-action="remove"]:visible').count(),0);await upload(2);
-    assert.equal((await rows(owner,config.trades[1])).length,1);pass('another trade starts with three empty cards and can upload only its middle chart');
+    const second=await rows(owner,config.trades[1]);assert.equal(second.length,3);assert.equal(second.filter(row=>row.original_path).length,1);pass('a created setup can upload only its middle chart while leaving the other slots empty');
     await dialog().locator('[data-evidence-dialog-close]').click();
     await page.reload();await page.waitForFunction(()=>currentUser&&trades.length===2);await page.locator('.nav-btn[data-page="journal"]').click();await open(config.trades[0]);
     assert.equal(await card(1).locator('[data-evidence-label="timeframe"]').inputValue(),'D1');assert.equal(await dialog().locator('[data-evidence-action="remove"]:visible').count(),3);assert.equal(originalDownloads,0);
