@@ -1,6 +1,7 @@
 # TradingView Charts workspace
 
-Open **Charts** directly below Dashboard in the T-IOS sidebar. Choose **Single
+Open **Charts** directly below Dashboard in the T-IOS sidebar. A verified Charts
+profile is required before any TradingView widget is mounted. Choose **Single
 Chart** for one large chart or **Multiple Charts** for three independent charts.
 Single Chart is the initial default; the three-timeframe method is optional. In Multiple Charts mode, use **Number of charts** to choose 2–6 active charts. Three remains the default. Adding charts retains existing charts and provides editable new chart defaults. Reducing the count asks for confirmation before discarding removed charts' settings. Save preferences to persist the selected chart count and settings.
 
@@ -20,6 +21,39 @@ stack with their own full chart areas on smaller screens. **Expand** enlarges
 one chart without recreating it; **Return to layout** closes it. Escape also
 closes it when focus is in T-IOS. Keyboard events inside a cross-origin chart
 are controlled by TradingView, so the Return button remains available.
+
+## Charts account entry
+
+The centered **Welcome to T-IOS Charts** dialog offers **Sign in to Charts** and
+**Create Charts account**. Both reuse the existing H-IOS/T-IOS Supabase session;
+neither collects a password or authenticates a personal TradingView account.
+The application verifies the session with `auth.getUser()` and checks
+`chart_workspace_profiles` independently of `chart_workspace_preferences`.
+Older preferences alone never count as registration.
+
+Sign in reads the current user's profile and reports when it does not exist.
+Create explicitly inserts a profile belonging to that verified user. It then
+opens the layout chooser: Single chart or three Context/Setup/Entry charts.
+Existing symbols, chart counts, timeframes, responsibilities, theme and timezone
+are preserved. The selected layout is saved using the existing revision guard.
+No widget is mounted before this save succeeds. A profile with an unfinished
+layout resumes setup next time; a returning profile with saved preferences opens
+its workspace directly. Users can change and save their layout afterward.
+
+Profile checks, creation and preference saves fail closed. Duplicate creation
+in another tab loads the established profile rather than overwriting it.
+Preference conflicts load the latest saved configuration for confirmation.
+Account changes dispose the previous Charts state immediately and reload T-IOS
+using the newly shared H-IOS session. Supabase queries run outside the synchronous
+Auth callback. Late results cannot update another user's workspace.
+
+The profile table has one row per Auth user, owner-only SELECT/INSERT policies,
+and only authenticated SELECT/INSERT grants. There is no automatic profile
+backfill, no extra credential store and no client UPDATE/DELETE/TRUNCATE grant.
+A row currently represents an active registration; revocation/status controls
+are not implemented. The additive migration also records the previously
+dashboard-created table in source control. Existing preference and trade rows
+are unchanged.
 
 ## Compact left controls panel
 
@@ -50,7 +84,7 @@ by instrument. A TradingView paid account does not upgrade embedded widget
 feeds. Widgets do not expose a market-data API, personal account layouts or
 custom Pine strategies. Changes made inside the widget, including drawings,
 indicators and toolbar symbol/interval changes, remain in that widget session.
-Use the T-IOS controls to save instrument/timeframe defaults. No account login,
+Use the T-IOS controls to save instrument/timeframe defaults. No personal TradingView login,
 programmatic capture, TradingView credentials or speculative evaluations are
 implemented. Existing optional Setup pictures remain unchanged.
 
@@ -101,6 +135,25 @@ account, rule, playbook, reflection, image bucket or scoring table is modified.
 Future intelligence can join these declared responsibilities with separately
 uploaded per-trade evidence; this feature makes no market observations or AI
 claims.
+
+## Account-entry verification (2026-10-10)
+
+`tests/charts-account-entry.dom.cjs` exercises the real Charts DOM/state machine
+with deterministic Supabase transport fixtures. Run it and the existing Charts
+regressions with `node --test tests/*.dom.cjs` in a runtime providing `jsdom`.
+The separate `tests/charts-account-entry.sql` runs against the real database;
+its PL/pgSQL subtransaction unconditionally rolls back all profile fixtures.
+It uses existing Auth IDs without changing Auth records or saved preferences.
+
+Validation: 22 account-entry DOM scenarios, 14 existing Charts/feed/Instruments
+DOM scenarios, 103 existing contract tests and 14 live profile RLS/grant checks
+passed. Coverage includes first-time users, preferences without profiles,
+returning profiles, profile-only partial setup, independent layouts, account
+switching, stale requests, duplicate creation, conflicts, failed reads/saves,
+private label isolation and the Auth callback. Database profile counts and saved
+preference hashes were unchanged after verification. No new Charts security
+advisor findings appeared. This run did not perform an interactive browser or
+visual screenshot check; DOM verification does not assert computed layout.
 
 ## Verification
 

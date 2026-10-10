@@ -1,6 +1,6 @@
 (function(){
   'use strict';
-  const P=window.TIOSChartPreferences,TABLE='chart_workspace_preferences';
+  const P=window.TIOSChartPreferences,TABLE='chart_workspace_preferences',PROFILE_TABLE='chart_workspace_profiles';
   const escape=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   window.TIOSCharts={create({host,getClient,getUser,getAccounts,getSelectedAccount,getNumber,loadPublicTicks=async()=>{
     if(!window.TIOSDerivPublicTicks)await import('./core/deriv-public-ticks.js');
@@ -16,7 +16,8 @@
     const verification=window.TIOSMarketVerification.create({getClient,getUser,getAccounts,getSelectedAccount,getNumber});
     let pendingEvidenceTrade=null;
     let sidebarMode='settings',instrumentWorkspace=null,instrumentLoadEpoch=0;
-    let firstTimeChartSetup=false,firstRunLayout='single',firstRunSaving=false;
+    let chartProfile=null,accountStep='entry',accountBusy=false,accountError='';
+    let firstRunLayout='single',firstRunSaving=false;
     function renderSidebar(){
       const settings=host.querySelector('.charts-toolbar'),instruments=host.querySelector('[data-charts-instruments]');
       if(!settings||!instruments)return;
@@ -47,7 +48,7 @@
       }
     }
     function setSidebarMode(mode){
-      if(!visible||!loaded)return;
+      if(!visible||!loaded||accountStep!=='ready')return;
       instrumentLoadEpoch++;instrumentWorkspace?.unmount();sidebarMode=mode;
       renderSidebar();
       const scroll=host.querySelector('.charts-panel-scroll');if(scroll)scroll.scrollTop=0;
@@ -55,7 +56,7 @@
     }
     let quoteFeed=null,quoteState=null,quoteShown=false,quoteLoading=false,quoteMarket='v75_1s',quoteMarketChosen=false,quoteLoadEpoch=0,quoteRetryTimer=null;
     const quoteActive=()=>quoteLoading||['connecting','catalogue','awaiting_ticks','streaming','stale'].includes(quoteState?.status);
-    const canQuote=()=>visible&&loaded&&getUser()?.id===userId&&!document.hidden&&!expanded;
+    const canQuote=()=>visible&&loaded&&accountStep==='ready'&&getUser()?.id===userId&&!document.hidden&&!expanded;
     function renderPublicQuote(){
       if(quoteRetryTimer!==null){clearTimeout(quoteRetryTimer);quoteRetryTimer=null;}
       const panel=host.querySelector('[data-charts-public-quote]');if(!panel)return;
@@ -432,22 +433,54 @@
       changed();
     }
 
-    /* T-IOS chart setup uses the existing Supabase account.
-       It never requests or impersonates a TradingView sign-in. */
-    function renderFirstTimeChartSetup(){
-      if(!visible||!loaded||!firstTimeChartSetup)return;
+    // Profile membership is independent of chart preferences. Supabase verifies
+    // the existing T-IOS session; Charts never collects another password.
+    async function verifiedUser(id){
+      const client=getClient();
+      if(!client?.auth)throw Error('Your T-IOS session is unavailable. Sign in through H-IOS, then return to Charts.');
+      const {data,error}=await client.auth.getUser();
+      if(error||!data?.user||data.user.id!==id||data.user.is_anonymous)
+        throw Error('Your T-IOS session could not be verified. Sign in through H-IOS, then return to Charts.');
+      return data.user;
+    }
+    async function readWorkspace(id){
+      const [profile,preferences]=await Promise.all([
+        getClient().from(PROFILE_TABLE).select('user_id,created_at').eq('user_id',id).maybeSingle(),
+        getClient().from(TABLE).select('configuration,revision,schema_version').eq('user_id',id).maybeSingle()
+      ]);
+      if(profile.error)throw Error('Your Charts account could not be verified. Please retry.');
+      if(profile.data&&profile.data.user_id!==id)throw Error('Your Charts account could not be verified. Please retry.');
+      if(preferences.error)throw Error('Your saved preferences could not be loaded. Retry before making changes.');
+      const row=preferences.data;
+      if(row&&(row.schema_version!==1||P.validate(row.configuration)))
+        throw Error('Your saved chart preferences use an unsupported format. They have been preserved.');
+      return {profile:profile.data,preferences:row};
+    }
+    function acceptWorkspace(result){
+      chartProfile=result.profile;
+      const row=result.preferences;
+      prefs=row?P.clone(row.configuration):P.defaults();
+      revision=row?.revision??null;saved=row?JSON.stringify(prefs):null;loaded=true;
+      accountStep=!chartProfile?'entry':row?'ready':'layout';
+      firstRunLayout=prefs.layout;accountError='';
+    }
+    function renderAccountEntry(){
+      if(!visible||!loaded||accountStep==='ready')return;
       const email=escape(getUser()?.email||'your T-IOS account');
+      const layout=accountStep==='layout',count=prefs.charts.multiple.length;
       host.innerHTML=`
         <div class="charts-welcome-setup" aria-label="T-IOS chart account setup">
           <div class="charts-welcome-preview" aria-hidden="true">
             <div class="charts-welcome-preview-head"><span>Chart 1</span><span>T-IOS workspace</span></div>
             <div class="charts-welcome-preview-grid"></div>
           </div>
-          <section class="charts-welcome-card" role="dialog" aria-modal="true" aria-labelledby="chartsWelcomeTitle" aria-describedby="chartsWelcomeDescription">
-            <span class="charts-welcome-kicker">T·IOS · Chart workspace setup</span>
-            <h2 id="chartsWelcomeTitle">Set up your trading charts</h2>
-            <p id="chartsWelcomeDescription">You're already signed in to T·IOS as <strong>${email}</strong>. Choose a layout to save to your T·IOS account before opening your charts.</p>
-            <div class="charts-welcome-layouts" role="group" aria-label="Initial chart layout">
+          <section class="charts-welcome-card" role="dialog" aria-modal="false" aria-labelledby="chartsWelcomeTitle" aria-describedby="chartsWelcomeDescription" aria-busy="${accountBusy||firstRunSaving}">
+            <span class="charts-welcome-kicker">T·IOS · Your private Charts workspace</span>
+            <h2 id="chartsWelcomeTitle">${layout?'Choose your chart layout':'Welcome to T-IOS Charts'}</h2>
+            <p id="chartsWelcomeDescription">${layout
+              ?`Your Charts account is registered to <strong>${email}</strong>. Choose how you want to analyse the market. You can change this later.${revision!==null?' Your saved instruments, timeframes and chart settings will be kept.':''}`
+              :`Continue with your T-IOS account, <strong>${email}</strong>. Sign in to an existing Charts profile or create your private Charts account. Your current T-IOS session is used securely.`}</p>
+            ${layout?`<div class="charts-welcome-layouts" role="group" aria-label="Initial chart layout">
               <button type="button" class="charts-welcome-choice ${firstRunLayout==='single'?'selected':''}" data-charts-onboarding-layout="single" aria-pressed="${firstRunLayout==='single'}">
                 <span class="charts-welcome-layout-icon single" aria-hidden="true"><i></i></span>
                 <strong>Single chart</strong>
@@ -455,19 +488,64 @@
               </button>
               <button type="button" class="charts-welcome-choice ${firstRunLayout==='multiple'?'selected':''}" data-charts-onboarding-layout="multiple" aria-pressed="${firstRunLayout==='multiple'}">
                 <span class="charts-welcome-layout-icon multiple" aria-hidden="true"><i></i><i></i><i></i></span>
-                <strong>Three charts</strong>
-                <small>Context · Setup · Entry</small>
+                <strong>${count===3?'Three charts':count+' charts'}</strong>
+                <small>${count===3?'Context · Setup · Entry':'Your saved multiple-chart layout'}</small>
               </button>
             </div>
-            <button class="btn primary charts-welcome-start" type="button" data-charts-action="start-tios-charts">Save setup &amp; open charts</button>
-            <p class="charts-welcome-disclosure">Your T·IOS login protects these chart settings. This is not a TradingView login. The current display is still a public TradingView widget; saving custom indicators and drawings will require our native chart integration.</p>
-            <p class="charts-welcome-error" data-charts-onboarding-error role="alert" hidden></p>
+            <button class="btn primary charts-welcome-start" type="button" data-charts-action="start-tios-charts">Save layout &amp; open charts</button>`
+            :`<div class="charts-welcome-actions">
+              <button class="btn charts-welcome-start" type="button" data-charts-action="sign-in-charts">Sign in to Charts</button>
+              <button class="btn primary charts-welcome-start" type="button" data-charts-action="create-charts-account">Create Charts account</button>
+            </div>`}
+            <p class="charts-welcome-disclosure">This is your T-IOS Charts account. TradingView widgets use public charts and do not sign you in to your personal TradingView account. Indicator and drawing persistence is planned for the native workspace.</p>
+            <p class="charts-welcome-error" data-charts-onboarding-error role="alert" ${accountError?'':'hidden'}>${escape(accountError)}</p>
           </section>
         </div>`;
-      host.querySelector('[data-charts-action="start-tios-charts"]')?.focus({preventScroll:true});
+      updateAccountBusy();
+      host.querySelector('[data-charts-action="'+(layout?'start-tios-charts':'sign-in-charts')+'"]')?.focus({preventScroll:true});
+    }
+    function updateAccountBusy(){
+      const busy=accountBusy||firstRunSaving;
+      host.querySelector('.charts-welcome-card')?.setAttribute('aria-busy',String(busy));
+      host.querySelectorAll('.charts-welcome-card button').forEach(button=>button.disabled=busy);
+    }
+    function showAccountError(message){
+      accountError=message;
+      const node=host.querySelector('[data-charts-onboarding-error]');
+      if(node){node.hidden=!message;node.textContent=message;}
+    }
+    async function enterCharts(create=false){
+      if(!visible||!loaded||accountStep!=='entry'||accountBusy||getUser()?.id!==userId)return;
+      const id=userId,epoch=generation;
+      accountBusy=true;showAccountError('');updateAccountBusy();
+      try{
+        await verifiedUser(id);
+        if(!alive(id,epoch))return;
+        let result=await readWorkspace(id);
+        if(!alive(id,epoch))return;
+        let created=false;
+        if(!result.profile){
+          if(!create){showAccountError('No Charts account exists for this T-IOS account yet. Choose Create Charts account to get started.');return;}
+          const {data,error}=await getClient().from(PROFILE_TABLE).insert({user_id:id}).select('user_id,created_at').maybeSingle();
+          if(!alive(id,epoch))return;
+          if(error?.code==='23505'){
+            // Another tab may have registered this same user. Load, never overwrite.
+            result=await readWorkspace(id);
+            if(!alive(id,epoch))return;
+            if(!result.profile)throw Error('Your Charts account could not be loaded. Please retry.');
+          }else{
+            if(error||!data||data.user_id!==id)throw Error('Your Charts account could not be created. Please retry.');
+            result.profile=data;created=true;
+          }
+        }
+        acceptWorkspace(result);
+        if(created)accountStep='layout';
+        render();
+      }catch(error){if(alive(id,epoch))showAccountError(error.message||'Your Charts account could not be verified. Please retry.');}
+      finally{if(alive(id,epoch)){accountBusy=false;updateAccountBusy();}}
     }
     async function completeFirstTimeChartSetup(){
-      if(!visible||!loaded||!firstTimeChartSetup||firstRunSaving||getUser()?.id!==userId)return;
+      if(!visible||!loaded||!chartProfile||accountStep!=='layout'||firstRunSaving||getUser()?.id!==userId)return;
       const snapshot=P.clone(prefs);
       snapshot.layout=firstRunLayout;
       const validation=P.validate(snapshot);
@@ -477,44 +555,49 @@
         return;
       }
       const id=userId,epoch=generation;
-      firstRunSaving=true;
+      firstRunSaving=true;showAccountError('');updateAccountBusy();
       const start=host.querySelector('[data-charts-action="start-tios-charts"]');
       if(start){start.disabled=true;start.textContent='Saving your workspace…';}
       try{
-        let {data,error}=await getClient().from(TABLE)
-          .insert({user_id:id,configuration:snapshot}).select('revision').maybeSingle();
-        if(!alive(id,epoch)||!visible)return;
-        if(error?.code==='23505'){
-          const existing=await getClient().from(TABLE)
-            .select('configuration,revision,schema_version').eq('user_id',id).maybeSingle();
-          if(!alive(id,epoch)||!visible)return;
-          if(existing.error||!existing.data||existing.data.schema_version!==1||P.validate(existing.data.configuration))
-            throw Error('An existing chart workspace could not be loaded. Try again.');
-          prefs=P.clone(existing.data.configuration);
-          revision=existing.data.revision;
-          saved=JSON.stringify(prefs);
-        }else{
-          if(error||!data)throw Error('Could not save your chart setup. Please try again.');
-          prefs=snapshot;
-          revision=data.revision;
-          saved=JSON.stringify(snapshot);
+        await verifiedUser(id);
+        if(!alive(id,epoch))return;
+        const profile=await getClient().from(PROFILE_TABLE).select('user_id').eq('user_id',id).maybeSingle();
+        if(!alive(id,epoch))return;
+        if(profile.error||profile.data?.user_id!==id)throw Error('Your Charts account could not be verified. Please retry.');
+        const query=revision===null
+          ?getClient().from(TABLE).insert({user_id:id,configuration:snapshot})
+          :getClient().from(TABLE).update({configuration:snapshot}).eq('user_id',id).eq('revision',revision);
+        const {data,error}=await query.select('revision').maybeSingle();
+        if(!alive(id,epoch))return;
+        if(error?.code==='23505'||(!error&&!data)){
+          const existing=await readWorkspace(id);
+          if(!alive(id,epoch))return;
+          acceptWorkspace(existing);
+          // Keep the latest saved data and ask before applying another layout.
+          if(chartProfile)accountStep='layout';
+          accountError='Your preferences changed on another device. The latest settings are loaded; confirm your layout to continue.';
+          render();return;
         }
-        firstTimeChartSetup=false;
+        if(error||!data)throw Error('Could not save your chart layout. Your existing settings are preserved. Please retry.');
+        prefs=snapshot;revision=data.revision;saved=JSON.stringify(snapshot);
+        accountStep='ready';
         render();
       }catch(error){
         if(!alive(id,epoch)||!visible)return;
         const message=host.querySelector('[data-charts-onboarding-error]');
         if(message){message.hidden=false;message.textContent=error.message||'Could not save your chart setup. Please retry.';}
       }finally{
-        firstRunSaving=false;
-        const button=host.querySelector('[data-charts-action="start-tios-charts"]');
-        if(button){button.disabled=false;button.textContent='Save setup & open charts';}
+        if(alive(id,epoch)){
+          firstRunSaving=false;updateAccountBusy();
+          const button=host.querySelector('[data-charts-action="start-tios-charts"]');
+          if(button)button.textContent='Save layout & open charts';
+        }
       }
     }
 
     function render(){
-      if(!visible||!prefs)return;
-      if(firstTimeChartSetup){renderFirstTimeChartSetup();return;}
+      if(!visible||!loaded||!prefs||getUser()?.id!==userId)return;
+      if(accountStep!=='ready'||!chartProfile){renderAccountEntry();return;}
       const selectedAccount=getSelectedAccount?.();
       const selectedAccountName=selectedAccount?.account_name||'No trading account selected';
       const mt5Linked=selectedAccount?.platform==='MT5';
@@ -587,22 +670,20 @@
     async function load(){
       if(loading)return;
       const id=userId,epoch=generation;loading=true;loaded=false;
-      if(visible)host.innerHTML='<div class="charts-empty" role="status">Loading your chart preferences…</div>';
+      if(visible)host.innerHTML='<div class="charts-empty" role="status">Verifying your Charts account…</div>';
       try{
-        const {data,error}=await getClient().from(TABLE).select('configuration,revision,schema_version').eq('user_id',id).maybeSingle();
+        await verifiedUser(id);
         if(!alive(id,epoch))return;
-        if(error)throw Error('Your saved preferences could not be loaded. Retry before making changes.');
-        if(data&&(data.schema_version!==1||P.validate(data.configuration)))throw Error('Your saved chart preferences use an unsupported format. They have been preserved.');
-        prefs=data?P.clone(data.configuration):P.defaults();revision=data?.revision??null;saved=data?JSON.stringify(prefs):null;loaded=true;
-        firstTimeChartSetup=!data;
-        if(firstTimeChartSetup)firstRunLayout=prefs.layout;
+        const result=await readWorkspace(id);
+        if(!alive(id,epoch))return;
+        acceptWorkspace(result);
         render();
       }catch(error){
-        if(alive(id,epoch)&&visible){host.innerHTML='<div class="charts-empty"><p role="alert"></p><button type="button" class="btn" data-charts-action="reload">Retry loading preferences</button></div>';host.querySelector('p').textContent=error.message}
+        if(alive(id,epoch)&&visible){host.innerHTML='<div class="charts-empty"><p role="alert"></p><button type="button" class="btn" data-charts-action="reload">Retry verifying Charts account</button></div>';host.querySelector('p').textContent=error.message}
       }finally{if(alive(id,epoch))loading=false}
     }
     async function save(){
-      if(!loaded||saving||!getClient()||getUser()?.id!==userId)return;
+      if(!loaded||!chartProfile||accountStep!=='ready'||saving||!getClient()||getUser()?.id!==userId)return;
       capture();const validation=P.validate(prefs);
       if(validation){status(validation,true);updateSave();return}
       refreshWidgets();const snapshot=P.clone(prefs),serialized=JSON.stringify(snapshot),id=userId,epoch=generation;
@@ -660,7 +741,7 @@
     });
     host.addEventListener('click',event=>{
       const firstLayout=event.target.closest('[data-charts-onboarding-layout]');
-      if(firstLayout&&firstTimeChartSetup){
+      if(firstLayout&&accountStep==='layout'&&!firstRunSaving){
         firstRunLayout=firstLayout.dataset.chartsOnboardingLayout;
         host.querySelectorAll('[data-charts-onboarding-layout]').forEach(button=>{
           const selected=button.dataset.chartsOnboardingLayout===firstRunLayout;
@@ -670,9 +751,11 @@
         return;
       }
       const layout=event.target.closest('[data-charts-layout]');
-      if(layout){if(layout.dataset.chartsLayout!==prefs.layout){capture();prefs.layout=layout.dataset.chartsLayout;render()}return}
+      if(layout&&accountStep==='ready'&&loaded){if(layout.dataset.chartsLayout!==prefs.layout){capture();prefs.layout=layout.dataset.chartsLayout;render()}return}
       const button=event.target.closest('[data-charts-action]');if(!button)return;
       const action=button.dataset.chartsAction;
+      if(action==='sign-in-charts'){enterCharts();return;}
+      if(action==='create-charts-account'){enterCharts(true);return;}
       if(action==='start-tios-charts'){completeFirstTimeChartSetup();return;}
       if(action==='toggle-panel')toggleControls();
       if(action==='instruments')setSidebarMode(sidebarMode==='settings'?'instruments':'settings');
@@ -720,17 +803,17 @@
         if(userId!==id){api.reset();userId=id}
         if(visible)return;visible=true;
         if(loaded)render();
-        else if(loading)host.innerHTML='<div class="charts-empty" role="status">Loading your chart preferences…</div>';
+        else if(loading)host.innerHTML='<div class="charts-empty" role="status">Verifying your Charts account…</div>';
         else load();
       },
       openTrade(trade){
-        if(!loaded){pendingEvidenceTrade=trade;return;}
+        if(!loaded||accountStep!=='ready'){pendingEvidenceTrade=trade;return;}
         if(sidebarMode==='instruments')setSidebarMode('settings');
         if(controlsCollapsed)toggleControls();
         verification.openTrade(trade);
       },
       hide(){capture();instrumentLoadEpoch++;instrumentWorkspace?.unmount();verification.hide();visible=false;stopPublicQuote('Paused while Charts is closed. Press Start to reconnect.');closeExpanded(false);dispose();host.replaceChildren()},
-      reset(){api.hide();instrumentWorkspace?.reset();instrumentWorkspace=null;sidebarMode='settings';firstTimeChartSetup=false;firstRunLayout='single';firstRunSaving=false;quoteFeed?.dispose();quoteFeed=null;quoteState=null;quoteShown=false;quoteMarket='v75_1s';quoteMarketChosen=false;verification.reset();pendingEvidenceTrade=null;generation++;userId=null;prefs=null;loaded=false;loading=false;saving=false;revision=null;saved=null}
+      reset(){api.hide();instrumentWorkspace?.reset();instrumentWorkspace=null;sidebarMode='settings';chartProfile=null;accountStep='entry';accountBusy=false;accountError='';firstRunLayout='single';firstRunSaving=false;quoteFeed?.dispose();quoteFeed=null;quoteState=null;quoteShown=false;quoteMarket='v75_1s';quoteMarketChosen=false;verification.reset();pendingEvidenceTrade=null;generation++;userId=null;prefs=null;loaded=false;loading=false;saving=false;revision=null;saved=null}
     };
     return api;
   }};

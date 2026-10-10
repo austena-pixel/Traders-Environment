@@ -10,7 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <link rel="stylesheet" href="trade-evidence.css">
-<link rel="stylesheet" href="tios-charts.css">
+<link rel="stylesheet" href="tios-charts.css?v=20261010-account-entry">
 
 <style>
 :root{
@@ -7745,7 +7745,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 <script src="core/chart-workspace.js"></script>
 <script src="core/chart-feed-verification.js"></script>
 <script src="tios-market-verification.js"></script>
-<script src="tios-charts.js"></script>
+<script src="tios-charts.js?v=20261010-account-entry"></script>
 <script src="hios-connection-layer.js"></script>
 <script src="technical-instruments/playbooks.js"></script>
 <script src="technical-instruments/checklists.js"></script>
@@ -8458,12 +8458,23 @@ async function initializeSupabase(){
     return;
   }
 
-  db.auth.onAuthStateChange(async (event, authSession)=>{
+  db.auth.onAuthStateChange((event, authSession)=>{
     if(event === 'SIGNED_OUT'){
       tradeEvidence.reset();
       chartWorkspace.reset();
       currentUser = null;
       window.location.replace('index.html?view=home');
+      return;
+    }
+
+    if(authSession?.user && currentUser && currentUser.id!==authSession.user.id){
+      // H-IOS may switch accounts in another tab. Dispose private Charts state
+      // immediately, then reload all T-IOS records using the new shared session.
+      tradeEvidence.reset();
+      chartWorkspace.reset();
+      currentUser=null;
+      setLoggedInUI(false);
+      window.location.reload();
       return;
     }
 
@@ -8474,7 +8485,10 @@ async function initializeSupabase(){
       authSession?.user &&
       !currentUser
     ){
-      await enterApp(authSession.user);
+      // Keep Supabase queries outside the synchronous Auth callback/lock.
+      setTimeout(()=>enterApp(authSession.user).catch(()=>{
+        showStatus('Your T-IOS account could not be loaded. Please reload.',5000);
+      }),0);
     }
   });
 }

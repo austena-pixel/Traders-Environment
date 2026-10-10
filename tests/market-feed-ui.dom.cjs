@@ -13,10 +13,10 @@ function environment({loadPublicTicks,loadInstruments,mobile=false}={}){
  const prefs=P.defaults();for(const mode of ['single','multiple'])for(const c of prefs.charts[mode])c.symbol=P.preferredDerivSymbol;
  const opening=F.lastClosedOpening('H1'),bar={open:100,high:110,low:90,close:105};
  const trade={id:'trade',user_id:'owner',account_id:'account',source:'mt5',instrument:'Volatility 75 (1s) Index.0',opened_at:new Date(Date.parse(opening)+1800000).toISOString(),mt5_position_id:'position',is_deleted:false};
- const tables={chart_workspace_preferences:[{user_id:'owner',configuration:prefs,revision:1,schema_version:1}],trades:[trade],mt5_market_symbols:[],mt5_market_candles:[{id:'candle',account_id:'account',user_id:'owner',instrument_key:'v75_1s',mt5_symbol:trade.instrument,timeframe:'H1',candle_open_at:opening,ohlc:bar,clock_confirmed:true,completed:true,retrieved_at:new Date().toISOString(),terminal_retrieved_at:new Date().toISOString(),broker_utc_offset_seconds:0}],mt5_candle_requests:[],market_feed_comparisons:[]};
+ const tables={chart_workspace_profiles:[{user_id:'owner'},{user_id:'other'}],chart_workspace_preferences:[{user_id:'owner',configuration:prefs,revision:1,schema_version:1},{user_id:'other',configuration:P.defaults(),revision:1,schema_version:1}],trades:[trade],mt5_market_symbols:[],mt5_market_candles:[{id:'candle',account_id:'account',user_id:'owner',instrument_key:'v75_1s',mt5_symbol:trade.instrument,timeframe:'H1',candle_open_at:opening,ohlc:bar,clock_confirmed:true,completed:true,retrieved_at:new Date().toISOString(),terminal_retrieved_at:new Date().toISOString(),broker_utc_offset_seconds:0}],mt5_candle_requests:[],market_feed_comparisons:[]};
  tables.mt5_market_candles.push({...tables.mt5_market_candles[0],id:'prior-candle',candle_open_at:F.lastClosedOpening('H1',Date.parse(trade.opened_at))});
  const writes=[],reads=[];
- const client={from(table){const filters=[],q={method:'get',row:null,start:0,end:Infinity,singleRow:false,columns:'*',select(columns='*'){q.columns=columns;return q},eq(k,v){filters.push([k,v]);return q},order(){return q},limit(n){q.end=n-1;return q},range(a,b){q.start=a;q.end=b;return q},maybeSingle(){q.singleRow=true;return q},single(){q.singleRow=true;return q},insert(row){q.method='insert';q.row=row;return q},update(row){q.method='update';q.row=row;return q},then(resolve,reject){return Promise.resolve().then(()=>{
+ const client={auth:{getUser:async()=>({data:{user},error:null})},from(table){const filters=[],q={method:'get',row:null,start:0,end:Infinity,singleRow:false,columns:'*',select(columns='*'){q.columns=columns;return q},eq(k,v){filters.push([k,v]);return q},order(){return q},limit(n){q.end=n-1;return q},range(a,b){q.start=a;q.end=b;return q},maybeSingle(){q.singleRow=true;return q},single(){q.singleRow=true;return q},insert(row){q.method='insert';q.row=row;return q},update(row){q.method='update';q.row=row;return q},then(resolve,reject){return Promise.resolve().then(()=>{
  if(q.method==='get')reads.push({table,columns:q.columns});
  let rows=(tables[table]||[]).filter(row=>filters.every(([k,v])=>row[k]===v));
  if(q.method==='insert'){
@@ -43,18 +43,18 @@ function publicTransport(e){
  const action=name=>e.find('[data-charts-action="'+name+'-public-quote"]').click();
  return {time,sockets,find,action,async start(){action('start');await settle();const socket=sockets.at(-1);resolve(socket);return socket;}};
 }
-test('TradingView sign-in remains external, private and available with mobile controls or Instruments open',async()=>{
+test('Open TradingView remains external and private with mobile controls or Instruments open',async()=>{
  for(const mobile of [false,true]){
   const e=environment({mobile,loadInstruments:async()=>({create:()=>({mount(panel){panel.textContent='Recording workspace'},unmount(){},reset(){}})})});
   try{
    e.controller.show();await settle();await settle();
    const card=e.find('.charts-card'),frame=card.querySelector('.charts-frame');
-   const login=card.querySelector('[data-charts-tv-signin]');
+   const login=card.querySelector('[data-charts-tv-chart]');
    assert.equal(login.hidden,false);assert.equal(e.find('.charts-panel').getAttribute('aria-hidden'),String(mobile));
-   for(const link of e.w.document.querySelectorAll('[data-charts-tv-signin]')){
-    assert.equal(link.href,'https://www.tradingview.com/accounts/signin/');assert.equal(link.target,'_blank');
+   for(const link of e.w.document.querySelectorAll('[data-charts-tv-chart]')){
+    assert.equal(new URL(link.href).origin,'https://www.tradingview.com');assert.equal(link.target,'_blank');
     assert.ok(link.relList.contains('noopener'));assert.ok(link.relList.contains('noreferrer'));
-    assert.match(e.w.document.getElementById(link.getAttribute('aria-describedby')).textContent,/does not sign in or sync the embedded T-IOS charts/);
+    assert.match(link.textContent,/Open TradingView/);
     const activated=new e.w.MouseEvent('click',{bubbles:true,cancelable:true});link.dispatchEvent(activated);
     assert.equal(activated.defaultPrevented,false);assert.equal(card.querySelector('.charts-frame'),frame);
    }
@@ -128,7 +128,7 @@ test('ordinary chart viewing has no verification queries; only a pending candle 
  const tick=async()=>{const [id,timer]=timers.entries().next().value;timers.delete(id);timer.callback();await settle();await settle();};
  try{
   e.controller.show();await settle();await settle();
-  assert.deepEqual(e.reads.map(r=>r.table),['chart_workspace_preferences']);assert.equal(timers.size,0);
+  assert.deepEqual(e.reads.map(r=>r.table),['chart_workspace_profiles','chart_workspace_preferences']);assert.equal(timers.size,0);
   const frame=e.find('.charts-frame');await e.openEvidence();
   const projection=e.reads.find(r=>r.table==='trades').columns;
   assert.equal(projection.includes('*'),false);assert.match(projection,/mt5_position_id/);assert.equal(timers.size,0);
@@ -233,7 +233,7 @@ test('Instruments replaces only the Charts rail, preserves running widgets and r
   const frame=e.find('.charts-frame'),symbol=e.find('[data-chart-field="symbol"]');symbol.value='DERIV:VOLATILITY_75_INDEX';symbol.dispatchEvent(new e.w.Event('input',{bubbles:true}));
   e.find('[data-charts-action="instruments"]').click();await settle();await settle();
   assert.equal(e.find('.charts-toolbar').hidden,true);assert.equal(e.find('[data-charts-instruments]').hidden,false);assert.equal(e.find('[data-charts-sidebar-title]').textContent,'Instruments');
-  assert.equal(r.workspace.parentNode,e.find('[data-charts-instruments]'));assert.equal(e.w.document.querySelectorAll('#executionMapFormBody').length,1);
+  assert.equal(r.workspace.parentNode,e.find('.charts-instrument-selected'));assert.equal(e.w.document.querySelectorAll('#executionMapFormBody').length,1);
   assert.equal(e.find('.charts-frame'),frame);assert.equal(socket.closeCount,0);assert.equal(e.writes.length,0);assert.equal(r.writes.length,0);
   r.input('pb-note','Unsaved entry context');e.find('[data-charts-action="instruments"]').click();
   assert.equal(r.workspace.parentNode,e.find('#page-execution'));assert.equal(e.find('.charts-toolbar').hidden,false);assert.equal(symbol.value,'DERIV:VOLATILITY_75_INDEX');
@@ -242,7 +242,7 @@ test('Instruments replaces only the Charts rail, preserves running widgets and r
   e.find('[data-charts-action="toggle-panel"]').click();e.find('[data-charts-action="toggle-panel"]').click();assert.equal(e.find('.charts-frame'),frame);assert.equal(socket.closeCount,0);
   e.controller.openTrade(e.trade);await settle();assert.equal(e.find('.charts-toolbar').hidden,false);assert.equal(r.workspace.parentNode,e.find('#page-execution'));
   e.find('[data-charts-action="instruments"]').click();await settle();e.controller.hide();assert.equal(r.workspace.parentNode,e.find('#page-execution'));assert.equal(r.workspace.isConnected,true);
-  e.controller.show();await settle();assert.equal(r.workspace.parentNode,e.find('[data-charts-instruments]'));assert.equal(e.find('[data-execution-reflection-id="pb-note"]').value,'Unsaved entry context');
+  e.controller.show();await settle();assert.equal(r.workspace.parentNode,e.find('.charts-instrument-selected'));assert.equal(e.find('[data-execution-reflection-id="pb-note"]').value,'Unsaved entry context');
  }finally{e.controller.reset();e.dom.window.close()}
 });
 test('Charts records Playbook, Rules and Psychology through existing saves, retains prior evidence and keeps period reviews separate',async()=>{
