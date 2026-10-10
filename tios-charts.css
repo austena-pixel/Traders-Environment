@@ -210,3 +210,98 @@ body.charts-workspace .main{padding:8px 10px}
 #chartsWorkspace .market-history-nav{display:flex;gap:5px}
 #chartsWorkspace [data-market-result]{font-size:12px}
 @media(max-width:860px){#chartsWorkspace .charts-card-actions .btn{font-size:10px;padding:5px}}
+
+
+/* Charts Instruments icon categories v1: exclusive single-section display. */
+#chartsWorkspace .charts-instruments[hidden]{display:none!important}
+#chartsWorkspace .charts-instruments{
+  display:grid;grid-template-columns:42px minmax(0,1fr);
+  align-items:start;gap:7px;padding:7px;min-width:0
+}
+#chartsWorkspace .charts-instrument-icon-rail{
+  position:sticky;top:7px;z-index:4;display:flex;flex-direction:column;
+  align-items:center;gap:5px;min-width:0;padding:7px 2px;
+  border-radius:12px;border:1px solid rgba(152,96,194,.29);
+  background:linear-gradient(180deg,#1a1024,#110c1a)
+}
+#chartsWorkspace .charts-instrument-icon-btn{
+  display:grid;place-items:center;flex:0 0 35px;
+  width:35px;height:35px;min-height:35px;margin:0;padding:0;
+  border-radius:10px;border:1px solid transparent;
+  background:transparent;color:#c2a6d5;cursor:pointer;
+  transition:background .15s,color .15s,border-color .15s
+}
+#chartsWorkspace .charts-instrument-icon-btn:hover,
+#chartsWorkspace .charts-instrument-icon-btn:focus-visible{
+  background:#342143;color:white;border-color:#785297;outline:none
+}
+#chartsWorkspace .charts-instrument-icon-btn.active{
+  color:white;background:linear-gradient(145deg,#553372,#291a38);
+  border-color:#af68d2;box-shadow:0 0 0 1px rgba(175,104,210,.12) inset
+}
+#chartsWorkspace .charts-instrument-icon-btn svg{
+  width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round
+}
+#chartsWorkspace .charts-instrument-icon-divider{
+  flex:0 0 1px;width:25px;height:1px;background:#503159;margin:5px 0
+}
+#chartsWorkspace .charts-instrument-selected{
+  display:flex;flex-direction:column;gap:8px;min-width:0
+}
+#chartsWorkspace .charts-instrument-selected-head{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  gap:6px;border-bottom:1px solid #3a2948;padding:3px 0 9px
+}
+#chartsWorkspace .charts-instrument-selected-head>div{min-width:0}
+#chartsWorkspace .charts-instrument-selected-head strong{
+  display:block;color:#f1e8f7;font-size:12px;line-height:1.5
+}
+#chartsWorkspace .charts-instrument-selected-head small{
+  display:block;margin-top:3px;color:#a892bb;font-size:9px;line-height:1.4
+}
+#chartsWorkspace .charts-instrument-refresh-btn{
+  flex:0 0 25px;width:25px;height:25px;padding:0;
+  border:1px solid #513461;border-radius:8px;
+  background:#21152a;color:#e7c8fa;font-size:17px;cursor:pointer
+}
+#chartsWorkspace .charts-instrument-refresh-btn:hover{background:#382248;border-color:#9362b7}
+#chartsWorkspace .charts-instrument-period-scopes{
+  display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px
+}
+#chartsWorkspace .charts-instruments[data-instrument-tab="period"] .charts-instrument-period-scopes{display:grid}
+#chartsWorkspace .charts-instrument-period-scopes button{
+  border:1px solid #42334e;border-radius:8px;background:#1b1423;
+  color:#cbb9d5;padding:8px 4px;min-width:0;font-size:10px;cursor:pointer
+}
+#chartsWorkspace .charts-instrument-period-scopes button.active{
+  color:white;background:#503166;border-color:#a369c1
+}
+#chartsWorkspace .charts-instrument-empty{display:none}
+#chartsWorkspace .charts-instruments[data-instrument-tab="period"][data-period-empty="true"] .charts-instrument-empty{
+  display:block;padding:12px 9px;border-radius:10px;border:1px dashed #6d507c;
+  color:#bfa8cd;font-size:10px;line-height:1.5
+}
+#chartsWorkspace .charts-instruments .execution-map-layout{min-width:0}
+#chartsWorkspace .charts-instruments .execution-map-context{padding:7px;gap:7px}
+#chartsWorkspace .charts-instruments .execution-map-form-head{padding:7px}
+#chartsWorkspace .charts-instruments .execution-map-form-body{padding:7px}
+#chartsWorkspace .charts-instruments .execution-map-footer{padding:7px}
+#chartsWorkspace .charts-instruments .execution-map-control select{font-size:10px}
+#chartsWorkspace .charts-instruments[data-instrument-tab="trades"] .execution-map-form{display:none!important}
+#chartsWorkspace .charts-instruments:is([data-instrument-tab="playbook"],[data-instrument-tab="rules"],[data-instrument-tab="psych"]) .execution-map-context{display:none!important}
+#chartsWorkspace .charts-instruments[data-instrument-tab="playbook"] .execution-map-controls>:not(.playbook){display:none!important}
+#chartsWorkspace .charts-instruments[data-instrument-tab="rules"] .execution-map-controls>:not(.checklist){display:none!important}
+#chartsWorkspace .charts-instruments[data-instrument-tab="psych"] .execution-map-controls>:not(.psych){display:none!important}
+#chartsWorkspace .charts-instruments[data-instrument-tab="period"] .execution-map-controls>:not(#executionMapPeriodRulesControls){display:none!important}
+#chartsWorkspace .charts-instruments[data-instrument-tab="period"] #executionMapPeriodRulesControls>.period-rules{display:none!important}
+#chartsWorkspace .charts-instruments[data-instrument-tab="period"][data-instrument-scope="session"] #executionMapPeriodRulesControls>.period-rules[data-execution-map-rule-scope="session"],
+#chartsWorkspace .charts-instruments[data-instrument-tab="period"][data-instrument-scope="daily"] #executionMapPeriodRulesControls>.period-rules[data-execution-map-rule-scope="daily"],
+#chartsWorkspace .charts-instruments[data-instrument-tab="period"][data-instrument-scope="weekly"] #executionMapPeriodRulesControls>.period-rules[data-execution-map-rule-scope="weekly"],
+#chartsWorkspace .charts-instruments[data-instrument-tab="period"][data-instrument-scope="monthly"] #executionMapPeriodRulesControls>.period-rules[data-execution-map-rule-scope="monthly"]{display:block!important}
+#chartsWorkspace .charts-instruments[data-instrument-tab="period"][data-period-empty="true"] .execution-map-layout{display:none!important}
+@media(max-width:480px){
+  #chartsWorkspace .charts-instruments{grid-template-columns:40px minmax(0,1fr);gap:5px;padding:5px}
+  #chartsWorkspace .charts-instrument-icon-rail{padding:5px 2px}
+  #chartsWorkspace .charts-instrument-icon-btn{width:33px;height:34px;min-height:34px;flex-basis:34px}
+}
