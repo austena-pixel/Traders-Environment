@@ -10,6 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <link rel="stylesheet" href="trade-evidence.css">
+<link rel="stylesheet" href="tios-capture.css?v=20261010-manual-capture">
 <link rel="stylesheet" href="tios-charts.css?v=20261010-account-entry-restore">
 
 <style>
@@ -7742,10 +7743,11 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
 <script src="core/evidence-contract.js"></script>
 <script src="trade-evidence.js"></script>
+<script src="tios-capture.js?v=20261010-manual-capture"></script>
 <script src="core/chart-workspace.js"></script>
 <script src="core/chart-feed-verification.js"></script>
 <script src="tios-market-verification.js"></script>
-<script src="tios-charts.js?v=20261010-remember-chart-count"></script>
+<script src="tios-charts.js?v=20261010-manual-capture"></script>
 <script src="hios-connection-layer.js"></script>
 <script src="technical-instruments/playbooks.js"></script>
 <script src="technical-instruments/checklists.js"></script>
@@ -7820,11 +7822,21 @@ const tradeEvidence = window.TIOSTradeEvidence.create({
   getTrade:id=>trades.find(trade=>trade.id===id),
   getNumber:id=>journalTradeNumbers().get(String(id))
 });
+const chartCapture = window.TIOSCaptureEvidence.create({
+  getClient:()=>db,getUser:()=>currentUser,
+  getTrades:()=>trades,getNumber:id=>journalTradeNumbers().get(String(id))
+});
+window.TIOSChartCaptureController=chartCapture;
 const chartWorkspace = window.TIOSCharts.create({
   host:$('#chartsWorkspace'),getClient:()=>db,getUser:()=>currentUser,
   getAccounts:()=>tradingAccounts,getSelectedAccount:()=>tradingAccount,getNumber:id=>journalTradeNumbers().get(String(id))
 });
 
+document.addEventListener('click',event=>{
+  const capture=event.target.closest('[data-trade-captures-open]');
+  if(!capture)return;
+  chartCapture.gallery(capture.dataset.tradeCapturesOpen);
+});
 document.addEventListener('click',event=>{
   const button=event.target.closest('[data-market-evidence-trade]');if(!button)return;
   const trade=trades.find(t=>t.id===button.dataset.marketEvidenceTrade);
@@ -8461,6 +8473,7 @@ async function initializeSupabase(){
   db.auth.onAuthStateChange((event, authSession)=>{
     if(event === 'SIGNED_OUT'){
       tradeEvidence.reset();
+      chartCapture.reset();
       chartWorkspace.reset();
       currentUser = null;
       window.location.replace('index.html?view=home');
@@ -8471,6 +8484,7 @@ async function initializeSupabase(){
       // H-IOS may switch accounts in another tab. Dispose private Charts state
       // immediately, then reload all T-IOS records using the new shared session.
       tradeEvidence.reset();
+      chartCapture.reset();
       chartWorkspace.reset();
       currentUser=null;
       setLoggedInUI(false);
@@ -10202,7 +10216,7 @@ function renderJournal(){
           <td title="${escapeHtml(t.notes||'')}">${escapeHtml((t.notes||'—').slice(0,55))}${(t.notes||'').length>55?'…':''}</td>
           <td>
             <div class="table-actions">
-              <button class="btn small" type="button" data-trade-evidence-open="${escapeHtml(t.id)}">Setup pictures</button>
+              <button class="btn small" type="button" data-trade-evidence-open="${escapeHtml(t.id)}">Setup pictures</button><button class="btn small" type="button" data-trade-captures-open="${escapeHtml(t.id)}">Captures</button>
               ${t.source==='mt5'&&window.TIOSFeedVerification.marketForSymbol(t.instrument)?`<button class="btn small" type="button" data-market-evidence-trade="${escapeHtml(t.id)}">Market evidence</button>`:''}
               <button class="btn small edit-trade" data-id="${t.id}">Edit</button>
               <button class="btn small danger delete-trade" data-id="${t.id}">Delete</button>
@@ -10357,7 +10371,7 @@ function renderDayTrades(date){
       <span class="${pnlClass(Number(t.pnl))}">${signedMoney(Number(t.pnl))}</span>
       <span>${formatReturnPct(tradeReturnPct(t))}</span>
       <div class="table-actions">
-        <button class="btn small" type="button" data-trade-evidence-open="${escapeHtml(t.id)}">Setup pictures</button>
+        <button class="btn small" type="button" data-trade-evidence-open="${escapeHtml(t.id)}">Setup pictures</button><button class="btn small" type="button" data-trade-captures-open="${escapeHtml(t.id)}">Captures</button>
               ${t.source==='mt5'&&window.TIOSFeedVerification.marketForSymbol(t.instrument)?`<button class="btn small" type="button" data-market-evidence-trade="${escapeHtml(t.id)}">Market evidence</button>`:''}
         <button class="btn danger small" type="button">Delete</button>
       </div>
