@@ -7679,6 +7679,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 <script src="core/evidence-contract.js"></script>
 <script src="trade-evidence.js"></script>
 <script src="core/chart-workspace.js"></script>
+<script src="core/chart-feed-verification.js"></script>
+<script src="tios-market-verification.js"></script>
 <script src="tios-charts.js"></script>
 <script src="hios-connection-layer.js"></script>
 <script src="technical-instruments/playbooks.js"></script>
@@ -7755,7 +7757,16 @@ const tradeEvidence = window.TIOSTradeEvidence.create({
   getNumber:id=>journalTradeNumbers().get(String(id))
 });
 const chartWorkspace = window.TIOSCharts.create({
-  host:$('#chartsWorkspace'),getClient:()=>db,getUser:()=>currentUser
+  host:$('#chartsWorkspace'),getClient:()=>db,getUser:()=>currentUser,
+  getAccounts:()=>tradingAccounts,getSelectedAccount:()=>tradingAccount,getNumber:id=>journalTradeNumbers().get(String(id))
+});
+
+document.addEventListener('click',event=>{
+  const button=event.target.closest('[data-market-evidence-trade]');if(!button)return;
+  const trade=trades.find(t=>t.id===button.dataset.marketEvidenceTrade);
+  if(!trade||trade.user_id!==currentUser?.id)return;
+  document.querySelector('.nav-btn[data-page="charts"]').click();
+  chartWorkspace.openTrade(trade);
 });
 
 const money = n => '$' + Number(n || 0).toLocaleString(undefined,{
@@ -10076,6 +10087,7 @@ function renderJournal(){
           <td>
             <div class="table-actions">
               <button class="btn small" type="button" data-trade-evidence-open="${escapeHtml(t.id)}">Setup pictures</button>
+              ${t.source==='mt5'&&window.TIOSFeedVerification.marketForSymbol(t.instrument)?`<button class="btn small" type="button" data-market-evidence-trade="${escapeHtml(t.id)}">Market evidence</button>`:''}
               <button class="btn small edit-trade" data-id="${t.id}">Edit</button>
               <button class="btn small danger delete-trade" data-id="${t.id}">Delete</button>
             </div>
@@ -10230,6 +10242,7 @@ function renderDayTrades(date){
       <span>${formatReturnPct(tradeReturnPct(t))}</span>
       <div class="table-actions">
         <button class="btn small" type="button" data-trade-evidence-open="${escapeHtml(t.id)}">Setup pictures</button>
+              ${t.source==='mt5'&&window.TIOSFeedVerification.marketForSymbol(t.instrument)?`<button class="btn small" type="button" data-market-evidence-trade="${escapeHtml(t.id)}">Market evidence</button>`:''}
         <button class="btn danger small" type="button">Delete</button>
       </div>
     `;

@@ -9,7 +9,8 @@
     html,body{width:100%;height:100%;margin:0;background:#131722;color:#a9b3c5;font:12px Arial,sans-serif;overflow:hidden}
     .tradingview-widget-container{height:100%;width:100%}
     .tradingview-widget-container__widget{height:calc(100% - 32px);width:100%}
-    .tradingview-widget-copyright{height:32px;display:flex;align-items:center;justify-content:center;gap:4px}
+    .tradingview-widget-copyright{height:32px;display:flex;flex-wrap:wrap;align-content:center;align-items:center;justify-content:center;gap:2px 4px;padding:0 4px;font-size:10px;overflow:hidden}
+    .widget-symbol-note{flex-basis:100%;text-align:center;font-size:9px}
     a{color:#69a8ff;text-decoration:none}
   </style>
   <script src="core/chart-workspace.js"></script>
@@ -19,7 +20,7 @@
        the host iframe disposes the entire widget without a private TradingView API. -->
   <div class="tradingview-widget-container">
     <div class="tradingview-widget-container__widget"></div>
-    <div class="tradingview-widget-copyright"><a target="_blank" rel="noopener nofollow"><span class="blue-text"></span></a><span class="trademark">by TradingView</span></div>
+    <div class="tradingview-widget-copyright"><a target="_blank" rel="noopener nofollow"><span class="blue-text"></span></a><span class="trademark">by TradingView</span><span class="widget-symbol-note">Widget display may differ after toolbar changes · use Reset instrument in T-IOS</span></div>
   </div>
   <script>
     (function(){
@@ -37,7 +38,7 @@
       const report=state=>parent.postMessage({type:'tios:chart-widget-state',instance:payload.instance,state},location.origin);
       const link=container.querySelector('a');
       link.href='https://www.tradingview.com/chart/?symbol='+encodeURIComponent(payload.chart.symbol);
-      link.querySelector('span').textContent=payload.chart.symbol+' chart';
+      link.querySelector('span').textContent='T-IOS configured: '+payload.chart.symbol;
       document.title=payload.chart.symbol+' · TradingView chart';
       if(payload.theme==='light'){document.body.style.background='#fff';document.body.style.color='#666'}
       let observed=false;
