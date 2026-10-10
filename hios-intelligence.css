@@ -188,3 +188,20 @@
   .hios-evidence-facts{gap:12px;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 }
 @media(prefers-reduced-motion:reduce){.hios-domain,.hios-product-capabilities-button,.top-k-panel.goal-status-card,.home-layout.auto-zoom-enabled .hios-development[data-home-panel="c"]{transition:none!important}.hios-intel-drawer[open]{animation:none}}
+
+/* Dashboard: on-demand intelligence via the clock; preserve the original grid and details. */
+#appScreen .home-sidebar{grid-template-rows:auto minmax(0,1fr)!important}
+#appScreen .hios-workspace-actions{display:flex;gap:8px;align-items:stretch;min-width:0;flex:0 0 auto}
+#appScreen .hios-workspace-actions .hios-chart-toggle{flex:1;min-width:0}
+.hios-clock-toggle{position:relative;display:grid;place-items:center;flex:0 0 42px;min-height:40px;border:1px solid #3a4b64;border-radius:11px;background:#18263b;color:#e9f2ff;cursor:pointer}
+.hios-clock-toggle svg{width:19px;height:19px}
+.hios-clock-toggle:hover,.hios-clock-toggle[aria-expanded="true"]{border-color:#6ea8ff;background:#20344e}
+.hios-clock-toggle:focus-visible{outline:2px solid #95b9f2;outline-offset:2px}
+.hios-clock-unread{position:absolute;top:-6px;right:-5px;min-width:17px;height:17px;display:grid;place-items:center;padding:0 4px;border-radius:50%;background:#a6c7fa;color:#091323;font-size:10px;font-weight:800}
+.hios-clock-unread[hidden]{display:none!important}
+#appScreen .hios-development:not(.hios-development-open){display:none!important}
+#appScreen .hios-development.hios-development-open{position:fixed!important;z-index:90!important;top:70px;right:18px;bottom:18px;width:min(390px,calc(100vw - 36px));height:auto!important;max-height:calc(100dvh - 88px);padding:14px!important;overflow:hidden!important;background:#101925;border:1px solid #42536b;border-radius:16px;box-shadow:0 16px 60px #000a;transform:none!important}
+#appScreen .hios-development.hios-development-open .hios-domain-grid{overflow-y:auto!important}
+#appScreen .hios-development.hios-development-open .hios-development-head{padding-right:32px}
+#appScreen .hios-development.hios-development-open::after{content:'×';position:absolute;right:15px;top:12px;color:#9db0c8;pointer-events:none;font-size:20px}
+@media(max-width:950px){#appScreen .hios-development.hios-development-open{top:10px;right:10px;bottom:10px;width:min(390px,calc(100vw - 20px));max-height:calc(100dvh - 20px)}.hios-clock-toggle{flex-basis:38px;min-height:34px}}

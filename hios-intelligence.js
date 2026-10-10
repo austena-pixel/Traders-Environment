@@ -11,6 +11,9 @@
   const product=document.getElementById('hiosIntelligenceProduct');
   const bell=document.getElementById('hiosIntelligenceNotifications');
   const badge=document.getElementById('hiosIntelligenceUnread');
+  const clock=document.getElementById('hiosDevelopmentClock');
+  const clockBadge=document.getElementById('hiosClockUnread');
+  const development=document.getElementById('hiosDevelopmentPanel');
   const products=[...new Set(model.DOMAINS.map(domain=>domain.productId))].map(id=>({
     id,domains:model.DOMAINS.filter(domain=>domain.productId===id)
   }));
@@ -20,7 +23,33 @@
   const connected=domain=>domain.productId==='hios'||(typeof window.isProductAdded==='function'&&window.isProductAdded(domain.productId));
   function readJson(key,fallback){try{return JSON.parse(localStorage.getItem(key)||'null')??fallback}catch{return fallback}}
   function readKey(){return state.userId?'hios_intelligence_read_v1:'+encodeURIComponent(state.userId):null}
-  function levelProgress(value){
+  function capabilityEventIds(){return model.unreadEvents(state.notifications,state.userId,readIds).filter(event=>event.type==='capability-available').map(event=>event.id);}
+  function setDevelopmentOpen(value){
+    if(!clock||!development)return;
+    const open=!!value;
+    development.classList.toggle('hios-development-open',open);
+    development.setAttribute('aria-hidden',String(!open));
+    clock.setAttribute('aria-expanded',String(open));
+    if(open)development.removeAttribute('hidden');
+  }
+  if(clock){
+    clock.addEventListener('click',()=>{
+      const opening=!development.classList.contains('hios-development-open');
+      setDevelopmentOpen(opening);
+      if(opening){
+        document.getElementById('hiosDomainGrid')?.focus({preventScroll:true});
+        const seen=capabilityEventIds();
+        if(seen.length){
+          readIds=[...new Set([...readIds,...seen])];
+          try{const key=readKey();if(key)localStorage.setItem(key,JSON.stringify(readIds))}catch{}
+          render();
+        }
+      }
+    });
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'&&development.classList.contains('hios-development-open')&&!dialog.open){setDevelopmentOpen(false);clock.focus();}});
+    document.addEventListener('pointerdown',event=>{if(development.classList.contains('hios-development-open')&&!development.contains(event.target)&&!clock.contains(event.target)&&!dialog.open)setDevelopmentOpen(false);});
+  }
+    function levelProgress(value){
     const level=model.assessedLevel(value),progress=model.assessedLevelProgress(value);
     const label=progress?`${progress.percent}%`:level===null?'Awaiting assessment':'Progress not yet assessed';
     return `<div class="hios-level-progress"><div class="hios-level-progress-meta"><span>${level===null?'Level not yet established':`Current level ${level} progress`}</span><b>${esc(label)}</b></div><div class="hios-level-progress-track" role="progressbar" aria-label="${level===null?'Intelligence development':`Current level ${level} progress`}" aria-valuemin="0" aria-valuemax="100" ${progress?`aria-valuenow="${progress.percent}"`:''} aria-valuetext="${esc(label)}"><span style="width:${progress?.percent??0}%" aria-hidden="true"></span></div></div>`;
@@ -118,6 +147,7 @@
     }
     const unread=model.unreadEvents(state.notifications,state.userId,readIds).length;
     badge.textContent=String(unread);badge.hidden=unread===0;
+    if(clockBadge){const available=capabilityEventIds().length;clockBadge.hidden=available===0;clockBadge.textContent='1';clock.setAttribute('aria-label',available?'Intelligence development: new capability unlocked':'Intelligence development and unlocked capabilities');}
     bell.setAttribute('aria-label',unread?`Intelligence notifications, ${unread} unread`:'Intelligence notifications, no unread updates');
     if(dialog.open)renderDialog();
   }
@@ -169,7 +199,7 @@
     setSessionUser(userId){
       const next=typeof userId==='string'&&userId?userId:null;
       if(state.userId===next)return;
-      close();reset();state=model.emptyState(next);
+      close();setDevelopmentOpen(false);reset();state=model.emptyState(next);
       const stored=readKey()?readJson(readKey(),[]):[];readIds=Array.isArray(stored)?stored.filter(id=>typeof id==='string'):[];
       render();loadAdapter();
       window.dispatchEvent(new Event('hios:session-changed'));
