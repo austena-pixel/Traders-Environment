@@ -62,3 +62,52 @@ body.charts-workspace .main{height:100vh;height:100dvh;min-height:0;display:flex
   #chartsWorkspace .charts-card-expanded .charts-controls{grid-template-columns:minmax(0,1fr) 72px auto}
   #chartsWorkspace .charts-card-expanded .charts-responsibility{grid-column:1/-1}
 }
+
+/* Chart workspace: compact controls rail and full-height chart viewport. */
+#chartsWorkspace{gap:8px}
+#chartsWorkspace .charts-workbench{display:grid;grid-template-columns:clamp(230px,22%,286px) minmax(0,1fr);gap:10px;flex:1;min-height:0;min-width:0}
+#chartsWorkspace .charts-workbench.charts-panel-collapsed{grid-template-columns:minmax(0,1fr)}
+#chartsWorkspace .charts-panel{display:flex;flex-direction:column;min-height:0;overflow:hidden;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+#chartsWorkspace .charts-panel-collapsed .charts-panel{display:none}
+#chartsWorkspace .charts-panel-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:none;padding:10px 12px;border-bottom:1px solid var(--line)}
+#chartsWorkspace .charts-panel-head strong{font-size:13px}
+#chartsWorkspace .charts-panel-scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain}
+#chartsWorkspace .charts-toolbar{display:flex;flex-direction:column;align-items:stretch;flex-wrap:nowrap;border:0;border-radius:0;padding:12px;gap:12px;background:transparent}
+#chartsWorkspace .charts-section-title{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;padding-top:4px;border-top:1px solid var(--line)}
+#chartsWorkspace .charts-section-title:first-child{border-top:0}
+#chartsWorkspace .charts-layout{display:flex;min-width:0}
+#chartsWorkspace .charts-layout button{flex:1;min-width:0;padding:8px 4px;font-size:11px}
+#chartsWorkspace .charts-setting{width:100%;min-width:0}
+#chartsWorkspace .charts-panel-settings{display:flex;flex-direction:column;gap:9px}
+#chartsWorkspace .charts-setup{border:1px solid var(--line);border-radius:9px;background:var(--panel3);min-width:0}
+#chartsWorkspace .charts-setup summary{display:flex;flex-direction:column;gap:3px;padding:10px;cursor:pointer;list-style:none}
+#chartsWorkspace .charts-setup summary::-webkit-details-marker{display:none}
+#chartsWorkspace .charts-setup summary strong{font-size:12px}
+#chartsWorkspace .charts-setup-caption{font-size:11px;color:var(--muted);overflow-wrap:anywhere}
+#chartsWorkspace .charts-setup[open] summary{border-bottom:1px solid var(--line)}
+#chartsWorkspace .charts-controls{display:grid;grid-template-columns:minmax(0,1fr) 74px;gap:8px;padding:10px}
+#chartsWorkspace .charts-symbol,#chartsWorkspace .charts-responsibility{grid-column:1/-1}
+#chartsWorkspace .charts-apply{grid-column:1/-1;height:30px}
+#chartsWorkspace .charts-save{display:flex;flex-direction:column;align-items:stretch;gap:7px;margin-left:0}
+#chartsWorkspace .charts-save button{width:100%}
+#chartsWorkspace .charts-help{font-size:10px;line-height:1.45}
+#chartsWorkspace .charts-view{display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden}
+#chartsWorkspace .charts-view-head{display:flex;align-items:center;gap:12px;flex:none;min-height:31px;margin-bottom:5px}
+#chartsWorkspace .charts-view-head .muted{font-size:11px}
+#chartsWorkspace .charts-grid{min-height:0;flex:1}
+#chartsWorkspace .charts-card{min-height:360px}
+#chartsWorkspace .charts-card-top{padding:6px 10px 5px}
+#chartsWorkspace .charts-widget{min-height:280px}
+#chartsWorkspace .charts-card-expanded .charts-controls{display:none}
+@container(max-width:720px){
+  #chartsWorkspace .charts-workbench{grid-template-columns:220px minmax(0,1fr)}
+}
+@media(max-width:860px){
+  #chartsWorkspace .charts-workbench{display:flex;flex-direction:column;overflow:hidden}
+  #chartsWorkspace .charts-panel{max-height:min(44dvh,400px);flex:none}
+  #chartsWorkspace .charts-view{flex:1;min-height:0}
+  #chartsWorkspace .charts-toolbar{padding:10px}
+  #chartsWorkspace .charts-setting{min-width:0;flex:none}
+  #chartsWorkspace .charts-layout{flex-basis:auto}
+  #chartsWorkspace .charts-card{min-height:440px}
+}
