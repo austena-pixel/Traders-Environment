@@ -11,6 +11,7 @@
   }}){
     let visible=false,userId=null,prefs=null,loaded=false,loading=false,saving=false;
     let revision=null,saved=null,generation=0,expanded=null,focusBeforeExpand=null,previousOverflow='';
+    let layoutSaveQueued=false;
     let controlsCollapsed=window.matchMedia('(max-width: 860px)').matches;
     const instances=new Map();
     const verification=window.TIOSMarketVerification.create({getClient,getUser,getAccounts,getSelectedAccount,getNumber});
@@ -398,12 +399,12 @@
             <div class="charts-widget"></div>
           </section>`}
     // Resize only affected cards, retaining existing TradingView frames and drawings.
-    function resizeMultiple(count){
+    function resizeMultiple(count,confirmed=false){
       if(!prefs||prefs.layout!=='multiple'||!Number.isInteger(count)||count<2||count>6)return;
       capture();
       const list=prefs.charts.multiple,old=list.length;
       if(count===old)return;
-      if(count<old&&!window.confirm('Remove '+(old-count)+' chart(s) from this layout? Their individual settings will be removed when you save preferences.')){
+      if(count<old&&!confirmed&&!window.confirm('Remove '+(old-count)+' chart(s) from this layout? Their individual settings will be removed when you save preferences.')){
         const control=host.querySelector('[data-charts-count]');if(control)control.value=String(old);
         return;
       }
@@ -431,6 +432,32 @@
       grid.style.setProperty('--chart-count',String(count));
       const badge=host.querySelector('[data-charts-layout="multiple"] span');if(badge)badge.textContent=String(count);
       changed();
+      saveLayoutChoice();
+    }
+    // The number chosen (including one chart) is a per-user preference.
+    // One chart uses the existing single layout; the other counts use
+    // the existing multiple layout without changing the saved schema.
+    function selectChartCount(count){
+      if(!loaded||accountStep!=='ready'||!Number.isInteger(count)||count<1||count>6)return;
+      const selected=prefs.layout==='single'?1:prefs.charts.multiple.length;
+      if(count===selected)return;
+      if(count===1){
+        capture();prefs.layout='single';render();saveLayoutChoice();return;
+      }
+      if(prefs.layout==='single'){
+        const previous=prefs.charts.multiple.length;
+        if(count<previous&&!window.confirm('Remove '+(previous-count)+' chart(s) from the saved multiple layout? Their individual settings will be removed when you save preferences.')){
+          const select=host.querySelector('[data-charts-count]');if(select)select.value='1';
+          return;
+        }
+        capture();prefs.layout='multiple';render();
+        if(count!==previous)resizeMultiple(count,true);
+        else saveLayoutChoice();
+      }else resizeMultiple(count);
+    }
+    function saveLayoutChoice(){
+      layoutSaveQueued=true;
+      if(!saving)void save();
     }
 
     // Profile membership is independent of chart preferences. Supabase verifies
@@ -621,7 +648,7 @@
             <button type="button" data-charts-layout="single" aria-pressed="${prefs.layout==='single'}">Single Chart</button>
             <button type="button" data-charts-layout="multiple" aria-pressed="${prefs.layout==='multiple'}">Multiple Charts <span>${prefs.charts.multiple.length}</span></button>
           </div>
-          ${prefs.layout==='multiple'?`<label class="charts-setting charts-count-setting">Number of charts<select data-charts-count aria-label="Number of simultaneous charts">${[2,3,4,5,6].map(n=>`<option value="${n}" ${prefs.charts.multiple.length===n?'selected':''}>${n} charts</option>`).join('')}</select></label>`:''}
+          <label class="charts-setting charts-count-setting">Number of charts<select data-charts-count aria-label="Number of simultaneous charts">${[1,2,3,4,5,6].map(n=>`<option value="${n}" ${(prefs.layout==='single'?1:prefs.charts.multiple.length)===n?'selected':''}>${n} chart${n===1?'':'s'}</option>`).join('')}</select></label>
           <div class="charts-section-title">Appearance</div>
           <label class="charts-setting">Chart theme<select data-charts-setting="theme"><option value="dark" ${prefs.theme==='dark'?'selected':''}>Dark</option><option value="light" ${prefs.theme==='light'?'selected':''}>Light</option></select></label>
           <label class="charts-setting">Timezone<select data-charts-setting="timezone">${P.timezones.map(([value,label])=>`<option value="${value}" ${prefs.timezone===value?'selected':''}>${label}</option>`).join('')}</select></label>
@@ -684,6 +711,7 @@
     }
     async function save(){
       if(!loaded||!chartProfile||accountStep!=='ready'||saving||!getClient()||getUser()?.id!==userId)return;
+      layoutSaveQueued=false;
       capture();const validation=P.validate(prefs);
       if(validation){status(validation,true);updateSave();return}
       refreshWidgets();const snapshot=P.clone(prefs),serialized=JSON.stringify(snapshot),id=userId,epoch=generation;
@@ -702,7 +730,17 @@
         revision=data.revision;saved=serialized;changed();
         const reload=host.querySelector('[data-charts-action="reload"]');if(reload)reload.hidden=true;
       }catch(error){if(alive(id,epoch))status(error.message,true)}
-      finally{if(alive(id,epoch)){saving=false;updateSave()}}
+      finally{
+        if(alive(id,epoch)){
+          saving=false;updateSave();
+          // If another layout/count was chosen during the request, save the
+          // newest selection after the first revision is acknowledged.
+          if(layoutSaveQueued){
+            layoutSaveQueued=false;
+            if(dirty())void save();
+          }
+        }
+      }
     }
     host.addEventListener('submit',event=>{
       if(!event.target.matches('.charts-controls'))return;
@@ -732,7 +770,7 @@
         mountChart(cardForControl(event.target));
         return;
       }
-      if(event.target.matches('[data-charts-count]')){resizeMultiple(Number(event.target.value));return}
+      if(event.target.matches('[data-charts-count]')){selectChartCount(Number(event.target.value));return}
       if(event.target.matches('[data-charts-setting]')){
         prefs[event.target.dataset.chartsSetting]=event.target.value;changed();refreshWidgets();
       }else if(event.target.matches('[data-chart-field="interval"]')){
@@ -751,7 +789,7 @@
         return;
       }
       const layout=event.target.closest('[data-charts-layout]');
-      if(layout&&accountStep==='ready'&&loaded){if(layout.dataset.chartsLayout!==prefs.layout){capture();prefs.layout=layout.dataset.chartsLayout;render()}return}
+      if(layout&&accountStep==='ready'&&loaded){selectChartCount(layout.dataset.chartsLayout==='single'?1:prefs.charts.multiple.length);return}
       const button=event.target.closest('[data-charts-action]');if(!button)return;
       const action=button.dataset.chartsAction;
       if(action==='sign-in-charts'){enterCharts();return;}
@@ -813,7 +851,7 @@
         verification.openTrade(trade);
       },
       hide(){capture();instrumentLoadEpoch++;instrumentWorkspace?.unmount();verification.hide();visible=false;stopPublicQuote('Paused while Charts is closed. Press Start to reconnect.');closeExpanded(false);dispose();host.replaceChildren()},
-      reset(){api.hide();instrumentWorkspace?.reset();instrumentWorkspace=null;sidebarMode='settings';chartProfile=null;accountStep='entry';accountBusy=false;accountError='';firstRunLayout='single';firstRunSaving=false;quoteFeed?.dispose();quoteFeed=null;quoteState=null;quoteShown=false;quoteMarket='v75_1s';quoteMarketChosen=false;verification.reset();pendingEvidenceTrade=null;generation++;userId=null;prefs=null;loaded=false;loading=false;saving=false;revision=null;saved=null}
+      reset(){api.hide();instrumentWorkspace?.reset();instrumentWorkspace=null;sidebarMode='settings';chartProfile=null;accountStep='entry';accountBusy=false;accountError='';firstRunLayout='single';firstRunSaving=false;quoteFeed?.dispose();quoteFeed=null;quoteState=null;quoteShown=false;quoteMarket='v75_1s';quoteMarketChosen=false;verification.reset();pendingEvidenceTrade=null;generation++;userId=null;prefs=null;loaded=false;loading=false;saving=false;layoutSaveQueued=false;revision=null;saved=null}
     };
     return api;
   }};
