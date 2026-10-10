@@ -22,6 +22,10 @@ body.charts-workspace .main{height:100vh;height:100dvh;min-height:0;display:flex
 #chartsWorkspace .charts-status-error{color:var(--amber)}
 #chartsWorkspace .charts-help{flex-basis:100%;font-size:11px;line-height:1.5;color:var(--muted);margin:0}
 #chartsWorkspace .charts-grid{display:grid;grid-template-columns:repeat(var(--chart-count),minmax(0,1fr));gap:12px;flex:1;min-height:0;min-width:0;overflow:auto;scrollbar-gutter:stable}
+/* Preserve readable chart widths when a user chooses four or more charts. */
+#chartsWorkspace .charts-grid[data-charts-mode=multiple][data-chart-count="4"]{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(480px,1fr)}
+#chartsWorkspace .charts-grid[data-charts-mode=multiple][data-chart-count="5"],
+#chartsWorkspace .charts-grid[data-charts-mode=multiple][data-chart-count="6"]{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:minmax(480px,1fr)}
 #chartsWorkspace .charts-card{display:flex;flex-direction:column;min-width:0;min-height:480px;overflow:hidden;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
 #chartsWorkspace .charts-card-top{padding:10px 12px 0;display:flex;align-items:center;justify-content:space-between;gap:8px;flex:none}
 #chartsWorkspace .charts-card-top strong{font-size:12px}
@@ -40,7 +44,7 @@ body.charts-workspace .main{height:100vh;height:100dvh;min-height:0;display:flex
 #chartsWorkspace .charts-card-expanded .charts-controls{grid-template-columns:minmax(180px,280px) 90px auto minmax(180px,1fr)}
 #chartsWorkspace .charts-card-expanded .charts-responsibility{grid-column:auto}
 @container(max-width:1000px){
-  #chartsWorkspace .charts-grid[data-charts-mode=multiple]{grid-template-columns:minmax(0,1fr);grid-auto-rows:560px}
+  #chartsWorkspace .charts-grid[data-charts-mode=multiple]{grid-template-columns:minmax(0,1fr)!important;grid-auto-rows:560px}
 }
 @media(max-width:860px){
   body.charts-workspace .main{padding:12px}
