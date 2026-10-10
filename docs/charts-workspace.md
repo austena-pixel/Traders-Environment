@@ -55,6 +55,80 @@ are not implemented. The additive migration also records the previously
 dashboard-created table in source control. Existing preference and trade rows
 are unchanged.
 
+## Saved native analysis (2026-10-10)
+
+Each chart has **TradingView** and **Saved analysis** switches. TradingView remains
+the initial engine. Saved analysis is an opt-in native workspace using pinned
+Lightweight Charts 5.2.0, with the Apache-2.0 license, NOTICE, logo and link
+retained. It is a renderer, not the Advanced Charts library or a personal
+TradingView account. Existing TradingView drawings cannot be imported or saved
+through the standard embed.
+
+Native analysis currently supports Volatility 75 (1s) and Volatility 75, M1, M3,
+M5, M15, M30, H1, H2, H4 and D1. Its instrument/timeframe controls are independent
+of the TradingView defaults in the left panel. Tools include price levels,
+two-point trend lines, rectangular zones, text notes, and SMA/EMA overlays with
+saved period and colour. Add an item by selecting its tool and clicking the
+chart; open **Saved analysis** below the chart to remove individual items.
+Nothing adds default indicators or clears drawings on refresh, layout changes,
+navigation, Reload analysis, or instrument/timeframe changes. Drawings are
+instrument-scoped and use UTC time/price anchors across timeframes. Single and
+each Multiple chart keep independent state, including the selected engine and
+native instrument/timeframe. Removed chart panes retain their analysis records.
+
+`core/chart-analysis.js` validates state and saves every edit automatically to
+`chart_workspace_analysis`, separate from the existing v1 preferences contract.
+The table references a registered Charts profile, has owner-only RLS and only
+authenticated SELECT, INSERT(user_id,content) and UPDATE(content) permissions.
+Revision and timestamps are controlled by a SECURITY INVOKER trigger. Anonymous
+Auth writes, owner reassignment, forged revisions, DELETE and TRUNCATE are denied.
+Bounded validated JSON holds pane state, per-instrument drawings/indicators, and
+timeframe-specific visible time ranges. Empty arrays represent real removals.
+
+Before a network request, every edit/removal is recorded synchronously in an
+account-scoped browser recovery journal. Account saves read the latest revision
+and replay only pending operations before a compare-and-update. A stale tab
+cannot restore an old complete snapshot over a newer removal. Interrupted,
+offline or conflicting saves retain the journal for retry and refresh recovery;
+the status says **Analysis saved to your Charts account** only after a successful
+account read/save. If local storage is unavailable and a save is still pending,
+the UI tells the user to keep the page open and a navigation warning is enabled.
+Switching users disposes their charts/feed and never reads another user's cache.
+
+`core/deriv-chart-feed.js` resolves the two distinct public market identities
+from the exact Deriv catalogue display names, caching the verified public mapping
+for 30 minutes to avoid repetitive lookups on refresh. Matching panes share a
+candle subscription. Historical OHLC and live OHLC updates are validated, with
+`open_time` as the live candle anchor. UTC source times and public source/parity
+labels remain visible. This feed does not authenticate MT5 or establish parity
+with MT5/TradingView. Time ranges and old drawing anchors request earlier real
+candles automatically (up to ten initial history batches); **Load earlier candles**
+offers further user-directed history. Provider availability/retention still
+governs whether old candles can render. Saved analysis remains in the account
+and item list even when data is unavailable or its anchor is outside loaded
+history. No fabricated candles or automatic reconnect loops are used.
+
+Native verification: 15 persistence/indicator contract scenarios, 9 feed adapter
+scenarios and 9 real native DOM/lifecycle scenarios passed. The 23 live SQL
+checks validate owned creation/read, exact drawing/indicator/view restoration,
+removal persistence, stale revision denial, account isolation, unsafe content
+rejection and grants. All SQL fixtures roll back; before/after hashes of profiles,
+preferences and existing analysis match. Existing Charts/recording regressions
+also pass. The development environment received 1,000 real R_75 M5 candles and
+two live OHLC updates; catalogue lookups and an earlier-history probe returned
+RateLimit. Native source/API shape and cooldown behavior are tested; no sustained
+feed or MT5 parity claim is made. No interactive browser or computed-layout QA
+was available; DOM rendering tests use a chart API fixture and verify the real
+vendored runtime exports separately. A visual check in the user's signed-in
+browser remains necessary.
+
+Relevant primary references:
+
+- https://tradingview.github.io/lightweight-charts/docs/product-comparison
+- https://tradingview.github.io/lightweight-charts/docs/plugins/series-primitives
+- https://developers.deriv.com/docs/data/ticks-history/
+- https://supabase.com/docs/reference/javascript/update
+
 ## Compact left controls panel
 
 Charts now uses a scrollable left controls panel beside the main chart display. Layout, chart count, appearance, timezone, per-chart instrument/timeframe/responsibility settings, and Save preferences live in the panel. Use **Hide controls** to reclaim the full chart width and **Show controls** to restore it. On narrow screens, the panel stacks above the chart and begins collapsed. Individual chart configurations are collapsible, keeping the working chart area unobstructed. Existing chart frames remain mounted when the controls panel is hidden or shown.
