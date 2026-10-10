@@ -101,7 +101,15 @@ async function snapshot(name){
     assert.equal(await page.locator('#executionMapTradeControl').isVisible(),false);
     pass('saved period Rules add their own selectors to the same instrument row and stay out of trade Rules');
 
-    await view('monthly',docs.monthly);await date('2026-10');await answer('Whole October');await save();
+    await view('monthly',docs.monthly);await date('2026-10');
+    await condition().check();await score().fill('8');await save();
+    await date('2026-11');await blank();await date('2026-10');
+    assert.equal(await condition().isChecked(),true);assert.equal(await score().inputValue(),'8');assert.equal(await response().inputValue(),'');
+    await score().fill('');await response().fill('Reflection with an unanswered score');await save();
+    await date('2026-11');await blank();await date('2026-10');
+    assert.equal(await condition().isChecked(),true);assert.equal(await score().inputValue(),'');assert.equal(await response().inputValue(),'Reflection with an unanswered score');
+    pass('partially completed period reviews save and restore with blank optional scores or reflections');
+    await answer('Whole October');await save();
     assert.equal(await page.locator('#executionMapPeriodTradeCount').textContent(),'4');
     await date('2026-11');await blank();await date('2026-10');await restored('Whole October');
     pass('monthly answers persist for the calendar month and a new month starts separately');
@@ -163,10 +171,15 @@ async function snapshot(name){
     pass('account switching never exposes another account’s answers');
     await snapshot('daily-period-review');
     await page.setViewportSize({width:390,height:844});await snapshot('daily-period-review-mobile');
-    await page.waitForFunction(()=>{const row=document.querySelector('.execution-map-controls'),card=row.querySelector('.execution-map-control.active'),r=row.getBoundingClientRect(),c=card.getBoundingClientRect();return c.left>=r.left-1&&c.right<=r.right+1;});
+    assert.equal(await page.evaluate(()=>{
+      const row=document.querySelector('.execution-map-controls'),bounds=row.getBoundingClientRect();
+      return row.scrollWidth<=row.clientWidth+1&&[...row.querySelectorAll('.execution-map-control')].every(card=>{
+        const box=card.getBoundingClientRect();return box.left>=bounds.left-1&&box.right<=bounds.right+1&&box.bottom<=bounds.bottom+1;
+      });
+    }),true);
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
     assert.equal(await page.locator('#executionMapSaveReflectionsBtn').isVisible(),true);
-    pass('instrument selectors scroll in one row and the period review remains usable on mobile');
+    pass('all instrument selectors wrap without horizontal scrolling and the period review remains usable on mobile');
     await page.setViewportSize({width:1440,height:900});
     await page.locator('#executionMapChecklistViewBtn').click();assert.equal(await page.locator('#executionMapTradeControl').isVisible(),true);
     assert.equal(await page.locator('#executionMapPeriodContext').isVisible(),false);assert.equal(await page.locator('#executionMapTradeSelect').getAttribute('size'),'4');

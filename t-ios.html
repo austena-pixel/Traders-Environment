@@ -4930,8 +4930,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 .execution-map-context{
   display:flex;
   flex-direction:column;
-  gap:14px;
-  padding:14px;
+  gap:10px;
+  padding:12px;
   overflow:hidden;
 }
 .execution-map-context>.execution-map-control{
@@ -4956,11 +4956,12 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 #executionMapTradeSelect optgroup{font-style:normal;font-weight:800}
 #executionMapTradeSelect optgroup option{font-weight:400}
 .execution-map-context-details{
-  flex:0 1 auto;
+  display:grid;
+  gap:6px;
+  flex:0 0 auto;
   min-height:0;
   margin-top:0;
-  overflow-y:auto;
-  overscroll-behavior:contain;
+  overflow:visible;
 }
 .execution-map-context-head>span{
   display:block;
@@ -4971,29 +4972,45 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 }
 .execution-map-context-head strong{
   display:block;
-  margin-top:5px;
+  margin-top:3px;
   color:#f0f5fb;
   font-size:14px;
   overflow-wrap:anywhere;
 }
 .execution-map-context-head small{
   display:block;
-  margin-top:5px;
+  margin-top:3px;
   color:#718298;
   font-size:9px;
   line-height:1.45;
 }
+.execution-map-context-details.trade-context .execution-map-context-head{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:4px;
+  align-items:center;
+}
+.execution-map-context-details.trade-context .execution-map-context-head strong{
+  grid-column:1/-1;
+  grid-row:2;
+  margin:0;
+}
+.execution-map-context-details.trade-context .execution-map-context-head small{
+  grid-column:2;
+  grid-row:1;
+  margin:0;
+}
 .execution-map-context-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:8px;
-  margin-top:14px;
+  gap:4px;
+  margin-top:0;
 }
 .execution-map-context-grid>div{
   border:1px solid #1f2d3d;
   border-radius:9px;
   background:#0a1017;
-  padding:9px;
+  padding:6px;
 }
 .execution-map-context-grid span{
   display:block;
@@ -5002,7 +5019,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 }
 .execution-map-context-grid strong{
   display:block;
-  margin-top:4px;
+  margin-top:3px;
   color:#dbe5f0;
   font-size:10px;
   overflow-wrap:anywhere;
@@ -5020,11 +5037,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
   font-weight:inherit;
 }
 .execution-map-principle{
-  margin-top:12px;
-  padding:11px;
-  border:1px solid #26394f;
-  border-radius:10px;
-  background:#0d1723;
+  margin-top:0;
+  padding:0 2px;
 }
 .execution-map-principle strong{
   display:block;
@@ -5033,31 +5047,39 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 }
 .execution-map-principle span{
   display:block;
-  margin-top:5px;
+  margin-top:3px;
   color:#91a3b9;
   font-size:9px;
   line-height:1.55;
 }
 .execution-map-score{
-  margin-top:12px;
-  padding:13px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:3px 8px;
+  margin-top:0;
+  padding:9px;
   border:1px solid #24405f;
   border-radius:11px;
   background:#0d1722;
 }
 .execution-map-score span{
+  grid-column:1;
   color:#7f93aa;
   font-size:9px;
 }
 .execution-map-score strong{
   display:block;
-  margin-top:4px;
+  grid-column:2;
+  grid-row:1 / span 3;
+  margin:0;
   color:#fff;
-  font-size:27px;
+  font-size:24px;
 }
 .execution-map-score small{
   display:block;
-  margin-top:4px;
+  grid-column:1;
+  margin:0;
   color:#74879d;
   font-size:8px;
   line-height:1.4;
@@ -5069,6 +5091,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
   overflow:hidden;
 }
 .execution-map-form-head{
+  container-type:inline-size;
+  container-name:execution-selectors;
   flex:0 0 auto;
   display:flex;
   align-items:flex-start;
@@ -5276,6 +5300,9 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
   font-size:8px;
 }
 @media(min-width:861px){
+  .execution-map-top .page-head>div:first-child{min-width:0;flex:1}
+  .execution-map-top .top-actions{flex:0 0 auto;flex-wrap:nowrap}
+  .execution-map-footer-actions{flex:0 0 auto;flex-wrap:nowrap}
   body.execution-workspace #page-execution.active{height:100%}
   body.execution-workspace #page-execution .execution-map-layout{
     flex:1 1 auto;
@@ -5292,6 +5319,11 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 }
 @media(max-width:900px){
   .execution-map-controls{grid-template-columns:1fr 1fr}
+}
+@media(min-width:861px) and (max-height:700px){
+  .execution-map-context{gap:8px;padding:10px}
+  .execution-map-context>.execution-map-control{padding:8px}
+  .execution-map-context-details{gap:4px}
 }
 @media(max-width:860px){
   .execution-map-layout{grid-template-columns:1fr}
@@ -7108,7 +7140,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
       <header class="page-head">
         <div>
           <h1>Execution Quality</h1>
-          <p>Confirm how the trading instruments you design map into the form used to compare planned behaviour with actual behaviour.</p>
+          <p>Review your Playbooks, Rules and reflections against your actual behaviour.</p>
         </div>
         <div class="top-actions">
           <button class="execution-back-instruments-btn" type="button" id="executionBackToInstrumentsBtn">
@@ -7126,8 +7158,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           <div class="execution-period-context" id="executionMapPeriodContext" hidden>
             <label><span id="executionMapPeriodDateLabel">Review date</span><input type="date" id="executionMapPeriodDate" aria-label="Period to review"></label>
             <div class="execution-period-session" id="executionMapSessionFields" hidden>
-              <label id="executionMapSavedSessionControl" hidden><span>Saved sessions on this date</span><select id="executionMapSavedSession" aria-label="Saved session to review"></select></label>
               <label><span>Session name</span><input type="text" id="executionMapSessionName" maxlength="80" placeholder="e.g. Morning or London"></label>
+              <label id="executionMapSavedSessionControl" hidden><span>Saved sessions on this date</span><select id="executionMapSavedSession" aria-label="Saved session to review"></select></label>
               <div class="execution-period-times">
                 <label><span>From</span><input type="time" id="executionMapSessionStart" aria-label="Session start time"></label>
                 <label><span>Until</span><input type="time" id="executionMapSessionEnd" aria-label="Session end time"></label>
@@ -7172,7 +7204,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
           <div class="execution-map-principle" id="executionMapPrinciple">
             <strong>Planned → Actual</strong>
-            <span>The form on the right is generated from the selected Playbook. Checking an item means the planned condition was actually followed.</span>
+            <span>Mark the planned conditions you followed.</span>
           </div>
 
           <div class="execution-map-score">
@@ -11460,30 +11492,22 @@ function renderExecutionMappingControls(){
     control.classList.toggle('active',control.dataset.executionMapInstrument===executionMappingActiveInstrument&&
       (executionMappingActiveInstrument!=='checklist'||(control.dataset.executionMapRuleScope||'trade')===executionMappingRuleScope));
   });
-  ensureExecutionMappingInstrumentVisible();
-}
-
-function ensureExecutionMappingInstrumentVisible(){
-  const row=$('.execution-map-controls'),focused=row?.querySelector('.execution-map-control.active');
-  if(row?.classList.contains('has-period-rules')&&focused){
-    const edge=row.getBoundingClientRect(),card=focused.getBoundingClientRect();
-    if(card.left<edge.left)row.scrollLeft-=edge.left-card.left;
-    else if(card.right>edge.right)row.scrollLeft+=card.right-edge.right;
-  }
 }
 
 function renderExecutionMappingTradeContext(){
   const periodMode=executionMappingIsPeriod();
+  const trade=periodMode?null:executionMappingTrade();
+  $('.execution-map-context-details').classList.toggle('trade-context',Boolean(trade));
   $('#executionMapPeriodContext').hidden=!periodMode;
+  $('#executionMapPeriodContext').classList.toggle('session-review',periodMode&&executionMappingRuleScope==='session');
   $('#executionMapTradeControl').hidden=periodMode;
   $('#executionMapTradeContextGrid').hidden=periodMode;
   $('#executionMapPeriodStats').hidden=!periodMode;
   $('#executionMapContextLabel').textContent=periodMode?window.TIOSPeriodRules.scopes[executionMappingRuleScope].toUpperCase()+' BEHAVIOUR':'TRADE CONTEXT';
   const principle=$('#executionMapPrinciple');
   principle.querySelector('strong').textContent=periodMode?'Whole period → Actual behaviour':'Planned → Actual';
-  principle.querySelector('span').textContent=periodMode?'Record how you followed these Rules across the selected period. A single trade does not determine this review.':'The form on the right is generated from the selected instrument. Checking an item means the planned condition was actually followed.';
+  principle.querySelector('span').textContent=periodMode?'Review behaviour across the whole period.':'Mark the planned conditions you followed.';
   if(periodMode){renderExecutionMappingPeriodContext();return;}
-  const trade=executionMappingTrade();
   const direction=trade?.direction||'';
   const directionClass=executionDirectionClass(direction);
   const pnl=trade ? (Number(trade.pnl)||0) : null;
@@ -11502,7 +11526,7 @@ function renderExecutionMappingTradeContext(){
   }
 
   $('#executionMapTradeMeta').textContent=trade
-    ? [trade.trade_date,trade.setup].filter(Boolean).join(' · ') || 'Trading record'
+    ? trade.trade_date || 'Trading record'
     : 'Choose a trade to place the Playbook around a real trading record.';
 
   $('#executionMapInstrument').textContent=trade?.instrument||'—';
@@ -11539,7 +11563,7 @@ function renderExecutionMappingPeriodContext(){
   $('#executionMapSavedSessionControl').hidden=!savedSessions.length;
   sessionSelect.innerHTML='<option value="">New session…</option>'+savedSessions.map(saved=>'<option value="'+escapeHtml(saved.key)+'" '+(saved.key===period?.key?'selected':'')+'>'+escapeHtml(saved.sessionLabel+' · '+saved.startTime+'–'+saved.endTime+(saved.endDate!==saved.startDate?' (next day)':''))+'</option>').join('');
   $('#executionMapSessionTimeHelp').textContent='Session times: '+(period?.timeZone||Intl.DateTimeFormat().resolvedOptions().timeZone)+(period&&period.endDate!==period.startDate?' · ends the next day.':'.');
-  $('#executionMapPeriodHelp').textContent=scope==='weekly'?'The week runs Monday to Sunday.':scope==='monthly'?'Review the entire calendar month.':scope==='session'?'Name the session and set its hours. Review the whole session.':'Review all behaviour across the selected day.';
+  $('#executionMapPeriodHelp').textContent=scope==='weekly'?'The week runs Monday to Sunday.':scope==='monthly'?'Review the entire calendar month.':scope==='session'?'Review the whole session’s behaviour.':'Review all behaviour across the selected day.';
   $('#executionMapTradeTitle').textContent=executionMappingPeriodLabel(period);
   $('#executionMapTradeMeta').textContent=period?'Whole '+(scope==='daily'?'day':scope==='weekly'?'week':scope==='monthly'?'month':'session')+' review · '+(tradingAccount?.account_name||'selected account'):'Enter a valid date, session name and different start/end times.';
   const periodTrades=period?trades.filter(trade=>window.TIOSPeriodRules.includesTrade(trade,period)):[];
@@ -11995,7 +12019,7 @@ function saveExecutionMappingPeriodReview(scope,answers,noun){
     const doc=executionMappingRuleDocument(scope.ruleScope),now=new Date().toISOString();
     const record={schema:window.TIOSPeriodRules.schema,key:scope.key,userId:scope.userId,accountId:scope.accountId,
       ruleScope:scope.ruleScope,documentId:scope.documentId,documentName:doc?.name||'Rules',period:scope.period,
-      definition:scope.definition,answers:answers.map(answer=>({key:answer.key,label:answer.label,comment:answer.comment})),
+      definition:scope.definition,answers:answers.map(answer=>({key:answer.key,label:answer.label,comment:answer.comment??''})),
       createdAt:previous?.createdAt||now,savedAt:now};
     window.TIOSPeriodRules.save(localStorage,record);
     if(scope.ruleScope==='session')renderExecutionMappingPeriodContext();
@@ -12081,9 +12105,6 @@ function initExecutionMappingWorkspace(){
   executionMappingInitialized=true;
 
   const formBody=$('#executionMapFormBody');
-  window.addEventListener('resize',()=>{
-    if($('#page-execution')?.classList.contains('active'))requestAnimationFrame(ensureExecutionMappingInstrumentVisible);
-  });
   let pressedChoice=null;
   const rememberChoice=event=>{
     const target=event.target;
