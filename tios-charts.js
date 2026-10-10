@@ -5,6 +5,7 @@
   window.TIOSCharts={create({host,getClient,getUser}){
     let visible=false,userId=null,prefs=null,loaded=false,loading=false,saving=false;
     let revision=null,saved=null,generation=0,expanded=null,focusBeforeExpand=null,previousOverflow='';
+    let controlsCollapsed=window.matchMedia('(max-width: 860px)').matches;
     const instances=new Map();
     const alive=(id,epoch)=>userId===id&&generation===epoch&&getUser()?.id===id;
     const activeCharts=()=>prefs.charts[prefs.layout];
@@ -22,12 +23,48 @@
     }
     function capture(){
       if(!prefs)return;
-      host.querySelectorAll('[data-chart-id]').forEach(card=>{
-        const chart=activeCharts().find(item=>item.id===card.dataset.chartId);
+      host.querySelectorAll('[data-charts-setup-id]').forEach(panel=>{
+        const chart=activeCharts().find(item=>item.id===panel.dataset.chartsSetupId);
         if(!chart)return;
-        chart.symbol=card.querySelector('[data-chart-field="symbol"]').value.trim().toUpperCase();
-        chart.interval=card.querySelector('[data-chart-field="interval"]').value;
-        chart.responsibility=card.querySelector('[data-chart-field="responsibility"]').value;
+        chart.symbol=panel.querySelector('[data-chart-field="symbol"]').value.trim().toUpperCase();
+        chart.interval=panel.querySelector('[data-chart-field="interval"]').value;
+        chart.responsibility=panel.querySelector('[data-chart-field="responsibility"]').value;
+      });
+    }
+    function cardForControl(target){
+      const panel=target.closest('[data-charts-setup-id]');
+      return [...host.querySelectorAll('.charts-grid [data-chart-id]')]
+        .find(card=>card.dataset.chartId===panel?.dataset.chartsSetupId);
+    }
+    function relocateControls(card,index){
+      const form=card.querySelector('.charts-controls');
+      if(!form)return;
+      const chart=activeCharts().find(item=>item.id===card.dataset.chartId);
+      const panel=document.createElement('details');
+      panel.className='charts-setup';
+      panel.dataset.chartsSetupId=card.dataset.chartId;
+      panel.open=prefs.layout==='single'||index===0;
+      const title=document.createElement('summary');
+      const label=document.createElement('strong');
+      label.textContent='Chart '+(index+1);
+      const description=document.createElement('span');
+      description.className='charts-setup-caption';
+      description.textContent=chart?.responsibility||'Configure chart';
+      title.append(label,description);
+      panel.append(title,form);
+      host.querySelector('.charts-panel-settings').appendChild(panel);
+    }
+    function toggleControls(){
+      controlsCollapsed=!controlsCollapsed;
+      const workspace=host.querySelector('.charts-workbench');
+      if(!workspace)return;
+      workspace.classList.toggle('charts-panel-collapsed',controlsCollapsed);
+      const panel=workspace.querySelector('.charts-panel');
+      panel.inert=controlsCollapsed;
+      panel.setAttribute('aria-hidden',String(controlsCollapsed));
+      workspace.querySelectorAll('[data-charts-action="toggle-panel"]').forEach(btn=>{
+        btn.setAttribute('aria-expanded',String(!controlsCollapsed));
+        btn.textContent=btn.classList.contains('charts-panel-dismiss')?'Hide controls':controlsCollapsed?'Show controls':'Hide controls';
       });
     }
     function removeInstance(id){
@@ -41,7 +78,9 @@
       expanded.querySelector('[data-charts-action="expand"]').textContent='Expand';
       expanded.querySelector('[data-charts-action="expand"]').setAttribute('aria-expanded','false');
       host.querySelector('.charts-backdrop')?.remove();
-      host.querySelectorAll('[data-chart-id],.charts-toolbar,.charts-head').forEach(node=>node.inert=false);
+      host.querySelectorAll('.charts-grid [data-chart-id],.charts-panel,.charts-head,.charts-view-head').forEach(node=>node.inert=false);
+      const panel=host.querySelector('.charts-panel');
+      if(panel)panel.inert=controlsCollapsed;
       document.body.style.overflow=previousOverflow;
       expanded=null;
       if(restoreFocus&&focusBeforeExpand?.isConnected)focusBeforeExpand.focus();
@@ -53,7 +92,7 @@
       const backdrop=document.createElement('div');backdrop.className='charts-backdrop';
       backdrop.addEventListener('click',()=>closeExpanded());host.appendChild(backdrop);
       expanded=card;card.classList.add('charts-card-expanded');card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');
-      host.querySelectorAll('[data-chart-id],.charts-toolbar,.charts-head').forEach(node=>{if(node!==card)node.inert=true});
+      host.querySelectorAll('.charts-grid [data-chart-id],.charts-panel,.charts-head,.charts-view-head').forEach(node=>{if(node!==card)node.inert=true});
       document.body.style.overflow='hidden';
       const button=card.querySelector('[data-charts-action="expand"]');button.textContent='Return to layout';button.setAttribute('aria-expanded','true');button.focus();
     }
@@ -115,6 +154,7 @@
           const chart=list.pop();
           removeInstance(chart.id);
           [...grid.querySelectorAll('[data-chart-id]')].find(card=>card.dataset.chartId===chart.id)?.remove();
+          [...host.querySelectorAll('[data-charts-setup-id]')].find(panel=>panel.dataset.chartsSetupId===chart.id)?.remove();
         }
       }else{
         for(let i=old;i<count;i++){
@@ -124,6 +164,7 @@
           const chart={id,symbol:reference?.symbol||'FX:EURUSD',interval:reference?.interval||'60',responsibility:''};
           list.push(chart);
           grid.insertAdjacentHTML('beforeend',cardMarkup(chart,i));
+          relocateControls(grid.lastElementChild,i);
           mountChart(grid.lastElementChild);
         }
       }
@@ -137,21 +178,38 @@
       closeExpanded(false);dispose();
       host.innerHTML=`
         <div class="charts-head"><div><h1>Charts</h1><p class="muted">Your market analysis workspace</p></div><a class="btn small" href="https://www.tradingview.com/chart/" target="_blank" rel="noopener">Open TradingView ↗</a></div>
-        <div class="charts-toolbar">
+        <div class="charts-workbench ${controlsCollapsed?'charts-panel-collapsed':''}">
+          <aside class="charts-panel" id="chartsPanel" aria-label="Charts workspace controls" aria-hidden="${controlsCollapsed}">
+            <div class="charts-panel-head"><strong>Chart controls</strong><button class="btn small charts-panel-dismiss" type="button" data-charts-action="toggle-panel" aria-controls="chartsPanel" aria-expanded="${!controlsCollapsed}">Hide controls</button></div>
+            <div class="charts-panel-scroll">
+              <div class="charts-toolbar">
+          <div class="charts-section-title">Layout</div>
           <div class="charts-layout" role="group" aria-label="Chart layout">
             <button type="button" data-charts-layout="single" aria-pressed="${prefs.layout==='single'}">Single Chart</button>
             <button type="button" data-charts-layout="multiple" aria-pressed="${prefs.layout==='multiple'}">Multiple Charts <span>${prefs.charts.multiple.length}</span></button>
           </div>
           ${prefs.layout==='multiple'?`<label class="charts-setting charts-count-setting">Number of charts<select data-charts-count aria-label="Number of simultaneous charts">${[2,3,4,5,6].map(n=>`<option value="${n}" ${prefs.charts.multiple.length===n?'selected':''}>${n} charts</option>`).join('')}</select></label>`:''}
+          <div class="charts-section-title">Appearance</div>
           <label class="charts-setting">Chart theme<select data-charts-setting="theme"><option value="dark" ${prefs.theme==='dark'?'selected':''}>Dark</option><option value="light" ${prefs.theme==='light'?'selected':''}>Light</option></select></label>
           <label class="charts-setting">Timezone<select data-charts-setting="timezone">${P.timezones.map(([value,label])=>`<option value="${value}" ${prefs.timezone===value?'selected':''}>${label}</option>`).join('')}</select></label>
+          <div class="charts-section-title">Chart setup</div>
+          <div class="charts-panel-settings"></div>
+          <div class="charts-section-title">Preferences</div>
           <div class="charts-save"><button type="button" class="btn primary" data-charts-action="save">Save preferences</button><span data-charts-status role="status" aria-live="polite"></span><button type="button" class="btn small" data-charts-action="reload" hidden>Reload saved preferences</button></div>
           <p class="charts-help">Save defaults with these controls. Changes inside TradingView stay in this chart session. Market data availability and delays depend on the instrument.</p>
-        </div>
+              </div>
+            </div>
+          </aside>
+          <div class="charts-view">
+            <div class="charts-view-head"><button class="btn small" type="button" data-charts-action="toggle-panel" aria-controls="chartsPanel" aria-expanded="${!controlsCollapsed}">${controlsCollapsed?'Show controls':'Hide controls'}</button><span class="muted">TradingView chart workspace</span></div>
         <div class="charts-grid" data-charts-mode="${prefs.layout}" data-chart-count="${activeCharts().length}" style="--chart-count:${activeCharts().length}">
           ${activeCharts().map(cardMarkup).join('')}
         </div>
+          </div>
+        </div>
         <datalist id="charts-symbols"><option value="FX:EURUSD"><option value="FX:GBPUSD"><option value="OANDA:XAUUSD"><option value="NASDAQ:AAPL"><option value="BINANCE:BTCUSDT"></datalist>`;
+      host.querySelectorAll('.charts-grid [data-chart-id]').forEach((card,index)=>relocateControls(card,index));
+      host.querySelector('.charts-panel').inert=controlsCollapsed;
       changed();refreshWidgets();
     }
     async function load(){
@@ -193,20 +251,24 @@
     }
     host.addEventListener('submit',event=>{
       if(!event.target.matches('.charts-controls'))return;
-      event.preventDefault();capture();mountChart(event.target.closest('[data-chart-id]'));changed();
+      event.preventDefault();capture();mountChart(cardForControl(event.target));changed();
     });
     host.addEventListener('input',event=>{
       if(!event.target.matches('[data-chart-field]'))return;
       capture();changed();
-      const card=event.target.closest('[data-chart-id]');
-      if(event.target.dataset.chartField==='responsibility'&&expanded===card)card.setAttribute('aria-label','Chart · '+event.target.value);
+      const card=cardForControl(event.target);
+      if(event.target.dataset.chartField==='responsibility'){
+        const summary=event.target.closest('[data-charts-setup-id]')?.querySelector('.charts-setup-caption');
+        if(summary)summary.textContent=event.target.value||'Configure chart';
+        if(expanded===card)card.setAttribute('aria-label','Chart · '+event.target.value);
+      }
     });
     host.addEventListener('change',event=>{
       if(event.target.matches('[data-charts-count]')){resizeMultiple(Number(event.target.value));return}
       if(event.target.matches('[data-charts-setting]')){
         prefs[event.target.dataset.chartsSetting]=event.target.value;changed();refreshWidgets();
       }else if(event.target.matches('[data-chart-field="interval"]')){
-        capture();changed();mountChart(event.target.closest('[data-chart-id]'));
+        capture();changed();mountChart(cardForControl(event.target));
       }
     });
     host.addEventListener('click',event=>{
@@ -214,6 +276,7 @@
       if(layout){if(layout.dataset.chartsLayout!==prefs.layout){capture();prefs.layout=layout.dataset.chartsLayout;render()}return}
       const button=event.target.closest('[data-charts-action]');if(!button)return;
       const action=button.dataset.chartsAction;
+      if(action==='toggle-panel')toggleControls();
       if(action==='save')save();
       if(action==='expand')expand(button.closest('[data-chart-id]'));
       if(action==='retry-chart')mountChart(button.closest('[data-chart-id]'),true);
