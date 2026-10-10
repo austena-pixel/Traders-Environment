@@ -1,0 +1,60 @@
+/* Scoped workspace sizing: other pages retain their existing scroll behavior. */
+body.charts-workspace{height:100vh;height:100dvh;overflow:hidden}
+body.charts-workspace .shell{height:100%;min-height:0;overflow:hidden}
+body.charts-workspace .main{height:100vh;height:100dvh;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+#page-charts.active{display:flex;flex:1;min-width:0;min-height:0}
+#chartsWorkspace{display:flex;flex-direction:column;gap:12px;width:100%;min-width:0;min-height:0;container-type:inline-size}
+#chartsWorkspace h1{font-size:23px;margin:0}
+#chartsWorkspace p{margin:4px 0 0}
+#chartsWorkspace .charts-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex:none}
+#chartsWorkspace .charts-head p{font-size:12px}
+#chartsWorkspace .charts-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:12px;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--panel);flex:none}
+#chartsWorkspace .charts-layout{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:9px;background:var(--panel3)}
+#chartsWorkspace .charts-layout button{background:transparent;color:var(--muted);border:0;border-radius:6px;padding:9px 12px;font-size:12px;font-weight:600;white-space:nowrap}
+#chartsWorkspace .charts-layout button[aria-pressed=true]{color:var(--text);background:var(--panel2);box-shadow:inset 0 0 0 1px var(--line2)}
+#chartsWorkspace .charts-layout span{color:var(--blue);margin-left:4px}
+#chartsWorkspace label{font-size:11px;color:var(--muted);display:flex;flex-direction:column;gap:5px;min-width:0;margin:0}
+#chartsWorkspace input,#chartsWorkspace select{width:100%;min-width:0;min-height:32px;margin:0;padding:6px 8px;border:1px solid var(--line2);border-radius:6px;background:var(--panel3);color:var(--text);font-size:12px}
+#chartsWorkspace :is(button,input,select,a):focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+#chartsWorkspace .charts-setting{min-width:110px}
+#chartsWorkspace .charts-save{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto}
+#chartsWorkspace [data-charts-status]{font-size:11px;color:var(--muted);max-width:340px}
+#chartsWorkspace .charts-status-error{color:var(--amber)}
+#chartsWorkspace .charts-help{flex-basis:100%;font-size:11px;line-height:1.5;color:var(--muted);margin:0}
+#chartsWorkspace .charts-grid{display:grid;grid-template-columns:repeat(var(--chart-count),minmax(0,1fr));gap:12px;flex:1;min-height:0;min-width:0;overflow:auto;scrollbar-gutter:stable}
+#chartsWorkspace .charts-card{display:flex;flex-direction:column;min-width:0;min-height:480px;overflow:hidden;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+#chartsWorkspace .charts-card-top{padding:10px 12px 0;display:flex;align-items:center;justify-content:space-between;gap:8px;flex:none}
+#chartsWorkspace .charts-card-top strong{font-size:12px}
+#chartsWorkspace .charts-controls{display:grid;grid-template-columns:minmax(0,1fr) 72px auto;gap:8px;padding:10px 12px;flex:none;align-items:end}
+#chartsWorkspace .charts-symbol input{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+#chartsWorkspace .charts-responsibility{grid-column:1/-1}
+#chartsWorkspace .charts-apply{height:32px}
+#chartsWorkspace .charts-widget{position:relative;flex:1;min-width:0;min-height:300px;background:#131722}
+#chartsWorkspace .charts-frame{display:block;border:0;width:100%;height:100%;position:absolute;inset:0}
+#chartsWorkspace .charts-widget-status{flex:none;color:var(--muted);padding:6px 12px;font-size:11px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line)}
+#chartsWorkspace [hidden]{display:none!important}
+#chartsWorkspace .charts-empty{margin:auto;max-width:480px;line-height:1.6;text-align:center;color:var(--muted)}
+#chartsWorkspace .charts-empty button{margin-top:12px}
+#chartsWorkspace .charts-backdrop{position:fixed;inset:0;z-index:1400;background:#000c}
+#chartsWorkspace .charts-card-expanded{position:fixed;inset:16px;z-index:1401;min-height:0;box-shadow:0 16px 60px #000a}
+#chartsWorkspace .charts-card-expanded .charts-controls{grid-template-columns:minmax(180px,280px) 90px auto minmax(180px,1fr)}
+#chartsWorkspace .charts-card-expanded .charts-responsibility{grid-column:auto}
+@container(max-width:1000px){
+  #chartsWorkspace .charts-grid[data-charts-mode=multiple]{grid-template-columns:minmax(0,1fr);grid-auto-rows:560px}
+}
+@media(max-width:860px){
+  body.charts-workspace .main{padding:12px}
+  body.charts-workspace .mobile-top{flex:none}
+  #chartsWorkspace .charts-save{margin-left:0}
+  #chartsWorkspace .charts-head .btn{font-size:10px;padding:8px}
+  #chartsWorkspace .charts-toolbar{padding:10px;gap:8px}
+  #chartsWorkspace .charts-setting{flex:1;min-width:110px}
+  #chartsWorkspace .charts-layout{flex-basis:100%}
+  #chartsWorkspace .charts-layout button{flex:1}
+  #chartsWorkspace .charts-help{font-size:10px}
+  #chartsWorkspace .charts-grid{scrollbar-gutter:auto}
+  #chartsWorkspace .charts-card{min-height:480px}
+  #chartsWorkspace .charts-card-expanded{inset:6px;min-height:0}
+  #chartsWorkspace .charts-card-expanded .charts-controls{grid-template-columns:minmax(0,1fr) 72px auto}
+  #chartsWorkspace .charts-card-expanded .charts-responsibility{grid-column:1/-1}
+}

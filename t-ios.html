@@ -10,6 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <link rel="stylesheet" href="trade-evidence.css">
+<link rel="stylesheet" href="tios-charts.css">
 
 <style>
 :root{
@@ -6063,6 +6064,10 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
         <span class="nav-icon">▣</span> Dashboard
       </button>
 
+      <button class="nav-btn" data-page="charts">
+        <span class="nav-icon" aria-hidden="true">▥</span> Charts
+      </button>
+
       <div class="nav-group technical" data-nav-group="technical">
         <button class="nav-group-toggle" type="button" data-nav-group-toggle="technical" aria-expanded="false">
           <span class="nav-group-icon product-mark product-mark-tios" data-product-icon="trading-chart" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><use href="#product-icon-tios"/></svg></span>
@@ -6112,6 +6117,11 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
       <strong class="mobile-product-brand"><span class="product-mark product-mark-tios" data-product-icon="trading-chart" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><use href="#product-icon-tios"/></svg></span>T·IOS</strong>
       <a class="hios-back-link mobile-hios-link" href="index.html?view=home" title="Return to H·IOS">H·IOS</a>
     </div>
+
+    <!-- CHARTS: widgets load only while this workspace is open. -->
+    <section class="page" id="page-charts" aria-label="Charts workspace">
+      <div id="chartsWorkspace"></div>
+    </section>
 
     <!-- DASHBOARD -->
     <section class="page active" id="page-dashboard">
@@ -7668,6 +7678,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
 <script src="core/evidence-contract.js"></script>
 <script src="trade-evidence.js"></script>
+<script src="core/chart-workspace.js"></script>
+<script src="tios-charts.js"></script>
 <script src="hios-connection-layer.js"></script>
 <script src="technical-instruments/playbooks.js"></script>
 <script src="technical-instruments/checklists.js"></script>
@@ -7741,6 +7753,9 @@ const tradeEvidence = window.TIOSTradeEvidence.create({
   getUser:()=>currentUser,
   getTrade:id=>trades.find(trade=>trade.id===id),
   getNumber:id=>journalTradeNumbers().get(String(id))
+});
+const chartWorkspace = window.TIOSCharts.create({
+  host:$('#chartsWorkspace'),getClient:()=>db,getUser:()=>currentUser
 });
 
 const money = n => '$' + Number(n || 0).toLocaleString(undefined,{
@@ -8370,6 +8385,7 @@ async function initializeSupabase(){
   db.auth.onAuthStateChange(async (event, authSession)=>{
     if(event === 'SIGNED_OUT'){
       tradeEvidence.reset();
+      chartWorkspace.reset();
       currentUser = null;
       window.location.replace('index.html?view=home');
       return;
@@ -9386,6 +9402,8 @@ function navigate(page){
   const playbookWorkspace=page==='playbook';
   document.body.classList.toggle('execution-workspace',executionWorkspace);
   document.body.classList.toggle('playbook-workspace',technicalDocumentWorkspace);
+  document.body.classList.toggle('charts-workspace',page==='charts');
+  if(page==='charts')chartWorkspace.show();else chartWorkspace.hide();
 
   if(technicalDocumentWorkspace){
     closeSidebarMobile();
