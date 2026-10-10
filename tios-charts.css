@@ -410,3 +410,26 @@ body.charts-workspace .main{padding:8px 10px}
 #chartsWorkspace .charts-instruments .execution-map-footer-actions .btn.primary{
   font-weight:750;
 }
+
+
+/* First-time T-IOS chart setup: no external sign-in impersonation. */
+#chartsWorkspace .charts-welcome-setup{position:relative;flex:1;min-height:0;display:grid;place-items:center;overflow:hidden;border:1px solid #36233f;border-radius:14px;background:#090b13;padding:20px}
+#chartsWorkspace .charts-welcome-preview{position:absolute;inset:0;opacity:.48;pointer-events:none}
+#chartsWorkspace .charts-welcome-preview-head{display:flex;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #43304f;font-size:13px;color:#c6a6d7}
+#chartsWorkspace .charts-welcome-preview-grid{height:100%;background-image:linear-gradient(#6f528018 1px,transparent 1px),linear-gradient(90deg,#6f528018 1px,transparent 1px);background-size:65px 65px}
+#chartsWorkspace .charts-welcome-card{position:relative;z-index:1;width:min(100%,510px);padding:25px;border:1px solid #714889;border-radius:16px;background:linear-gradient(160deg,#201129,#100e1a);box-shadow:0 22px 65px #000b;color:#f3eaf7}
+#chartsWorkspace .charts-welcome-kicker{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#bd85dd}
+#chartsWorkspace .charts-welcome-card h2{font-size:22px;line-height:1.25;margin:10px 0}
+#chartsWorkspace .charts-welcome-card p{font-size:12px;line-height:1.6;color:#c6b6d1;margin:10px 0 16px}
+#chartsWorkspace .charts-welcome-card p strong{color:#fff;overflow-wrap:anywhere}
+#chartsWorkspace .charts-welcome-layouts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0}
+#chartsWorkspace .charts-welcome-choice{display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-width:0;padding:14px;border-radius:12px;border:1px solid #4a3356;background:#170f21;color:#ead5f2;text-align:left;cursor:pointer}
+#chartsWorkspace .charts-welcome-choice.selected{border-color:#ba78dc;background:#352046;box-shadow:inset 0 0 0 1px #8d53b3}
+#chartsWorkspace .charts-welcome-choice strong{font-size:12px}
+#chartsWorkspace .charts-welcome-choice small{font-size:10px;line-height:1.4;color:#c3aeca}
+#chartsWorkspace .charts-welcome-layout-icon{width:100%;height:50px;display:flex;gap:4px}
+#chartsWorkspace .charts-welcome-layout-icon i{display:block;flex:1;border:1px solid #9872b0;border-radius:4px;background:linear-gradient(150deg,#53346b,#1b1731)}
+#chartsWorkspace .charts-welcome-start{width:100%;min-height:42px;border-radius:10px;font-size:13px}
+#chartsWorkspace .charts-welcome-card .charts-welcome-disclosure{font-size:10px;color:#a995b7;margin-bottom:0}
+#chartsWorkspace .charts-welcome-card .charts-welcome-error{color:#ffbcb5}
+@media(max-width:520px){#chartsWorkspace .charts-welcome-setup{padding:10px}#chartsWorkspace .charts-welcome-card{padding:17px}#chartsWorkspace .charts-welcome-layouts{grid-template-columns:1fr}#chartsWorkspace .charts-welcome-layout-icon{height:32px}}
