@@ -130,3 +130,27 @@ body.charts-workspace .main{padding:8px 10px}
 #chartsWorkspace .charts-deriv-mapping{grid-column:1/-1;font-size:10px;line-height:1.4;color:var(--muted);overflow-wrap:anywhere}
 #chartsWorkspace .charts-deriv-default{width:100%;white-space:normal;text-align:center;line-height:1.35;min-height:36px}
 #chartsWorkspace .charts-deriv-note{font-size:10px;line-height:1.45;color:var(--muted);margin:0}
+
+/* Evidence controls share the independently scrolling settings rail. */
+#chartsWorkspace .market-body{padding:10px;display:flex;flex-direction:column;gap:9px;min-width:0}
+#chartsWorkspace .market-body label{display:flex;flex-direction:column;font-size:11px;color:var(--muted);gap:4px;min-width:0}
+#chartsWorkspace .market-body select,#chartsWorkspace .market-body input,#chartsWorkspace .market-body textarea{min-width:0;width:100%;box-sizing:border-box;font-size:11px;padding:6px}
+#chartsWorkspace .market-note{font-size:10px;line-height:1.5;margin:0;color:var(--muted);overflow-wrap:anywhere}
+#chartsWorkspace .market-confirm{display:flex!important;flex-direction:row!important;align-items:flex-start;line-height:1.4}
+#chartsWorkspace .market-confirm input{width:14px;flex:none;margin-top:2px}
+#chartsWorkspace .market-ohlc{overflow-x:auto}
+#chartsWorkspace .market-ohlc table{width:100%;border-collapse:collapse;font-size:10px;table-layout:fixed}
+#chartsWorkspace .market-ohlc caption{font-size:9px;text-align:left;color:var(--muted);padding-bottom:5px}
+#chartsWorkspace .market-ohlc th,#chartsWorkspace .market-ohlc td{padding:3px 1px;overflow-wrap:anywhere}
+#chartsWorkspace .market-ohlc th:first-child{width:30px;text-align:left}
+#chartsWorkspace .market-ohlc td:last-child{font-size:9px;max-width:44px}
+#chartsWorkspace .market-ohlc input{font-size:9px;padding:4px 2px;appearance:textfield}
+#chartsWorkspace .market-ohlc input::-webkit-inner-spin-button{appearance:none}
+#chartsWorkspace .market-ohlc input[readonly]{color:var(--muted)}
+#chartsWorkspace .market-install,#chartsWorkspace .market-history{font-size:11px;line-height:1.5}
+#chartsWorkspace .market-install summary,#chartsWorkspace .market-history summary{padding:4px 0;display:list-item;border:0;list-style:revert;font-size:11px}
+#chartsWorkspace .market-history article{display:flex;flex-direction:column;gap:3px;border-top:1px solid var(--line);padding:9px 0;font-size:10px;overflow-wrap:anywhere}
+#chartsWorkspace .market-history article span{color:var(--muted)}
+#chartsWorkspace .market-history-nav{display:flex;gap:5px}
+#chartsWorkspace [data-market-result]{font-size:12px}
+@media(max-width:860px){#chartsWorkspace .charts-card-actions .btn{font-size:10px;padding:5px}}

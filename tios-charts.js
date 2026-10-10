@@ -2,11 +2,13 @@
   'use strict';
   const P=window.TIOSChartPreferences,TABLE='chart_workspace_preferences';
   const escape=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-  window.TIOSCharts={create({host,getClient,getUser}){
+  window.TIOSCharts={create({host,getClient,getUser,getAccounts,getSelectedAccount,getNumber}){
     let visible=false,userId=null,prefs=null,loaded=false,loading=false,saving=false;
     let revision=null,saved=null,generation=0,expanded=null,focusBeforeExpand=null,previousOverflow='';
     let controlsCollapsed=window.matchMedia('(max-width: 860px)').matches;
     const instances=new Map();
+    const verification=window.TIOSMarketVerification.create({getClient,getUser,getAccounts,getSelectedAccount,getNumber});
+    let pendingEvidenceTrade=null;
     const alive=(id,epoch)=>userId===id&&generation===epoch&&getUser()?.id===id;
     const activeCharts=()=>prefs.charts[prefs.layout];
     const dirty=()=>prefs&&JSON.stringify(prefs)!==saved;
@@ -167,11 +169,20 @@
       instances.set(chart.id,{frame,instance,key,card});
       card.querySelector('.charts-widget').appendChild(frame);
     }
+    function resetChart(card){
+      const chart=activeCharts().find(item=>item.id===card?.dataset.chartId);
+      if(!chart)return;
+      const stored=saved?JSON.parse(saved).charts[prefs.layout].find(item=>item.id===chart.id):null;
+      if(stored){chart.symbol=stored.symbol;chart.interval=stored.interval;}
+      const panel=[...host.querySelectorAll('[data-charts-setup-id]')].find(p=>p.dataset.chartsSetupId===chart.id);
+      if(panel){panel.querySelector('[data-chart-field="symbol"]').value=chart.symbol;panel.querySelector('[data-chart-field="interval"]').value=chart.interval;syncDerivHint(panel);}
+      mountChart(card,true);changed();
+    }
     function refreshWidgets(){host.querySelectorAll('[data-chart-id]').forEach(card=>mountChart(card))}
     function cardMarkup(chart,index){return `<section class="charts-card" data-chart-id="${escape(chart.id)}" aria-label="Chart ${index+1}">
             <div class="charts-card-top"><strong>Chart ${index+1}</strong><div class="charts-card-actions">
               ${index===0?`<button class="btn small charts-reveal-controls" type="button" data-charts-action="toggle-panel" aria-controls="chartsPanel" aria-expanded="${!controlsCollapsed}" ${controlsCollapsed?'':'hidden'}>Show controls</button><a class="btn small charts-tv-link" href="https://www.tradingview.com/chart/" target="_blank" rel="noopener">Open TradingView ↗</a>`:''}
-              <button class="btn small" type="button" data-charts-action="expand" aria-expanded="false">Expand</button></div></div>
+              <button class="btn small" type="button" data-charts-action="reset-chart" title="Reload this chart to its saved instrument, or the configured instrument if no saved chart exists">Reset instrument</button><button class="btn small" type="button" data-charts-action="expand" aria-expanded="false">Expand</button></div></div>
             <form class="charts-controls">
               <label class="charts-symbol">Instrument<input data-chart-field="symbol" aria-label="Chart ${index+1} instrument" value="${escape(chart.symbol)}" maxlength="81" placeholder="FX:EURUSD" list="charts-symbols" required spellcheck="false" autocomplete="off"></label>
               <label>Timeframe<select data-chart-field="interval" aria-label="Chart ${index+1} timeframe">${P.intervals.map(([value,label])=>`<option value="${value}" ${chart.interval===value?'selected':''}>${label}</option>`).join('')}</select></label>
@@ -255,6 +266,8 @@
       host.querySelectorAll('.charts-grid [data-chart-id]').forEach((card,index)=>relocateControls(card,index));
       host.querySelector('.charts-panel').inert=controlsCollapsed;
       changed();refreshWidgets();
+      verification.mount(host.querySelector('.charts-toolbar'));
+      if(pendingEvidenceTrade){if(controlsCollapsed)toggleControls();verification.openTrade(pendingEvidenceTrade);pendingEvidenceTrade=null;}
     }
     async function load(){
       if(loading)return;
@@ -333,6 +346,7 @@
       if(action==='prefer-deriv')applyPreferredDeriv();
       if(action==='save')save();
       if(action==='expand')expand(button.closest('[data-chart-id]'));
+      if(action==='reset-chart')resetChart(button.closest('[data-chart-id]'));
       if(action==='retry-chart')mountChart(button.closest('[data-chart-id]'),true);
       if(action==='dismiss-status')cardMessage(button.closest('[data-chart-id]'),'');
       if(action==='reload'&&!saving){closeExpanded(false);dispose();load()}
@@ -362,8 +376,13 @@
         else if(loading)host.innerHTML='<div class="charts-empty" role="status">Loading your chart preferences…</div>';
         else load();
       },
-      hide(){capture();visible=false;closeExpanded(false);dispose();host.replaceChildren()},
-      reset(){api.hide();generation++;userId=null;prefs=null;loaded=false;loading=false;saving=false;revision=null;saved=null}
+      openTrade(trade){
+        if(!loaded){pendingEvidenceTrade=trade;return;}
+        if(controlsCollapsed)toggleControls();
+        verification.openTrade(trade);
+      },
+      hide(){capture();verification.hide();visible=false;closeExpanded(false);dispose();host.replaceChildren()},
+      reset(){api.hide();verification.reset();pendingEvidenceTrade=null;generation++;userId=null;prefs=null;loaded=false;loading=false;saving=false;revision=null;saved=null}
     };
     return api;
   }};
