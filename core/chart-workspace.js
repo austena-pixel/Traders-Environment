@@ -7,6 +7,16 @@
   'use strict';
   const intervals=[['1','M1'],['3','M3'],['5','M5'],['15','M15'],['30','M30'],['60','H1'],['120','H2'],['240','H4'],['D','D1'],['W','W1'],['M','MN1']];
   const timezones=[['Etc/UTC','UTC'],['exchange','Exchange timezone']];
+  // Verified public TradingView symbols paired with exact Deriv MT5 names
+  // observed in the existing T-IOS deal history. This mapping does NOT prove
+  // that the two services provide identical prices or candles.
+  const derivSymbols=Object.freeze([
+    Object.freeze({label:'Volatility 75 (1s) Index',symbol:'DERIV:VOLATILITY_75_1S_INDEX',mt5Symbol:'Volatility 75 (1s) Index.0',preferred:true}),
+    Object.freeze({label:'Volatility 75 Index',symbol:'DERIV:VOLATILITY_75_INDEX',mt5Symbol:'Volatility 75 Index.0',preferred:false})
+  ]);
+  const preferredDerivSymbol=derivSymbols[0].symbol;
+  const derivBySymbol=value=>derivSymbols.find(item=>item.symbol===String(value||'').trim().toUpperCase())||null;
+  const derivByMt5Symbol=value=>derivSymbols.find(item=>item.mt5Symbol.toLowerCase()===String(value||'').trim().toLowerCase())||null;
   const symbolPattern=/^[A-Z0-9_]{1,20}:[A-Z0-9_./!^\-]{1,60}$/;
   const clone=value=>JSON.parse(JSON.stringify(value));
   const object=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
@@ -46,5 +56,5 @@
       withdateranges:true,save_image:false,show_popup_button:true,popup_width:'1200',popup_height:'800',
       support_host:'https://www.tradingview.com'};
   }
-  return {defaults,clone,validate,intervals,timezones,symbolPattern,widgetSettings};
+  return {defaults,clone,validate,intervals,timezones,symbolPattern,widgetSettings,derivSymbols,preferredDerivSymbol,derivBySymbol,derivByMt5Symbol};
 });
