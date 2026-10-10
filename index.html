@@ -2605,9 +2605,9 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
         </div>
 
         <aside class="home-sidebar">
-          <button type="button" class="hios-chart-toggle" id="hiosOpenChart" aria-expanded="false" aria-controls="hiosConversation">Open Chart</button>
+          <div class="hios-workspace-actions"><button type="button" class="hios-chart-toggle" id="hiosOpenChart" aria-expanded="false" aria-controls="hiosConversation">Open Chart</button><button type="button" class="hios-clock-toggle" id="hiosDevelopmentClock" aria-label="Intelligence development and unlocked capabilities" aria-expanded="false" aria-controls="hiosDevelopmentPanel" title="Intelligence development"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span id="hiosClockUnread" class="hios-clock-unread" hidden>1</span></button></div>
           <!-- Combined former B/D area: one vertical product list. -->
-          <section class="card hios-development" data-home-panel="c" aria-label="Intelligence Development">
+          <section class="card hios-development" id="hiosDevelopmentPanel" data-home-panel="c" aria-label="Intelligence Development" aria-hidden="true">
             <div class="hios-development-head">
               <h3>Intelligence Development</h3>
               <button class="hios-intel-notifications" id="hiosIntelligenceNotifications" type="button" aria-label="Intelligence notifications, no unread updates" aria-haspopup="dialog">
