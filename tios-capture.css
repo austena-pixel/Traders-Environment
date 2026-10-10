@@ -16,3 +16,10 @@
 .tios-capture-item small{color:var(--muted,#b3a9b9)}
 .tios-capture-item .btn{align-self:flex-start}
 #chartsWorkspace .charts-card-actions [data-charts-action="capture"]{white-space:nowrap}
+
+/* Simple Playbook-specific capture requirements. */
+.tios-capture-requirement{display:flex!important;flex-direction:row!important;align-items:center;gap:10px;padding:6px 0}
+.tios-capture-requirement input{width:15px!important;min-height:15px!important;flex:none;accent-color:#b870b1}
+.tios-capture-requirement-results{display:grid;gap:6px;padding:10px 0;border-top:1px solid var(--line,#453148);font-size:12px}
+[data-trade-requirements]{display:grid;gap:8px;margin:0 0 12px}
+[data-trade-requirements] small{color:var(--muted,#b3a9b9)}
