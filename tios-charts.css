@@ -305,3 +305,51 @@ body.charts-workspace .main{padding:8px 10px}
   #chartsWorkspace .charts-instrument-icon-rail{padding:5px 2px}
   #chartsWorkspace .charts-instrument-icon-btn{width:33px;height:34px;min-height:34px;flex-basis:34px}
 }
+
+
+/* Resizable Charts Instruments panel boundary. */
+@media(min-width:861px){
+  #chartsWorkspace .charts-workbench{
+    grid-template-columns:minmax(0,var(--charts-panel-width,clamp(230px,22%,286px))) 8px minmax(0,1fr);
+    gap:4px;
+  }
+  #chartsWorkspace .charts-workbench.charts-panel-collapsed{
+    grid-template-columns:minmax(0,1fr);
+  }
+  #chartsWorkspace .charts-panel-resizer{
+    position:relative;display:flex;align-items:center;justify-content:center;
+    min-width:8px;width:8px;min-height:0;touch-action:none;cursor:col-resize;
+    border-radius:6px;outline:none;z-index:5;
+    background:transparent;
+  }
+  #chartsWorkspace .charts-panel-resizer::before{
+    content:'';position:absolute;top:0;bottom:0;left:3px;width:2px;
+    border-radius:99px;background:rgba(141,96,171,.27);
+    transition:background .15s,box-shadow .15s
+  }
+  #chartsWorkspace .charts-panel-resizer span{
+    position:relative;display:block;width:7px;height:52px;
+    border-radius:7px;border:1px solid #7b489b;background:#3a254a;
+    box-shadow:0 0 0 2px rgba(0,0,0,.18)
+  }
+  #chartsWorkspace .charts-panel-resizer:hover::before,
+  #chartsWorkspace .charts-panel-resizer:focus-visible::before,
+  #chartsWorkspace .charts-panel-resizing .charts-panel-resizer::before{
+    background:#b67be1;box-shadow:0 0 10px rgba(190,115,235,.36)
+  }
+  #chartsWorkspace .charts-panel-resizer:focus-visible span{
+    border-color:#f3d6ff;background:#765098
+  }
+  #chartsWorkspace .charts-panel-collapsed .charts-panel-resizer{display:none}
+  #chartsWorkspace .charts-panel-resizing{cursor:col-resize}
+  #chartsWorkspace .charts-panel-resizing .charts-view iframe{pointer-events:none}
+  /* Override the former fixed 220px panel at narrow container widths. */
+  @container(max-width:720px){
+    #chartsWorkspace .charts-workbench:not(.charts-panel-collapsed){
+      grid-template-columns:minmax(0,var(--charts-panel-width,clamp(230px,22%,286px))) 8px minmax(0,1fr);
+    }
+  }
+}
+@media(max-width:860px){
+  #chartsWorkspace .charts-panel-resizer{display:none!important}
+}
