@@ -23,7 +23,16 @@
     function updateAnalysisState(){
       if(!analysisStore||!visible||accountStep!=='ready')return;
       const state=analysisStore.snapshot();
-      host.querySelectorAll('[data-analysis-status]').forEach(node=>{node.textContent=state.message;node.classList.toggle('charts-status-error',state.state==='error');});
+      host.querySelectorAll('[data-analysis-status]').forEach(node=>{
+        const chart=activeCharts().find(c=>c.id===node.closest('[data-chart-id]')?.dataset.chartId);
+        const isSavedChart=chart&&analysisStore.getPane(analysisPane(chart)).engine==='native';
+        node.textContent=!isSavedChart?'TV drawings not saved'
+          :state.state==='error'?'Save needs attention'
+          :state.pending?(state.localDurable?'Syncing analysis…':'Not backed up yet')
+          :state.ready?'Analysis saved':state.message;
+        node.title=isSavedChart?state.message:'The embedded TradingView widget does not expose its drawings or indicators for T-IOS to save. Switch to Saved analysis for drawings and indicators that persist.';
+        node.classList.toggle('charts-status-error',isSavedChart&&(state.state==='error'||(state.pending&&!state.localDurable)));
+      });
       host.querySelectorAll('[data-analysis-engine]').forEach(button=>{
         const chart=activeCharts().find(c=>c.id===button.closest('[data-chart-id]')?.dataset.chartId);
         button.disabled=!state.ready;
@@ -35,22 +44,6 @@
         const native=chart&&analysisStore.getPane(analysisPane(chart)).engine==='native';
         button.textContent=native?'Reload analysis':'Reset instrument';
         if(native)button.title='Reload native candles; saved drawings and indicators are retained';
-      });
-      host.querySelectorAll('[data-analysis-persistence-note]').forEach(note=>{
-        const card=note.closest('[data-chart-id]');
-        const chart=activeCharts().find(c=>c.id===card?.dataset.chartId);
-        const native=chart&&analysisStore.getPane(analysisPane(chart)).engine==='native';
-        if(!native){
-          note.textContent='TradingView widget drawings and indicators are not saved by T-IOS. Select Saved analysis before making work you want to keep; existing TradingView drawings cannot be imported.';
-        }else if(state.pending&&!state.localDurable){
-          note.textContent='Changes are not yet backed up, and browser recovery is unavailable. Wait for account saving to finish before refreshing or signing out.';
-        }else if(state.pending){
-          note.textContent='Changes are saved temporarily on this browser and are syncing to your account. Use Retry save if syncing fails.';
-        }else if(state.state==='error'){
-          note.textContent='Saved analysis could not be verified. Retry loading before editing; your existing account data has not been cleared.';
-        }else{
-          note.textContent='Your drawings, SMA/EMA indicators and chart view are saved privately and restored after refresh or sign-out. They remain until you use Remove.';
-        }
       });
       if(state.ready)refreshWidgets();
     }
@@ -465,10 +458,9 @@
             </form>
             <div class="charts-analysis-mode" role="group" aria-label="Chart engine">
               <button type="button" class="btn small" data-analysis-engine="tradingview" aria-pressed="true" title="Standard TradingView embed: drawings and indicators in the widget are not saved to T-IOS" ${window.TIOSChartAnalysis?'disabled':''}>TradingView</button>
-              <button type="button" class="btn small" data-analysis-engine="native" aria-pressed="false" title="Private T-IOS chart: automatically saves supported drawings and SMA/EMA indicators across refresh and sign-out" disabled>Saved analysis · autosave</button>
+              <button type="button" class="btn small" data-analysis-engine="native" aria-pressed="false" title="Private T-IOS chart: automatically saves supported drawings and SMA/EMA indicators across refresh and sign-out" disabled>Saved analysis</button>
               <span data-analysis-status role="status">${window.TIOSChartAnalysis?'Loading saved analysis…':'Native analysis unavailable'}</span><button type="button" class="btn small" data-analysis-retry hidden>Retry save</button>
             </div>
-            <p class="charts-help charts-persistence-note" data-analysis-persistence-note>TradingView widget drawings and indicators are not saved by T-IOS. Select Saved analysis before making work you want to keep; existing TradingView drawings cannot be imported.</p>
             <div class="charts-widget-status" role="status" aria-live="polite" hidden></div>
             <div class="charts-widget"></div>
           </section>`}
