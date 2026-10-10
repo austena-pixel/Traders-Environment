@@ -190,6 +190,105 @@
       syncDerivHint(panel);
       host.querySelector('.charts-panel-settings').appendChild(panel);
     }
+
+    /* User-adjustable Charts/Instruments panel width. The original chart iframe
+       remains mounted; resizing only changes the grid layout. */
+    const CHARTS_PANEL_WIDTH_KEY='tios_charts_panel_width_v1';
+    function chartsPanelWidthKey(){
+      return CHARTS_PANEL_WIDTH_KEY+':'+(userId||getUser()?.id||'');
+    }
+    function readChartsPanelWidth(){
+      try{
+        const width=Number(localStorage.getItem(chartsPanelWidthKey()));
+        return Number.isFinite(width)&&width>=230?width:null;
+      }catch(_){return null;}
+    }
+    function saveChartsPanelWidth(width){
+      try{
+        if(width===null)localStorage.removeItem(chartsPanelWidthKey());
+        else localStorage.setItem(chartsPanelWidthKey(),String(Math.round(width)));
+      }catch(_){}
+    }
+    function initializeChartsPanelResize(){
+      const bench=host.querySelector('.charts-workbench');
+      const handle=bench?.querySelector('.charts-panel-resizer');
+      const panel=bench?.querySelector('.charts-panel');
+      if(!bench||!handle||!panel)return;
+      const desktop=()=>window.matchMedia('(min-width:861px)').matches;
+      const bounds=()=>{
+        const total=bench.getBoundingClientRect().width;
+        return {min:230,max:Math.max(230,Math.min(850,Math.round(total*.70),Math.round(total-340)))};
+      };
+      const panelWidth=()=>panel.getBoundingClientRect().width||286;
+      const apply=(width,persist=false)=>{
+        if(!desktop())return;
+        const {min,max}=bounds();
+        const value=Math.min(max,Math.max(min,Math.round(width)));
+        bench.style.setProperty('--charts-panel-width',value+'px');
+        handle.setAttribute('aria-valuemin',String(min));
+        handle.setAttribute('aria-valuemax',String(max));
+        handle.setAttribute('aria-valuenow',String(value));
+        handle.setAttribute('aria-valuetext',value+' pixels wide');
+        if(persist)saveChartsPanelWidth(value);
+      };
+      const savedWidth=readChartsPanelWidth();
+      if(savedWidth!==null)apply(savedWidth);
+      else {
+        handle.setAttribute('aria-valuenow',String(Math.round(panelWidth())));
+        handle.setAttribute('aria-valuemin','230');
+        handle.setAttribute('aria-valuemax',String(bounds().max));
+      }
+      let drag=null;
+      let priorCursor='',priorSelection='';
+      const finish=(event,commit=true)=>{
+        if(!drag||event.pointerId!==drag.id)return;
+        if(commit)saveChartsPanelWidth(panelWidth());
+        drag=null;
+        bench.classList.remove('charts-panel-resizing');
+        document.body.style.cursor=priorCursor;
+        document.body.style.userSelect=priorSelection;
+        if(handle.hasPointerCapture?.(event.pointerId))handle.releasePointerCapture(event.pointerId);
+      };
+      handle.addEventListener('pointerdown',event=>{
+        if(!desktop()||controlsCollapsed||expanded||(event.pointerType==='mouse'&&event.button!==0))return;
+        drag={id:event.pointerId,x:event.clientX,width:panelWidth()};
+        priorCursor=document.body.style.cursor;
+        priorSelection=document.body.style.userSelect;
+        document.body.style.cursor='col-resize';
+        document.body.style.userSelect='none';
+        bench.classList.add('charts-panel-resizing');
+        handle.setPointerCapture(event.pointerId);
+        event.preventDefault();
+      });
+      handle.addEventListener('pointermove',event=>{
+        if(!drag||drag.id!==event.pointerId)return;
+        apply(drag.width+event.clientX-drag.x);
+      });
+      handle.addEventListener('pointerup',event=>finish(event,true));
+      handle.addEventListener('pointercancel',event=>finish(event,false));
+      handle.addEventListener('lostpointercapture',event=>finish(event,false));
+      handle.addEventListener('keydown',event=>{
+        if(!desktop()||controlsCollapsed||expanded)return;
+        const step=event.shiftKey?60:24;
+        let next;
+        if(event.key==='ArrowLeft')next=panelWidth()-step;
+        else if(event.key==='ArrowRight')next=panelWidth()+step;
+        else if(event.key==='Home')next=bounds().min;
+        else if(event.key==='End')next=bounds().max;
+        else return;
+        event.preventDefault();
+        apply(next,true);
+      });
+      handle.addEventListener('dblclick',()=>{
+        if(!desktop()||controlsCollapsed||expanded)return;
+        saveChartsPanelWidth(null);
+        bench.style.removeProperty('--charts-panel-width');
+        const defaultWidth=Math.round(panelWidth());
+        handle.setAttribute('aria-valuenow',String(defaultWidth));
+        handle.setAttribute('aria-valuetext',defaultWidth+' pixels wide');
+      });
+    }
+
     function toggleControls(){
       controlsCollapsed=!controlsCollapsed;
       const workspace=host.querySelector('.charts-workbench');
@@ -376,6 +475,7 @@
               <div class="charts-instruments" id="chartsInstruments" data-charts-instruments aria-label="Record instrument responses" hidden></div>
             </div>
           </aside>
+          <div class="charts-panel-resizer" role="separator" tabindex="0" aria-label="Resize the Charts Instruments panel" title="Drag to resize panel. Double-click to reset." aria-orientation="vertical" aria-controls="chartsPanel" aria-valuemin="230" aria-valuenow="286" aria-valuemax="850"><span aria-hidden="true"></span></div>
           <div class="charts-view">
             <section class="charts-view-head charts-public-quote" data-charts-public-quote aria-label="Separate Deriv public quote" hidden>
               <div class="charts-public-value"><strong>Deriv public quote</strong><output data-charts-public-value aria-label="Last observed public Deriv quote" aria-live="off">—</output><span data-charts-public-price-state>No tick observed</span><span data-charts-public-identity></span></div>
@@ -390,6 +490,7 @@
           </div>
         </div>
         <datalist id="charts-symbols"><option value="FX:EURUSD"><option value="FX:GBPUSD"><option value="OANDA:XAUUSD"><option value="NASDAQ:AAPL"><option value="BINANCE:BTCUSDT"></datalist>`;
+      initializeChartsPanelResize();
       host.querySelectorAll('.charts-grid [data-chart-id]').forEach((card,index)=>relocateControls(card,index));
       host.querySelector('.charts-panel').inert=controlsCollapsed;
       changed();refreshWidgets();
