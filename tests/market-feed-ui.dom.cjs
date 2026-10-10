@@ -66,3 +66,14 @@ test('manual fallback, market mismatch, reload to saved symbol and session dispo
  e.controller.reset();e.setUser({id:'other'});e.controller.show();await settle();await settle();assert.equal(e.field('tv_open').value,'');assert.equal(e.find('[data-market-history]').textContent.includes('Linked position'),false);
  }finally{e.controller.reset();e.dom.window.close()}
 });
+test('day-trade modal yields to market evidence without resetting the journal draft',async()=>{
+ const e=environment();try{
+ e.controller.show();await settle();await settle();
+ const source=fs.readFileSync(path.join(__dirname,'..','t-ios.html'),'utf8');
+ const handler=source.match(/document\.addEventListener\('click',event=>\{\n  const button=event\.target\.closest\('\[data-market-evidence-trade\]'\);[\s\S]*?\n\}\);/)[0];
+ e.w.document.body.insertAdjacentHTML('beforeend','<button class="nav-btn" data-page="charts"></button><div id="tradeModal" class="modal open"><input id="journalDraft" value="unsaved reflection"><button data-market-evidence-trade="trade">Market evidence</button></div>');
+ Object.assign(e.w,{trades:[e.trade],currentUser:{id:'owner'},chartWorkspace:e.controller,$:s=>e.w.document.querySelector(s)});
+ e.w.eval(handler);e.find('[data-market-evidence-trade]').click();await settle();await settle();
+ assert.equal(e.find('#tradeModal').classList.contains('open'),false);assert.equal(e.find('#journalDraft').value,'unsaved reflection');assert.equal(e.field('trade').value,'trade');assert.equal(e.tables.trades.length,1);
+ }finally{e.controller.reset();e.dom.window.close()}
+});
