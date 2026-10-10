@@ -16,6 +16,7 @@
     const verification=window.TIOSMarketVerification.create({getClient,getUser,getAccounts,getSelectedAccount,getNumber});
     let pendingEvidenceTrade=null;
     let sidebarMode='settings',instrumentWorkspace=null,instrumentLoadEpoch=0;
+    let firstTimeChartSetup=false,firstRunLayout='single',firstRunSaving=false;
     function renderSidebar(){
       const settings=host.querySelector('.charts-toolbar'),instruments=host.querySelector('[data-charts-instruments]');
       if(!settings||!instruments)return;
@@ -430,8 +431,90 @@
       const badge=host.querySelector('[data-charts-layout="multiple"] span');if(badge)badge.textContent=String(count);
       changed();
     }
+
+    /* T-IOS chart setup uses the existing Supabase account.
+       It never requests or impersonates a TradingView sign-in. */
+    function renderFirstTimeChartSetup(){
+      if(!visible||!loaded||!firstTimeChartSetup)return;
+      const email=escape(getUser()?.email||'your T-IOS account');
+      host.innerHTML=`
+        <div class="charts-welcome-setup" aria-label="T-IOS chart account setup">
+          <div class="charts-welcome-preview" aria-hidden="true">
+            <div class="charts-welcome-preview-head"><span>Chart 1</span><span>T-IOS workspace</span></div>
+            <div class="charts-welcome-preview-grid"></div>
+          </div>
+          <section class="charts-welcome-card" role="dialog" aria-modal="true" aria-labelledby="chartsWelcomeTitle" aria-describedby="chartsWelcomeDescription">
+            <span class="charts-welcome-kicker">T·IOS · Chart workspace setup</span>
+            <h2 id="chartsWelcomeTitle">Set up your trading charts</h2>
+            <p id="chartsWelcomeDescription">You're already signed in to T·IOS as <strong>${email}</strong>. Choose a layout to save to your T·IOS account before opening your charts.</p>
+            <div class="charts-welcome-layouts" role="group" aria-label="Initial chart layout">
+              <button type="button" class="charts-welcome-choice ${firstRunLayout==='single'?'selected':''}" data-charts-onboarding-layout="single" aria-pressed="${firstRunLayout==='single'}">
+                <span class="charts-welcome-layout-icon single" aria-hidden="true"><i></i></span>
+                <strong>Single chart</strong>
+                <small>One large chart with timeframe switching</small>
+              </button>
+              <button type="button" class="charts-welcome-choice ${firstRunLayout==='multiple'?'selected':''}" data-charts-onboarding-layout="multiple" aria-pressed="${firstRunLayout==='multiple'}">
+                <span class="charts-welcome-layout-icon multiple" aria-hidden="true"><i></i><i></i><i></i></span>
+                <strong>Three charts</strong>
+                <small>Context · Setup · Entry</small>
+              </button>
+            </div>
+            <button class="btn primary charts-welcome-start" type="button" data-charts-action="start-tios-charts">Save setup &amp; open charts</button>
+            <p class="charts-welcome-disclosure">Your T·IOS login protects these chart settings. This is not a TradingView login. The current display is still a public TradingView widget; saving custom indicators and drawings will require our native chart integration.</p>
+            <p class="charts-welcome-error" data-charts-onboarding-error role="alert" hidden></p>
+          </section>
+        </div>`;
+      host.querySelector('[data-charts-action="start-tios-charts"]')?.focus({preventScroll:true});
+    }
+    async function completeFirstTimeChartSetup(){
+      if(!visible||!loaded||!firstTimeChartSetup||firstRunSaving||getUser()?.id!==userId)return;
+      const snapshot=P.clone(prefs);
+      snapshot.layout=firstRunLayout;
+      const validation=P.validate(snapshot);
+      const errorEl=host.querySelector('[data-charts-onboarding-error]');
+      if(validation){
+        if(errorEl){errorEl.hidden=false;errorEl.textContent=validation;}
+        return;
+      }
+      const id=userId,epoch=generation;
+      firstRunSaving=true;
+      const start=host.querySelector('[data-charts-action="start-tios-charts"]');
+      if(start){start.disabled=true;start.textContent='Saving your workspace…';}
+      try{
+        let {data,error}=await getClient().from(TABLE)
+          .insert({user_id:id,configuration:snapshot}).select('revision').maybeSingle();
+        if(!alive(id,epoch)||!visible)return;
+        if(error?.code==='23505'){
+          const existing=await getClient().from(TABLE)
+            .select('configuration,revision,schema_version').eq('user_id',id).maybeSingle();
+          if(!alive(id,epoch)||!visible)return;
+          if(existing.error||!existing.data||existing.data.schema_version!==1||P.validate(existing.data.configuration))
+            throw Error('An existing chart workspace could not be loaded. Try again.');
+          prefs=P.clone(existing.data.configuration);
+          revision=existing.data.revision;
+          saved=JSON.stringify(prefs);
+        }else{
+          if(error||!data)throw Error('Could not save your chart setup. Please try again.');
+          prefs=snapshot;
+          revision=data.revision;
+          saved=JSON.stringify(snapshot);
+        }
+        firstTimeChartSetup=false;
+        render();
+      }catch(error){
+        if(!alive(id,epoch)||!visible)return;
+        const message=host.querySelector('[data-charts-onboarding-error]');
+        if(message){message.hidden=false;message.textContent=error.message||'Could not save your chart setup. Please retry.';}
+      }finally{
+        firstRunSaving=false;
+        const button=host.querySelector('[data-charts-action="start-tios-charts"]');
+        if(button){button.disabled=false;button.textContent='Save setup & open charts';}
+      }
+    }
+
     function render(){
       if(!visible||!prefs)return;
+      if(firstTimeChartSetup){renderFirstTimeChartSetup();return;}
       const selectedAccount=getSelectedAccount?.();
       const selectedAccountName=selectedAccount?.account_name||'No trading account selected';
       const mt5Linked=selectedAccount?.platform==='MT5';
@@ -511,6 +594,8 @@
         if(error)throw Error('Your saved preferences could not be loaded. Retry before making changes.');
         if(data&&(data.schema_version!==1||P.validate(data.configuration)))throw Error('Your saved chart preferences use an unsupported format. They have been preserved.');
         prefs=data?P.clone(data.configuration):P.defaults();revision=data?.revision??null;saved=data?JSON.stringify(prefs):null;loaded=true;
+        firstTimeChartSetup=!data;
+        if(firstTimeChartSetup)firstRunLayout=prefs.layout;
         render();
       }catch(error){
         if(alive(id,epoch)&&visible){host.innerHTML='<div class="charts-empty"><p role="alert"></p><button type="button" class="btn" data-charts-action="reload">Retry loading preferences</button></div>';host.querySelector('p').textContent=error.message}
@@ -574,10 +659,21 @@
       }
     });
     host.addEventListener('click',event=>{
+      const firstLayout=event.target.closest('[data-charts-onboarding-layout]');
+      if(firstLayout&&firstTimeChartSetup){
+        firstRunLayout=firstLayout.dataset.chartsOnboardingLayout;
+        host.querySelectorAll('[data-charts-onboarding-layout]').forEach(button=>{
+          const selected=button.dataset.chartsOnboardingLayout===firstRunLayout;
+          button.classList.toggle('selected',selected);
+          button.setAttribute('aria-pressed',String(selected));
+        });
+        return;
+      }
       const layout=event.target.closest('[data-charts-layout]');
       if(layout){if(layout.dataset.chartsLayout!==prefs.layout){capture();prefs.layout=layout.dataset.chartsLayout;render()}return}
       const button=event.target.closest('[data-charts-action]');if(!button)return;
       const action=button.dataset.chartsAction;
+      if(action==='start-tios-charts'){completeFirstTimeChartSetup();return;}
       if(action==='toggle-panel')toggleControls();
       if(action==='instruments')setSidebarMode(sidebarMode==='settings'?'instruments':'settings');
       if(action==='manage-deriv-account')document.querySelector('.nav-btn[data-page="settings"]')?.click();
@@ -634,7 +730,7 @@
         verification.openTrade(trade);
       },
       hide(){capture();instrumentLoadEpoch++;instrumentWorkspace?.unmount();verification.hide();visible=false;stopPublicQuote('Paused while Charts is closed. Press Start to reconnect.');closeExpanded(false);dispose();host.replaceChildren()},
-      reset(){api.hide();instrumentWorkspace?.reset();instrumentWorkspace=null;sidebarMode='settings';quoteFeed?.dispose();quoteFeed=null;quoteState=null;quoteShown=false;quoteMarket='v75_1s';quoteMarketChosen=false;verification.reset();pendingEvidenceTrade=null;generation++;userId=null;prefs=null;loaded=false;loading=false;saving=false;revision=null;saved=null}
+      reset(){api.hide();instrumentWorkspace?.reset();instrumentWorkspace=null;sidebarMode='settings';firstTimeChartSetup=false;firstRunLayout='single';firstRunSaving=false;quoteFeed?.dispose();quoteFeed=null;quoteState=null;quoteShown=false;quoteMarket='v75_1s';quoteMarketChosen=false;verification.reset();pendingEvidenceTrade=null;generation++;userId=null;prefs=null;loaded=false;loading=false;saving=false;revision=null;saved=null}
     };
     return api;
   }};
