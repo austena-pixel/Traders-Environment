@@ -1,9 +1,10 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {JSDOM}=require('jsdom');
+const {FakeSocket,clock,resolve,tick}=require('./helpers/deriv-public-ticks-context.cjs');
 const P=require('../core/chart-workspace.js'),F=require('../core/chart-feed-verification.js');
 const settle=()=>new Promise(r=>setImmediate(r));
-function environment(){
+function environment({loadPublicTicks}={}){
  const dom=new JSDOM('<div id="host"></div>',{url:'https://tios.test/t-ios.html',runScripts:'outside-only',pretendToBeVisual:true});
  const w=dom.window;w.matchMedia=()=>({matches:false});w.HTMLElement.prototype.scrollIntoView=function(){};
  Object.defineProperty(w.crypto,'randomUUID',{value:require('node:crypto').randomUUID});
@@ -26,13 +27,20 @@ function environment(){
  if(q.method==='update'){writes.push({table,row:q.row});rows=rows.map(r=>Object.assign(r,q.row,{revision:r.revision+1}));}
  rows=rows.slice(q.start,q.end+1);return {data:q.singleRow?rows[0]||null:rows,error:null};
  }).then(resolve,reject)}};return q}};
- for(const file of ['core/chart-workspace.js','core/chart-feed-verification.js','tios-market-verification.js','tios-charts.js'])w.eval(fs.readFileSync(path.join(__dirname,'..',file),'utf8'));
- const controller=w.TIOSCharts.create({host:w.document.querySelector('#host'),getClient:()=>client,getUser:()=>user,getAccounts:()=>[account],getSelectedAccount:()=>account,getNumber:()=>1});
+ for(const file of ['core/chart-workspace.js','core/chart-feed-verification.js','core/deriv-public-ticks.js','tios-market-verification.js','tios-charts.js'])w.eval(fs.readFileSync(path.join(__dirname,'..',file),'utf8'));
+ const controller=w.TIOSCharts.create({host:w.document.querySelector('#host'),getClient:()=>client,getUser:()=>user,getAccounts:()=>[account],getSelectedAccount:()=>account,getNumber:()=>1,loadPublicTicks:()=>loadPublicTicks?loadPublicTicks(w):Promise.resolve(w.TIOSDerivPublicTicks)});
  const find=s=>w.document.querySelector(s),field=name=>find('[data-market-field="'+name+'"]');
  const change=(name,value)=>{field(name).value=value;field(name).dispatchEvent(new w.Event('change',{bubbles:true}))};
  const input=(name,value)=>{field(name).value=String(value);field(name).dispatchEvent(new w.Event('input',{bubbles:true}))};
  const openEvidence=async()=>{const panel=find('.market-verification');panel.open=true;panel.dispatchEvent(new w.Event('toggle'));await settle();await settle();};
  return {w,dom,controller,tables,writes,reads,find,field,change,input,trade,openEvidence,setUser:v=>{user=v}};
+}
+function publicTransport(e){
+ const time=clock(),sockets=[];e.w.Date.now=time.now;e.w.setTimeout=time.setTimeout;e.w.clearTimeout=time.clearTimeout;
+ e.w.WebSocket=class extends FakeSocket{constructor(url){super(url);sockets.push(this);}};
+ const find=name=>e.find('[data-charts-public-'+name+']');
+ const action=name=>e.find('[data-charts-action="'+name+'-public-quote"]').click();
+ return {time,sockets,find,action,async start(){action('start');await settle();const socket=sockets.at(-1);resolve(socket);return socket;}};
 }
 test('Charts retains chart display, exposes stale mapping honestly, calculates and saves linked evidence',async()=>{
  const e=environment();try{
@@ -126,5 +134,63 @@ test('reselecting the preferred instrument preserves running charts and manual e
   const after=[...e.w.document.querySelectorAll('.charts-frame')];assert.equal(after[0],frames[0]);assert.equal(after[1],frames[1]);assert.notEqual(after[2],changed);
   assert.equal(JSON.parse(decodeURIComponent(new URL(after[2].src).hash.slice(1))).chart.symbol,P.preferredDerivSymbol);
   assert.equal(e.field('tv_open').value,'321');assert.deepEqual(after.map(f=>JSON.parse(decodeURIComponent(new URL(f.src).hash.slice(1))).chart.interval),['240','60','5']);
+ }finally{e.controller.reset();e.dom.window.close()}
+});
+test('optional public quote preserves raw prices and chart frames, separates markets and never saves trade evidence',async()=>{
+ const e=environment(),p=publicTransport(e);try{
+  e.controller.show();await settle();await settle();
+  const frame=e.find('.charts-frame'),reads=e.reads.length;
+  assert.equal(p.sockets.length,0);assert.equal(p.find('quote').hidden,true);
+  assert.equal(p.find('value').textContent,'—');assert.match(p.find('quote').textContent,/MT5 \/ TradingView parity unverified/);
+  const socket=await p.start();tick(socket,1791633600,123.456789);
+  p.time.advance(1000);tick(socket,1791633601,124.987654);
+  assert.equal(p.find('value').textContent,'124.987654');assert.match(p.find('identity').textContent,/Volatility 75 \(1s\) Index \/ catalog-one-second/);
+  assert.equal(p.find('price-state').textContent,'Receiving ticks');assert.match(p.find('time').textContent,/Source: .*browser arrival: .*arrival interval: 1.000 s/);
+  assert.equal(e.find('.charts-frame'),frame);assert.equal(e.reads.length,reads);assert.equal(e.writes.length,0);
+  assert.deepEqual(socket.sent,[{active_symbols:'brief',req_id:1},{ticks:'catalog-one-second',subscribe:1,req_id:2}]);
+  e.find('[data-charts-action="toggle-panel"]').click();assert.equal(frame.isConnected,true);assert.equal(socket.closeCount,0);assert.equal(p.find('quote').hidden,false);
+  e.find('[data-charts-layout="multiple"]').click();assert.equal(p.sockets.length,1);assert.equal(socket.closeCount,0);assert.equal(p.find('value').textContent,'124.987654');
+  p.action('stop');assert.equal(socket.closeCount,1);assert.equal(p.time.timers.size,0);assert.match(p.find('price-state').textContent,/not live/);assert.equal(p.find('value').textContent,'124.987654');
+  p.find('market').value='v75';p.find('market').dispatchEvent(new e.w.Event('change',{bubbles:true}));assert.equal(p.find('value').textContent,'—');
+  const standard=await p.start();assert.equal(standard.sent[1].ticks,'catalog-standard');tick(standard,1791633602,987.654321,'catalog-standard');
+  assert.equal(p.find('value').textContent,'987.654321');assert.match(p.find('identity').textContent,/Volatility 75 Index \/ catalog-standard/);
+  const frames=[...e.w.document.querySelectorAll('.charts-frame')];p.action('hide');assert.equal(standard.closeCount,1);assert.equal(p.find('quote').hidden,true);assert.deepEqual([...e.w.document.querySelectorAll('.charts-frame')],frames);
+  assert.equal(e.writes.length,0);assert.equal(e.tables.trades.length,1);
+ }finally{e.controller.reset();e.dom.window.close()}
+});
+test('public quote pauses without reconnecting on background, expand, page exit and Charts navigation; stale sessions are disposed',async()=>{
+ const e=environment(),p=publicTransport(e);try{
+  e.controller.show();await settle();await settle();let socket=await p.start();tick(socket,1791633600,123);
+  p.time.advance(15000);assert.match(p.find('price-state').textContent,/not live/);assert.match(p.find('status').textContent,/15 seconds/);
+  tick(socket,1791633615,124);assert.equal(p.find('price-state').textContent,'Receiving ticks');
+  Object.defineProperty(e.w.document,'hidden',{configurable:true,value:true});e.w.document.dispatchEvent(new e.w.Event('visibilitychange'));
+  assert.equal(socket.closeCount,1);assert.equal(p.time.timers.size,0);assert.match(p.find('price-state').textContent,/not live/);
+  Object.defineProperty(e.w.document,'hidden',{configurable:true,value:false});e.w.document.dispatchEvent(new e.w.Event('visibilitychange'));assert.equal(p.sockets.length,1);
+  socket=await p.start();e.find('[data-charts-action="expand"]').click();assert.equal(socket.closeCount,1);assert.equal(p.time.timers.size,0);
+  e.find('[data-charts-action="expand"]').click();assert.equal(p.sockets.length,2);
+  socket=await p.start();e.w.dispatchEvent(new e.w.Event('pagehide'));assert.equal(socket.closeCount,1);assert.equal(p.time.timers.size,0);
+  e.w.dispatchEvent(new e.w.Event('pageshow'));assert.equal(p.sockets.length,3);
+  socket=await p.start();e.controller.hide();assert.equal(socket.closeCount,1);assert.equal(p.time.timers.size,0);assert.equal(p.find('quote'),null);
+  e.controller.show();await settle();assert.equal(p.sockets.length,4);assert.match(p.find('status').textContent,/Charts is closed/);
+  socket=await p.start();tick(socket,1791633620,500);e.setUser({id:'other'});tick(socket,1791633621,501);
+  assert.equal(socket.closeCount,1);assert.equal(p.time.timers.size,0);assert.equal(p.find('quote').hidden,true);assert.equal(p.find('value').textContent,'—');
+  e.controller.show();await settle();await settle();assert.equal(p.find('quote').hidden,true);assert.equal(p.find('value').textContent,'—');assert.equal(p.sockets.length,5);assert.equal(e.writes.length,0);
+ }finally{e.controller.reset();e.dom.window.close()}
+});
+test('public quote rate-limit cooldown and deferred module loading cannot reconnect automatically or outlive a closed workspace',async()=>{
+ let release,loads=0;
+ const e=environment({loadPublicTicks:w=>{loads++;if(loads===1)return new Promise(r=>{release=()=>r(w.TIOSDerivPublicTicks)});if(loads===2)return Promise.reject(Error('Network unavailable'));return Promise.resolve(w.TIOSDerivPublicTicks);}}),p=publicTransport(e);
+ try{
+  e.controller.show();await settle();await settle();p.action('start');assert.match(p.find('status').textContent,/Loading/);assert.equal(p.sockets.length,0);
+  e.controller.hide();release();await settle();assert.equal(p.sockets.length,0);assert.equal(p.time.timers.size,0);
+  e.controller.show();await settle();p.action('start');await settle();assert.match(p.find('status').textContent,/could not be loaded/);assert.equal(e.find('[data-charts-action="start-public-quote"]').disabled,false);
+  p.action('start');await settle();const socket=p.sockets[0];socket.open();socket.receive({error:{code:'RateLimit',message:'<img src=x onerror=alert(1)> Rate limited'}});
+  assert.equal(socket.closeCount,1);assert.equal(p.find('status').querySelector('img'),null);assert.match(p.find('status').textContent,/<img.*Retry available in 60 s/);
+  assert.equal(e.find('[data-charts-action="start-public-quote"]').disabled,true);
+  p.find('market').value='v75';p.find('market').dispatchEvent(new e.w.Event('change',{bubbles:true}));assert.equal(e.find('[data-charts-action="start-public-quote"]').disabled,true);
+  p.time.advance(60000);assert.equal(p.sockets.length,1);assert.equal(p.time.timers.size,0);assert.equal(e.find('[data-charts-action="start-public-quote"]').disabled,false);
+  const standard=await p.start();assert.equal(standard.sent[1].ticks,'catalog-standard');standard.receive({error:{code:'RateLimit',message:'Rate limited'}});e.w.dispatchEvent(new e.w.Event('pagehide'));assert.equal(p.time.timers.size,0);
+  e.w.dispatchEvent(new e.w.Event('pageshow'));assert.equal(p.sockets.length,2);assert.equal(e.find('[data-charts-action="start-public-quote"]').disabled,true);
+  e.controller.reset();assert.equal(p.time.timers.size,0);assert.equal(e.writes.length,0);
  }finally{e.controller.reset();e.dom.window.close()}
 });

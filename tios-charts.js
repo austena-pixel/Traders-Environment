@@ -2,13 +2,66 @@
   'use strict';
   const P=window.TIOSChartPreferences,TABLE='chart_workspace_preferences';
   const escape=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-  window.TIOSCharts={create({host,getClient,getUser,getAccounts,getSelectedAccount,getNumber}){
+  window.TIOSCharts={create({host,getClient,getUser,getAccounts,getSelectedAccount,getNumber,loadPublicTicks=async()=>{
+    if(!window.TIOSDerivPublicTicks)await import('./core/deriv-public-ticks.js');
+    return window.TIOSDerivPublicTicks;
+  }}){
     let visible=false,userId=null,prefs=null,loaded=false,loading=false,saving=false;
     let revision=null,saved=null,generation=0,expanded=null,focusBeforeExpand=null,previousOverflow='';
     let controlsCollapsed=window.matchMedia('(max-width: 860px)').matches;
     const instances=new Map();
     const verification=window.TIOSMarketVerification.create({getClient,getUser,getAccounts,getSelectedAccount,getNumber});
     let pendingEvidenceTrade=null;
+    let quoteFeed=null,quoteState=null,quoteShown=false,quoteLoading=false,quoteMarket='v75_1s',quoteMarketChosen=false,quoteLoadEpoch=0,quoteRetryTimer=null;
+    const quoteActive=()=>quoteLoading||['connecting','catalogue','awaiting_ticks','streaming','stale'].includes(quoteState?.status);
+    const canQuote=()=>visible&&loaded&&getUser()?.id===userId&&!document.hidden&&!expanded;
+    function renderPublicQuote(){
+      if(quoteRetryTimer!==null){clearTimeout(quoteRetryTimer);quoteRetryTimer=null;}
+      const panel=host.querySelector('[data-charts-public-quote]');if(!panel)return;
+      panel.hidden=!quoteShown;
+      const remaining=Math.max(0,Math.ceil(((quoteState?.retryAt||0)-Date.now())/1000));
+      host.querySelectorAll('[data-charts-action="start-public-quote"]').forEach(button=>button.disabled=!canQuote()||quoteActive()||remaining>0);
+      const select=panel.querySelector('[data-charts-public-market]');select.value=quoteMarket;select.disabled=quoteActive();
+      panel.querySelector('[data-charts-action="stop-public-quote"]').disabled=!quoteActive();
+      const last=quoteState?.lastTick;
+      panel.querySelector('[data-charts-public-value]').textContent=last?String(last.quote):'—';
+      panel.querySelector('[data-charts-public-identity]').textContent=quoteState?.market?quoteState.market.label+(quoteState.apiSymbol?' / '+quoteState.apiSymbol:''):'';
+      const live=quoteState?.status==='streaming';
+      panel.querySelector('[data-charts-public-price-state]').textContent=last?(live?'Receiving ticks':'Retained observation · not live'):'No tick observed';
+      panel.querySelector('[data-charts-public-status]').textContent=quoteLoading?'Loading the read-only public feed…':(quoteState?.message||'Press Start to receive actual public Deriv ticks.')+(remaining?' Retry available in '+remaining+' s.':'');
+      panel.querySelector('[data-charts-public-time]').textContent=last?'Source: '+new Date(last.epoch*1000).toISOString()+' · browser arrival: '+last.receivedAt+(quoteState.lastGapMs!==null?' · arrival interval: '+(quoteState.lastGapMs/1000).toFixed(3)+' s':''):'';
+      if(remaining&&quoteShown&&canQuote())quoteRetryTimer=setTimeout(renderPublicQuote,1000);
+    }
+    function stopPublicQuote(message='Public quote stopped. Any retained price is no longer live.',clear=false){
+      quoteLoadEpoch++;quoteLoading=false;
+      quoteFeed?.stop(message,clear);
+      quoteState=quoteFeed?quoteFeed.snapshot():{status:'stopped',message,retryAt:quoteState?.retryAt||0};
+      renderPublicQuote();
+    }
+    async function startPublicQuote(){
+      if(!canQuote()||quoteActive())return;
+      if(!quoteMarketChosen){const configured=P.derivBySymbol(activeCharts()[0]?.symbol);if(configured)quoteMarket=configured.preferred?'v75_1s':'v75';quoteMarketChosen=true;}
+      quoteShown=true;quoteLoading=true;
+      const id=userId,epoch=generation,attempt=++quoteLoadEpoch;renderPublicQuote();
+      try{
+        const ticks=await loadPublicTicks();
+        if(attempt!==quoteLoadEpoch)return;
+        if(!alive(id,epoch)||!canQuote()||!quoteShown){stopPublicQuote('Session or visibility changed. Press Start to reconnect.',true);return;}
+        if(typeof ticks?.create!=='function')throw Error('Unavailable public feed module');
+        if(!quoteFeed)quoteFeed=ticks.create({onChange:state=>{
+          if(!alive(id,epoch)){
+            // Dispose without publishing another callback into this expired session.
+            quoteFeed?.dispose();quoteFeed=null;quoteLoadEpoch++;quoteLoading=false;quoteShown=false;quoteState=null;renderPublicQuote();return;
+          }
+          quoteState=state;renderPublicQuote();
+        }});
+        quoteLoading=false;quoteFeed.connect(quoteMarket);quoteState=quoteFeed.snapshot();renderPublicQuote();
+      }catch(_){
+        if(attempt!==quoteLoadEpoch)return;
+        if(!alive(id,epoch)){stopPublicQuote('Session changed. Start again after signing in.',true);return;}
+        quoteLoading=false;quoteState={status:'error',message:'The public feed module could not be loaded. Retry when your connection is available.',retryAt:quoteState?.retryAt||0};renderPublicQuote();
+      }
+    }
     const alive=(id,epoch)=>userId===id&&generation===epoch&&getUser()?.id===id;
     const activeCharts=()=>prefs.charts[prefs.layout];
     const dirty=()=>prefs&&JSON.stringify(prefs)!==saved;
@@ -131,6 +184,7 @@
       verification.setControlsVisible(!controlsCollapsed);
       document.body.style.overflow=previousOverflow;
       expanded=null;
+      renderPublicQuote();
       if(restoreFocus&&focusBeforeExpand?.isConnected)focusBeforeExpand.focus();
       focusBeforeExpand=null;
     }
@@ -140,6 +194,8 @@
       const backdrop=document.createElement('div');backdrop.className='charts-backdrop';
       backdrop.addEventListener('click',()=>closeExpanded());host.appendChild(backdrop);
       expanded=card;card.classList.add('charts-card-expanded');card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');
+      if(quoteActive())stopPublicQuote('Paused while the chart is expanded. Press Start after returning to the layout.');
+      else renderPublicQuote();
       host.querySelectorAll('.charts-grid [data-chart-id],.charts-panel,.charts-head,.charts-view-head').forEach(node=>{if(node!==card)node.inert=true});
       verification.setControlsVisible(false);
       document.body.style.overflow='hidden';
@@ -256,6 +312,8 @@
           <p class="charts-deriv-note">Sets the instrument for all charts in both layouts. Your timeframe and responsibility settings remain unchanged. Save preferences to persist.</p>
           <a class="btn small charts-deriv-default" href="deriv-feed-check.html" target="_blank" rel="noopener noreferrer" data-charts-feed-test aria-describedby="charts-feed-test-note">Open Deriv feed test ↗</a>
           <p id="charts-feed-test-note" class="charts-deriv-note">Read-only connection test. On the test page, press Connect public feed. Public prices remain unverified against MT5.</p>
+          <button class="btn small charts-deriv-default" type="button" data-charts-action="start-public-quote">Start live Deriv quote</button>
+          <p class="charts-deriv-note">Shows a separate public spot quote above your chart. TradingView controls its own candle updates. MT5 price parity remains unverified.</p>
           <div class="charts-section-title">Chart setup</div>
           <div class="charts-panel-settings"></div>
           <div class="charts-section-title">Preferences</div>
@@ -265,6 +323,13 @@
             </div>
           </aside>
           <div class="charts-view">
+            <section class="charts-view-head charts-public-quote" data-charts-public-quote aria-label="Separate Deriv public quote" hidden>
+              <div class="charts-public-value"><strong>Deriv public quote</strong><output data-charts-public-value aria-label="Last observed public Deriv quote" aria-live="off">—</output><span data-charts-public-price-state>No tick observed</span><span data-charts-public-identity></span></div>
+              <label class="charts-public-market">Public market<select data-charts-public-market><option value="v75_1s">Volatility 75 (1s) Index</option><option value="v75">Volatility 75 Index</option></select></label>
+              <button class="btn small" type="button" data-charts-action="start-public-quote">Start</button><button class="btn small" type="button" data-charts-action="stop-public-quote" disabled>Stop</button><button class="btn small" type="button" data-charts-action="hide-public-quote" aria-label="Hide public quote">Hide</button>
+              <p class="charts-public-note">Separate public spot price · MT5 / TradingView parity unverified. The TradingView toolbar may display another market. Arrival intervals are not network latency.</p>
+              <p class="charts-public-note" data-charts-public-status role="status" aria-live="polite"></p><p class="charts-public-note" data-charts-public-time></p>
+            </section>
             <div class="charts-grid" data-charts-mode="${prefs.layout}" data-chart-count="${activeCharts().length}" style="--chart-count:${activeCharts().length}">
           ${activeCharts().map(cardMarkup).join('')}
         </div>
@@ -274,6 +339,7 @@
       host.querySelectorAll('.charts-grid [data-chart-id]').forEach((card,index)=>relocateControls(card,index));
       host.querySelector('.charts-panel').inert=controlsCollapsed;
       changed();refreshWidgets();
+      renderPublicQuote();
       verification.setControlsVisible(!controlsCollapsed);
       verification.mount(host.querySelector('.charts-toolbar'));
       if(pendingEvidenceTrade){if(controlsCollapsed)toggleControls();verification.openTrade(pendingEvidenceTrade);pendingEvidenceTrade=null;}
@@ -331,6 +397,10 @@
       }
     });
     host.addEventListener('change',event=>{
+      if(event.target.matches('[data-charts-public-market]')){
+        if(quoteActive())return;
+        quoteMarket=event.target.value;quoteMarketChosen=true;stopPublicQuote('Public market selection changed. Press Start to receive this separate instrument.',true);return;
+      }
       if(event.target.matches('[data-deriv-preset]')){
         if(!event.target.value)return;
         const panel=event.target.closest('[data-charts-setup-id]');
@@ -353,13 +423,25 @@
       const action=button.dataset.chartsAction;
       if(action==='toggle-panel')toggleControls();
       if(action==='prefer-deriv')applyPreferredDeriv();
+      if(action==='start-public-quote')startPublicQuote();
+      if(action==='stop-public-quote')stopPublicQuote();
+      if(action==='hide-public-quote'){quoteShown=false;stopPublicQuote();}
       if(action==='save')save();
       if(action==='expand')expand(button.closest('[data-chart-id]'));
       if(action==='reset-chart')resetChart(button.closest('[data-chart-id]'));
       if(action==='retry-chart')mountChart(button.closest('[data-chart-id]'),true);
       if(action==='dismiss-status')cardMessage(button.closest('[data-chart-id]'),'');
-      if(action==='reload'&&!saving){closeExpanded(false);dispose();load()}
+      if(action==='reload'&&!saving){if(quoteActive())stopPublicQuote('Paused while chart preferences reload. Press Start when they are loaded.');closeExpanded(false);dispose();load()}
     });
+    document.addEventListener('visibilitychange',()=>{
+      if(document.hidden&&quoteActive())stopPublicQuote('Paused while T-IOS was in the background. Press Start to reconnect.');
+      renderPublicQuote();
+    });
+    window.addEventListener('pagehide',()=>{
+      stopPublicQuote('Page left. Press Start to reconnect.');
+      if(quoteRetryTimer!==null){clearTimeout(quoteRetryTimer);quoteRetryTimer=null;}
+    });
+    window.addEventListener('pageshow',renderPublicQuote);
     window.addEventListener('message',event=>{
       if(event.origin!==location.origin||event.data?.type!=='tios:chart-widget-state')return;
       const item=[...instances.values()].find(item=>item.instance===event.data.instance&&item.frame.contentWindow===event.source);
@@ -390,8 +472,8 @@
         if(controlsCollapsed)toggleControls();
         verification.openTrade(trade);
       },
-      hide(){capture();verification.hide();visible=false;closeExpanded(false);dispose();host.replaceChildren()},
-      reset(){api.hide();verification.reset();pendingEvidenceTrade=null;generation++;userId=null;prefs=null;loaded=false;loading=false;saving=false;revision=null;saved=null}
+      hide(){capture();verification.hide();visible=false;stopPublicQuote('Paused while Charts is closed. Press Start to reconnect.');closeExpanded(false);dispose();host.replaceChildren()},
+      reset(){api.hide();quoteFeed?.dispose();quoteFeed=null;quoteState=null;quoteShown=false;quoteMarket='v75_1s';quoteMarketChosen=false;verification.reset();pendingEvidenceTrade=null;generation++;userId=null;prefs=null;loaded=false;loading=false;saving=false;revision=null;saved=null}
     };
     return api;
   }};
