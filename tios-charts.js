@@ -8,54 +8,11 @@
   },loadInstruments=async()=>{
     if(!window.TIOSChartInstruments)await import('./core/chart-instruments.js');
     return window.TIOSChartInstruments;
-  },loadNative=async()=>{
-    if(!window.LightweightCharts)await import('./vendor/lightweight-charts/lightweight-charts-5.2.0.js');
-    if(!window.TIOSDerivChartFeed)await import('./core/deriv-chart-feed.js');
-    if(!window.TIOSNativeChart)await import('./core/native-chart.js');
-    return window.TIOSNativeChart;
   }}){
     let visible=false,userId=null,prefs=null,loaded=false,loading=false,saving=false;
     let revision=null,saved=null,generation=0,expanded=null,focusBeforeExpand=null,previousOverflow='';
     let controlsCollapsed=window.matchMedia('(max-width: 860px)').matches;
     const instances=new Map();
-    let analysisStore=null,nativeFeed=null,nativeLoadEpoch=0;
-    const analysisPane=chart=>prefs.layout+'_'+chart.id;
-    function updateAnalysisState(){
-      if(!analysisStore||!visible||accountStep!=='ready')return;
-      const state=analysisStore.snapshot();
-      host.querySelectorAll('[data-analysis-status]').forEach(node=>{
-        const chart=activeCharts().find(c=>c.id===node.closest('[data-chart-id]')?.dataset.chartId);
-        const isSavedChart=chart&&analysisStore.getPane(analysisPane(chart)).engine==='native';
-        node.textContent=!isSavedChart?'TV drawings not saved'
-          :state.state==='error'?'Save needs attention'
-          :state.pending?(state.localDurable?'Syncing analysis…':'Not backed up yet')
-          :state.ready?'Analysis saved':state.message;
-        node.title=isSavedChart?state.message:'The embedded TradingView widget does not expose its drawings or indicators for T-IOS to save. Switch to Saved analysis for drawings and indicators that persist.';
-        node.classList.toggle('charts-status-error',isSavedChart&&(state.state==='error'||(state.pending&&!state.localDurable)));
-      });
-      host.querySelectorAll('[data-analysis-engine]').forEach(button=>{
-        const chart=activeCharts().find(c=>c.id===button.closest('[data-chart-id]')?.dataset.chartId);
-        button.disabled=!state.ready;
-        if(chart)button.setAttribute('aria-pressed',String(analysisStore.getPane(analysisPane(chart)).engine===button.dataset.analysisEngine));
-      });
-      host.querySelectorAll('[data-analysis-retry]').forEach(button=>{button.hidden=state.state!=='error';});
-      host.querySelectorAll('[data-charts-action="reset-chart"]').forEach(button=>{
-        const chart=activeCharts().find(c=>c.id===button.closest('[data-chart-id]')?.dataset.chartId);
-        const native=chart&&analysisStore.getPane(analysisPane(chart)).engine==='native';
-        button.textContent=native?'Reload analysis':'Reset instrument';
-        if(native)button.title='Reload native candles; saved drawings and indicators are retained';
-      });
-      if(state.ready)refreshWidgets();
-    }
-    function ensureAnalysis(){
-      if(!window.TIOSChartAnalysis)return;
-      if(!analysisStore){
-        const id=userId,epoch=generation;
-        let storage;try{storage=window.localStorage;}catch(_){}
-        analysisStore=window.TIOSChartAnalysis.create({getClient,getUser,storage,onChange:()=>{if(alive(id,epoch))updateAnalysisState();}});
-        analysisStore.load();
-      }else updateAnalysisState();
-    }
     const verification=window.TIOSMarketVerification.create({getClient,getUser,getAccounts,getSelectedAccount,getNumber});
     let pendingEvidenceTrade=null;
     let sidebarMode='settings',instrumentWorkspace=null,instrumentLoadEpoch=0;
@@ -353,7 +310,7 @@
     }
     function removeInstance(id){
       const instance=instances.get(id);
-      if(instance){instance.native?.dispose();instance.frame?.remove();instance.container?.remove();instances.delete(id)}
+      if(instance){instance.frame.remove();instances.delete(id)}
     }
     function dispose(){for(const id of [...instances.keys()])removeInstance(id)}
     function closeExpanded(restoreFocus=true){
@@ -402,25 +359,6 @@
       const check=P.defaults();check.charts.single=[chart];
       const error=P.validate(check);
       if(error){removeInstance(chart.id);cardMessage(card,error);return}
-      if(analysisStore?.snapshot().ready&&analysisStore.getPane(analysisPane(chart)).engine==='native'){
-        const key=JSON.stringify(['native',analysisPane(chart),prefs.theme]);
-        if(!force&&instances.get(chart.id)?.key===key){instances.get(chart.id).native?.update();return;}
-        removeInstance(chart.id);
-        const container=document.createElement('div');container.className='charts-native';
-        card.querySelector('.charts-widget').appendChild(container);cardMessage(card,'Loading saved analysis chart…');
-        const instance={key,container,card,native:null};instances.set(chart.id,instance);
-        const id=userId,epoch=generation,attempt=nativeLoadEpoch;
-        loadNative().then(module=>{
-          if(!alive(id,epoch)||!visible||attempt!==nativeLoadEpoch||instances.get(chart.id)!==instance)return;
-          if(!nativeFeed){let storage;try{storage=window.localStorage;}catch(_){}nativeFeed=window.TIOSDerivChartFeed.create({storage});}
-          const configured=P.derivBySymbol(chart.symbol),initialMarket=configured?.preferred?'v75_1s':configured?'v75':'v75_1s';
-          instance.native=module.create({host:container,paneId:analysisPane(chart),store:analysisStore,feed:nativeFeed,theme:prefs.theme,initialMarket,initialInterval:chart.interval});
-          cardMessage(card,'');
-        }).catch(error=>{
-          if(alive(id,epoch)&&instances.get(chart.id)===instance)cardMessage(card,error.message||'Native analysis could not load. Your saved analysis is preserved.',true);
-        });
-        return;
-      }
       const key=JSON.stringify([chart.symbol,chart.interval,prefs.theme,prefs.timezone]);
       if(!force&&instances.get(chart.id)?.key===key)return;
       removeInstance(chart.id);
@@ -456,11 +394,6 @@
               <button class="btn small charts-apply" type="submit" title="Apply instrument and timeframe to this chart">Apply</button>
               <label class="charts-responsibility">Responsibility <input data-chart-field="responsibility" aria-label="Chart ${index+1} responsibility" value="${escape(chart.responsibility)}" maxlength="120" placeholder="What do you analyse here?"></label>
             </form>
-            <div class="charts-analysis-mode" role="group" aria-label="Chart engine">
-              <button type="button" class="btn small" data-analysis-engine="tradingview" aria-pressed="true" title="Standard TradingView embed: drawings and indicators in the widget are not saved to T-IOS" ${window.TIOSChartAnalysis?'disabled':''}>TradingView</button>
-              <button type="button" class="btn small" data-analysis-engine="native" aria-pressed="false" title="Private T-IOS chart: automatically saves supported drawings and SMA/EMA indicators across refresh and sign-out" disabled>Saved analysis</button>
-              <span data-analysis-status role="status">${window.TIOSChartAnalysis?'Loading saved analysis…':'Native analysis unavailable'}</span><button type="button" class="btn small" data-analysis-retry hidden>Retry save</button>
-            </div>
             <div class="charts-widget-status" role="status" aria-live="polite" hidden></div>
             <div class="charts-widget"></div>
           </section>`}
@@ -564,7 +497,7 @@
               <button class="btn charts-welcome-start" type="button" data-charts-action="sign-in-charts">Sign in to Charts</button>
               <button class="btn primary charts-welcome-start" type="button" data-charts-action="create-charts-account">Create Charts account</button>
             </div>`}
-            <p class="charts-welcome-disclosure">This is your T-IOS Charts account, not a personal TradingView sign-in. Choose Saved analysis after setup to auto-save native drawings and indicators. Work drawn inside embedded TradingView widgets cannot be saved or imported into T-IOS.</p>
+            <p class="charts-welcome-disclosure">This is your T-IOS Charts account. TradingView widgets use public charts and do not sign you in to your personal TradingView account. Indicator and drawing persistence is planned for the native workspace.</p>
             <p class="charts-welcome-error" data-charts-onboarding-error role="alert" ${accountError?'':'hidden'}>${escape(accountError)}</p>
           </section>
         </div>`;
@@ -703,7 +636,7 @@
           <div class="charts-panel-settings"></div>
           <div class="charts-section-title">Preferences</div>
           <div class="charts-save"><button type="button" class="btn primary" data-charts-action="save">Save preferences</button><span data-charts-status role="status" aria-live="polite"></span><button type="button" class="btn small" data-charts-action="reload" hidden>Reload saved preferences</button></div>
-          <p class="charts-help">Saved analysis mode automatically saves your drawings and SMA / EMA indicators to your Charts account. It currently supports the two Deriv V75 indices with public candles. TradingView embed drawings stay in that widget session and cannot be imported. Market data availability and delays depend on the instrument.</p>
+          <p class="charts-help">Save defaults with these controls. Changes inside TradingView stay in this chart session. Market data availability and delays depend on the instrument.</p>
               </div>
               <div class="charts-instruments" id="chartsInstruments" data-charts-instruments aria-label="Record instrument responses" hidden></div>
             </div>
@@ -727,7 +660,6 @@
       host.querySelectorAll('.charts-grid [data-chart-id]').forEach((card,index)=>relocateControls(card,index));
       host.querySelector('.charts-panel').inert=controlsCollapsed;
       changed();refreshWidgets();
-      ensureAnalysis();
       renderPublicQuote();
       verification.setControlsVisible(!controlsCollapsed&&sidebarMode==='settings');
       verification.mount(host.querySelector('.charts-toolbar'));
@@ -808,17 +740,6 @@
       }
     });
     host.addEventListener('click',event=>{
-      const engine=event.target.closest('[data-analysis-engine]');
-      if(engine&&accountStep==='ready'&&analysisStore?.snapshot().ready){
-        const chart=activeCharts().find(c=>c.id===engine.closest('[data-chart-id]')?.dataset.chartId);
-        if(chart){
-          const paneId=analysisPane(chart),existing=analysisStore.snapshot().content.panes[paneId],configured=P.derivBySymbol(chart.symbol);
-          const value=existing?{engine:engine.dataset.analysisEngine}:{engine:engine.dataset.analysisEngine,market:configured&&!configured.preferred?'v75':'v75_1s',interval:window.TIOSChartAnalysis.intervals.includes(chart.interval)?chart.interval:'60'};
-          try{analysisStore.change({type:'settings',pane:paneId,value});}catch(error){cardMessage(engine.closest('[data-chart-id]'),error.message);}
-        }
-        return;
-      }
-      if(event.target.closest('[data-analysis-retry]')){if(analysisStore?.snapshot().ready)analysisStore.flush();else analysisStore?.load();return;}
       const firstLayout=event.target.closest('[data-charts-onboarding-layout]');
       if(firstLayout&&accountStep==='layout'&&!firstRunSaving){
         firstRunLayout=firstLayout.dataset.chartsOnboardingLayout;
@@ -852,23 +773,17 @@
       if(action==='reload'&&!saving){instrumentLoadEpoch++;instrumentWorkspace?.unmount();if(quoteActive())stopPublicQuote('Paused while chart preferences reload. Press Start when they are loaded.');closeExpanded(false);dispose();load()}
     });
     document.addEventListener('visibilitychange',()=>{
-      if(document.hidden)analysisStore?.flush();
       if(document.hidden&&quoteActive())stopPublicQuote('Paused while T-IOS was in the background. Press Start to reconnect.');
       renderPublicQuote();
     });
     window.addEventListener('pagehide',()=>{
-      analysisStore?.flush();
       stopPublicQuote('Page left. Press Start to reconnect.');
       if(quoteRetryTimer!==null){clearTimeout(quoteRetryTimer);quoteRetryTimer=null;}
     });
     window.addEventListener('pageshow',renderPublicQuote);
-    window.addEventListener('beforeunload',event=>{
-      const state=analysisStore?.snapshot();
-      if(state?.pending&&!state.localDurable){event.preventDefault();event.returnValue='';}
-    });
     window.addEventListener('message',event=>{
       if(event.origin!==location.origin||event.data?.type!=='tios:chart-widget-state')return;
-      const item=[...instances.values()].find(item=>item.instance===event.data.instance&&item.frame?.contentWindow===event.source);
+      const item=[...instances.values()].find(item=>item.instance===event.data.instance&&item.frame.contentWindow===event.source);
       if(!item)return;
       if(event.data.state==='loaded')cardMessage(item.card,'');
       else if(['slow','error'].includes(event.data.state))cardMessage(item.card,event.data.state==='slow'?'If the chart stays blank, check your connection or retry.':'TradingView could not be loaded. Check your connection.',true);
@@ -897,8 +812,8 @@
         if(controlsCollapsed)toggleControls();
         verification.openTrade(trade);
       },
-      hide(){capture();analysisStore?.flush();nativeLoadEpoch++;instrumentLoadEpoch++;instrumentWorkspace?.unmount();verification.hide();visible=false;stopPublicQuote('Paused while Charts is closed. Press Start to reconnect.');closeExpanded(false);dispose();nativeFeed?.dispose();nativeFeed=null;host.replaceChildren()},
-      reset(){api.hide();analysisStore?.dispose();analysisStore=null;instrumentWorkspace?.reset();instrumentWorkspace=null;sidebarMode='settings';chartProfile=null;accountStep='entry';accountBusy=false;accountError='';firstRunLayout='single';firstRunSaving=false;quoteFeed?.dispose();quoteFeed=null;quoteState=null;quoteShown=false;quoteMarket='v75_1s';quoteMarketChosen=false;verification.reset();pendingEvidenceTrade=null;generation++;userId=null;prefs=null;loaded=false;loading=false;saving=false;revision=null;saved=null}
+      hide(){capture();instrumentLoadEpoch++;instrumentWorkspace?.unmount();verification.hide();visible=false;stopPublicQuote('Paused while Charts is closed. Press Start to reconnect.');closeExpanded(false);dispose();host.replaceChildren()},
+      reset(){api.hide();instrumentWorkspace?.reset();instrumentWorkspace=null;sidebarMode='settings';chartProfile=null;accountStep='entry';accountBusy=false;accountError='';firstRunLayout='single';firstRunSaving=false;quoteFeed?.dispose();quoteFeed=null;quoteState=null;quoteShown=false;quoteMarket='v75_1s';quoteMarketChosen=false;verification.reset();pendingEvidenceTrade=null;generation++;userId=null;prefs=null;loaded=false;loading=false;saving=false;revision=null;saved=null}
     };
     return api;
   }};
