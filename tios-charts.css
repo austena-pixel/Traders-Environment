@@ -131,6 +131,16 @@ body.charts-workspace .main{padding:8px 10px}
 #chartsWorkspace .charts-deriv-default{width:100%;white-space:normal;text-align:center;line-height:1.35;min-height:36px}
 #chartsWorkspace .charts-deriv-note{font-size:10px;line-height:1.45;color:var(--muted);margin:0}
 
+/* Optional public quote is separate from the embedded chart's prices. */
+#chartsWorkspace .charts-public-quote{flex-wrap:wrap;gap:8px;padding:8px;border:1px solid var(--line);border-radius:9px;background:var(--panel);margin-bottom:6px}
+#chartsWorkspace .charts-public-value{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;flex:1;min-width:180px}
+#chartsWorkspace .charts-public-value strong{font-size:11px}
+#chartsWorkspace .charts-public-value output{font-size:23px;font-weight:700;font-variant-numeric:tabular-nums}
+#chartsWorkspace .charts-public-value span{font-size:10px;color:var(--muted)}
+#chartsWorkspace [data-charts-public-identity]{flex-basis:100%}
+#chartsWorkspace .charts-public-market{width:190px;max-width:100%;flex:none}
+#chartsWorkspace .charts-public-quote .charts-public-note{flex-basis:100%;font-size:10px;line-height:1.4;color:var(--muted);margin:0;overflow-wrap:anywhere}
+
 /* Evidence controls share the independently scrolling settings rail. */
 #chartsWorkspace .market-body{padding:10px;display:flex;flex-direction:column;gap:9px;min-width:0}
 #chartsWorkspace .market-body label{display:flex;flex-direction:column;font-size:11px;color:var(--muted);gap:4px;min-width:0}
