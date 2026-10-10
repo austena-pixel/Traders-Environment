@@ -5946,6 +5946,45 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
   font-size:15px;
   font-weight:900;
 }
+
+/* Collapsed desktop sidebar: compact quick-access icon rail */
+.sidebar-icon-rail{display:none}
+.tios-rail-menu[hidden]{display:none!important}
+@media(min-width:861px){
+ .shell.sidebar-collapsed{grid-template-columns:70px minmax(0,1fr)}
+ .shell.sidebar-collapsed .sidebar{visibility:hidden}
+ .shell.sidebar-collapsed::before{width:70px;background:linear-gradient(180deg,#0c0a13,#080a12);border-right-color:#33243e}
+ .shell.sidebar-collapsed .sidebar-reopen-toggle{left:13px;top:16px;width:44px;height:44px;color:#e7ccff;border-color:#653782;background:linear-gradient(180deg,#301c3d,#170e22)}
+ .shell.sidebar-collapsed .sidebar-icon-rail{
+   display:flex;flex-direction:column;align-items:center;gap:5px;
+   position:fixed;left:0;top:74px;bottom:0;width:70px;padding:5px 8px 10px;
+   overflow-y:auto;scrollbar-width:none;z-index:57;overscroll-behavior:contain
+ }
+ .sidebar-icon-rail::-webkit-scrollbar{display:none}
+ .sidebar-icon-rail [hidden]{display:none!important}
+ .sidebar-icon-rail .rail-brand{width:100%;display:grid;justify-items:center;gap:4px;padding:4px 0 10px;margin-bottom:8px;border-bottom:1px solid #38243f;color:#dcc4e9;font-size:10px;font-weight:800}
+ .sidebar-icon-rail .rail-brand svg{width:34px;height:34px;padding:6px;border:1px solid #71408a;border-radius:11px;background:#291738}
+ .sidebar-icon-rail .rail-link{
+    display:grid;place-items:center;width:44px;height:44px;min-height:44px;flex:0 0 44px;margin:0;padding:0;
+    border-radius:12px;border:1px solid transparent;background:transparent;color:#c2b3cf;cursor:pointer;
+    transition:color .16s,background .16s,border-color .16s
+ }
+ .sidebar-icon-rail .rail-link:hover,.sidebar-icon-rail .rail-link:focus-visible{color:white;background:#2b1a3d;border-color:#70488d;outline:none}
+ .sidebar-icon-rail .rail-link.active,.sidebar-icon-rail .rail-link[aria-expanded=true]{color:#fff;background:linear-gradient(140deg,#542d70,#251630);border-color:#ac67d5}
+ .sidebar-icon-rail .rail-link svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+ .sidebar-icon-rail .rail-separator{width:32px;height:1px;min-height:1px;flex:0 0 1px;margin:7px 0;background:#422e4f}
+ .sidebar-icon-rail .rail-spacer{flex:1 0 10px}
+ .sidebar-icon-rail .rail-footer{width:100%;display:grid;justify-items:center;gap:5px;padding-top:9px;border-top:1px solid #38243f}
+ .tios-rail-menu{
+    display:grid;gap:4px;position:fixed;z-index:75;left:77px;top:230px;width:235px;max-width:calc(100vw - 86px);
+    padding:10px;border:1px solid #7b4a98;border-radius:14px;background:#160f1e;box-shadow:0 18px 40px rgba(0,0,0,.55)
+ }
+ .tios-rail-menu strong{padding:5px 8px 7px;font-size:11px;color:#d5badd}
+ .tios-rail-menu .nav-btn{width:100%;font-size:12px;padding:10px 9px;color:#e2d3eb}
+ .tios-rail-menu .nav-btn:hover,.tios-rail-menu .nav-btn.active{background:#32203f;border-color:#795096;color:#fff}
+}
+@media(max-width:860px){.sidebar-icon-rail,.tios-rail-menu{display:none!important}}
+
 </style>
 <style id="hios-product-brand-icons">
 /* Product marks use the same symbols and accents as the H-IOS sidebar. */
@@ -6107,6 +6146,31 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
       <a class="hios-back-link" href="index.html?view=home" title="Return to H·IOS family">← H·IOS Family</a>
 </div>
   </aside>
+
+
+  <nav class="sidebar-icon-rail" id="tiosSidebarIconRail" aria-label="Collapsed T-IOS navigation">
+    <div class="rail-brand" title="Trader Intelligence Operating System"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M5 17l5-6 4 3 5-8M15 6h4v4"/></svg><span>T·IOS</span></div>
+    <button class="rail-link" id="tiosRailAccountBtn" type="button" title="Trading accounts" aria-label="Trading accounts"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 9h18M7 13h4"/></svg></button>
+    <div class="rail-separator" aria-hidden="true"></div>
+    <button class="rail-link nav-btn" type="button" data-page="dashboard" aria-label="Dashboard" title="Dashboard"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v11h-6v-7H9v7H3z"/></svg></button>
+    <button class="rail-link nav-btn" type="button" data-page="charts" aria-label="Charts" title="Charts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M6 17v-6M11 17V5M16 17V9M21 17V4"/></svg></button>
+    <button class="rail-link" id="tiosRailTechnicalBtn" type="button" title="Technical Instruments" aria-label="Technical Instruments" aria-controls="tiosRailTechnicalMenu" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3v18M12 3v18M19 3v18M3 8h4M10 15h4M17 11h4"/></svg></button>
+    <button class="rail-link nav-btn" type="button" data-page="execution" aria-label="Execution Quality" title="Execution Quality"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m7 12 3 3 7-7"/></svg></button>
+    <button class="rail-link nav-btn" type="button" data-page="journal" aria-label="Journal Records" title="Journal Records"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM15 3v5h4M9 12h7M9 16h7"/></svg></button>
+    <button class="rail-link nav-btn" type="button" data-page="statistics" aria-label="Statistics" title="Statistics"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M6 17v-5M11 17V8M16 17V4M21 17v-9"/></svg></button>
+    <button class="rail-link nav-btn" type="button" data-page="settings" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M1 12h3M20 12h3M4 4l2 2M18 18l2 2M4 20l2-2M18 6l2-2"/></svg></button>
+    <div class="rail-spacer"></div>
+    <div class="rail-footer">
+      <a class="rail-link" id="tiosRailGios" href="g-ios.html" aria-label="Goals-IOS" title="Goals-IOS" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></a>
+      <a class="rail-link" href="index.html?view=home" aria-label="H-IOS family" title="H-IOS family"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v11H3zM9 21v-8h6v8"/></svg></a>
+    </div>
+  </nav>
+  <div class="tios-rail-menu" id="tiosRailTechnicalMenu" hidden role="group" aria-label="Technical Instruments">
+    <strong>Technical Instruments</strong>
+    <button class="nav-btn" type="button" data-page="playbook">Playbooks</button>
+    <button class="nav-btn" type="button" data-page="checklists">Rules</button>
+    <button class="nav-btn" type="button" data-page="reflections">Psychological Reflection</button>
+  </div>
 
   <button class="sidebar-reopen-toggle" id="desktopSidebarReopenBtn" type="button" aria-label="Open sidebar" title="Open sidebar">›</button>
 
@@ -9297,12 +9361,16 @@ function renderGiosDirectSwitch(){
   const links=JSON.parse(localStorage.getItem('hios_gios_product_focus_links_v1')||'{}');
   const tiosLink=links?.tios || Object.values(links||{}).find(item=>item?.productId==='tios');
   link.hidden=!tiosLink;
+  const railGios=$('#tiosRailGios');
+  if(railGios)railGios.hidden=!tiosLink;
   if(tiosLink?.area){
    const small=link.querySelector('small');
    if(small)small.textContent=`${tiosLink.area} goals · linked workspace`;
   }
  }catch(error){
   link.hidden=true;
+  const railGios=$('#tiosRailGios');
+  if(railGios)railGios.hidden=true;
  }
 }
 
@@ -9404,6 +9472,8 @@ function navigate(page){
     btn.classList.toggle('active', btn.dataset.page===page);
   });
   syncTiosNavGroups(page);
+  syncTiosIconRailActive(page);
+  closeTiosRailTechnicalMenu();
 
   $$('.page').forEach(p=>{
     p.classList.toggle('active', p.id===`page-${page}`);
@@ -9494,6 +9564,7 @@ function setTiosDesktopSidebarCollapsed(collapsed){
   if(!shell)return;
 
   shell.classList.toggle('sidebar-collapsed',Boolean(collapsed));
+  if(!collapsed)closeTiosRailTechnicalMenu();
   localStorage.setItem(TIOS_DESKTOP_SIDEBAR_KEY,collapsed?'1':'0');
 
   const collapseBtn=$('#desktopSidebarCollapseBtn');
@@ -9544,6 +9615,36 @@ $('#desktopSidebarReopenBtn')?.addEventListener(
 );
 
 initializeTiosDesktopSidebar();
+
+/* Sidebar quick-access rail (desktop only). */
+function closeTiosRailTechnicalMenu(){
+ const menu=$('#tiosRailTechnicalMenu'),trigger=$('#tiosRailTechnicalBtn');
+ if(menu)menu.hidden=true;
+ if(trigger)trigger.setAttribute('aria-expanded','false');
+}
+function syncTiosIconRailActive(page){
+ $('#tiosRailTechnicalBtn')?.classList.toggle('active',['playbook','checklists','reflections'].includes(page));
+}
+$('#tiosRailTechnicalBtn')?.addEventListener('click',()=>{
+ const menu=$('#tiosRailTechnicalMenu'),trigger=$('#tiosRailTechnicalBtn');
+ if(!menu||!trigger)return;
+ menu.hidden=!menu.hidden;
+ trigger.setAttribute('aria-expanded',menu.hidden?'false':'true');
+});
+$('#tiosRailAccountBtn')?.addEventListener('click',()=>{
+ setTiosDesktopSidebarCollapsed(false);
+ $('#activeAccountSelect')?.focus();
+});
+document.addEventListener('pointerdown',event=>{
+ if(!event.target.closest('#tiosRailTechnicalMenu, #tiosRailTechnicalBtn'))closeTiosRailTechnicalMenu();
+});
+document.addEventListener('keydown',event=>{
+ if(event.key==='Escape')closeTiosRailTechnicalMenu();
+});
+$('#tiosRailTechnicalMenu')?.addEventListener('click',event=>{
+ if(event.target.closest('[data-page]'))closeTiosRailTechnicalMenu();
+});
+syncTiosIconRailActive(document.querySelector('.page.active')?.id?.replace('page-','')||'dashboard');
 
 /* =========================
    DASHBOARD CALCULATIONS
