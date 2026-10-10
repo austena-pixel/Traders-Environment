@@ -10,7 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <link rel="stylesheet" href="trade-evidence.css">
-<link rel="stylesheet" href="tios-capture.css?v=20261010-manual-capture">
+<link rel="stylesheet" href="tios-capture.css?v=20261011-playbook-evidence">
 <link rel="stylesheet" href="tios-charts.css?v=20261010-account-entry-restore">
 
 <style>
@@ -6878,6 +6878,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
         <div class="top-actions">
           <button class="btn" type="button" id="playbookDraftNewBtn">+ New Playbook</button>
           <button class="btn danger" type="button" id="playbookDraftDeleteTopBtn">Delete Playbook</button>
+          <button class="btn" type="button" id="playbookEvidenceRequirementsBtn">Evidence requirements</button>
           <button class="btn primary" type="button" id="playbookDraftSaveBtn">Save</button>
         </div>
       </header>
@@ -7743,7 +7744,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
 <script src="core/evidence-contract.js"></script>
 <script src="trade-evidence.js"></script>
-<script src="tios-capture.js?v=20261010-chart-crop"></script>
+<script src="tios-capture.js?v=20261011-playbook-evidence"></script>
 <script src="core/chart-workspace.js"></script>
 <script src="core/chart-feed-verification.js"></script>
 <script src="tios-market-verification.js"></script>
@@ -7824,7 +7825,8 @@ const tradeEvidence = window.TIOSTradeEvidence.create({
 });
 const chartCapture = window.TIOSCaptureEvidence.create({
   getClient:()=>db,getUser:()=>currentUser,
-  getTrades:()=>trades,getNumber:id=>journalTradeNumbers().get(String(id))
+  getTrades:()=>trades,getNumber:id=>journalTradeNumbers().get(String(id)),
+  getPlaybookDocuments:()=>playbookDocuments
 });
 window.TIOSChartCaptureController=chartCapture;
 const chartWorkspace = window.TIOSCharts.create({
@@ -15517,6 +15519,7 @@ function initPlaybookWorkspace(){
   });
   $('#playbookLibraryNewBtn')?.addEventListener('click',()=>createPlaybookDocument());
   $('#playbookDraftSaveBtn')?.addEventListener('click',()=>savePlaybookDocument());
+  $('#playbookEvidenceRequirementsBtn')?.addEventListener('click',()=>{const pb=currentPlaybookDocument();if(pb)chartCapture.editRequirements(pb);else showStatus('Create a Playbook first.');});
   $('#playbookDraftDuplicateBtn')?.addEventListener('click',duplicatePlaybookDocument);
   $('#playbookDraftDeleteBtn')?.addEventListener('click',deletePlaybookDocument);
   $('#playbookDraftDeleteTopBtn')?.addEventListener('click',deletePlaybookDocument);
