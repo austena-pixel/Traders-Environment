@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>T-IOS · Deriv public feed check</title>
+  <style>
+    :root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#0c0d14;color:#edf0fa}
+    *{box-sizing:border-box}body{margin:0;padding:28px 18px}main{max-width:1000px;margin:auto}
+    a{color:#c6b7ff}header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+    h1{font-size:clamp(24px,4vw,34px);letter-spacing:-.04em;margin:12px 0}h2{font-size:18px;margin:0 0 16px}
+    p{line-height:1.6;color:#b9bfd4;margin:10px 0}.eyebrow{font-size:12px;letter-spacing:.14em;color:#c6b7ff}
+    .panel{background:#151722;border:1px solid #303449;border-radius:16px;padding:22px;margin-top:20px}
+    .controls{display:flex;align-items:end;gap:12px;flex-wrap:wrap}label{display:grid;gap:8px;font-size:13px;flex:1;min-width:240px}
+    select,button{font:inherit;border-radius:9px;padding:11px 14px;border:1px solid #494d66;background:#202333;color:#edf0fa}
+    button{cursor:pointer;background:#7654d9;border-color:#9575ed;font-weight:600}button.secondary{background:#202333;border-color:#494d66}
+    button:disabled{opacity:.5;cursor:default}button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #c6b7ff;outline-offset:3px}
+    .status{display:flex;align-items:center;gap:10px;margin-top:20px}.badge{font-size:13px;border:1px solid #525870;border-radius:20px;padding:5px 10px;white-space:nowrap}
+    .badge[data-status="streaming"]{border-color:#489c7b;color:#7ae2ae}.badge[data-status="error"],.badge[data-status="rate_limit"],.badge[data-status="stale"]{border-color:#ad8248;color:#f2c779}
+    [data-feed-message]{min-height:26px}.price{font-size:clamp(32px,7vw,54px);font-variant-numeric:tabular-nums;margin:12px 0;overflow-wrap:anywhere}
+    .muted{font-size:13px;color:#aab1c9}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 24px;margin-top:18px}
+    dl,dt,dd{margin:0}dt{font-size:12px;color:#aab1c9;margin-bottom:7px}dd{font-size:15px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+    .table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:12px 10px;border-bottom:1px solid #303449;white-space:nowrap;font-variant-numeric:tabular-nums}th{color:#aab1c9;font-weight:500}
+    .notice{border-left:3px solid #9470ee;padding-left:14px}.empty{text-align:center;color:#aab1c9;padding:28px}
+    @media(max-width:600px){body{padding:18px 12px}.panel{padding:18px}.grid{grid-template-columns:1fr}.controls button{flex:1}.status{align-items:start}}
+  </style>
+</head>
+<body>
+<main>
+  <header><div><div class="eyebrow">T-IOS · READ-ONLY DIAGNOSTIC</div><h1>Deriv public feed check</h1></div><a href="t-ios.html">Return to T-IOS</a></header>
+  <p>Test the direct public tick stream alongside your TradingView chart. This page connects only when you press Connect and shows prices only after actual ticks arrive.</p>
+  <p class="notice">Source: Deriv public Options/spot feed. These prices are <strong>unverified against your MT5 account and TradingView</strong>. This test does not record trade evidence or change your charts, journals or execution scores.</p>
+  <section class="panel" aria-label="Public feed connection">
+    <div class="controls">
+      <label>Exact market<select data-feed-market><option value="v75_1s">Volatility 75 (1s) Index</option><option value="v75">Volatility 75 Index</option></select></label>
+      <button type="button" data-feed-connect>Connect public feed</button>
+      <button type="button" class="secondary" data-feed-stop disabled>Stop</button>
+    </div>
+    <div class="status" role="status" aria-live="polite"><span class="badge" data-feed-status data-status="idle">Not connected</span><span data-feed-retry></span></div>
+    <p data-feed-message>Choose a market and connect to the public feed.</p>
+    <div class="muted">Last observed public quote <span data-feed-live>· no data</span></div>
+    <div class="price" data-feed-price>—</div>
+    <div class="grid">
+      <dl><dt>Market / catalogue identity</dt><dd data-feed-symbol>Not checked</dd></dl>
+      <dl><dt>TradingView symbol to select for comparison</dt><dd data-feed-tv>DERIV:VOLATILITY_75_1S_INDEX</dd></dl>
+      <dl><dt>Tick source timestamp (UTC)</dt><dd data-feed-source-time>—</dd></dl>
+      <dl><dt>Received by this browser (UTC)</dt><dd data-feed-received-time>—</dd></dl>
+      <dl><dt>Valid ticks / price changes in this connection</dt><dd data-feed-count>0 / 0</dd></dl>
+      <dl><dt>Latest / median arrival interval (recent 20 ticks)</dt><dd data-feed-gap>— / —</dd></dl>
+    </div>
+    <p class="muted">Arrival intervals measure the time between messages received by this browser. They are not measured network latency. Repeated prices can arrive in new ticks. Background tabs pause this diagnostic; press Connect when you return.</p>
+  </section>
+  <section class="panel" aria-label="Recent observed ticks"><h2>Recent observed ticks</h2><div class="table-wrap"><table><thead><tr><th>Source time (UTC)</th><th>Browser arrival (UTC)</th><th>Original quote</th><th>Arrival interval</th></tr></thead><tbody data-feed-history><tr><td colspan="4" class="empty">No ticks observed yet.</td></tr></tbody></table></div></section>
+  <p class="muted">Keep both views on the exact same market. Standard Volatility 75 and Volatility 75 (1s) are separate instruments. A matching public symbol name does not verify MT5 historical prices.</p>
+  <p class="muted"><a href="https://developers.deriv.com/docs/options/ws-public/" target="_blank" rel="noopener noreferrer">Official WebSocket documentation</a> · No account credentials, trade requests or database writes are used.</p>
+</main>
+<script src="core/deriv-public-ticks.js"></script>
+<script src="deriv-feed-check.js"></script>
+</body>
+</html>

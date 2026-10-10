@@ -52,6 +52,20 @@ The 10 October recording shows fewer visible price changes in the embedded chart
 
 This restores ordinary chart viewing without the new verifier's background requests. It does not establish that TradingView's tick delivery equals the Deriv chart or MT5. The exact cause and duration of the observed price delay remain unverified; no unsupported widget refresh setting or broker-price adjustment is applied. Live latency must be checked in the user's browser after deployment.
 
+### Matched widget test and direct-feed diagnostic
+
+The owner reported that the performance change did not make chart prices update faster. The same official widget was then tested in the standalone `tradingview-chart.html` wrapper alongside T-IOS, configured to Volatility 75 (1s), M5. The owner reported that both updated at the same time. This comparison did not reveal extra delay from the T-IOS page. It points toward the widget/feed path, but does not establish a measured delivery delay or its cause. The widget configuration is also unchanged from the earliest Charts implementation.
+
+`deriv-feed-check.html` is a separate read-only diagnostic, available without account credentials. It uses the [documented public Options WebSocket](https://developers.deriv.com/docs/options/ws-public/), the [current active-symbol catalogue fields](https://developers.deriv.com/comparison/active-symbols/), and the [documented tick subscription](https://developers.deriv.com/comparison/ticks/). It starts only on a user's Connect click and resolves the exact selected display name before subscribing. The catalogue's actual API identifier is displayed; no assumed API symbol is substituted. The two Volatility 75 variants remain separate.
+
+The page shows original public quotes, source UTC timestamps, browser arrival UTC timestamps, tick count, price-change count, recent arrival intervals and the last 20 observations. Arrival intervals are not network latency measurements. Its public Options/spot prices are explicitly **unverified against MT5 and TradingView**, and are never saved as trade evidence. It contains no trade commands, credentials, database access, automatic chart replacement or changes to execution scoring.
+
+Invalid or unrelated ticks fail closed. Timeouts, stale reception, disconnects and provider errors are visible. Rate limits close the socket and impose a 60-second manual reconnect cooldown; there is no automatic retry loop. Backgrounding or leaving the page stops the socket. Changing markets clears the prior observations. The existing T-IOS workspace is unchanged by this diagnostic.
+
+Two direct public API probes from the development environment returned `RateLimit` (one catalogue request and one tick subscription), so **live public tick delivery remains unverified**. No prices were fabricated to fill that gap. The browser diagnostic exists to test the actual user-side connection. View it next to a chart on the exact same market, click **Connect public feed**, and inspect the status and arrival intervals. A faster direct stream has not been established and the original chart-speed complaint is not declared fixed.
+
+Verification for this addition: **103 Node tests passed** (95 existing plus eight public-feed tests), **7 DOM integration tests passed** (five existing plus two diagnostic tests), and JavaScript syntax/whitespace checks passed. Tests use an explicitly synthetic socket and clock in test fixtures only. They cover strict catalogue identity, read-only traffic, unchanged raw prices, separate source/arrival timestamps, repeated prices, rejected duplicates/out-of-order/foreign/invalid ticks, timeouts, stale recovery, bounded history, timer disposal, rate-limit cooldown, hidden-page pause, market switching and safe rendering of provider error text. Live browser/visual and feed-speed verification remain unavailable in this environment.
+
 ## Using it
 
 1. Open T-IOS **Charts**, show controls and expand **Market Data Verification**. Select the linked MT5 account, instrument, exact symbol, timeframe and completed candle opening in UTC.
@@ -66,6 +80,6 @@ This restores ordinary chart viewing without the new verifier's background reque
 `node --test tests/*.test.cjs tests/mt5-market-data.test.mjs`
 
 DOM QA requires `jsdom@26.1.0` in the local test environment:
-`NODE_PATH=/path/to/test/node_modules node --test tests/market-feed-ui.dom.cjs`
+`NODE_PATH=/path/to/test/node_modules node --test tests/market-feed-ui.dom.cjs tests/deriv-feed-check.dom.cjs`
 
 Run `tests/market-feed-verification.sql` with the authorised project SQL connection. It requires two existing users marked `tios_charts_qa`, uses only temporary transaction data, and ends with rollback.
