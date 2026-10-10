@@ -23,15 +23,39 @@ window.TIOSCaptureEvidence={
   function tradeOptions(selected){return '<option value="">Select trade…</option>'+trades().map(t=>'<option value="'+esc(t.id)+'" '+(selected===t.id?'selected':'')+'>Trade '+esc(getNumber(t.id)||'—')+' · '+esc(t.instrument||'')+' · '+esc(t.trade_date||'')+'</option>').join('')}
   async function screenshot(){
     if(!navigator.mediaDevices?.getDisplayMedia)throw Error('Tab capture is unavailable here. Choose Upload screenshot.');
+    const chart=[...document.querySelectorAll('#chartsWorkspace [data-chart-id]')].find(card=>card.dataset.chartId===scope?.chartId);
+    const widget=chart?.querySelector('.charts-widget');
+    const r=widget?.getBoundingClientRect();
+    if(!r||r.width<80||r.height<80)throw Error('Open a visible chart before taking its screenshot.');
+    // Record the position before the browser picker, then remove this modal from
+    // the shared tab BEFORE reading the frame; otherwise the modal hides the chart.
+    const left=Math.max(0,r.left),top=Math.max(0,r.top),right=Math.min(window.innerWidth,r.right),bottom=Math.min(window.innerHeight,r.bottom);
+    if(right-left<80||bottom-top<80)throw Error('Scroll the chart fully into view and try again.');
+    const ticket=epoch;
     const stream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:false,preferCurrentTab:true});
     try{
-      const track=stream.getVideoTracks()[0],video=document.createElement('video');video.srcObject=stream;video.muted=true;
-      await video.play();if(!video.videoWidth)await new Promise(resolve=>setTimeout(resolve,350));
-      if(!video.videoWidth)throw Error('The selected tab did not supply a video frame.');
-      const canvas=document.createElement('canvas');canvas.width=video.videoWidth;canvas.height=video.videoHeight;
-      canvas.getContext('2d').drawImage(video,0,0);
-      return await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(new File([b],'tios-capture.png',{type:'image/png'})):reject(Error('Screenshot capture failed.')),'image/png'));
-    }finally{stream.getTracks().forEach(t=>t.stop())}
+      const track=stream.getVideoTracks()[0];
+      if(track.getSettings()?.displaySurface&&track.getSettings().displaySurface!=='browser')
+        throw Error('Choose this T-IOS browser tab, not your entire screen or another window.');
+      const video=document.createElement('video');video.srcObject=stream;video.muted=true;
+      await video.play();
+      root.hidden=true;
+      // Browser tab capture updates asynchronously after the overlay disappears.
+      await new Promise(resolve=>setTimeout(resolve,450));
+      if(ticket!==epoch||!scope)throw Error('Capture was cancelled.');
+      if(!video.videoWidth||!video.videoHeight)throw Error('The selected tab did not provide a video frame.');
+      const sx=video.videoWidth/window.innerWidth,sy=video.videoHeight/window.innerHeight;
+      const x=Math.max(0,Math.round(left*sx)),y=Math.max(0,Math.round(top*sy));
+      const w=Math.min(video.videoWidth-x,Math.round((right-left)*sx));
+      const h=Math.min(video.videoHeight-y,Math.round((bottom-top)*sy));
+      if(w<80||h<80||w*h>60000000)throw Error('The captured chart dimensions are invalid.');
+      const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(video,x,y,w,h,0,0,w,h);
+      return await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(new File([b],'tios-chart-capture.png',{type:'image/png'})):reject(Error('Screenshot capture failed.')),'image/png'));
+    }finally{
+      stream.getTracks().forEach(t=>t.stop());
+      if(ticket===epoch)root.hidden=false;
+    }
   }
   function present(file,method){
     if(!file||!/^image\/(png|jpeg|webp)$/.test(file.type)||file.size>12582912){status('Choose PNG, JPG or WebP under 12 MB.',true);return}
@@ -47,7 +71,7 @@ window.TIOSCaptureEvidence={
   }
   function open(chart,tradeId){
     try{session()}catch(err){alert(err.message);return}
-    scope={chartId:chart.id,symbol:chart.symbol,timeframe:chart.interval,tradeId};
+    epoch++;scope={chartId:chart.id,symbol:chart.symbol,timeframe:chart.interval,tradeId};
     pane('Capture · '+chart.symbol,'<p>Choose how to capture this chart. Tab sharing requires browser permission. Select this T-IOS tab, then confirm the preview before saving.</p><div class="tios-capture-buttons"><button class="btn primary" type="button" data-capture-tab>Capture visible tab</button><button class="btn" type="button" data-capture-upload>Upload screenshot</button></div><input type="file" accept="image/png,image/jpeg,image/webp" data-capture-file hidden>');
   }
   async function save(){
