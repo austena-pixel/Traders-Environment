@@ -353,3 +353,60 @@ body.charts-workspace .main{padding:8px 10px}
 @media(max-width:860px){
   #chartsWorkspace .charts-panel-resizer{display:none!important}
 }
+
+
+/* Charts Instruments: compact one-row save and reset controls. */
+#chartsWorkspace .charts-instruments .execution-map-footer{
+  position:sticky;
+  bottom:0;
+  z-index:3;
+  display:block;
+  gap:0;
+  padding:7px 5px 6px;
+  border-top:1px solid rgba(173,113,207,.22);
+  background:var(--panel,#120b19);
+}
+/* Keep the live save/error announcements accessible, but remove the visible
+   explanatory line so it takes no vertical room in the Instruments panel. */
+#chartsWorkspace .charts-instruments #executionMapReflectionSaveState{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  clip-path:inset(50%)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+#chartsWorkspace .charts-instruments .execution-map-footer-actions{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:6px;
+  width:100%;
+  align-items:stretch;
+}
+/* If Save isn't available yet, Reset can still fill the footer naturally. */
+#chartsWorkspace .charts-instruments .execution-map-footer-actions:has(#executionMapSaveReflectionsBtn[hidden]){
+  grid-template-columns:minmax(0,1fr);
+}
+#chartsWorkspace .charts-instruments .execution-map-footer-actions .btn{
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  min-height:34px;
+  height:auto;
+  margin:0;
+  padding:7px 6px;
+  border-radius:8px;
+  font-size:10px;
+  font-weight:650;
+  line-height:1.25;
+  white-space:normal;
+  overflow-wrap:break-word;
+  text-align:center;
+}
+#chartsWorkspace .charts-instruments .execution-map-footer-actions .btn.primary{
+  font-weight:750;
+}
