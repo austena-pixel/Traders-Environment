@@ -1,0 +1,18 @@
+/* Manual chart screenshots: overlay never consumes the chart viewport. */
+.tios-capture-overlay[hidden]{display:none!important}
+.tios-capture-overlay{position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.78);display:grid;place-items:center;padding:14px}
+.tios-capture-dialog{box-sizing:border-box;width:min(560px,100%);max-height:95vh;overflow:auto;padding:16px;background:var(--panel,#180f1e);color:var(--text,#fff);border:1px solid var(--line2,#67436b);border-radius:12px;display:flex;flex-direction:column;gap:12px}
+.tios-capture-dialog header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tios-capture-dialog header strong{font-size:15px}
+.tios-capture-dialog header button{font-size:22px;background:transparent;color:inherit;border:0;cursor:pointer}
+.tios-capture-dialog label{font-size:12px;display:flex;flex-direction:column;gap:4px}
+.tios-capture-dialog :is(select,input,textarea){box-sizing:border-box;width:100%;min-height:32px;background:var(--panel2,#25152a);border:1px solid var(--line2,#67436b);border-radius:6px;padding:7px;color:inherit}
+.tios-capture-dialog footer,.tios-capture-buttons{display:flex;flex-wrap:wrap;gap:8px}
+.tios-capture-dialog .tios-capture-preview{display:block;width:100%;max-height:240px;object-fit:contain;border:1px solid var(--line,#453148);border-radius:8px}
+.tios-capture-status{font-size:11px;color:var(--muted,#d0bdcf);margin:0}
+.tios-capture-status.error{color:#ffaaa7}
+.tios-capture-item{display:flex;flex-direction:column;gap:7px;border-bottom:1px solid var(--line,#453148);padding:8px 0}
+.tios-capture-item img{max-width:100%;max-height:240px;object-fit:contain;align-self:flex-start}
+.tios-capture-item small{color:var(--muted,#b3a9b9)}
+.tios-capture-item .btn{align-self:flex-start}
+#chartsWorkspace .charts-card-actions [data-charts-action="capture"]{white-space:nowrap}
