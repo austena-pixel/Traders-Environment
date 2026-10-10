@@ -5928,6 +5928,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 </style>
 <link rel="stylesheet" href="tios-dashboard.css">
 <link rel="stylesheet" href="technical-instruments/ai-builder.css">
+<link rel="stylesheet" href="technical-instruments/period-rules.css">
 <link rel="stylesheet" href="hios-themes.css" data-hios-theme-sheet>
 <script src="hios-themes.js"></script>
 </head>
@@ -7122,18 +7123,35 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
       <div class="execution-map-layout">
         <aside class="panel execution-map-context">
-          <label class="execution-map-control">
+          <div class="execution-period-context" id="executionMapPeriodContext" hidden>
+            <label><span id="executionMapPeriodDateLabel">Review date</span><input type="date" id="executionMapPeriodDate" aria-label="Period to review"></label>
+            <div class="execution-period-session" id="executionMapSessionFields" hidden>
+              <label id="executionMapSavedSessionControl" hidden><span>Saved sessions on this date</span><select id="executionMapSavedSession" aria-label="Saved session to review"></select></label>
+              <label><span>Session name</span><input type="text" id="executionMapSessionName" maxlength="80" placeholder="e.g. Morning or London"></label>
+              <div class="execution-period-times">
+                <label><span>From</span><input type="time" id="executionMapSessionStart" aria-label="Session start time"></label>
+                <label><span>Until</span><input type="time" id="executionMapSessionEnd" aria-label="Session end time"></label>
+              </div>
+              <small id="executionMapSessionTimeHelp">Session times use this device’s time zone.</small>
+            </div>
+            <small id="executionMapPeriodHelp">Review the whole period’s behaviour.</small>
+          </div>
+          <label class="execution-map-control" id="executionMapTradeControl">
             <span>Trades</span>
             <select id="executionMapTradeSelect" aria-label="Trade to review" size="4"></select>
           </label>
           <div class="execution-map-context-details">
           <div class="execution-map-context-head">
-            <span>TRADE CONTEXT</span>
+            <span id="executionMapContextLabel">TRADE CONTEXT</span>
             <strong id="executionMapTradeTitle">No trade selected</strong>
             <small id="executionMapTradeMeta">Choose a trade to place the Playbook around a real trading record.</small>
           </div>
 
-          <div class="execution-map-context-grid">
+          <div class="execution-period-stats" id="executionMapPeriodStats" hidden>
+            <div><span>Recorded trades</span><strong id="executionMapPeriodTradeCount">0</strong></div>
+            <div><span>Period P&amp;L</span><strong id="executionMapPeriodPnl">—</strong></div>
+          </div>
+          <div class="execution-map-context-grid" id="executionMapTradeContextGrid">
             <div>
               <span>Instrument</span>
               <strong id="executionMapInstrument">—</strong>
@@ -7152,7 +7170,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             </div>
           </div>
 
-          <div class="execution-map-principle">
+          <div class="execution-map-principle" id="executionMapPrinciple">
             <strong>Planned → Actual</strong>
             <span>The form on the right is generated from the selected Playbook. Checking an item means the planned condition was actually followed.</span>
           </div>
@@ -7190,6 +7208,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
                   <button class="execution-map-view-btn" type="button" id="executionMapPsychViewBtn">View</button>
                 </div>
               </div>
+              <div id="executionMapPeriodRulesControls"></div>
             </div>
           </div>
 
@@ -7614,6 +7633,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 <script src="hios-connection-layer.js"></script>
 <script src="technical-instruments/playbooks.js"></script>
 <script src="technical-instruments/checklists.js"></script>
+<script src="technical-instruments/period-rules.js"></script>
 <script src="technical-instruments/reflections.js"></script>
 <script src="technical-instruments/ai-builder-schema.js"></script>
 <script src="technical-instruments/condition-logic.js"></script>
@@ -11244,6 +11264,13 @@ function renderSelectedExecutionTrade(){
 
 let executionMappingPlaybookId=null;
 let executionMappingChecklistId=null;
+let executionMappingRuleScope='trade';
+const executionMappingPeriodRuleIds={};
+let executionMappingPeriodDate=null;
+let executionMappingSessionName='Main session';
+let executionMappingSessionStart='00:00';
+let executionMappingSessionEnd='23:59';
+let executionMappingSessionPreset=null;
 let executionMappingPsychId=null;
 let executionMappingActiveInstrument='playbook';
 let executionMappingReturnPage='playbook';
@@ -11254,6 +11281,7 @@ let executionMappingReflectionSaving=false;
 let executionMappingReflectionError=null;
 // Drafts only live in this tab; saved answers use the existing execution-review tables.
 const executionMappingReflectionDrafts=new Map();
+const executionMappingPeriodReviewCache=new Map();
 const TIOS_EXECUTION_TOP_SECTION_KEY='tios_execution_top_section_collapsed_v1';
 
 function setExecutionTopSectionCollapsed(collapsed,{persist=true}={}){
@@ -11294,6 +11322,7 @@ function executionMappingPlaybook(){
 }
 
 function executionMappingSecondary(kind){
+  if(kind==='checklist')return executionMappingRuleDocument();
   loadSecondaryDocuments(kind);
   const state=secondaryState(kind);
   const documents=state.docs.filter(item=>!item.templateDraft);
@@ -11306,6 +11335,37 @@ function executionMappingSecondary(kind){
   if(kind==='checklist')executionMappingChecklistId=selected?.id||null;
   else executionMappingPsychId=selected?.id||null;
   return selected;
+}
+
+function executionMappingRuleDocument(ruleScope=executionMappingRuleScope){
+  loadSecondaryDocuments('checklist');
+  const documents=secondaryState('checklist').docs.filter(doc=>!doc.templateDraft&&window.TIOSPeriodRules.normalizeScope(doc.ruleScope)===ruleScope);
+  const id=ruleScope==='trade'?executionMappingChecklistId:executionMappingPeriodRuleIds[ruleScope];
+  const current=currentSecondaryDocument('checklist');
+  const selected=documents.find(doc=>doc.id===id)||documents.find(doc=>doc.id===current?.id)||documents[0]||null;
+  if(ruleScope==='trade')executionMappingChecklistId=selected?.id||null;
+  else executionMappingPeriodRuleIds[ruleScope]=selected?.id||null;
+  return selected;
+}
+
+function executionMappingIsPeriod(){
+  return executionMappingActiveInstrument==='checklist'&&executionMappingRuleScope!=='trade';
+}
+
+function executionMappingSelectedPeriod(){
+  if(!executionMappingIsPeriod())return null;
+  if(executionMappingPeriodDate===null)executionMappingPeriodDate=executionMappingTrade()?.trade_date||localDateString(new Date());
+  if(executionMappingRuleScope==='session'&&executionMappingSessionPreset&&executionMappingSessionPreset.startDate===executionMappingPeriodDate)return executionMappingSessionPreset;
+  return window.TIOSPeriodRules.period(executionMappingRuleScope,{date:executionMappingPeriodDate,
+    sessionLabel:executionMappingSessionName,startTime:executionMappingSessionStart,endTime:executionMappingSessionEnd});
+}
+
+function executionMappingPeriodLabel(period){
+  if(!period)return 'Choose a valid period';
+  const label=window.TIOSPeriodRules.scopes[period.scope];
+  if(period.scope==='session')return period.sessionLabel+' · '+formatDate(period.startDate)+' · '+period.startTime+'–'+period.endTime+(period.endDate!==period.startDate?' (next day)':'');
+  if(period.scope==='monthly')return new Date(period.startDate+'T12:00:00').toLocaleDateString(undefined,{month:'long',year:'numeric'});
+  return label+' · '+formatDate(period.startDate)+(period.startDate!==period.endDate?' – '+formatDate(period.endDate):'');
 }
 
 function executionMappingTrade(){
@@ -11359,17 +11419,33 @@ function renderExecutionMappingControls(){
     ? savedPlaybooks.map(item=>`<option value="${escapeHtml(item.id)}" ${item.id===playbook?.id?'selected':''}>${escapeHtml(item.name||'Untitled Playbook')}</option>`).join('')
     : '<option value="">No Playbooks</option>';
 
-  const savedRules=secondaryState('checklist').docs.filter(item=>!item.templateDraft);
+  const savedRules=secondaryState('checklist').docs.filter(item=>!item.templateDraft&&window.TIOSPeriodRules.normalizeScope(item.ruleScope)==='trade');
+  const tradeRules=executionMappingRuleDocument('trade');
   checklistSelect.innerHTML=savedRules.length
-    ? savedRules.map(item=>`<option value="${escapeHtml(item.id)}" ${item.id===checklist?.id?'selected':''}>${escapeHtml(item.name||'Untitled Rules')}</option>`).join('')
+    ? savedRules.map(item=>`<option value="${escapeHtml(item.id)}" ${item.id===tradeRules?.id?'selected':''}>${escapeHtml(item.name||'Untitled Rules')}</option>`).join('')
     : '<option value="">No Rules</option>';
   const checklistLabel=checklistSelect.closest('.execution-map-control')?.querySelector(':scope > span');
-  if(checklistLabel)checklistLabel.textContent='Rules'+(savedRules.length?` (${savedRules.length})`:'');
+  if(checklistLabel)checklistLabel.textContent='Trade Rules'+(savedRules.length?` (${savedRules.length})`:'');
   const playbookView=$('#executionMapPlaybookViewBtn');
   if(playbookView)playbookView.disabled=!playbook;
 
   const checklistView=$('#executionMapChecklistViewBtn');
-  if(checklistView)checklistView.disabled=!checklist;
+  if(checklistView)checklistView.disabled=!tradeRules;
+
+  const periodControls=$('#executionMapPeriodRulesControls');
+  if(periodControls){
+    periodControls.innerHTML=['session','daily','weekly','monthly'].map(ruleScope=>{
+      const docs=secondaryState('checklist').docs.filter(doc=>!doc.templateDraft&&doc.ruleScope===ruleScope);
+      if(!docs.length)return '';
+      const selected=executionMappingRuleDocument(ruleScope),label=window.TIOSPeriodRules.scopes[ruleScope]+' Rules';
+      return `<div class="execution-map-control checklist period-rules" data-execution-map-instrument="checklist" data-execution-map-rule-scope="${ruleScope}">
+        <span>${label} (${docs.length})</span><div class="execution-map-control-row">
+          <select aria-label="${label} to review" data-execution-period-document="${ruleScope}">${docs.map(doc=>`<option value="${escapeHtml(doc.id)}" ${doc.id===selected?.id?'selected':''}>${escapeHtml(doc.name)}</option>`).join('')}</select>
+          <button type="button" class="execution-map-view-btn" data-execution-period-view="${ruleScope}">View</button>
+        </div></div>`;
+    }).join('');
+    periodControls.closest('.execution-map-controls')?.classList.toggle('has-period-rules',Boolean(periodControls.innerHTML));
+  }
 
   const savedReflections=secondaryState('psych').docs.filter(item=>!item.templateDraft);
   psychSelect.innerHTML=savedReflections.length
@@ -11381,11 +11457,32 @@ function renderExecutionMappingControls(){
   if(psychView)psychView.disabled=!psych;
 
   $$('[data-execution-map-instrument]').forEach(control=>{
-    control.classList.toggle('active',control.dataset.executionMapInstrument===executionMappingActiveInstrument);
+    control.classList.toggle('active',control.dataset.executionMapInstrument===executionMappingActiveInstrument&&
+      (executionMappingActiveInstrument!=='checklist'||(control.dataset.executionMapRuleScope||'trade')===executionMappingRuleScope));
   });
+  ensureExecutionMappingInstrumentVisible();
+}
+
+function ensureExecutionMappingInstrumentVisible(){
+  const row=$('.execution-map-controls'),focused=row?.querySelector('.execution-map-control.active');
+  if(row?.classList.contains('has-period-rules')&&focused){
+    const edge=row.getBoundingClientRect(),card=focused.getBoundingClientRect();
+    if(card.left<edge.left)row.scrollLeft-=edge.left-card.left;
+    else if(card.right>edge.right)row.scrollLeft+=card.right-edge.right;
+  }
 }
 
 function renderExecutionMappingTradeContext(){
+  const periodMode=executionMappingIsPeriod();
+  $('#executionMapPeriodContext').hidden=!periodMode;
+  $('#executionMapTradeControl').hidden=periodMode;
+  $('#executionMapTradeContextGrid').hidden=periodMode;
+  $('#executionMapPeriodStats').hidden=!periodMode;
+  $('#executionMapContextLabel').textContent=periodMode?window.TIOSPeriodRules.scopes[executionMappingRuleScope].toUpperCase()+' BEHAVIOUR':'TRADE CONTEXT';
+  const principle=$('#executionMapPrinciple');
+  principle.querySelector('strong').textContent=periodMode?'Whole period → Actual behaviour':'Planned → Actual';
+  principle.querySelector('span').textContent=periodMode?'Record how you followed these Rules across the selected period. A single trade does not determine this review.':'The form on the right is generated from the selected instrument. Checking an item means the planned condition was actually followed.';
+  if(periodMode){renderExecutionMappingPeriodContext();return;}
   const trade=executionMappingTrade();
   const direction=trade?.direction||'';
   const directionClass=executionDirectionClass(direction);
@@ -11425,6 +11522,37 @@ function renderExecutionMappingTradeContext(){
     pnlEl.classList.remove('pos','neg','neutral');
     if(trade)pnlEl.classList.add(pnlClass(pnl));
   }
+}
+
+function renderExecutionMappingPeriodContext(){
+  const period=executionMappingSelectedPeriod(),scope=executionMappingRuleScope;
+  const date=$('#executionMapPeriodDate');
+  date.type=scope==='monthly'?'month':'date';
+  date.placeholder=scope==='monthly'?'YYYY-MM':'YYYY-MM-DD';
+  date.value=scope==='monthly'?String(executionMappingPeriodDate||'').slice(0,7):executionMappingPeriodDate||'';
+  $('#executionMapPeriodDateLabel').textContent=scope==='weekly'?'Choose any day in the week':scope==='monthly'?'Month to review':'Date to review';
+  $('#executionMapSessionFields').hidden=scope!=='session';
+  $('#executionMapSessionName').value=executionMappingSessionName;
+  $('#executionMapSessionStart').value=executionMappingSessionStart;
+  $('#executionMapSessionEnd').value=executionMappingSessionEnd;
+  const savedSessions=executionMappingSavedSessions(),sessionSelect=$('#executionMapSavedSession');
+  $('#executionMapSavedSessionControl').hidden=!savedSessions.length;
+  sessionSelect.innerHTML='<option value="">New session…</option>'+savedSessions.map(saved=>'<option value="'+escapeHtml(saved.key)+'" '+(saved.key===period?.key?'selected':'')+'>'+escapeHtml(saved.sessionLabel+' · '+saved.startTime+'–'+saved.endTime+(saved.endDate!==saved.startDate?' (next day)':''))+'</option>').join('');
+  $('#executionMapSessionTimeHelp').textContent='Session times: '+(period?.timeZone||Intl.DateTimeFormat().resolvedOptions().timeZone)+(period&&period.endDate!==period.startDate?' · ends the next day.':'.');
+  $('#executionMapPeriodHelp').textContent=scope==='weekly'?'The week runs Monday to Sunday.':scope==='monthly'?'Review the entire calendar month.':scope==='session'?'Name the session and set its hours. Review the whole session.':'Review all behaviour across the selected day.';
+  $('#executionMapTradeTitle').textContent=executionMappingPeriodLabel(period);
+  $('#executionMapTradeMeta').textContent=period?'Whole '+(scope==='daily'?'day':scope==='weekly'?'week':scope==='monthly'?'month':'session')+' review · '+(tradingAccount?.account_name||'selected account'):'Enter a valid date, session name and different start/end times.';
+  const periodTrades=period?trades.filter(trade=>window.TIOSPeriodRules.includesTrade(trade,period)):[];
+  $('#executionMapPeriodTradeCount').textContent=String(periodTrades.length);
+  $('#executionMapPeriodPnl').textContent=period?signedMoney(periodTrades.reduce((sum,trade)=>sum+(Number(trade.pnl)||0),0)):'—';
+}
+
+function executionMappingSavedSessions(){
+  if(executionMappingRuleScope!=='session'||!currentUser?.id||!tradingAccount?.id)return [];
+  try{
+    const records=window.TIOSPeriodRules.read(localStorage,currentUser.id,tradingAccount.id);
+    return [...new Map(records.filter(record=>record.ruleScope==='session'&&record.period.startDate===executionMappingPeriodDate).map(record=>[record.period.key,record.period])).values()];
+  }catch(error){return [];}
 }
 
 function renderExecutionSecondaryItems(kind,doc){
@@ -11631,8 +11759,8 @@ function renderExecutionMappingForm(){
     checklist:`
       <section class="execution-instrument-section checklist" data-execution-instrument-section="checklist">
         <div class="execution-instrument-section-head">
-          <div><span>RULES MAPPING</span><strong>${escapeHtml(checklist?.name||'No Rules selected')}</strong><small>Reusable rules are mapped independently from the Playbook.</small></div>
-          <span class="execution-instrument-badge">RULES</span>
+          <div><span>${executionMappingIsPeriod()?window.TIOSPeriodRules.scopes[executionMappingRuleScope].toUpperCase()+' ':''}RULES MAPPING</span><strong>${escapeHtml(checklist?.name||'No Rules selected')}</strong><small>${executionMappingIsPeriod()?'Reflect on overall behaviour throughout the selected period.':'Reusable trade rules are mapped independently from the Playbook.'}</small></div>
+          <span class="execution-instrument-badge">${executionMappingIsPeriod()?window.TIOSPeriodRules.scopes[executionMappingRuleScope].toUpperCase()+' ':''}RULES</span>
         </div>
         ${renderExecutionSecondaryItems('checklist',checklist)}
       </section>`,
@@ -11647,10 +11775,11 @@ function renderExecutionMappingForm(){
   };
 
   captureExecutionMappingReflectionDraft();
-  body.innerHTML=instrumentHtml[activeInstrument];
+  body.innerHTML=(executionMappingIsPeriod()?'<div class="execution-period-review-note">Review the whole '+({session:'session',daily:'day',weekly:'week',monthly:'month'}[executionMappingRuleScope])+'. Conditions, scores and reflections are saved once for this period and Rules document. They do not change an individual trade’s score.</div>':'')+instrumentHtml[activeInstrument];
   restoreExecutionMappingReflections();
   hydratePlaybookImages(body);
   renderExecutionMappingControls();
+  renderExecutionMappingTradeContext();
   updateExecutionMappingScore();
 }
 
@@ -11660,6 +11789,12 @@ function executionMappingReflectionScope(){
   const trade=executionMappingTrade();
   if(!doc)return null;
   const scope={userId:currentUser?.id||'',accountId:tradingAccount?.id||'',tradeId:trade?.id||'',kind,documentId:doc.id};
+  if(executionMappingIsPeriod()){
+    scope.tradeId='';scope.ruleScope=executionMappingRuleScope;scope.period=executionMappingSelectedPeriod();
+    scope.definition=JSON.stringify({state:executionMappingStateDefinition(executionMappingStateFields()),prompts:$$('#executionMapFormBody [data-execution-reflection-id]').map(field=>({id:field.dataset.executionReflectionId,label:field.dataset.executionReflectionLabel,type:field.dataset.executionResponseType||'text'}))});
+    scope.key=window.TIOSPeriodRules.reviewKey(scope);return scope;
+  }
+  scope.ruleScope='trade';
   scope.key=JSON.stringify([scope.userId,scope.accountId,scope.tradeId,kind,doc.id]);
   return scope;
 }
@@ -11667,8 +11802,23 @@ function executionMappingReflectionKey(scope,promptId){
   return 'text__ti__'+scope.kind+'__'+encodeURIComponent(scope.documentId)+'__'+encodeURIComponent(promptId);
 }
 function executionMappingSavedReflection(scope,key){
+  if(scope.ruleScope!=='trade'&&scope.period){
+    const record=executionMappingPeriodSavedRecord(scope);
+    const answer=record?.definition===scope.definition?record.answers.find(answer=>answer.key===key):null;
+    return answer?{comment:answer.comment,criterion_key:answer.key}:null;
+  }
   const review=executionReviews.find(item=>item.trade_id===scope.tradeId&&item.user_id===scope.userId);
   return review?executionChecks.find(item=>item.review_id===review.id&&item.user_id===scope.userId&&item.criterion_key===key):null;
+}
+function executionMappingPeriodSavedRecord(scope){
+  if(!scope?.period||!scope.userId||!scope.accountId)return null;
+  try{
+    const key=window.TIOSPeriodRules.storageKey(scope.userId,scope.accountId),raw=localStorage.getItem(key);
+    let cached=executionMappingPeriodReviewCache.get(key);
+    if(!cached||cached.raw!==raw){cached={raw,rows:window.TIOSPeriodRules.read(localStorage,scope.userId,scope.accountId)};executionMappingPeriodReviewCache.set(key,cached);}
+    return cached.rows.find(record=>record.key===scope.key)||null;
+  }
+  catch(error){executionMappingReflectionError={key:scope.key,message:error.message};return null;}
 }
 function executionMappingStateKey(scope){
   // Form state is not a written reflection or a quantitative evidence row.
@@ -11716,12 +11866,15 @@ function restoreExecutionMappingState(scope,draft){
 }
 function executionMappingSaveNoun(fields){
   const scoreCount=fields.filter(field=>field.dataset.executionResponseType==='score').length;
-  if(fields.length)return scoreCount===fields.length?'scores':scoreCount?'responses':'reflections';
-  return executionMappingReflectionContext?.kind==='checklist'?'rules':executionMappingReflectionContext?.kind==='playbook'?'execution':'reflections';
+  const noun=fields.length?(scoreCount===fields.length?'scores':scoreCount?'responses':'reflections'):
+    executionMappingReflectionContext?.kind==='checklist'?'rules':executionMappingReflectionContext?.kind==='playbook'?'execution':'reflections';
+  const scope=executionMappingReflectionContext;
+  return scope?.ruleScope&&scope.ruleScope!=='trade'?window.TIOSPeriodRules.scopes[scope.ruleScope].toLowerCase()+' '+noun:noun;
 }
 function captureExecutionMappingReflectionDraft(){
   const scope=executionMappingReflectionContext;if(!scope)return;
   const answers=new Map();
+  if(scope.ruleScope!=='trade')answers.set('__period_definition__',scope.definition);
   $$('#executionMapFormBody [data-execution-reflection-key]').forEach(field=>answers.set(field.dataset.executionReflectionKey,field.value));
   const state=executionMappingStateValue(scope);
   if(state!==null)answers.set(executionMappingStateKey(scope),state);
@@ -11730,16 +11883,18 @@ function captureExecutionMappingReflectionDraft(){
 function restoreExecutionMappingReflections(){
   const scope=executionMappingReflectionScope();
   executionMappingReflectionContext=scope;
-  const draft=scope?executionMappingReflectionDrafts.get(scope.key):null;
+  let draft=scope?executionMappingReflectionDrafts.get(scope.key):null;
+  if(scope?.ruleScope!=='trade'&&draft?.get('__period_definition__')!==scope?.definition)draft=null;
   $$('#executionMapFormBody [data-execution-reflection-id]').forEach(field=>{
     const key=scope?executionMappingReflectionKey(scope,field.dataset.executionReflectionId):'';
     field.dataset.executionReflectionKey=key;
     const saved=scope?executionMappingSavedReflection(scope,key)?.comment||'':'';
     const score=field.dataset.executionResponseType==='score'?executionScoreResponseFromComment(saved):null;
     field.value=draft?.has(key)?draft.get(key):(field.dataset.executionResponseType==='score'?(score?String(score.value):''):saved);
-    field.disabled=!scope?.tradeId;
+    field.disabled=scope?.ruleScope!=='trade'?!scope?.period||!scope?.userId||!scope?.accountId:!scope?.tradeId;
   });
   restoreExecutionMappingState(scope,draft);
+  if(scope?.ruleScope!=='trade')executionMappingStateFields().forEach(field=>field.disabled=!scope?.period||!scope?.userId||!scope?.accountId);
   updateExecutionMappingScore();
   updateExecutionMappingReflectionState();
 }
@@ -11762,12 +11917,16 @@ function updateExecutionMappingReflectionState(){
     return (executionResponseComment(field)||'')!==stored;
   })));
   const hasSaved=Boolean(savedState||scope&&fields.some(field=>executionMappingSavedReflection(scope,field.dataset.executionReflectionKey)));
-  button.disabled=executionMappingReflectionSaving||!scope?.userId||!scope?.tradeId||!hasFields||(!dirty&&!hasSaved);
+  const periodMode=Boolean(scope?.ruleScope&&scope.ruleScope!=='trade');
+  const subject=periodMode?{session:'session',daily:'day',weekly:'week',monthly:'month'}[scope.ruleScope]:'trade';
+  button.disabled=executionMappingReflectionSaving||!scope?.userId||(periodMode?(!scope.period||!scope.accountId):!scope?.tradeId)||!hasFields||(!dirty&&!hasSaved);
   if(!hasFields)status.textContent='This instrument has no responses to save.';
-  else if(!scope?.tradeId)status.textContent='Select a trade to record your '+noun+'.';
+  else if(periodMode&&!scope.period)status.textContent='Select a valid period to record your '+noun+'.';
+  else if(!periodMode&&!scope?.tradeId)status.textContent='Select a trade to record your '+noun+'.';
   else if(executionMappingReflectionSaving)status.textContent='Saving '+noun+'…';
   else if(executionMappingReflectionError?.key===scope.key)status.textContent=executionMappingReflectionError.message;
-  else status.textContent=(dirty?'Unsaved '+noun+'.':hasSaved?title+' saved for this trade.':scoreCount?'Enter your '+noun+', then Save.':'Complete your '+noun+', then Save.')+(state!==null?' Save includes conditions, choices and comments for the selected trade.':'');
+  else status.textContent=(dirty?'Unsaved '+noun+'.':hasSaved?title+' saved for this '+subject+'.':scoreCount?'Enter your '+noun+', then Save.':'Complete your '+noun+', then Save.')+
+    (periodMode?' '+(hasSaved&&!dirty?'Saved on this device.':'Save records the whole '+subject+' on this device.'):(state!==null?' Save includes conditions, choices and comments for the selected trade.':''));
 }
 async function saveExecutionMappingReflections(){
   if(executionMappingReflectionSaving)return;
@@ -11775,7 +11934,9 @@ async function saveExecutionMappingReflections(){
   const scope=executionMappingReflectionContext;
   const fields=$$('#executionMapFormBody [data-execution-reflection-id]');
   const state=executionMappingStateValue(scope);
-  if(!scope?.userId||scope.userId!==currentUser?.id||!scope.tradeId||!trades.some(trade=>trade.id===scope.tradeId)||(!fields.length&&state===null))return;
+  const periodMode=Boolean(scope?.ruleScope&&scope.ruleScope!=='trade');
+  if(!scope?.userId||scope.userId!==currentUser?.id||scope.accountId!==(tradingAccount?.id||'')||
+    (periodMode?(!scope.period||!scope.accountId):(!scope.tradeId||!trades.some(trade=>trade.id===scope.tradeId)))||(!fields.length&&state===null))return;
   const invalid=fields.find(field=>executionScoreFieldError(field));
   if(invalid){
     executionMappingReflectionError={key:scope.key,message:(invalid.dataset.executionReflectionLabel||'Score')+': '+executionScoreFieldError(invalid)};
@@ -11785,6 +11946,7 @@ async function saveExecutionMappingReflections(){
   const answers=fields.map(field=>({key:field.dataset.executionReflectionKey,label:field.dataset.executionReflectionLabel||'Reflection',value:field.value.trim(),comment:executionResponseComment(field)}));
   if(state!==null)answers.push({key:executionMappingStateKey(scope),label:'Saved '+scope.kind+' form responses',value:state,comment:state});
   if(!answers.some(answer=>answer.value||executionMappingSavedReflection(scope,answer.key)))return;
+  if(periodMode){saveExecutionMappingPeriodReview(scope,answers,noun);return;}
   executionMappingReflectionSaving=true;executionMappingReflectionError=null;updateExecutionMappingReflectionState();
   try{
     let review=executionReviews.find(item=>item.trade_id===scope.tradeId&&item.user_id===scope.userId);
@@ -11826,6 +11988,25 @@ async function saveExecutionMappingReflections(){
   }
 }
 
+function saveExecutionMappingPeriodReview(scope,answers,noun){
+  executionMappingReflectionSaving=true;executionMappingReflectionError=null;updateExecutionMappingReflectionState();
+  try{
+    const previous=executionMappingPeriodSavedRecord(scope);
+    const doc=executionMappingRuleDocument(scope.ruleScope),now=new Date().toISOString();
+    const record={schema:window.TIOSPeriodRules.schema,key:scope.key,userId:scope.userId,accountId:scope.accountId,
+      ruleScope:scope.ruleScope,documentId:scope.documentId,documentName:doc?.name||'Rules',period:scope.period,
+      definition:scope.definition,answers:answers.map(answer=>({key:answer.key,label:answer.label,comment:answer.comment})),
+      createdAt:previous?.createdAt||now,savedAt:now};
+    window.TIOSPeriodRules.save(localStorage,record);
+    if(scope.ruleScope==='session')renderExecutionMappingPeriodContext();
+    const draft=executionMappingReflectionDrafts.get(scope.key);
+    answers.forEach(answer=>{if(draft?.get(answer.key)?.trim()===answer.value)draft.delete(answer.key);});
+    if(draft&&[...draft.keys()].every(key=>key==='__period_definition__'))executionMappingReflectionDrafts.delete(scope.key);
+    showStatus(noun+' saved for the whole '+({session:'session',daily:'day',weekly:'week',monthly:'month'}[scope.ruleScope])+' on this device');
+  }catch(error){executionMappingReflectionError={key:scope.key,message:noun+' were not saved. '+(error.message||'Please retry.')};}
+  finally{executionMappingReflectionSaving=false;updateExecutionMappingReflectionState();}
+}
+
 function updateExecutionMappingScore(){
   const section=$('#executionMapFormBody [data-execution-instrument-section]');
   const kind=section?.dataset.executionInstrumentSection||executionMappingActiveInstrument;
@@ -11848,7 +12029,7 @@ function updateExecutionMappingScore(){
   const satisfiedChoices=choiceGroups.filter(group=>[...group.querySelectorAll(choiceSelector+':checked')].some(input=>input.closest(groupSelector)===group)).length;
   const followed=followedChecks+satisfiedChoices+logic.followed;
   const conditionPct=total?followed/total*100:null;
-  if(label)label.textContent=scoreFields.length?'Live score total':'Live execution match';
+  if(label)label.textContent=(executionMappingIsPeriod()?window.TIOSPeriodRules.scopes[executionMappingRuleScope]+' behaviour · ':'')+(scoreFields.length?'Live score total':'Live execution match');
   if(conditions){
     conditions.hidden=!scoreFields.length||!total;
     conditions.textContent=conditions.hidden?'':`Conditions: ${conditionPct.toFixed(1)}% · ${followed} of ${total} met.`;
@@ -11876,7 +12057,7 @@ function updateExecutionMappingScore(){
   }
 
   score.textContent=conditionPct.toFixed(1)+'%';
-  meta.textContent=`${followed} of ${total} planned condition${total===1?'':'s'} met for this trade.`;
+  meta.textContent=`${followed} of ${total} planned condition${total===1?'':'s'} met for this ${executionMappingIsPeriod()?({session:'session',daily:'day',weekly:'week',monthly:'month'}[executionMappingRuleScope]):'trade'}.`;
 }
 
 function resetExecutionMappingInputs(){
@@ -11886,8 +12067,9 @@ function resetExecutionMappingInputs(){
   updateExecutionMappingScore();
 }
 
-function viewExecutionInstrumentSection(kind){
+function viewExecutionInstrumentSection(kind,{ruleScope='trade'}={}){
   if(!['playbook','checklist','psych'].includes(kind))return;
+  if(kind==='checklist')executionMappingRuleScope=window.TIOSPeriodRules.normalizeScope(ruleScope);
   executionMappingActiveInstrument=kind;
   renderExecutionMappingForm();
   const body=$('#executionMapFormBody');
@@ -11899,6 +12081,9 @@ function initExecutionMappingWorkspace(){
   executionMappingInitialized=true;
 
   const formBody=$('#executionMapFormBody');
+  window.addEventListener('resize',()=>{
+    if($('#page-execution')?.classList.contains('active'))requestAnimationFrame(ensureExecutionMappingInstrumentVisible);
+  });
   let pressedChoice=null;
   const rememberChoice=event=>{
     const target=event.target;
@@ -11957,6 +12142,7 @@ function initExecutionMappingWorkspace(){
   });
 
   $('#executionMapChecklistSelect')?.addEventListener('change',event=>{
+    executionMappingRuleScope='trade';
     executionMappingChecklistId=event.target.value||null;
     executionMappingReturnPage='checklists';
     executionMappingActiveInstrument='checklist';
@@ -11978,13 +12164,34 @@ function initExecutionMappingWorkspace(){
     viewExecutionInstrumentSection('psych');
   });
 
-  $$('[data-execution-map-instrument]').forEach(control=>{
-    control.addEventListener('click',event=>{
-      if(event.target.closest('select,button'))return;
-      const kind=control.dataset.executionMapInstrument;
-      executionMappingReturnPage=kind==='playbook'?'playbook':(kind==='checklist'?'checklists':'reflections');
-      viewExecutionInstrumentSection(kind);
-    });
+  $('.execution-map-controls')?.addEventListener('click',event=>{
+    const periodButton=event.target.closest('[data-execution-period-view]');
+    const control=event.target.closest('[data-execution-map-instrument]');
+    if(!control||(!periodButton&&event.target.closest('select,button')))return;
+    const kind=control.dataset.executionMapInstrument;
+    executionMappingReturnPage=kind==='playbook'?'playbook':(kind==='checklist'?'checklists':'reflections');
+    viewExecutionInstrumentSection(kind,{ruleScope:control.dataset.executionMapRuleScope||'trade'});
+  });
+  $('.execution-map-controls')?.addEventListener('change',event=>{
+    const ruleScope=event.target.dataset.executionPeriodDocument;if(!ruleScope)return;
+    executionMappingPeriodRuleIds[ruleScope]=event.target.value||null;
+    executionMappingReturnPage='checklists';
+    viewExecutionInstrumentSection('checklist',{ruleScope});
+  });
+  $('#executionMapPeriodContext')?.addEventListener('change',event=>{
+    captureExecutionMappingReflectionDraft();
+    executionMappingSessionPreset=null;
+    if(event.target.id==='executionMapSavedSession'){
+      const saved=executionMappingSavedSessions().find(period=>period.key===event.target.value);
+      executionMappingSessionName=saved?.sessionLabel||'';
+      executionMappingSessionStart=saved?.startTime||'00:00';executionMappingSessionEnd=saved?.endTime||'23:59';
+      executionMappingSessionPreset=saved?{...saved}:null;
+    }
+    if(event.target.id==='executionMapPeriodDate')executionMappingPeriodDate=event.target.value+(executionMappingRuleScope==='monthly'&&/^\d{4}-\d{2}$/.test(event.target.value)?'-01':'');
+    if(event.target.id==='executionMapSessionName')executionMappingSessionName=event.target.value;
+    if(event.target.id==='executionMapSessionStart')executionMappingSessionStart=event.target.value;
+    if(event.target.id==='executionMapSessionEnd')executionMappingSessionEnd=event.target.value;
+    executionMappingReflectionError=null;renderExecutionMappingForm();
   });
 
   $('#executionMapFormBody')?.addEventListener('change',event=>{
@@ -15271,6 +15478,7 @@ function secondaryNormalizeDoc(kind,raw={}){
   const now=new Date().toISOString();
   return {
     ...instrumentTemplateDocumentState(kind,raw),
+    ...(kind==='checklist'?{ruleScope:window.TIOSPeriodRules.normalizeScope(raw.ruleScope)}:{}),
     id:String(raw.id||secondaryMakeId(kind)),
     name:String(raw.name||('Untitled '+config.singular)),
     description:String(raw.description||''),
@@ -15295,7 +15503,7 @@ function loadSecondaryDocuments(kind,{refresh=false}={}){
   state.docs=stored.map(item=>secondaryNormalizeDoc(kind,item));
   state.selectedId=localStorage.getItem(key+':selected')||state.docs[0]?.id||null;
   if(state.selectedId&&!state.docs.some(item=>item.id===state.selectedId))state.selectedId=state.docs[0]?.id||null;
-  if(stored.some((item,index)=>item.documentHtml!==state.docs[index].documentHtml||item.templateDraft!==state.docs[index].templateDraft||item.templateSaveConfirmed!==state.docs[index].templateSaveConfirmed||item.templateId!==state.docs[index].templateId))persistSecondaryDocuments(kind);
+  if(stored.some((item,index)=>item.documentHtml!==state.docs[index].documentHtml||item.templateDraft!==state.docs[index].templateDraft||item.templateSaveConfirmed!==state.docs[index].templateSaveConfirmed||item.templateId!==state.docs[index].templateId||kind==='checklist'&&item.ruleScope!==state.docs[index].ruleScope))persistSecondaryDocuments(kind);
 }
 function persistSecondaryDocuments(kind){
   const state=secondaryState(kind);
@@ -15536,6 +15744,7 @@ function secondaryWorkspaceHtml(kind){
         <div class="playbook-word-document-stage">
           <article class="playbook-word-page" data-ti-page>
             <input class="playbook-word-title-input" data-ti-title type="text" placeholder="Untitled ${c.singular}">
+            ${kind==='checklist'?`<div class="ti-rule-scope"><label><span>Review scope</span><select data-ti-rule-scope aria-label="Rules review scope">${Object.entries(window.TIOSPeriodRules.scopes).map(([scope,label])=>'<option value="'+scope+'">'+label+'</option>').join('')}</select></label><small data-ti-rule-scope-help>Applied separately to each individual trade.</small></div>`:''}
             <div class="playbook-word-title-rule"></div>
             <div class="playbook-word-editor" data-ti-editor contenteditable="true" role="textbox" aria-multiline="true" spellcheck="true"></div>
             <div class="playbook-canvas-resize-handle horizontal" data-ti-canvas-resize="x" aria-hidden="true"></div>
@@ -15583,6 +15792,7 @@ function createSecondaryDocument(kind,{silent=false,template=null}={}){
     templateSaveConfirmed:false,
     tags:[],
     instrumentState:'draft',
+    ...(kind==='checklist'?{ruleScope:currentSecondaryDocument(kind)?.ruleScope||'trade'}:{}),
     createdAt:now
   };
   if(kind==='checklist')baseInput.items=[];
@@ -15597,6 +15807,7 @@ function collectSecondaryDocument(kind){
   const current=currentSecondaryDocument(kind); if(!current)return null;
   return {
     ...current,
+    ...(kind==='checklist'?{ruleScope:window.TIOSPeriodRules.normalizeScope(secondaryFind(kind,'[data-ti-rule-scope]')?.value||current.ruleScope)}:{}),
     name:String(secondaryFind(kind,'[data-ti-title]')?.value||'').trim()||('Untitled '+secondaryConfig(kind).singular),
     description:String(secondaryFind(kind,'[data-ti-description]')?.value||'').trim(),
     tags:String(secondaryFind(kind,'[data-ti-tags]')?.value||'').split(',').map(x=>x.trim()).filter(Boolean),
@@ -15814,16 +16025,21 @@ function renderSecondaryPreview(kind){
   const state=secondaryState(kind),doc=currentSecondaryDocument(kind),body=secondaryFind(kind,'[data-ti-preview-body]');
   if(!body)return;
   const select=secondaryFind(kind,'[data-ti-preview-select]');
-  if(select)select.innerHTML=state.docs.map(item=>'<option value="'+escapeHtml(item.id)+'" '+(item.id===state.selectedId?'selected':'')+'>'+escapeHtml(item.name)+'</option>').join('');
+  if(select)select.innerHTML=state.docs.map(item=>'<option value="'+escapeHtml(item.id)+'" '+(item.id===state.selectedId?'selected':'')+'>'+escapeHtml(item.name)+(kind==='checklist'?' · '+window.TIOSPeriodRules.scopes[item.ruleScope||'trade']:'')+'</option>').join('');
   const title=secondaryFind(kind,'[data-ti-preview-title]');if(title)title.textContent=doc?.name||'Untitled';
   if(!doc){body.innerHTML='<div class="playbook-preview-empty">Create an instrument first.</div>';return}
+  if(kind==='checklist'){
+    const scope=window.TIOSPeriodRules.normalizeScope(secondaryFind(kind,'[data-ti-rule-scope]')?.value||doc.ruleScope);
+    const help=secondaryFind(kind,'[data-ti-rule-scope-help]');
+    if(help)help.textContent=scope==='trade'?'Applied separately to each individual trade.':'Reviewed once for the whole '+({session:'named trading session',daily:'day',weekly:'week',monthly:'month'}[scope])+', independently of individual trades.';
+  }
   const sourceHtml=secondaryFind(kind,'[data-ti-editor]')?.innerHTML||doc.documentHtml||'';
   const items=playbookStructuredPreviewItems(sourceHtml,{kind,area:'preview'});
   body.innerHTML=items.length?secondaryPreviewHtml(kind,items):'<div class="playbook-preview-empty">Start building this instrument to see its Execution Quality model.</div>';
   const meta=secondaryFind(kind,'[data-ti-preview-meta]');
   if(meta){
     const measurable=(kind==='psych'?items.reduce((count,item)=>count+(item.type==='reflection-group'?item.prompts.length:['psych-prompt','choice','check','condition-group'].includes(item.type)?1:0),0):items.filter(x=>x.type==='check'||x.type==='choice'||x.type==='condition-group').length)+instrumentImagePatternConditionCount(body);
-    meta.textContent='Preview only · '+measurable+' '+(kind==='psych'?'prompt':'condition')+(measurable===1?'':'s')+' · mapped separately';
+    meta.textContent='Preview only · '+measurable+' '+(kind==='psych'?'prompt':'condition')+(measurable===1?'':'s')+' · '+(kind==='checklist'?window.TIOSPeriodRules.scopes[window.TIOSPeriodRules.normalizeScope(secondaryFind(kind,'[data-ti-rule-scope]')?.value||doc.ruleScope)]+' behaviour':'mapped separately');
   }
   hydratePlaybookImages(body);
 }
@@ -15835,6 +16051,7 @@ function renderSecondaryDocument(kind){
   secondaryFind(kind,'[data-ti-description]').value=doc.description||'';
   secondaryFind(kind,'[data-ti-tags]').value=(doc.tags||[]).join(', ');
   secondaryFind(kind,'[data-ti-state]').value=doc.instrumentState||'draft';
+  if(kind==='checklist')secondaryFind(kind,'[data-ti-rule-scope]').value=window.TIOSPeriodRules.normalizeScope(doc.ruleScope);
   const editor=secondaryFind(kind,'[data-ti-editor]');editor.innerHTML=doc.documentHtml||'';ensureSecondaryBlockControls(kind);
   hydratePlaybookImages(editor);
   const words=(editor.innerText||'').trim().split(/\s+/).filter(Boolean).length;
@@ -15907,7 +16124,11 @@ function beginSecondaryCanvasResize(kind,event,axis){
 function previewSecondaryInExecution(kind){
   if(currentSecondaryDocument(kind)?.templateDraft){showStatus('Save this document before opening Execution Quality.');return}
   saveSecondaryDocument(kind,{quiet:true});
-  if(kind==='checklist')executionMappingChecklistId=secondaryState(kind).selectedId;
+  if(kind==='checklist'){
+    executionMappingRuleScope=currentSecondaryDocument(kind)?.ruleScope||'trade';
+    if(executionMappingRuleScope==='trade')executionMappingChecklistId=secondaryState(kind).selectedId;
+    else executionMappingPeriodRuleIds[executionMappingRuleScope]=secondaryState(kind).selectedId;
+  }
   else executionMappingPsychId=secondaryState(kind).selectedId;
   executionMappingActiveInstrument=kind;
   executionMappingReturnPage=secondaryConfig(kind).page;
@@ -15967,6 +16188,7 @@ function initSecondaryWorkspace(kind){
     if(event.target.matches('[data-ti-style-color]'))applySecondaryColor(kind,event.target.dataset.tiStyleColor,event.target.value);
     if(event.target.matches('[data-ti-preview-select]'))selectSecondaryDocument(kind,event.target.value);
     if(event.target.matches('[data-ti-state]'))scheduleSecondarySave(kind);
+    if(event.target.matches('[data-ti-rule-scope]'))saveSecondaryDocument(kind,{quiet:true});
     if(event.target.matches('[data-ti-block-style]')){applyInstrumentFunction(kind,event.target.value);event.target.value=''}
   });
   page.addEventListener('mouseup',event=>{if(event.target.closest('[data-ti-editor]')){secondaryRememberSelection(kind);refreshSecondaryStyleControls(kind)}});

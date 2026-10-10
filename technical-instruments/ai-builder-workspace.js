@@ -4,13 +4,13 @@
   const page=kind=>document.querySelector(kind==='playbook'?'#page-playbook':'#page-'+secondaryConfig(kind).page);
   const editor=kind=>kind==='playbook'?document.querySelector('#playbookDocumentEditor'):secondaryFind(kind,'[data-ti-editor]');
   const current=kind=>kind==='playbook'?currentPlaybookDocument():currentSecondaryDocument(kind);
-  const fields=kind=>kind==='playbook'?{name:document.querySelector('#playbookDraftTitle'),description:document.querySelector('#playbookDraftDescription'),tags:document.querySelector('#playbookDraftTags'),state:document.querySelector('#playbookDraftState')}:{name:secondaryFind(kind,'[data-ti-title]'),description:secondaryFind(kind,'[data-ti-description]'),tags:secondaryFind(kind,'[data-ti-tags]'),state:secondaryFind(kind,'[data-ti-state]')};
+  const fields=kind=>kind==='playbook'?{name:document.querySelector('#playbookDraftTitle'),description:document.querySelector('#playbookDraftDescription'),tags:document.querySelector('#playbookDraftTags'),state:document.querySelector('#playbookDraftState')}:{name:secondaryFind(kind,'[data-ti-title]'),description:secondaryFind(kind,'[data-ti-description]'),tags:secondaryFind(kind,'[data-ti-tags]'),state:secondaryFind(kind,'[data-ti-state]'),...(kind==='checklist'?{ruleScope:secondaryFind(kind,'[data-ti-rule-scope]')}:{})};
   const key=kind=>kind==='playbook'?playbookDocumentKey():secondaryStoreKey(kind);
   const loadedKey=kind=>kind==='playbook'?playbookDocumentStoreKey:secondaryState(kind).storeKey;
   const clone=value=>JSON.parse(JSON.stringify(value));
   function scope(){return String(currentUser?.id||'')+':'+String(tradingAccount?.id||'default')}
   function activeKind(){return kinds.find(kind=>page(kind)?.classList.contains('active'))||null}
-  function semantic(doc){if(!doc)return 'null';const host=document.createElement('div');host.innerHTML=doc.documentHtml||'';host.querySelectorAll('.pb-doc-remove-btn,[data-instrument-remove-reflection]').forEach(x=>x.remove());return JSON.stringify({id:doc.id,name:doc.name,description:doc.description||'',documentHtml:host.innerHTML,tags:doc.tags||[],instrumentState:doc.instrumentState||'draft',strategyVersion:doc.strategyVersion||0,strategyVersionId:doc.strategyVersionId||'',templateDraft:Boolean(doc.templateDraft)})}
+  function semantic(doc){if(!doc)return 'null';const host=document.createElement('div');host.innerHTML=doc.documentHtml||'';host.querySelectorAll('.pb-doc-remove-btn,[data-instrument-remove-reflection]').forEach(x=>x.remove());return JSON.stringify({id:doc.id,name:doc.name,description:doc.description||'',documentHtml:host.innerHTML,tags:doc.tags||[],instrumentState:doc.instrumentState||'draft',ruleScope:doc.ruleScope||'trade',strategyVersion:doc.strategyVersion||0,strategyVersionId:doc.strategyVersionId||'',templateDraft:Boolean(doc.templateDraft)})}
   function stored(kind,id){try{return JSON.parse(localStorage.getItem(key(kind))||'[]').find(x=>x.id===id)||null}catch{throw Error('The instrument store could not be read. Keep your current draft and try again.')}}
   function collect(kind){return kind==='playbook'?collectPlaybookDocumentFromEditor():collectSecondaryDocument(kind)}
   function flush(kind){
@@ -32,6 +32,7 @@
   function display(kind,doc,readonly=false){
     const controls=fields(kind),body=editor(kind);if(!body)return;
     controls.name.value=doc.name||'';controls.description.value=doc.description||'';controls.tags.value=(doc.tags||[]).join(', ');controls.state.value=doc.instrumentState||'draft';
+    if(controls.ruleScope)controls.ruleScope.value=root.TIOSPeriodRules.normalizeScope(doc.ruleScope);
     body.innerHTML=doc.documentHtml||'';body.contentEditable=readonly?'false':'true';
     page(kind).classList.toggle('ti-ai-preview',readonly);
     for(const control of Object.values(controls)){if(control){if(readonly){if(!control.hasAttribute('data-ti-ai-disabled-before'))control.dataset.tiAiDisabledBefore=String(control.disabled);control.disabled=true}else if(control.hasAttribute('data-ti-ai-disabled-before')){control.disabled=control.dataset.tiAiDisabledBefore==='true';delete control.dataset.tiAiDisabledBefore}}}

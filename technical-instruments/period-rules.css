@@ -1,0 +1,22 @@
+.ti-rule-scope{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:2px 0 15px;padding:10px 0;border-bottom:1px solid #e1e6eb;color:#34404c;font:12px Arial,Helvetica,sans-serif}
+.ti-rule-scope label{display:flex;flex-direction:row;flex:0 0 auto;align-items:center;gap:8px;font-weight:600}
+.ti-rule-scope label>span{color:#34404c;white-space:nowrap;font-size:11px}
+.ti-rule-scope select{padding:7px 9px;border:1px solid #cbd4dd;border-radius:7px;background:#fff;color:#27313b;font:inherit}
+.ti-rule-scope small{flex:1 1 220px;font-size:11px;line-height:1.5;color:#64707c}
+#executionMapPeriodRulesControls{display:contents}
+.execution-map-controls.has-period-rules{display:flex;overflow-x:auto;overscroll-behavior:contain;padding-bottom:6px;scrollbar-width:thin}
+.execution-map-controls.has-period-rules .execution-map-control{flex:0 0 calc((100% - 16px)/3);min-width:205px}
+.execution-map-control.period-rules>span{color:#a1c3b0}
+.execution-period-context{display:flex;flex-direction:column;flex:0 0 auto;gap:12px;border:1px solid #294436;border-radius:12px;background:#0d1913;padding:12px}
+.execution-period-context label{display:flex;flex-direction:column;gap:6px;min-width:0;font-size:10px;color:#a1b6aa}
+.execution-period-context input,.execution-period-context select{width:100%;min-width:0;border:1px solid #355044;border-radius:7px;padding:8px;background:#0a110d;color:#edf7f0;font:inherit;font-size:12px;color-scheme:dark}
+.execution-period-times{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.execution-period-context small{color:#9aafa2;font-size:10px;line-height:1.5}
+.execution-period-session{display:flex;flex-direction:column;gap:10px}
+.execution-period-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.execution-period-stats>div{padding:10px;border:1px solid #273b30;border-radius:9px;background:#0c1510}
+.execution-period-stats span{display:block;color:#a1b6aa;font-size:9px;margin-bottom:4px}
+.execution-period-stats strong{font-size:12px}
+.execution-period-review-note{margin:0 0 14px;padding:10px 12px;border:1px solid #294637;border-radius:9px;background:#0d1a13;color:#bdd4c5;font-size:11px;line-height:1.6}
+#executionMapPeriodContext[hidden],#executionMapSessionFields[hidden],#executionMapSavedSessionControl[hidden],#executionMapPeriodStats[hidden],#executionMapTradeControl[hidden],#executionMapTradeContextGrid[hidden]{display:none}
+@media(max-width:600px){.execution-map-controls.has-period-rules .execution-map-control{flex-basis:85%;min-width:245px}.ti-rule-scope label{width:100%}.ti-rule-scope select{flex:1;min-width:0}}

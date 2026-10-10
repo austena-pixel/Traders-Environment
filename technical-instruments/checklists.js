@@ -35,6 +35,7 @@
       name:textValue(input.name),
       description:textValue(input.description),
       category:textValue(input.category)||'custom',
+      ruleScope:['trade','session','daily','weekly','monthly'].includes(input.ruleScope)?input.ruleScope:'trade',
       items:Array.isArray(input.items)?input.items.map(normalizeItem):[],
       tags:Array.isArray(input.tags)?[...new Set(input.tags.map(textValue).filter(Boolean))]:[],
       instrumentState:textValue(input.instrumentState)||'active',
