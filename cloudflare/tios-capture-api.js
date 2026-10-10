@@ -24,7 +24,7 @@ async function database(env,token,path,options={}){
   let result;
   try{
     result=await fetch(databaseUrl(env,path),{
-      ...options,redirect:'error',headers:{apikey:env.SUPABASE_PUBLISHABLE_KEY,authorization:'Bearer '+token,accept:'application/json',...(options.headers||{})}
+      ...options,redirect:'manual',headers:{apikey:env.SUPABASE_PUBLISHABLE_KEY,authorization:'Bearer '+token,accept:'application/json',...(options.headers||{})}
     });
   }catch(e){
     if(Number.isInteger(e?.status))throw e;
@@ -133,7 +133,7 @@ export default {
       if(configured){
         try{
           const backend=await fetch(databaseUrl(env,'/auth/v1/health'),{
-            method:'GET',headers:{apikey:env.SUPABASE_PUBLISHABLE_KEY},redirect:'error'
+            method:'GET',headers:{apikey:env.SUPABASE_PUBLISHABLE_KEY},redirect:'manual'
           });
           supabase=backend.ok?'reachable':'http_'+backend.status;
         }catch(e){
