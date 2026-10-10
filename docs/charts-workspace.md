@@ -2,7 +2,7 @@
 
 Open **Charts** directly below Dashboard in the T-IOS sidebar. Choose **Single
 Chart** for one large chart or **Multiple Charts** for three independent charts.
-Single Chart is the initial default; the three-timeframe method is optional.
+Single Chart is the initial default; the three-timeframe method is optional. In Multiple Charts mode, use **Number of charts** to choose 2–6 active charts. Three remains the default. Adding charts retains existing charts and provides editable new chart defaults. Reducing the count asks for confirmation before discarding removed charts' settings. Save preferences to persist the selected chart count and settings.
 
 Use each chart's Instrument, Timeframe and Responsibility controls to configure
 its defaults. Instrument codes use TradingView's `EXCHANGE:SYMBOL` format, such
@@ -20,6 +20,10 @@ stack with their own full chart areas on smaller screens. **Expand** enlarges
 one chart without recreating it; **Return to layout** closes it. Escape also
 closes it when focus is in T-IOS. Keyboard events inside a cross-origin chart
 are controlled by TradingView, so the Return button remains available.
+
+## Compact left controls panel
+
+Charts now uses a scrollable left controls panel beside the main chart display. Layout, chart count, appearance, timezone, per-chart instrument/timeframe/responsibility settings, and Save preferences live in the panel. Use **Hide controls** to reclaim the full chart width and **Show controls** to restore it. On narrow screens, the panel stacks above the chart and begins collapsed. Individual chart configurations are collapsible, keeping the working chart area unobstructed. Existing chart frames remain mounted when the controls panel is hidden or shown.
 
 ## Official widget boundary
 
