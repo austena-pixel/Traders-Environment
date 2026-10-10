@@ -5,9 +5,9 @@ const {FakeSocket,clock,resolve,tick}=require('./helpers/deriv-public-ticks-cont
 const {installRecordingWorkspace}=require('./helpers/chart-recording-workspace.cjs');
 const P=require('../core/chart-workspace.js'),F=require('../core/chart-feed-verification.js');
 const settle=()=>new Promise(r=>setImmediate(r));
-function environment({loadPublicTicks,loadInstruments}={}){
+function environment({loadPublicTicks,loadInstruments,mobile=false}={}){
  const dom=new JSDOM('<div id="host"></div>',{url:'https://tios.test/t-ios.html',runScripts:'outside-only',pretendToBeVisual:true});
- const w=dom.window;w.matchMedia=()=>({matches:false});w.HTMLElement.prototype.scrollIntoView=function(){};
+ const w=dom.window;w.matchMedia=()=>({matches:mobile});w.HTMLElement.prototype.scrollIntoView=function(){};
  Object.defineProperty(w.crypto,'randomUUID',{value:require('node:crypto').randomUUID});
  let user={id:'owner'};const account={id:'account',user_id:'owner',account_name:'Deriv Demo',platform:'MT5',bridge_enabled:true,connection_status:'connected',last_sync_at:'2026-09-25T00:00:00Z'};
  const prefs=P.defaults();for(const mode of ['single','multiple'])for(const c of prefs.charts[mode])c.symbol=P.preferredDerivSymbol;
@@ -43,6 +43,38 @@ function publicTransport(e){
  const action=name=>e.find('[data-charts-action="'+name+'-public-quote"]').click();
  return {time,sockets,find,action,async start(){action('start');await settle();const socket=sockets.at(-1);resolve(socket);return socket;}};
 }
+test('TradingView sign-in remains external, private and available with mobile controls or Instruments open',async()=>{
+ for(const mobile of [false,true]){
+  const e=environment({mobile,loadInstruments:async()=>({create:()=>({mount(panel){panel.textContent='Recording workspace'},unmount(){},reset(){}})})});
+  try{
+   e.controller.show();await settle();await settle();
+   const card=e.find('.charts-card'),frame=card.querySelector('.charts-frame');
+   const login=card.querySelector('[data-charts-tv-signin]');
+   assert.equal(login.hidden,false);assert.equal(e.find('.charts-panel').getAttribute('aria-hidden'),String(mobile));
+   for(const link of e.w.document.querySelectorAll('[data-charts-tv-signin]')){
+    assert.equal(link.href,'https://www.tradingview.com/accounts/signin/');assert.equal(link.target,'_blank');
+    assert.ok(link.relList.contains('noopener'));assert.ok(link.relList.contains('noreferrer'));
+    assert.match(e.w.document.getElementById(link.getAttribute('aria-describedby')).textContent,/does not sign in or sync the embedded T-IOS charts/);
+    const activated=new e.w.MouseEvent('click',{bubbles:true,cancelable:true});link.dispatchEvent(activated);
+    assert.equal(activated.defaultPrevented,false);assert.equal(card.querySelector('.charts-frame'),frame);
+   }
+   if(mobile)e.find('[data-charts-action="toggle-panel"]').click();
+   const symbol=e.find('[data-chart-field="symbol"]'),responsibility=e.find('[data-chart-field="responsibility"]');
+   symbol.value='DERIV:VOLATILITY_75_INDEX';symbol.dispatchEvent(new e.w.Event('input',{bubbles:true}));
+   responsibility.value='Private journal / owner / account';responsibility.dispatchEvent(new e.w.Event('input',{bubbles:true}));
+   symbol.closest('form').dispatchEvent(new e.w.Event('submit',{bubbles:true,cancelable:true}));
+   const fullChart=e.find('[data-charts-tv-chart]'),url=new URL(fullChart.href);
+   assert.equal(url.origin,'https://www.tradingview.com');assert.equal(url.pathname,'/chart/');
+   assert.deepEqual([...url.searchParams.entries()],[['symbol','DERIV:VOLATILITY_75_INDEX']]);
+   assert.ok(fullChart.relList.contains('noreferrer'));
+   e.find('[data-charts-action="reset-chart"]').click();assert.equal(new URL(fullChart.href).searchParams.get('symbol'),P.preferredDerivSymbol);
+   const savedFrame=card.querySelector('.charts-frame');
+   e.find('[data-charts-action="instruments"]').click();await settle();
+   assert.equal(e.find('.charts-toolbar').hidden,true);assert.equal(login.closest('[hidden]'),null);
+   login.click();assert.equal(card.querySelector('.charts-frame'),savedFrame);assert.equal(e.writes.length,0);
+  }finally{e.controller.reset();e.dom.window.close()}
+ }
+});
 test('Charts retains chart display, exposes stale mapping honestly, calculates and saves linked evidence',async()=>{
  const e=environment();try{
  e.controller.show();await settle();await settle();await e.openEvidence();
@@ -218,10 +250,15 @@ test('Charts records Playbook, Rules and Psychology through existing saves, reta
   const original=structuredClone(r.tables.trade_execution_checks[0]),review=structuredClone(r.tables.trade_execution_reviews[0]),trades=JSON.stringify(e.w.trades);
   e.controller.show();await settle();await settle();e.find('[data-charts-action="instruments"]').click();await settle();
   r.input('pb-note','Recorded entry');const condition=e.find('[data-execution-map-check]');condition.checked=true;condition.dispatchEvent(new e.w.Event('change',{bubbles:true}));
+  const balance=e.find('[data-execution-map-choice][value="Balance"]'),imbalance=e.find('[data-execution-map-choice][value="Imbalance"]');
+  const activate=input=>{input.dispatchEvent(new e.w.Event('pointerdown',{bubbles:true}));input.click();};
+  activate(balance);assert.equal(balance.checked,true);activate(imbalance);assert.equal(imbalance.checked,true);assert.equal(balance.checked,false);
+  activate(imbalance);assert.equal(imbalance.checked,false);activate(balance);assert.equal(e.find('#executionMapScore').textContent,'100.0%');
   e.find('#executionMapSaveReflectionsBtn').click();await settle();await settle();
   assert.ok(r.tables.trade_execution_checks.some(row=>row.comment==='Recorded entry'));assert.match(e.find('#executionMapReflectionSaveState').textContent,/saved for this trade/);
   r.select('checklist');const rule=e.find('[data-execution-checklist-check]');rule.checked=true;rule.dispatchEvent(new e.w.Event('change',{bubbles:true}));e.find('#executionMapSaveReflectionsBtn').click();await settle();await settle();
   const rules=r.tables.trade_execution_checks.find(row=>row.criterion_key.startsWith('text__ti_state__checklist'));assert.ok(rules);assert.equal(JSON.parse(rules.comment).controls[0].checked,true);
+  r.select('playbook');assert.equal(e.find('[data-execution-map-choice][value="Balance"]').checked,true);assert.equal(e.find('[data-execution-map-choice][value="Imbalance"]').checked,false);assert.equal(e.find('#executionMapScore').textContent,'100.0%');
   r.select('psych');r.input('psych-note','Recorded reflection');r.input('score_discipline',8);assert.equal(e.find('#executionMapScore').textContent,'80.0%');
   e.find('#executionMapSaveReflectionsBtn').click();await settle();await settle();assert.ok(r.tables.trade_execution_checks.some(row=>row.comment==='Recorded reflection'));
   assert.ok(r.tables.trade_execution_checks.some(row=>row.criterion_key.includes('score_discipline')&&JSON.parse(row.comment).value===8));
