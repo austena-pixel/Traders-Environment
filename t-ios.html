@@ -7765,6 +7765,7 @@ document.addEventListener('click',event=>{
   const button=event.target.closest('[data-market-evidence-trade]');if(!button)return;
   const trade=trades.find(t=>t.id===button.dataset.marketEvidenceTrade);
   if(!trade||trade.user_id!==currentUser?.id)return;
+  $('#tradeModal').classList.remove('open');
   document.querySelector('.nav-btn[data-page="charts"]').click();
   chartWorkspace.openTrade(trade);
 });
