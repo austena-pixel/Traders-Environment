@@ -7744,7 +7744,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
 <script src="core/evidence-contract.js"></script>
 <script src="trade-evidence.js"></script>
-<script src="tios-capture.js?v=20261011-trade-requirements-only"></script>
+<script src="tios-capture.js?v=20261011-no-playbook-assignment"></script>
 <script src="core/chart-workspace.js"></script>
 <script src="core/chart-feed-verification.js"></script>
 <script src="tios-market-verification.js"></script>
@@ -7826,7 +7826,8 @@ const tradeEvidence = window.TIOSTradeEvidence.create({
 const chartCapture = window.TIOSCaptureEvidence.create({
   getClient:()=>db,getUser:()=>currentUser,
   getTrades:()=>trades,getNumber:id=>journalTradeNumbers().get(String(id)),
-  getPlaybookDocuments:()=>playbookDocuments
+  getPlaybookDocuments:()=>playbookDocuments,
+  getSelectedPlaybook:()=>currentPlaybookDocument()
 });
 window.TIOSChartCaptureController=chartCapture;
 const chartWorkspace = window.TIOSCharts.create({
