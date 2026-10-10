@@ -6,9 +6,9 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 window.TIOSCaptureEvidence={
  create({getClient,getUser,getTrades,getNumber,getPlaybookDocuments}){
   const root=document.createElement('div');root.className='tios-capture-overlay';root.hidden=true;document.body.appendChild(root);
-  let draft=null,scope=null,uploading=false,epoch=0,imageUrls=[];
+  let draft=null,scope=null,uploading=false,epoch=0,purposeEpoch=0,imageUrls=[];
   function clearImages(){imageUrls.forEach(u=>URL.revokeObjectURL(u));imageUrls=[]}
-  function end(){if(uploading)return;epoch++;clearImages();if(draft?.url)URL.revokeObjectURL(draft.url);draft=null;scope=null;root.hidden=true;root.replaceChildren()}
+  function end(){if(uploading)return;epoch++;purposeEpoch++;clearImages();if(draft?.url)URL.revokeObjectURL(draft.url);draft=null;scope=null;root.hidden=true;root.replaceChildren()}
   function session(){const u=getUser(),s=getClient()?.auth?.getSession;if(!u?.id||!s)throw Error('Sign in to T-IOS first.');return u.id}
   async function request(path,{method='GET',body}={}){
    const {data,error}=await getClient().auth.getSession();const token=data?.session?.access_token;
@@ -68,6 +68,73 @@ window.TIOSCaptureEvidence={
   function trades(){const user=getUser();return (getTrades()||[]).filter(t=>t.user_id===user?.id&&!t.is_deleted)}
   function pane(title,inner){root.innerHTML='<section class="tios-capture-dialog" role="dialog" aria-modal="true" aria-label="'+esc(title)+'"><header><strong>'+esc(title)+'</strong><button type="button" data-capture-close aria-label="Close">×</button></header>'+inner+'<p class="tios-capture-status" data-capture-status role="status"></p></section>';root.hidden=false}
   function tradeOptions(selected){return '<option value="">Select trade…</option>'+trades().map(t=>'<option value="'+esc(t.id)+'" '+(selected===t.id?'selected':'')+'>Trade '+esc(getNumber(t.id)||'—')+' · '+esc(t.instrument||'')+' · '+esc(t.trade_date||'')+'</option>').join('')}
+  function sectionLabel(section){
+    return section.category==='custom'?section.label:categories[section.category];
+  }
+  function configuredPlaybooks(){
+    return getPlaybooks().filter(pb=>normalizeSections(requirementsForPlaybook(pb.id)).length>0);
+  }
+  function captureSelection(){
+    const input=root.querySelector('[data-capture-category]');
+    const value=input?.value;
+    return value!==undefined && /^\d+$/.test(value)?Number(value):null;
+  }
+  function updateSaveAvailability(){
+    const button=root.querySelector('[data-capture-save]');
+    if(button)button.disabled=Boolean(uploading)||!draft||!root.querySelector('[data-capture-trade]')?.value||captureSelection()===null;
+  }
+  async function renderCaptureRequirements(){
+    const reqId=++purposeEpoch;
+    const tradeId=root.querySelector('[data-capture-trade]')?.value||'';
+    const holder=root.querySelector('[data-capture-config]');
+    if(!holder)return;
+    updateSaveAvailability();
+    if(!tradeId){
+      holder.innerHTML='<label>Capture purpose<select disabled><option>Choose a trade first</option></select></label>';
+      updateSaveAvailability();
+      return;
+    }
+    holder.innerHTML='<p class="tios-capture-status">Checking required screenshots for this trade…</p>';
+    try{
+      const linked=await assignment(tradeId);
+      if(reqId!==purposeEpoch||!holder.isConnected||root.querySelector('[data-capture-trade]')?.value!==tradeId)return;
+      const known=configuredPlaybooks();
+      let html='';
+      if(!linked)html+='<p class="tios-capture-status">Choose an Evidence Playbook for this trade before saving screenshots.</p>';
+      else html+='<p class="tios-capture-status">Evidence Playbook: <strong>'+esc(linked.playbook_name)+'</strong></p>';
+      const alternatives=known.filter(pb=>pb.id!==linked?.playbook_id);
+      if(alternatives.length){
+        html+='<label>'+(linked?'Change Evidence Playbook':'Assign Evidence Playbook')+'<select data-capture-playbook><option value="">Select Playbook…</option>'+alternatives.map(pb=>'<option value="'+esc(pb.id)+'">'+esc(pb.name)+'</option>').join('')+'</select></label>';
+      }
+      const sections=normalizeSections(linked?.required_sections);
+      if(sections.length){
+        html+='<label>Capture purpose<select data-capture-category><option value="">Select required screenshot…</option>'+sections.map((item,index)=>'<option value="'+index+'">'+esc(sectionLabel(item))+'</option>').join('')+'</select></label>';
+      }else if(linked){
+        html+='<p class="tios-capture-status">No screenshot requirements were selected when this Playbook was assigned. Configure them in Playbooks, then update this trade.</p>';
+      }else if(!known.length){
+        html+='<p class="tios-capture-status">No Playbooks have evidence requirements. Open Technical Instruments → Playbooks → Evidence requirements to select them first.</p>';
+      }
+      if(linked&&known.some(pb=>pb.id===linked.playbook_id)){
+        html+='<button class="btn small" type="button" data-capture-refresh-requirements>Update from Playbook</button>';
+      }
+      holder.innerHTML=html;
+      updateSaveAvailability();
+    }catch(err){
+      if(reqId!==purposeEpoch)return;
+      holder.textContent='Unable to load evidence requirements.';
+      status(err.message,true);
+      updateSaveAvailability();
+    }
+  }
+  async function updateCapturePlaybook(id){
+    const tradeId=root.querySelector('[data-capture-trade]')?.value;
+    const pb=configuredPlaybooks().find(p=>p.id===id);
+    if(!tradeId||!pb){status('Select a configured Playbook and a trade.',true);return}
+    const existing=await assignment(tradeId);
+    if(existing&&existing.playbook_id!==pb.id&&!confirm('Change the evidence Playbook for this trade? Existing screenshots will remain saved.'))return;
+    await setAssignment(tradeId,pb);
+    await renderCaptureRequirements();
+  }
   async function screenshot(){
     if(!navigator.mediaDevices?.getDisplayMedia)throw Error('Tab capture is unavailable here. Choose Upload screenshot.');
     const chart=[...document.querySelectorAll('#chartsWorkspace [data-chart-id]')].find(card=>card.dataset.chartId===scope?.chartId);
@@ -111,7 +178,8 @@ window.TIOSCaptureEvidence={
       if(draft?.url)URL.revokeObjectURL(draft.url);
       draft={file,url,method,width:image.naturalWidth,height:image.naturalHeight,...scope};
       if(!draft.width||!draft.height||draft.width*draft.height>60000000){status('The image dimensions are unsupported.',true);return}
-      pane('Save chart screenshot','<img class="tios-capture-preview" src="'+url+'" alt="Screenshot preview"><label>Attach to trade<select data-capture-trade>'+tradeOptions(draft.tradeId)+'</select></label><label>Capture purpose<select data-capture-category>'+Object.entries(categories).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('')+'</select></label><label>Custom label<input data-capture-custom maxlength="90" placeholder="Optional"></label><label>Notes<textarea data-capture-note maxlength="1000" rows="2"></textarea></label><footer><button type="button" data-capture-save class="btn primary">Save evidence</button><button type="button" data-capture-close class="btn">Cancel</button></footer>');
+      pane('Save chart screenshot','<img class="tios-capture-preview" src="'+url+'" alt="Screenshot preview"><label>Attach to trade<select data-capture-trade>'+tradeOptions(draft.tradeId)+'</select></label><div data-capture-config></div><label>Notes<textarea data-capture-note maxlength="1000" rows="2"></textarea></label><footer><button type="button" data-capture-save class="btn primary" disabled>Save evidence</button><button type="button" data-capture-close class="btn">Cancel</button></footer>');
+      renderCaptureRequirements();
     };
     image.onerror=()=>{URL.revokeObjectURL(url);status('Cannot read this screenshot.',true)};
     image.src=url;
@@ -122,12 +190,35 @@ window.TIOSCaptureEvidence={
     pane('Capture · '+chart.symbol,'<p>Choose how to capture this chart. Tab sharing requires browser permission. Select this T-IOS tab, then confirm the preview before saving.</p><div class="tios-capture-buttons"><button class="btn primary" type="button" data-capture-tab>Capture visible tab</button><button class="btn" type="button" data-capture-upload>Upload screenshot</button></div><input type="file" accept="image/png,image/jpeg,image/webp" data-capture-file hidden>');
   }
   async function save(){
-    const id=root.querySelector('[data-capture-trade]')?.value,category=root.querySelector('[data-capture-category]')?.value;
-    if(!draft||!id||!trades().some(t=>t.id===id)){status('Select a saved trade first.',true);return}
-    const form=new FormData();for(const [k,v] of Object.entries({trade_id:id,category,custom_label:root.querySelector('[data-capture-custom]').value,note:root.querySelector('[data-capture-note]').value,chart_id:draft.chartId,symbol:draft.symbol,timeframe:draft.timeframe,capture_method:draft.method,image_width:draft.width,image_height:draft.height}))form.append(k,String(v));
-    form.append('image',draft.file);uploading=true;root.querySelectorAll('button,input,textarea,select').forEach(n=>n.disabled=true);status('Saving private screenshot…');
-    try{await request('/captures',{method:'POST',body:form});uploading=false;end();alert('Screenshot saved to Trade '+(getNumber(id)||'—')+'.');}
-    catch(e){uploading=false;root.querySelectorAll('button,input,textarea,select').forEach(n=>n.disabled=false);status(e.message,true)}
+    if(uploading)return;
+    const tradeId=root.querySelector('[data-capture-trade]')?.value;
+    const index=captureSelection();
+    if(!draft||!tradeId||!trades().some(t=>t.id===tradeId)){status('Select a saved trade first.',true);return}
+    if(index===null){status('Select a screenshot requirement for this trade.',true);return}
+    const note=root.querySelector('[data-capture-note]')?.value||'';
+    uploading=true;root.querySelectorAll('button,input,textarea,select').forEach(n=>n.disabled=true);status('Verifying Playbook requirements…');
+    try{
+      // Revalidate from Supabase before upload: do not trust the browser's category list.
+      const linked=await assignment(tradeId);
+      const selected=normalizeSections(linked?.required_sections)[index];
+      if(!selected)throw Error('That screenshot is not required by the assigned Playbook.');
+      const form=new FormData();
+      for(const [key,value] of Object.entries({
+        trade_id:tradeId,category:selected.category,custom_label:selected.category==='custom'?selected.label:'',
+        note,chart_id:draft.chartId,symbol:draft.symbol,timeframe:draft.timeframe,
+        capture_method:draft.method,image_width:draft.width,image_height:draft.height
+      }))form.append(key,String(value));
+      form.append('image',draft.file);
+      status('Saving private screenshot…');
+      await request('/captures',{method:'POST',body:form});
+      uploading=false;end();
+      alert('Screenshot saved to Trade '+(getNumber(tradeId)||'—')+'.');
+    }catch(err){
+      uploading=false;
+      root.querySelectorAll('button,input,textarea,select').forEach(n=>n.disabled=false);
+      updateSaveAvailability();
+      status(err.message,true);
+    }
   }
   async function gallery(tradeId){
     if(!trades().some(t=>t.id===tradeId))return;
@@ -153,6 +244,23 @@ window.TIOSCaptureEvidence={
     }
     if(e.target.closest('[data-capture-save]')){await save();return}
     const remove=e.target.closest('[data-capture-remove]');if(remove&&confirm('Remove this screenshot permanently?')){try{await request('/captures/'+remove.dataset.captureRemove,{method:'DELETE'});await gallery(scope.tradeId)}catch(err){status(err.message,true)}}
+  });
+  root.addEventListener('change',async e=>{
+    if(e.target.matches('[data-capture-trade]')){await renderCaptureRequirements();return}
+    if(e.target.matches('[data-capture-category]')){updateSaveAvailability();return}
+    if(e.target.matches('[data-capture-playbook]')&&e.target.value){
+      try{await updateCapturePlaybook(e.target.value)}catch(err){status(err.message,true);await renderCaptureRequirements()}
+      return;
+    }
+  });
+  root.addEventListener('click',async e=>{
+    if(!e.target.closest('[data-capture-refresh-requirements]'))return;
+    const tradeId=root.querySelector('[data-capture-trade]')?.value;
+    let linked;try{linked=await assignment(tradeId)}catch(err){status(err.message,true);return}
+    const pb=getPlaybooks().find(p=>p.id===linked?.playbook_id);
+    if(!pb){status('This Playbook is not available in the current browser.',true);return}
+    if(!confirm('Update this trade’s screenshot requirements from the Playbook? Existing screenshots will not be deleted.'))return;
+    try{await setAssignment(tradeId,pb);await renderCaptureRequirements()}catch(err){status(err.message,true)}
   });
   root.addEventListener('change',async e=>{
     const select=e.target.closest('[data-capture-assign]');if(!select||!scope?.tradeId||!select.value)return;
