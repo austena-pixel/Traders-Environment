@@ -88,6 +88,50 @@
       card.querySelector('.charts-widget').appendChild(frame);
     }
     function refreshWidgets(){host.querySelectorAll('[data-chart-id]').forEach(card=>mountChart(card))}
+    function cardMarkup(chart,index){return `<section class="charts-card" data-chart-id="${escape(chart.id)}" aria-label="Chart ${index+1}">
+            <div class="charts-card-top"><strong>Chart ${index+1}</strong><button class="btn small" type="button" data-charts-action="expand" aria-expanded="false">Expand</button></div>
+            <form class="charts-controls">
+              <label class="charts-symbol">Instrument<input data-chart-field="symbol" aria-label="Chart ${index+1} instrument" value="${escape(chart.symbol)}" maxlength="81" placeholder="FX:EURUSD" list="charts-symbols" required spellcheck="false" autocomplete="off"></label>
+              <label>Timeframe<select data-chart-field="interval" aria-label="Chart ${index+1} timeframe">${P.intervals.map(([value,label])=>`<option value="${value}" ${chart.interval===value?'selected':''}>${label}</option>`).join('')}</select></label>
+              <button class="btn small charts-apply" type="submit" title="Apply instrument and timeframe to this chart">Apply</button>
+              <label class="charts-responsibility">Responsibility <input data-chart-field="responsibility" aria-label="Chart ${index+1} responsibility" value="${escape(chart.responsibility)}" maxlength="120" placeholder="What do you analyse here?"></label>
+            </form>
+            <div class="charts-widget-status" role="status" aria-live="polite" hidden></div>
+            <div class="charts-widget"></div>
+          </section>`}
+    // Resize only affected cards, retaining existing TradingView frames and drawings.
+    function resizeMultiple(count){
+      if(!prefs||prefs.layout!=='multiple'||!Number.isInteger(count)||count<2||count>6)return;
+      capture();
+      const list=prefs.charts.multiple,old=list.length;
+      if(count===old)return;
+      if(count<old&&!window.confirm('Remove '+(old-count)+' chart(s) from this layout? Their individual settings will be removed when you save preferences.')){
+        const control=host.querySelector('[data-charts-count]');if(control)control.value=String(old);
+        return;
+      }
+      const grid=host.querySelector('.charts-grid');if(!grid)return;
+      if(count<old){
+        for(let i=old-1;i>=count;i--){
+          const chart=list.pop();
+          removeInstance(chart.id);
+          [...grid.querySelectorAll('[data-chart-id]')].find(card=>card.dataset.chartId===chart.id)?.remove();
+        }
+      }else{
+        for(let i=old;i<count;i++){
+          const reference=list.at(-1);
+          let id;
+          do{id='extra-'+crypto.randomUUID().slice(0,12)}while(list.some(chart=>chart.id===id));
+          const chart={id,symbol:reference?.symbol||'FX:EURUSD',interval:reference?.interval||'60',responsibility:''};
+          list.push(chart);
+          grid.insertAdjacentHTML('beforeend',cardMarkup(chart,i));
+          mountChart(grid.lastElementChild);
+        }
+      }
+      grid.dataset.chartCount=String(count);
+      grid.style.setProperty('--chart-count',String(count));
+      const badge=host.querySelector('[data-charts-layout="multiple"] span');if(badge)badge.textContent=String(count);
+      changed();
+    }
     function render(){
       if(!visible||!prefs)return;
       closeExpanded(false);dispose();
@@ -98,23 +142,14 @@
             <button type="button" data-charts-layout="single" aria-pressed="${prefs.layout==='single'}">Single Chart</button>
             <button type="button" data-charts-layout="multiple" aria-pressed="${prefs.layout==='multiple'}">Multiple Charts <span>${prefs.charts.multiple.length}</span></button>
           </div>
+          ${prefs.layout==='multiple'?`<label class="charts-setting charts-count-setting">Number of charts<select data-charts-count aria-label="Number of simultaneous charts">${[2,3,4,5,6].map(n=>`<option value="${n}" ${prefs.charts.multiple.length===n?'selected':''}>${n} charts</option>`).join('')}</select></label>`:''}
           <label class="charts-setting">Chart theme<select data-charts-setting="theme"><option value="dark" ${prefs.theme==='dark'?'selected':''}>Dark</option><option value="light" ${prefs.theme==='light'?'selected':''}>Light</option></select></label>
           <label class="charts-setting">Timezone<select data-charts-setting="timezone">${P.timezones.map(([value,label])=>`<option value="${value}" ${prefs.timezone===value?'selected':''}>${label}</option>`).join('')}</select></label>
           <div class="charts-save"><button type="button" class="btn primary" data-charts-action="save">Save preferences</button><span data-charts-status role="status" aria-live="polite"></span><button type="button" class="btn small" data-charts-action="reload" hidden>Reload saved preferences</button></div>
           <p class="charts-help">Save defaults with these controls. Changes inside TradingView stay in this chart session. Market data availability and delays depend on the instrument.</p>
         </div>
-        <div class="charts-grid" data-charts-mode="${prefs.layout}" style="--chart-count:${activeCharts().length}">
-          ${activeCharts().map((chart,index)=>`<section class="charts-card" data-chart-id="${escape(chart.id)}" aria-label="Chart ${index+1}">
-            <div class="charts-card-top"><strong>Chart ${index+1}</strong><button class="btn small" type="button" data-charts-action="expand" aria-expanded="false">Expand</button></div>
-            <form class="charts-controls">
-              <label class="charts-symbol">Instrument<input data-chart-field="symbol" aria-label="Chart ${index+1} instrument" value="${escape(chart.symbol)}" maxlength="81" placeholder="FX:EURUSD" list="charts-symbols" required spellcheck="false" autocomplete="off"></label>
-              <label>Timeframe<select data-chart-field="interval" aria-label="Chart ${index+1} timeframe">${P.intervals.map(([value,label])=>`<option value="${value}" ${chart.interval===value?'selected':''}>${label}</option>`).join('')}</select></label>
-              <button class="btn small charts-apply" type="submit" title="Apply instrument and timeframe to this chart">Apply</button>
-              <label class="charts-responsibility">Responsibility <input data-chart-field="responsibility" aria-label="Chart ${index+1} responsibility" value="${escape(chart.responsibility)}" maxlength="120" placeholder="What do you analyse here?"></label>
-            </form>
-            <div class="charts-widget-status" role="status" aria-live="polite" hidden></div>
-            <div class="charts-widget"></div>
-          </section>`).join('')}
+        <div class="charts-grid" data-charts-mode="${prefs.layout}" data-chart-count="${activeCharts().length}" style="--chart-count:${activeCharts().length}">
+          ${activeCharts().map(cardMarkup).join('')}
         </div>
         <datalist id="charts-symbols"><option value="FX:EURUSD"><option value="FX:GBPUSD"><option value="OANDA:XAUUSD"><option value="NASDAQ:AAPL"><option value="BINANCE:BTCUSDT"></datalist>`;
       changed();refreshWidgets();
@@ -167,6 +202,7 @@
       if(event.target.dataset.chartField==='responsibility'&&expanded===card)card.setAttribute('aria-label','Chart · '+event.target.value);
     });
     host.addEventListener('change',event=>{
+      if(event.target.matches('[data-charts-count]')){resizeMultiple(Number(event.target.value));return}
       if(event.target.matches('[data-charts-setting]')){
         prefs[event.target.dataset.chartsSetting]=event.target.value;changed();refreshWidgets();
       }else if(event.target.matches('[data-chart-field="interval"]')){
