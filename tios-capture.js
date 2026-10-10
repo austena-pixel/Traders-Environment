@@ -4,7 +4,7 @@ const API='https://tios-capture-api.austena401.workers.dev';
 const categories={market_context:'Market Context',market_structure:'Market Structure',entry:'Entry',exit:'Exit',custom:'Custom'};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 window.TIOSCaptureEvidence={
- create({getClient,getUser,getTrades,getNumber}){
+ create({getClient,getUser,getTrades,getNumber,getPlaybookDocuments}){
   const root=document.createElement('div');root.className='tios-capture-overlay';root.hidden=true;document.body.appendChild(root);
   let draft=null,scope=null,uploading=false,epoch=0,imageUrls=[];
   function clearImages(){imageUrls.forEach(u=>URL.revokeObjectURL(u));imageUrls=[]}
@@ -27,11 +27,7 @@ window.TIOSCaptureEvidence={
   function saveRequirements(id,sections){
     const data=storedRequirements();data[id]=sections;localStorage.setItem(reqKey(),JSON.stringify(data));
   }
-  function getPlaybooks(){
-    const user=getUser()?.id;if(!user)return [];
-    const key='tios_playbook_documents_v1:'+user+':'+(window.TIOSCaptureAccountId?.()||'default');
-    try{const data=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(data)?data.filter(p=>!p.templateDraft):[]}catch(_){return []}
-  }
+  function getPlaybooks(){return (getPlaybookDocuments?.()||[]).filter(p=>p&&!p.templateDraft);}
   function normalizeSections(list){
     if(!Array.isArray(list))return [];
     return list.filter(s=>s&&typeof s==='object').map(s=>({category:String(s.category||''),label:String(s.label||'').trim().slice(0,90)})).filter(s=>Object.hasOwn(categories,s.category)&&(s.category!=='custom'||s.label)).slice(0,16);
@@ -53,6 +49,7 @@ window.TIOSCaptureEvidence={
     const {error}=await getClient().from('trade_capture_playbook_links').upsert(data,{onConflict:'trade_id'});
     if(error)throw Error('Could not assign this Playbook. '+error.message);
   }
+  function editRequirements(playbook){editor(playbook);}
   function requirementState(required,captures){
     return normalizeSections(required).map(r=>({label:r.category==='custom'?r.label:categories[r.category],found:captures.some(c=>c.category===r.category&&(r.category!=='custom'||c.custom_label?.toLowerCase()===r.label.toLowerCase()))}));
   }
@@ -151,7 +148,7 @@ window.TIOSCaptureEvidence={
     const saveReq=e.target.closest('[data-requirements-save]');
     if(saveReq){
       const fields=[...root.querySelectorAll('[data-requirement]:checked')].map(el=>({category:el.dataset.requirement,label:''}));
-      const extras=(root.querySelector('[data-capture-extra]')?.value||'').split('\\n').map(x=>x.trim()).filter(Boolean).slice(0,12).map(label=>({category:'custom',label}));
+      const extras=(root.querySelector('[data-capture-extra]')?.value||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean).slice(0,12).map(label=>({category:'custom',label}));
       saveRequirements(saveReq.dataset.requirementsSave,normalizeSections([...fields,...extras]));end();return;
     }
     if(e.target.closest('[data-capture-save]')){await save();return}
@@ -165,7 +162,7 @@ window.TIOSCaptureEvidence={
   root.addEventListener('change',e=>{if(e.target.matches('[data-capture-file]')){const file=e.target.files[0];if(file)present(file,'upload')}});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!root.hidden&&!uploading)end()});
   window.addEventListener('tios:conversation-scope-changing',()=>{uploading=false;end()});
-  return Object.freeze({open,gallery,editRequirements:editor,reset:()=>{uploading=false;end()}});
+  return Object.freeze({open,gallery,editRequirements,reset:()=>{uploading=false;end()}});
  }
 };
 })();
