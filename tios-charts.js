@@ -285,7 +285,7 @@
     function refreshWidgets(){host.querySelectorAll('[data-chart-id]').forEach(card=>mountChart(card))}
     function cardMarkup(chart,index){return `<section class="charts-card" data-chart-id="${escape(chart.id)}" aria-label="Chart ${index+1}">
             <div class="charts-card-top"><strong>Chart ${index+1}</strong><div class="charts-card-actions">
-              ${index===0?`<button class="btn small charts-reveal-controls" type="button" data-charts-action="toggle-panel" aria-controls="chartsPanel" aria-expanded="${!controlsCollapsed}" ${controlsCollapsed?'':'hidden'}>Show controls</button><a class="btn small charts-tv-signin" href="https://www.tradingview.com/accounts/signin/" target="_blank" rel="noopener noreferrer" data-charts-tv-signin aria-describedby="charts-tv-account-note" title="Sign in on TradingView in a new tab. Embedded T-IOS charts remain separate.">TradingView login ↗</a><a class="btn small charts-tv-link" href="https://www.tradingview.com/chart/?symbol=${escape(encodeURIComponent(chart.symbol))}" target="_blank" rel="noopener noreferrer" data-charts-tv-chart title="Open the T-IOS configured symbol on TradingView in a new tab; widget toolbar changes are not tracked">Open TradingView ↗</a>`:''}
+              ${index===0?`<button class="btn small charts-reveal-controls" type="button" data-charts-action="toggle-panel" aria-controls="chartsPanel" aria-expanded="${!controlsCollapsed}" ${controlsCollapsed?'':'hidden'}>Show controls</button><button class="btn small charts-account-link" type="button" data-charts-action="manage-deriv-account" title="Manage the selected Deriv MT5 account inside T-IOS">Deriv account</button><a class="btn small charts-tv-link" href="https://www.tradingview.com/chart/?symbol=${escape(encodeURIComponent(chart.symbol))}" target="_blank" rel="noopener noreferrer" data-charts-tv-chart title="Open the T-IOS configured symbol on TradingView in a new tab; widget toolbar changes are not tracked">Open TradingView ↗</a>`:''}
               <button class="btn small" type="button" data-charts-action="reset-chart" title="Reload this chart to its saved instrument, or the configured instrument if no saved chart exists">Reset instrument</button><button class="btn small" type="button" data-charts-action="expand" aria-expanded="false">Expand</button></div></div>
             <form class="charts-controls">
               <label class="charts-symbol">Instrument<input data-chart-field="symbol" aria-label="Chart ${index+1} instrument" value="${escape(chart.symbol)}" maxlength="81" placeholder="FX:EURUSD" list="charts-symbols" required spellcheck="false" autocomplete="off"></label>
@@ -333,6 +333,10 @@
     }
     function render(){
       if(!visible||!prefs)return;
+      const selectedAccount=getSelectedAccount?.();
+      const selectedAccountName=selectedAccount?.account_name||'No trading account selected';
+      const mt5Linked=selectedAccount?.platform==='MT5';
+      const selectedAccountStatus=mt5Linked?(selectedAccount.connection_status||'pending'):'manual account';
       instrumentLoadEpoch++;instrumentWorkspace?.unmount();closeExpanded(false);dispose();
       host.innerHTML=`
         <div class="charts-workbench ${controlsCollapsed?'charts-panel-collapsed':''}">
@@ -340,10 +344,12 @@
             <div class="charts-panel-head"><strong data-charts-sidebar-title>Charts</strong><button class="btn small" type="button" data-charts-action="instruments" aria-controls="chartsInstruments" aria-pressed="false">Instruments</button><button class="btn small charts-panel-dismiss" type="button" data-charts-action="toggle-panel" aria-controls="chartsPanel" aria-expanded="${!controlsCollapsed}">Hide controls</button></div>
             <div class="charts-panel-scroll">
               <div class="charts-toolbar">
-          <div class="charts-section-title">TradingView account</div>
+          <div class="charts-section-title">Deriv / MT5 connection</div>
           <div class="charts-account">
-            <a class="btn small" href="https://www.tradingview.com/accounts/signin/" target="_blank" rel="noopener noreferrer" data-charts-tv-signin aria-describedby="charts-tv-account-note">Sign in to TradingView ↗</a>
-            <p id="charts-tv-account-note" class="charts-account-note">Sign in on TradingView's website in a new tab to use your account and saved layouts. This does not sign in or sync the embedded T-IOS charts.</p>
+            <strong class="charts-account-current">${escape(selectedAccountName)}</strong>
+            <span class="charts-account-note">T-IOS account status: ${escape(selectedAccountStatus)}</span>
+            <button class="btn small" type="button" data-charts-action="manage-deriv-account">Manage Deriv MT5 inside T-IOS</button>
+            <p class="charts-account-note">Your linked MT5 account is selected in T-IOS Settings &amp; Connections. The embedded TradingView chart is a separate market-data widget; it does not inherit Deriv or MT5 authentication. Direct Deriv sign-in requires a registered Deriv OAuth application.</p>
           </div>
           <div class="charts-section-title">Layout</div>
           <div class="charts-layout" role="group" aria-label="Chart layout">
@@ -473,6 +479,7 @@
       const action=button.dataset.chartsAction;
       if(action==='toggle-panel')toggleControls();
       if(action==='instruments')setSidebarMode(sidebarMode==='settings'?'instruments':'settings');
+      if(action==='manage-deriv-account')document.querySelector('.nav-btn[data-page="settings"]')?.click();
       if(action==='retry-instruments')mountInstruments();
       if(action==='prefer-deriv')applyPreferredDeriv();
       if(action==='start-public-quote')startPublicQuote();
