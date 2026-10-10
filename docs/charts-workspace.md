@@ -2,7 +2,7 @@
 
 Open **Charts** directly below Dashboard in the T-IOS sidebar. Choose **Single
 Chart** for one large chart or **Multiple Charts** for three independent charts.
-Single Chart is the initial default; the three-timeframe method is optional.
+Single Chart is the initial default; the three-timeframe method is optional. In Multiple Charts mode, use **Number of charts** to choose 2–6 active charts. Three remains the default. Adding charts retains existing charts and provides editable new chart defaults. Reducing the count asks for confirmation before discarding removed charts' settings. Save preferences to persist the selected chart count and settings.
 
 Use each chart's Instrument, Timeframe and Responsibility controls to configure
 its defaults. Instrument codes use TradingView's `EXCHANGE:SYMBOL` format, such
