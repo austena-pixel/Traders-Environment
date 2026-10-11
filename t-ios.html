@@ -1697,12 +1697,54 @@ body.playbook-workspace .main{
   font-size:10px;
   line-height:1.5;
 }
-.chart-legend-note{
-  color:#96a4b7;
-  font-size:10px;
-  text-align:right;
-  line-height:1.5;
+.stats-autozoom-toggle{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  min-height:30px;
+  padding:5px 8px;
+  border:1px solid #28553f;
+  border-radius:999px;
+  background:#0b1d16;
+  color:#94dfb7;
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:.35px;
+  white-space:nowrap;
+  transition:border-color .15s ease,background .15s ease,color .15s ease;
 }
+.stats-autozoom-toggle:hover{border-color:#3b7659;background:#10271d}
+.stats-autozoom-toggle:focus-visible{outline:2px solid #63dba3;outline-offset:2px}
+.stats-autozoom-toggle[aria-pressed="false"]{
+  border-color:#3a4654;
+  background:#111820;
+  color:#aab6c5;
+}
+.stats-autozoom-track{
+  display:inline-flex;
+  align-items:center;
+  width:25px;
+  height:14px;
+  padding:2px;
+  border:1px solid currentColor;
+  border-radius:999px;
+  opacity:.78;
+}
+.stats-autozoom-thumb{
+  display:block;
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#45d69a;
+  transform:translateX(10px);
+  transition:transform .16s ease,background .16s ease;
+}
+.stats-autozoom-toggle[aria-pressed="false"] .stats-autozoom-thumb{
+  transform:translateX(0);
+  background:#8391a2;
+}
+.stats-autozoom-state{font-size:8px;letter-spacing:.55px;min-width:14px}
 .stats-visuals-layout{
   display:grid;
   grid-template-columns:minmax(0,1.8fr) minmax(250px,.95fr);
@@ -1711,6 +1753,8 @@ body.playbook-workspace .main{
 }
 .stats-equity-column{min-width:0}
 .stats-indicator-stack{
+  position:relative;
+  isolation:isolate;
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
   grid-template-rows:minmax(160px,auto) minmax(140px,1fr);
@@ -1721,6 +1765,7 @@ body.playbook-workspace .main{
   align-self:stretch;
 }
 .stats-indicator-card{
+  position:relative;
   min-height:160px;
   padding:12px;
   border:1px solid #1c2a39;
@@ -1729,6 +1774,20 @@ body.playbook-workspace .main{
   display:flex;
   flex-direction:column;
   justify-content:center;
+  transform-origin:center;
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.stats-indicator-stack.stats-autozoom .stats-indicator-card.stats-card-zoomed{
+  transform:scale(1.045);
+  z-index:2;
+  border-color:#38577b;
+  box-shadow:0 12px 28px rgba(0,0,0,.38),0 0 0 1px rgba(105,168,255,.18);
+}
+@media(max-width:520px){
+  .stats-indicator-stack.stats-autozoom .stats-indicator-card.stats-card-zoomed{transform:scale(1.015)}
+}
+@media(prefers-reduced-motion:reduce){
+  .stats-indicator-card,.stats-autozoom-thumb{transition:none}
 }
 .stats-future-analysis{
   grid-column:1 / -1;
@@ -6665,10 +6724,11 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <h3>Equity Curve</h3>
             <p id="equityChartDescription">Account equity after every trade in the selected period.</p>
           </div>
-          <div class="chart-legend-note">
-            X-axis = trade number (T0, T1, T2, T3...).<br>
-            T0 is opening equity; every recorded trade is then plotted in sequence.
-          </div>
+          <button class="stats-autozoom-toggle" id="statsAutoZoomBtn" type="button" aria-pressed="true" aria-controls="statsIndicatorStack" title="Automatically zoom an analytics section when hovered or focused">
+            <span>Auto Zoom</span>
+            <span class="stats-autozoom-track" aria-hidden="true"><span class="stats-autozoom-thumb"></span></span>
+            <strong class="stats-autozoom-state" id="statsAutoZoomState">ON</strong>
+          </button>
         </div>
 
         <div class="stats-visuals-layout">
@@ -6682,8 +6742,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             </div>
           </div>
 
-          <aside class="stats-indicator-stack" aria-label="Selected-period indicators">
-            <section class="stats-indicator-card stats-profit-factor-card" aria-labelledby="statProfitFactorDiagramTitle">
+          <aside class="stats-indicator-stack stats-autozoom" id="statsIndicatorStack" aria-label="Selected-period indicators">
+            <section class="stats-indicator-card stats-profit-factor-card" tabindex="0" aria-labelledby="statProfitFactorDiagramTitle">
               <div class="stats-indicator-head"><div>
                 <h4 id="statProfitFactorDiagramTitle">Profit Factor</h4>
                 <span class="stats-indicator-caption">Gross profit ÷ gross loss</span>
@@ -6700,7 +6760,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               </div>
             </section>
 
-            <section class="stats-indicator-card" aria-labelledby="statWinRateGaugeTitle">
+            <section class="stats-indicator-card" tabindex="0" aria-labelledby="statWinRateGaugeTitle">
               <div class="stats-indicator-head">
                 <h4 id="statWinRateGaugeTitle">Win rate</h4>
                 <span class="stats-win-return neutral" id="statWinRateReturnLabel">— return</span>
@@ -8047,7 +8107,33 @@ let planReviews = [];
 let planChecks = [];
 let selectedEdgeTradeId = null;
 
-let statsRange = '1d';
+const STATS_RANGE_PREFERENCE_KEY = 'tios_statistics_selected_range_v1';
+const STATS_RANGE_OPTIONS = Object.freeze(['1d', '1w', '1m', '6m', '1y', 'all']);
+
+function loadStatsRangePreference(){
+  try{
+    const saved=localStorage.getItem(STATS_RANGE_PREFERENCE_KEY);
+    return STATS_RANGE_OPTIONS.includes(saved)?saved:'1d';
+  }catch(error){
+    return '1d';
+  }
+}
+
+function persistStatsRangePreference(range){
+  if(!STATS_RANGE_OPTIONS.includes(range))return;
+  try{
+    localStorage.setItem(STATS_RANGE_PREFERENCE_KEY,range);
+  }catch(error){}
+}
+
+function syncStatsRangeButtons(){
+  $('[data-stats-range]').forEach(btn=>{
+    btn.classList.toggle('active',btn.dataset.statsRange===statsRange);
+  });
+}
+
+let statsRange = loadStatsRangePreference();
+let statsAutoZoom = true;
 let statsAnchorDate = new Date();
 let equityChartInstance = null;
 
@@ -14056,9 +14142,61 @@ function moveStatsPeriod(direction){
   renderStatistics();
 }
 
-$$('.range-btn').forEach(btn=>{
+/* STATISTICS ANALYTICS AUTO-ZOOM */
+function setStatsAutoZoom(enabled){
+  statsAutoZoom=Boolean(enabled);
+  const stack=$('#statsIndicatorStack');
+  const toggle=$('#statsAutoZoomBtn');
+  const state=$('#statsAutoZoomState');
+  if(stack)stack.classList.toggle('stats-autozoom',statsAutoZoom);
+  if(toggle)toggle.setAttribute('aria-pressed',String(statsAutoZoom));
+  if(state)state.textContent=statsAutoZoom?'ON':'OFF';
+  if(!statsAutoZoom)setZoomedStatsCard(null);
+}
+
+function setZoomedStatsCard(card){
+  const stack=$('#statsIndicatorStack');
+  if(!stack)return;
+  const zoomed=statsAutoZoom&&card&&card.matches('.stats-indicator-card')&&stack.contains(card)?card:null;
+  stack.querySelectorAll('.stats-indicator-card.stats-card-zoomed').forEach(current=>{
+    if(current!==zoomed)current.classList.remove('stats-card-zoomed');
+  });
+  if(zoomed)zoomed.classList.add('stats-card-zoomed');
+}
+
+$('#statsAutoZoomBtn').addEventListener('click',()=>setStatsAutoZoom(!statsAutoZoom));
+
+const statsIndicatorStack=$('#statsIndicatorStack');
+if(statsIndicatorStack){
+  const cardFromStatsEvent=event=>{
+    const target=event.target;
+    return target&&typeof target.closest==='function'?target.closest('.stats-indicator-card'):null;
+  };
+  statsIndicatorStack.addEventListener('pointerover',event=>{
+    if(!statsAutoZoom)return;
+    const card=cardFromStatsEvent(event);
+    if(!card||!statsIndicatorStack.contains(card))return;
+    if(event.relatedTarget&&card.contains(event.relatedTarget))return;
+    setZoomedStatsCard(card);
+  });
+  statsIndicatorStack.addEventListener('pointerleave',()=>setZoomedStatsCard(null));
+  statsIndicatorStack.addEventListener('focusin',event=>{
+    const card=cardFromStatsEvent(event);
+    setZoomedStatsCard(card&&statsIndicatorStack.contains(card)?card:null);
+  });
+  statsIndicatorStack.addEventListener('focusout',event=>{
+    if(!statsIndicatorStack.contains(event.relatedTarget))setZoomedStatsCard(null);
+  });
+}
+setStatsAutoZoom(statsAutoZoom);
+
+syncStatsRangeButtons();
+$('[data-stats-range]').forEach(btn=>{
   btn.addEventListener('click',()=>{
-    statsRange=btn.dataset.statsRange;
+    const nextRange=btn.dataset.statsRange;
+    if(!STATS_RANGE_OPTIONS.includes(nextRange))return;
+    statsRange=nextRange;
+    persistStatsRangePreference(statsRange);
 
     if(statsRange==='1m'){
       statsAnchorDate=new Date(
@@ -14068,10 +14206,7 @@ $$('.range-btn').forEach(btn=>{
       );
     }
 
-    $$('.range-btn').forEach(x=>{
-      x.classList.toggle('active',x===btn);
-    });
-
+    syncStatsRangeButtons();
     renderStatistics();
   });
 });
@@ -14108,13 +14243,8 @@ $('#statsMonthInput').addEventListener('change',e=>{
   if(Number.isFinite(year) && Number.isFinite(month)){
     statsAnchorDate=new Date(year,month-1,1);
     statsRange='1m';
-
-    $$('.range-btn').forEach(btn=>{
-      btn.classList.toggle(
-        'active',
-        btn.dataset.statsRange==='1m'
-      );
-    });
+    persistStatsRangePreference(statsRange);
+    syncStatsRangeButtons();
 
     renderStatistics();
   }
