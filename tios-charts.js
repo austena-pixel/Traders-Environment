@@ -149,11 +149,12 @@
     function renderMarketList(){
       const list=host.querySelector('[data-charts-market-list]');
       if(!list)return;
-      const count=host.querySelector('[data-market-count]');
-      if(count)count.textContent=String(markets.length);
       const charts=activeCharts();
       if(!charts.some(chart=>chart.id===marketTargetChartId))marketTargetChartId=charts[0]?.id||'';
       const target=charts.find(chart=>chart.id===marketTargetChartId)||charts[0]||null;
+      const currentLabel=host.querySelector('[data-market-current]');
+      const currentMarket=markets.find(item=>item.symbol===target?.symbol?.trim().toUpperCase());
+      if(currentLabel)currentLabel.textContent=currentMarket?.name||'Select a saved market';
       const targetWrap=host.querySelector('[data-market-target-wrap]');
       const targetSelect=host.querySelector('[data-market-target]');
       if(targetWrap)targetWrap.hidden=charts.length<2;
@@ -214,6 +215,8 @@
       if(!field)return;
       marketTargetChartId=chart.id;
       if(field.value.trim().toUpperCase()===symbol){
+        const marketDisclosure=host.querySelector('[data-charts-market-disclosure]');
+        if(marketDisclosure)marketDisclosure.open=false;
         renderMarketList();
         const market=markets.find(item=>item.symbol===symbol);
         status((market?.name||symbol)+' is already selected for Chart '+(charts.indexOf(chart)+1)+'.');
@@ -223,6 +226,8 @@
       capture();syncDerivHint(panel);changed();updateMarketSelects();
       mountChart(cardForControl(field));
       const market=markets.find(item=>item.symbol===symbol);
+      const marketDisclosure=host.querySelector('[data-charts-market-disclosure]');
+      if(marketDisclosure)marketDisclosure.open=false;
       status((market?.name||symbol)+' selected for Chart '+(charts.indexOf(chart)+1)+'.');
     }
     function addCurrentMarket(card){
@@ -778,13 +783,16 @@
             <div class="charts-panel-head"><strong data-charts-sidebar-title>Charts</strong><button class="btn small" type="button" data-charts-action="instruments" aria-controls="chartsInstruments" aria-pressed="false">Instruments</button><button class="btn small charts-panel-dismiss" type="button" data-charts-action="toggle-panel" aria-controls="chartsPanel" aria-expanded="${!controlsCollapsed}">Hide controls</button></div>
             <div class="charts-panel-scroll">
               <div class="charts-toolbar">
-          <details class="charts-market-section" data-charts-market-disclosure>
-            <summary class="charts-section-title charts-market-summary"><span>My markets</span><span class="charts-market-summary-count" data-market-count>${markets.length}</span></summary>
-            <div class="charts-market-manager">
-              <label class="charts-market-target" data-market-target-wrap hidden>Apply to chart<select data-market-target aria-label="Select chart for saved market"></select></label>
-              <div class="charts-market-list" data-charts-market-list role="list" aria-label="Saved markets"></div>
-            </div>
-          </details>
+          <div class="charts-setting charts-market-control">
+            <span class="charts-market-label">My markets</span>
+            <details class="charts-market-section" data-charts-market-disclosure>
+              <summary class="charts-market-summary"><span data-market-current>Select a saved market</span></summary>
+              <div class="charts-market-menu">
+                <label class="charts-market-target" data-market-target-wrap hidden>Apply to chart<select data-market-target aria-label="Select chart for saved market"></select></label>
+                <div class="charts-market-list" data-charts-market-list role="list" aria-label="Saved markets"></div>
+              </div>
+            </details>
+          </div>
           <div class="charts-section-title">Layout</div>
           <div class="charts-layout" role="group" aria-label="Chart layout">
             <button type="button" data-charts-layout="single" aria-pressed="${prefs.layout==='single'}">Single Chart</button>
