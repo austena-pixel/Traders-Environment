@@ -43,3 +43,26 @@ test('Deriv choices work within existing version-one preferences without changin
  assert.deepEqual(p.charts.multiple.map(chart=>chart.interval),['240','60','5']);
  assert.equal(P.widgetSettings(p.charts.single[0],p).symbol,P.preferredDerivSymbol);
 });
+
+test('market list starts with both supported Volatility 75 markets',()=>{
+ const markets=P.defaultMarkets();
+ assert.equal(markets.length,2);
+ assert.deepEqual(markets.map(item=>item.symbol),['DERIV:VOLATILITY_75_1S_INDEX','DERIV:VOLATILITY_75_INDEX']);
+ assert.equal(P.validateMarkets(markets),null);
+});
+test('market lists are validated and saved independently per T-IOS user on this browser',()=>{
+ const values=new Map(),storage={getItem:key=>values.get(key)||null,setItem:(key,value)=>values.set(key,value)};
+ const userA='user-a',userB='user-b',custom={name:'NASDAQ 100',symbol:'NASDAQ:NDX'};
+ const saved=P.saveMarkets(storage,userA,[...P.defaultMarkets(),custom]);
+ assert.equal(P.validateMarkets(saved),null);
+ assert.deepEqual(P.loadMarkets(storage,userA),saved);
+ assert.deepEqual(P.loadMarkets(storage,userB),P.defaultMarkets());
+ assert.ok(P.validateMarkets([...saved,{...custom,name:'Duplicate'}]));
+ assert.ok(P.validateMarkets([{name:'Unsafe symbol',symbol:'https://example.com'}]));
+ assert.ok(P.validateMarkets(Array.from({length:31},(_,n)=>({name:'Market '+n,symbol:'FX:PAIR'+n}))));
+});
+test('invalid or unavailable browser market storage falls back without throwing',()=>{
+ const storage={getItem:()=>'{broken'};
+ assert.deepEqual(P.loadMarkets(storage,'user-a'),P.defaultMarkets());
+ assert.throws(()=>P.saveMarkets(null,'user-a',P.defaultMarkets()),/storage is unavailable/);
+});

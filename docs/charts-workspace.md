@@ -142,7 +142,7 @@ The two separate instruments are:
 - **Volatility 75 Index** — `DERIV:VOLATILITY_75_INDEX` ↔ observed Deriv MT5 `Volatility 75 Index.0`
 
 These are name mappings only: historical candle equivalence, feed synchronization and order-price parity have **not** been verified.
-"Use V75 (1s) as my default" switches the symbols in both the Single and Multiple layouts, without changing independent timeframes or roles. This is an **explicit per-user action**; users must then press Save preferences. Existing saved symbols, chart counts, journals, MT5 bridge connections and trade data are not altered by this update.
+**My trading markets** opens a list that starts with Volatility 75 (1s) and Volatility 75. Add up to 30 named TradingView symbols using the `EXCHANGE:SYMBOL` format. Each chart's **My markets** selector applies a saved symbol to that chart; **Use in both layouts** switches the saved default in both Single and Multiple layouts without changing independent timeframes or roles. Press **Save preferences** to save chart defaults to the Charts account. The market list is stored per user in this browser and does not sync across devices. Existing saved symbols, chart counts, journals, MT5 bridge connections and trade data are not altered by this update.
 The manual TradingView instrument field remains available for other symbols. No automatic order execution, chart capture, chart-to-trade pairing, or MT5 API changes are included.
 
 ## Official widget boundary
