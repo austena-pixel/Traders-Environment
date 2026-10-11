@@ -10564,7 +10564,7 @@ function renderJournalPeriodReview(){
   const label=journalReviewPeriod==='day'?'Daily':journalReviewPeriod==='week'?'Weekly':'Monthly';
   $('#journalReviewTitle').textContent=label+' review';
   $('#journalReviewDates').textContent=bounds.start===bounds.end?formatDate(bounds.start):formatDate(bounds.start)+' – '+formatDate(bounds.end);
-  $('[data-journal-period]').forEach(button=>{
+  $$('[data-journal-period]').forEach(button=>{
     const active=button.dataset.journalPeriod===journalReviewPeriod;
     button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));
   });
@@ -10581,7 +10581,7 @@ function renderJournalPeriodReview(){
   $('#journalPeriodSummary').textContent=periodTrades.length+' trades across '+periodSessions.length+' saved sessions. Session rule compliance averages sessions with saved rule checks; execution quality averages trades with a measurable score.';
 }
 function renderJournalScopeViews(){
-  $('[data-journal-view]').forEach(button=>{
+  $$('[data-journal-view]').forEach(button=>{
     const active=button.dataset.journalView===journalScopeView;
     button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));
   });
@@ -10591,10 +10591,10 @@ function renderJournalScopeViews(){
   if(journalScopeView==='sessions')renderJournalSessions();
   if(journalScopeView==='reviews')renderJournalPeriodReview();
 }
-$('[data-journal-view]').forEach(button=>button.addEventListener('click',()=>{
+$$('[data-journal-view]').forEach(button=>button.addEventListener('click',()=>{
   journalScopeView=button.dataset.journalView;renderJournalScopeViews();
 }));
-$('[data-journal-period]').forEach(button=>button.addEventListener('click',()=>{
+$$('[data-journal-period]').forEach(button=>button.addEventListener('click',()=>{
   journalReviewPeriod=button.dataset.journalPeriod;renderJournalPeriodReview();
 }));
 $('#journalReviewAnchor').addEventListener('change',event=>{
