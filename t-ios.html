@@ -10902,7 +10902,78 @@ function executionReviewsForStructure(structure,reviews=activeExecutionReviews()
   });
 }
 
+
+function executionMappedValuesForKind(reviewRows,kind){
+  const values=[],choiceGroups=new Set();
+  let hasMappedData=false;
+  reviewRows.forEach(row=>{
+    const key=String(row.criterion_key||'');
+    if(key.startsWith('text__ti_state__'+kind+'__')){
+      hasMappedData=true;
+      let saved,definition,docKey;
+      try{saved=JSON.parse(row.comment);definition=JSON.parse(saved.definition);docKey=encodeURIComponent(saved.documentId)}catch(error){return}
+      if(saved.schema!=='tios.execution-form.v1'||saved.kind!==kind||typeof saved.documentId!=='string'||
+        key!=='text__ti_state__'+kind+'__'+docKey||!Array.isArray(definition)||!Array.isArray(saved.controls)||
+        definition.length!==saved.controls.length)return;
+      definition.forEach((field,index)=>{
+        const control=saved.controls[index];
+        if(!field||!control)return;
+        if(field.type==='checkbox'&&typeof control.checked==='boolean')values.push(control.checked?1:0);
+        if(field.type==='radio'&&typeof control.checked==='boolean'){
+          const groupKey=docKey+'::'+(field.name||String(index));
+          if(choiceGroups.has(groupKey))return;
+          choiceGroups.add(groupKey);
+          const selected=definition.some((option,optionIndex)=>
+            option.type==='radio'&&(option.name||String(optionIndex))===(field.name||String(index))&&saved.controls[optionIndex]?.checked===true
+          );
+          values.push(selected?1:0);
+        }
+      });
+      return;
+    }
+    if(executionIsScoreResponseKey(key)&&key.split('__')[2]===kind){
+      hasMappedData=true;
+      const score=executionScoreResponseFromComment(row.comment);
+      values.push(score?score.value/score.max:0);
+    }
+  });
+  return {hasMappedData,values};
+}
+
+function executionMappedCompositeForTrade(tradeId){
+  const review=executionReviewForTrade(tradeId);
+  if(!review)return {hasMappedData:false,score:null,categories:{}};
+  const rows=executionChecksForReview(review.id),kinds=['psych','playbook','checklist'];
+  const categories=Object.fromEntries(kinds.map(kind=>[kind,executionMappedValuesForKind(rows,kind)]));
+  const hasMappedData=kinds.some(kind=>categories[kind].hasMappedData);
+  if(!hasMappedData)return {hasMappedData:false,score:null,categories};
+  const scores=kinds.map(kind=>{
+    const values=categories[kind].values;
+    return values.length?values.reduce((sum,value)=>sum+value,0)/values.length:null;
+  });
+  if(scores.some(score=>score===null))return {hasMappedData:true,score:null,categories};
+  return {hasMappedData:true,score:Number(((scores.reduce((sum,value)=>sum+value,0)/3)*10).toFixed(4)),categories};
+}
+
+async function updateTradeExecutionCompositeScore(tradeId,userId=currentUser?.id){
+  if(!tradeId||!userId||userId!==currentUser?.id||!trades.some(trade=>trade.id===tradeId))return;
+  const composite=executionMappedCompositeForTrade(tradeId);
+  if(!composite.hasMappedData)return;
+  const score=composite.score===null?null:Number(composite.score.toFixed(2));
+  const result=await db.from('trades').update({execution_score:score,updated_at:new Date().toISOString()})
+    .eq('id',tradeId).eq('user_id',userId).select('id,execution_score').maybeSingle();
+  if(result.error)throw result.error;
+  if(!result.data||result.data.id!==tradeId||result.data.execution_score!==score)throw new Error('The combined trade score could not be verified.');
+  const trade=trades.find(item=>item.id===tradeId);
+  if(trade)trade.execution_score=score;
+  renderJournal();
+  renderDashboard();
+  renderStatistics();
+}
+
 function executionScoreForTrade(tradeId){
+  const composite=executionMappedCompositeForTrade(tradeId);
+  if(composite.hasMappedData)return composite.score===null?null:composite.score*10;
   const review=executionReviewForTrade(tradeId);
   if(!review)return null;
   const rows=executionChecklistRowsForReview(review.id);
@@ -10923,6 +10994,11 @@ function executionRatingForTrade(tradeId){
 }
 
 function journalExecutionBadge(tradeId,fallbackScore){
+  const composite=executionMappedCompositeForTrade(tradeId);
+  if(composite.hasMappedData){
+    if(composite.score===null)return '<span class="grade-badge grade-none" title="Complete measurable Psychology, Playbook / Edge, and Rules reviews to calculate the equal-thirds trade score.">Pending</span>';
+    return '<span class="grade-badge grade-a" title="Combined score: Psychology ⅓ + Playbook / Edge ⅓ + Rules ⅓">'+composite.score.toFixed(1)+'/10</span>';
+  }
   const review=executionReviewForTrade(tradeId);
   const rating=executionRatingForTrade(tradeId);
   const score=executionScoreForTrade(tradeId);
@@ -12198,7 +12274,9 @@ async function saveExecutionMappingReflections(){
     const draft=executionMappingReflectionDrafts.get(scope.key);
     answers.forEach(answer=>{if(draft?.get(answer.key)?.trim()===answer.value)draft.delete(answer.key)});
     if(draft&&!draft.size)executionMappingReflectionDrafts.delete(scope.key);
-    if(executionMappingReflectionContext?.key===scope.key)showStatus(noun+' saved for this trade');
+    try{await updateTradeExecutionCompositeScore(scope.tradeId,scope.userId)}
+     catch(scoreError){executionMappingReflectionError={key:scope.key,message:'Responses were saved, but the combined execution score was not updated. '+(scoreError.message||'Please retry.')}}
+     if(executionMappingReflectionContext?.key===scope.key&&!executionMappingReflectionError?.key)showStatus(noun+' saved for this trade');
   }catch(error){
     executionMappingReflectionError={key:scope.key,message:noun+' were not saved. '+(error.message||'Please retry.')};
   }finally{
@@ -12584,7 +12662,10 @@ async function saveExecutionReview(){
     }
   }
 
-  const scorePct=currentExecutionScore();
+  const mappedComposite=executionMappedCompositeForTrade(trade.id);
+  const scorePct=mappedComposite.hasMappedData
+    ? (mappedComposite.score===null?null:mappedComposite.score*100)
+    : currentExecutionScore();
   const tradeUpdateResult=await db
     .from('trades')
     .update({
