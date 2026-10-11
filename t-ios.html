@@ -1697,6 +1697,26 @@ body.playbook-workspace .main{
   font-size:10px;
   line-height:1.5;
 }
+.stats-equity-heading{min-width:0;flex:1 1 auto}
+.stats-equity-summary{
+  display:flex;
+  align-items:flex-start;
+  flex-wrap:wrap;
+  gap:10px 24px;
+  margin-top:12px;
+}
+.stats-equity-summary-item{display:flex;flex-direction:column;gap:4px;min-width:112px}
+.stats-equity-summary-item span{color:#94a3b8;font-size:10px}
+.stats-equity-summary-item strong{
+  color:#f3f6fb;
+  font-size:18px;
+  line-height:1.2;
+  font-weight:800;
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+.stats-equity-summary-item strong.pos{color:#45d69a}
+.stats-equity-summary-item strong.neg{color:#ff727c}
 .stats-autozoom-toggle{
   display:inline-flex;
   align-items:center;
@@ -6752,9 +6772,19 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
       <section class="panel chart-panel">
         <div class="chart-panel-head">
-          <div>
+          <div class="stats-equity-heading">
             <h3>Equity Curve</h3>
             <p id="equityChartDescription">Account equity after every trade in the selected period.</p>
+            <div class="stats-equity-summary" role="group" aria-label="Selected-period equity performance">
+              <div class="stats-equity-summary-item">
+                <span>Ending Equity</span>
+                <strong id="statEquityHeaderEnding" aria-live="polite">—</strong>
+              </div>
+              <div class="stats-equity-summary-item">
+                <span>Net P&amp;L</span>
+                <strong id="statEquityHeaderNetPnl" class="neutral" aria-live="polite">—</strong>
+              </div>
+            </div>
           </div>
           <button class="stats-autozoom-toggle" id="statsAutoZoomBtn" type="button" aria-pressed="true" aria-controls="statsIndicatorStack" title="Automatically zoom an analytics section when hovered or focused">
             <span>Auto Zoom</span>
@@ -14262,6 +14292,11 @@ function renderStatistics(){
 
   $('#statNetPnl').textContent=signedMoney(netPnl);
   $('#statNetPnl').className='value '+pnlClass(netPnl);
+
+  // Mirror the selected-period values beside the Equity Curve.
+  $('#statEquityHeaderEnding').textContent=money(endingEquity);
+  $('#statEquityHeaderNetPnl').textContent=signedMoney(netPnl);
+  $('#statEquityHeaderNetPnl').className=pnlClass(netPnl);
 
   $('#statReturn').textContent=formatReturnPct(returnPct);
   $('#statReturn').className='value '+(returnPct===null?'neutral':pnlClass(returnPct));
