@@ -1634,6 +1634,22 @@ body.playbook-workspace .main{
 
 
 /* STATISTICS */
+
+#page-statistics>.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.stats-view-tabs{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-left:auto}
+.stats-view-tabs .range-btn{white-space:nowrap}
+.stats-view-tabs .range-btn:focus-visible{outline:2px solid var(--accent,#69a8ff);outline-offset:3px}
+.stats-view-panel[hidden]{display:none!important}
+.stats-psychology-view{padding:24px;min-height:280px}
+.stats-psychology-view h3{margin:0 0 8px;font-size:18px}
+.stats-psychology-view p{color:#93a2b6;font-size:12px;line-height:1.6}
+.stats-psychology-instruments{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:24px}
+.stats-psychology-instruments article{border:1px solid var(--line,#202a38);border-radius:12px;padding:16px}
+.stats-psychology-instruments h4{font-size:13px;margin:0 0 8px}
+.stats-psychology-instruments p{margin:0}
+.stats-psychology-empty{margin:20px 0 0}
+@media(max-width:700px){.stats-view-tabs{margin-left:0;justify-content:flex-start}.stats-psychology-instruments{grid-template-columns:1fr}.stats-psychology-view{padding:16px}}
+
 .stats-toolbar{
   display:flex;
   justify-content:space-between;
@@ -6884,8 +6900,13 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           <h1>Statistics</h1>
           <p>Account growth, drawdown and performance quality across selectable timeframes.</p>
         </div>
+        <div class="stats-view-tabs" role="tablist" aria-label="Statistics view">
+          <button class="range-btn active" type="button" role="tab" id="statsTechnicalTab" data-stats-view="technical" aria-selected="true" aria-controls="statsTechnicalView">Technical Stats</button>
+          <button class="range-btn" type="button" role="tab" id="statsPsychologyTab" data-stats-view="psychology" aria-selected="false" aria-controls="statsPsychologyView" tabindex="-1">Psychology &amp; Behavior</button>
+        </div>
       </header>
 
+      <div class="stats-view-panel" id="statsTechnicalView" role="tabpanel" aria-labelledby="statsTechnicalTab">
       <div class="stats-toolbar">
         <div class="range-tabs">
           <button class="range-btn active" data-stats-range="1d">Day</button>
@@ -7121,6 +7142,17 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           </div>
         </section>
       </div>
+      </div>
+      <section class="stats-view-panel panel stats-psychology-view" id="statsPsychologyView" role="tabpanel" aria-labelledby="statsPsychologyTab" hidden>
+        <h3>Psychology &amp; Behavior</h3>
+        <p>Understand the patterns behind your trading decisions.</p>
+        <div class="stats-psychology-instruments">
+          <article><h4>Error frequency</h4><p>How often recorded trading errors occur and which errors repeat.</p></article>
+          <article><h4>State conditions</h4><p>Which states are detected, how often they occur, and when they appear together.</p></article>
+          <article><h4>Behavior patterns</h4><p>How recorded states and actions relate across trades and trading days.</p></article>
+        </div>
+        <p class="stats-psychology-empty">Measuring instruments will be added here. No measurements are available yet.</p>
+      </section>
     </section>
 
 
@@ -14858,6 +14890,32 @@ if(statsIndicatorStack){
   });
 }
 setStatsAutoZoom(statsAutoZoom);
+
+function setStatisticsView(view){
+  const selected=view==='psychology'?'psychology':'technical';
+  $$('[data-stats-view]').forEach(button=>{
+    const active=button.dataset.statsView===selected;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-selected',String(active));
+    button.tabIndex=active?0:-1;
+  });
+  $('#statsTechnicalView').hidden=selected!=='technical';
+  $('#statsPsychologyView').hidden=selected!=='psychology';
+  setZoomedStatsCard(null);
+  if(selected==='technical')requestAnimationFrame(()=>{if(equityChartInstance)equityChartInstance.resize();});
+}
+const statisticsViewTabs=$$('[data-stats-view]');
+statisticsViewTabs.forEach((button,index)=>{
+  button.addEventListener('click',()=>setStatisticsView(button.dataset.statsView));
+  button.addEventListener('keydown',event=>{
+    if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+    event.preventDefault();
+    const next=event.key==='Home'?0:event.key==='End'?statisticsViewTabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+statisticsViewTabs.length)%statisticsViewTabs.length;
+    const target=statisticsViewTabs[next];
+    setStatisticsView(target.dataset.statsView);
+    target.focus();
+  });
+});
 
 syncStatsRangeButtons();
 $$('[data-stats-range]').forEach(btn=>{
