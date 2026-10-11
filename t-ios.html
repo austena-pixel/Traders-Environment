@@ -10904,7 +10904,7 @@ function executionReviewsForStructure(structure,reviews=activeExecutionReviews()
 
 
 function executionMappedValuesForKind(reviewRows,kind){
-  const values=[],choiceGroups=new Set();
+  const values=[];
   let hasMappedData=false;
   reviewRows.forEach(row=>{
     const key=String(row.criterion_key||'');
@@ -10915,19 +10915,55 @@ function executionMappedValuesForKind(reviewRows,kind){
       if(saved.schema!=='tios.execution-form.v1'||saved.kind!==kind||typeof saved.documentId!=='string'||
         key!=='text__ti_state__'+kind+'__'+docKey||!Array.isArray(definition)||!Array.isArray(saved.controls)||
         definition.length!==saved.controls.length)return;
+      const conditionState=new Map(),handled=new Set(),logicGroups=new Map(),choiceGroups=new Map();
       definition.forEach((field,index)=>{
-        const control=saved.controls[index];
-        if(!field||!control)return;
-        if(field.type==='checkbox'&&typeof control.checked==='boolean')values.push(control.checked?1:0);
-        if(field.type==='radio'&&typeof control.checked==='boolean'){
-          const groupKey=docKey+'::'+(field.name||String(index));
-          if(choiceGroups.has(groupKey))return;
-          choiceGroups.add(groupKey);
-          const selected=definition.some((option,optionIndex)=>
-            option.type==='radio'&&(option.name||String(optionIndex))===(field.name||String(index))&&saved.controls[optionIndex]?.checked===true
-          );
-          values.push(selected?1:0);
+        if(!field||!['checkbox','radio'].includes(field.type))return;
+        if(field.logic){
+          const groupKey=field.name||('logic-'+(field.condition||index));
+          if(!logicGroups.has(groupKey))logicGroups.set(groupKey,[]);
+          logicGroups.get(groupKey).push(index);
         }
+      });
+      logicGroups.forEach((members,groupKey)=>{
+        members.forEach(index=>handled.add(index));
+        const fields=members.map(index=>definition[index]),first=fields[0];
+        const groupApplies=!first.groupDependsOn||conditionState.get(first.groupDependsOn)===true;
+        const active=members.filter(index=>!definition[index].dependsOn||conditionState.get(definition[index].dependsOn)===true);
+        if(groupApplies&&active.length){
+          const met=active.map(index=>saved.controls[index]?.checked===true);
+          const logic=first.logic||'all';
+          values.push(logic==='any'?Number(met.some(Boolean)):logic==='exclusive'?Number(met.filter(Boolean).length===1):Number(met.every(Boolean)));
+        }
+        members.forEach(index=>{
+          const field=definition[index],control=saved.controls[index];
+          if(field.condition)conditionState.set(field.condition,groupApplies&&(!field.dependsOn||conditionState.get(field.dependsOn)===true)&&control?.checked===true);
+        });
+      });
+      definition.forEach((field,index)=>{
+        if(handled.has(index)||!field||!['checkbox','radio'].includes(field.type))return;
+        const control=saved.controls[index];
+        if(!control||typeof control.checked!=='boolean')return;
+        const applies=(!field.dependsOn||conditionState.get(field.dependsOn)===true)&&
+          (!field.groupDependsOn||conditionState.get(field.groupDependsOn)===true);
+        if(field.type==='checkbox'){
+          if(applies)values.push(control.checked?1:0);
+          if(field.condition)conditionState.set(field.condition,applies&&control.checked);
+          return;
+        }
+        const groupKey=docKey+'::'+(field.name||String(index));
+        if(!choiceGroups.has(groupKey)){
+          choiceGroups.set(groupKey,[]);
+        }
+        choiceGroups.get(groupKey).push(index);
+        if(field.condition)conditionState.set(field.condition,applies&&control.checked);
+      });
+      choiceGroups.forEach(members=>{
+        const active=members.filter(index=>{
+          const field=definition[index];
+          return (!field.dependsOn||conditionState.get(field.dependsOn)===true)&&
+            (!field.groupDependsOn||conditionState.get(field.groupDependsOn)===true);
+        });
+        if(active.length)values.push(active.some(index=>saved.controls[index]?.checked===true)?1:0);
       });
       return;
     }
