@@ -771,10 +771,6 @@
     function render(){
       if(!visible||!loaded||!prefs||getUser()?.id!==userId)return;
       if(accountStep!=='ready'||!chartProfile){renderAccountEntry();return;}
-      const selectedAccount=getSelectedAccount?.();
-      const selectedAccountName=selectedAccount?.account_name||'No trading account selected';
-      const mt5Linked=selectedAccount?.platform==='MT5';
-      const selectedAccountStatus=mt5Linked?(selectedAccount.connection_status||'pending'):'manual account';
       instrumentLoadEpoch++;instrumentWorkspace?.unmount();closeExpanded(false);dispose();
       host.innerHTML=`
         <div class="charts-workbench ${controlsCollapsed?'charts-panel-collapsed':''}">
@@ -782,13 +778,6 @@
             <div class="charts-panel-head"><strong data-charts-sidebar-title>Charts</strong><button class="btn small" type="button" data-charts-action="instruments" aria-controls="chartsInstruments" aria-pressed="false">Instruments</button><button class="btn small charts-panel-dismiss" type="button" data-charts-action="toggle-panel" aria-controls="chartsPanel" aria-expanded="${!controlsCollapsed}">Hide controls</button></div>
             <div class="charts-panel-scroll">
               <div class="charts-toolbar">
-          <div class="charts-section-title">Deriv / MT5 connection</div>
-          <div class="charts-account">
-            <strong class="charts-account-current">${escape(selectedAccountName)}</strong>
-            <span class="charts-account-note">T-IOS account status: ${escape(selectedAccountStatus)}</span>
-            <button class="btn small" type="button" data-charts-action="manage-deriv-account">Manage Deriv MT5 inside T-IOS</button>
-            <p class="charts-account-note">Your linked MT5 account is selected in T-IOS Settings &amp; Connections. The embedded TradingView chart is a separate market-data widget; it does not inherit Deriv or MT5 authentication. Direct Deriv sign-in requires a registered Deriv OAuth application.</p>
-          </div>
           <details class="charts-market-section" data-charts-market-disclosure>
             <summary class="charts-section-title charts-market-summary"><span>My markets</span><span class="charts-market-summary-count" data-market-count>${markets.length}</span></summary>
             <div class="charts-market-manager">
