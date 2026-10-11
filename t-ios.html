@@ -6937,8 +6937,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             </button>
             <label class="stats-autozoom-zoom" for="statsAutoZoomRange">
               <span>Zoom</span>
-              <input id="statsAutoZoomRange" type="range" min="100" max="150" step="1" value="150" aria-label="Auto Zoom magnification" aria-controls="statsIndicatorStack" aria-valuetext="150%" title="Adjust how far Auto Zoom enlarges a section; the maximum follows the current zoom limit">
-              <output id="statsAutoZoomValue" for="statsAutoZoomRange" aria-live="polite">150%</output>
+              <input id="statsAutoZoomRange" type="range" min="100" max="150" step="1" value="125" aria-label="Auto Zoom magnification" aria-controls="statsIndicatorStack" aria-valuetext="125%" title="Adjust how far Auto Zoom enlarges a section; the maximum follows the current zoom limit">
+              <output id="statsAutoZoomValue" for="statsAutoZoomRange" aria-live="polite">125%</output>
             </label>
           </div>
         </div>
@@ -8354,7 +8354,25 @@ let planChecks = [];
 let selectedEdgeTradeId = null;
 
 const STATS_RANGE_PREFERENCE_KEY = 'tios_statistics_selected_range_v1';
+const STATS_AUTOZOOM_PREFERENCE_KEY = 'tios_statistics_autozoom_percent_v1';
 const STATS_RANGE_OPTIONS = Object.freeze(['1d', '1w', '1m', '6m', '1y', 'all']);
+
+function loadStatsAutoZoomPreference(){
+  try{
+    const saved=Number(localStorage.getItem(STATS_AUTOZOOM_PREFERENCE_KEY));
+    return Number.isInteger(saved)&&saved>=100&&saved<=150?saved:125;
+  }catch(error){
+    return 125;
+  }
+}
+
+function persistStatsAutoZoomPreference(percent){
+  const value=Number(percent);
+  if(!Number.isInteger(value)||value<100||value>150)return;
+  try{
+    localStorage.setItem(STATS_AUTOZOOM_PREFERENCE_KEY,String(value));
+  }catch(error){}
+}
 
 function loadStatsRangePreference(){
   try{
@@ -8380,7 +8398,7 @@ function syncStatsRangeButtons(){
 
 let statsRange = loadStatsRangePreference();
 let statsAutoZoom = true;
-let statsAutoZoomPercent = 150;
+let statsAutoZoomPercent = loadStatsAutoZoomPreference();
 let statsAnchorDate = new Date();
 let equityChartInstance = null;
 
@@ -14684,14 +14702,15 @@ function statsAutoZoomMaxPercent(){
   return 150;
 }
 
-function setStatsAutoZoomPercent(value){
+function setStatsAutoZoomPercent(value,{persist=true}={}){
   const range=$('#statsAutoZoomRange');
   if(!range)return;
-  const max=statsAutoZoomMaxPercent();
   const numeric=Number(value);
-  const percent=Number.isFinite(numeric)
-    ? Math.max(100,Math.min(max,Math.round(numeric)))
-    : max;
+  const preferredPercent=Number.isFinite(numeric)
+    ? Math.max(100,Math.min(150,Math.round(numeric)))
+    : 125;
+  const max=statsAutoZoomMaxPercent();
+  const percent=Math.min(max,preferredPercent);
   range.min='100';
   range.max=String(max);
   range.value=String(percent);
@@ -14700,17 +14719,13 @@ function setStatsAutoZoomPercent(value){
   if(output)output.textContent=percent+'%';
   const stack=$('#statsIndicatorStack');
   if(stack)stack.style.setProperty('--stats-autozoom-scale',(percent/100).toFixed(2));
-  statsAutoZoomPercent=percent;
+  statsAutoZoomPercent=preferredPercent;
+  if(persist)persistStatsAutoZoomPreference(preferredPercent);
 }
 
 function syncStatsAutoZoomViewportLimit(){
-  const range=$('#statsAutoZoomRange');
-  if(!range)return;
-  const oldMax=Number(range.max)||statsAutoZoomMaxPercent();
-  const current=Number(range.value);
-  const wasAtMaximum=Number.isFinite(current)&&Math.abs(current-oldMax)<0.01;
-  const nextMax=statsAutoZoomMaxPercent();
-  setStatsAutoZoomPercent(wasAtMaximum?nextMax:current);
+  if(!$('#statsAutoZoomRange'))return;
+  setStatsAutoZoomPercent(statsAutoZoomPercent,{persist:false});
 }
 
 function setStatsAutoZoom(enabled){
