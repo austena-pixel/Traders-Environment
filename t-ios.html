@@ -1640,15 +1640,25 @@ body.playbook-workspace .main{
 .stats-view-tabs .range-btn{white-space:nowrap}
 .stats-view-tabs .range-btn:focus-visible{outline:2px solid var(--accent,#69a8ff);outline-offset:3px}
 .stats-view-panel[hidden]{display:none!important}
-.stats-psychology-view{padding:24px;min-height:280px}
+.stats-psychology-view{padding:20px;min-height:280px}
 .stats-psychology-view h3{margin:0 0 8px;font-size:18px}
 .stats-psychology-view p{color:#93a2b6;font-size:12px;line-height:1.6}
-.stats-psychology-instruments{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:24px}
-.stats-psychology-instruments article{border:1px solid var(--line,#202a38);border-radius:12px;padding:16px}
-.stats-psychology-instruments h4{font-size:13px;margin:0 0 8px}
-.stats-psychology-instruments p{margin:0}
-.stats-psychology-empty{margin:20px 0 0}
-@media(max-width:700px){.stats-view-tabs{margin-left:0;justify-content:flex-start}.stats-psychology-instruments{grid-template-columns:1fr}.stats-psychology-view{padding:16px}}
+.stats-fear-layout{display:grid;grid-template-columns:minmax(0,2.4fr) minmax(280px,1fr);gap:14px;margin-top:18px}
+.stats-fear-panel{min-width:0;border:1px solid var(--line,#202a38);border-radius:14px;padding:16px;background:linear-gradient(145deg,#101a26,#0b1119)}
+.stats-fear-panel h4{font-size:14px;margin:0 0 6px;color:#e9f0fa}
+.stats-fear-panel>p{font-size:10px;margin:0 0 12px}
+.stats-fear-canvas-wrap{height:315px;position:relative}
+.stats-fear-radar-wrap{height:245px;position:relative}
+.stats-fear-legend{display:flex;justify-content:center;gap:10px 16px;flex-wrap:wrap;margin-top:10px}
+.stats-fear-legend span{font-size:10px;color:#c4d0df;white-space:nowrap}
+.stats-fear-legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+.stats-fear-demo-note{color:#92a1b5;font-size:10px;margin-top:12px}
+.stats-fear-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.stats-fear-controls label{display:grid;gap:5px;color:#aebcd0;font-size:10px}
+.stats-fear-controls label span{display:flex;justify-content:space-between;gap:6px}
+.stats-fear-controls input{width:100%;accent-color:#e7a43e}
+@media(max-width:900px){.stats-fear-layout{grid-template-columns:1fr}}
+@media(max-width:700px){.stats-view-tabs{margin-left:0;justify-content:flex-start}.stats-psychology-view{padding:14px}.stats-fear-panel{padding:12px}.stats-fear-controls{grid-template-columns:1fr}.stats-fear-canvas-wrap{height:260px}}
 
 .stats-toolbar{
   display:flex;
@@ -7146,12 +7156,32 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
       <section class="stats-view-panel panel stats-psychology-view" id="statsPsychologyView" role="tabpanel" aria-labelledby="statsPsychologyTab" hidden>
         <h3>Psychology &amp; Behavior</h3>
         <p>Understand the patterns behind your trading decisions.</p>
-        <div class="stats-psychology-instruments">
-          <article><h4>Error frequency</h4><p>How often recorded trading errors occur and which errors repeat.</p></article>
-          <article><h4>State conditions</h4><p>Which states are detected, how often they occur, and when they appear together.</p></article>
-          <article><h4>Behavior patterns</h4><p>How recorded states and actions relate across trades and trading days.</p></article>
+        <div class="stats-fear-layout">
+          <article class="stats-fear-panel" aria-labelledby="statsFearTrendTitle">
+            <h4 id="statsFearTrendTitle">Psychological Behaviour Trend</h4>
+            <p>Illustrative weekly occurrences per 20 eligible trades. Not measured from your trading records.</p>
+            <div class="stats-fear-canvas-wrap"><canvas id="statsFearTrendChart" role="img" aria-label="Illustrative five-week trends for being wrong, losing money, FOMO and leaving money. These are hypothetical values, not detected emotions."></canvas></div>
+            <div class="stats-fear-legend" aria-hidden="true">
+              <span><i style="background:#4d95ff"></i>Being wrong</span>
+              <span><i style="background:#63c77d"></i>Losing money</span>
+              <span><i style="background:#ff8754"></i>FOMO</span>
+              <span><i style="background:#f3cb54"></i>Leaving money</span>
+            </div>
+            <div class="stats-fear-demo-note">Example data only — no confirmed behavioural measurements yet.</div>
+          </article>
+          <article class="stats-fear-panel" aria-labelledby="statsFearRadarTitle">
+            <h4 id="statsFearRadarTitle">Four-Fear Profile</h4>
+            <p>Adjust the hypothetical levels to explore the diagram. These are not psychological diagnoses.</p>
+            <div class="stats-fear-radar-wrap"><canvas id="statsFearRadarChart" role="img" aria-label="Demonstration radar diagram of four adjustable hypothetical trading fear levels."></canvas></div>
+            <div class="stats-fear-controls">
+              <label><span>Being wrong <output id="statsFearWrongValue">50%</output></span><input id="statsFearWrong" type="range" min="0" max="100" value="50"></label>
+              <label><span>Losing money <output id="statsFearLosingValue">55%</output></span><input id="statsFearLosing" type="range" min="0" max="100" value="55"></label>
+              <label><span>FOMO <output id="statsFearFomoValue">50%</output></span><input id="statsFearFomo" type="range" min="0" max="100" value="50"></label>
+              <label><span>Leaving money <output id="statsFearLeavingValue">40%</output></span><input id="statsFearLeaving" type="range" min="0" max="100" value="40"></label>
+            </div>
+            <div class="stats-fear-demo-note">Interactive illustration only. Actual detection requires validated evidence.</div>
+          </article>
         </div>
-        <p class="stats-psychology-empty">Measuring instruments will be added here. No measurements are available yet.</p>
       </section>
     </section>
 
@@ -14903,7 +14933,53 @@ function setStatisticsView(view){
   $('#statsPsychologyView').hidden=selected!=='psychology';
   setZoomedStatsCard(null);
   if(selected==='technical')requestAnimationFrame(()=>{if(equityChartInstance)equityChartInstance.resize();});
+  else requestAnimationFrame(renderStatisticsFearDemonstration);
 }
+let statsFearTrendInstance=null;
+let statsFearRadarInstance=null;
+function renderStatisticsFearDemonstration(){
+  if(typeof Chart==='undefined')return;
+  const trend=document.getElementById('statsFearTrendChart');
+  const radar=document.getElementById('statsFearRadarChart');
+  if(!trend||!radar)return;
+  if(!statsFearTrendInstance){
+    const makeSeries=(label,data,color)=>({label,data,borderColor:color,backgroundColor:color,pointRadius:3,borderWidth:2,tension:.12,fill:false});
+    statsFearTrendInstance=new Chart(trend,{
+      type:'line',
+      data:{labels:['W1','W2','W3','W4','W5'],datasets:[
+        makeSeries('Being wrong',[7,6,5,3,2],'#4d95ff'),
+        makeSeries('Losing money',[10,8,7,5,4],'#63c77d'),
+        makeSeries('FOMO',[8,9,6,4,3],'#ff8754'),
+        makeSeries('Leaving money',[4,5,3,2,2],'#f3cb54')
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{callbacks:{title:items=>'Illustrative '+(items[0]?.label||'')}}},scales:{x:{ticks:{color:'#a1adc0'},grid:{display:false}},y:{beginAtZero:true,suggestedMax:12,ticks:{stepSize:2,color:'#a1adc0'},grid:{color:'rgba(118,136,160,.12)'}}}}
+    });
+  }else statsFearTrendInstance.resize();
+  const inputIds=['statsFearWrong','statsFearLosing','statsFearFomo','statsFearLeaving'];
+  const values=inputIds.map(id=>Number(document.getElementById(id)?.value||0));
+  if(!statsFearRadarInstance){
+    statsFearRadarInstance=new Chart(radar,{
+      type:'radar',
+      data:{labels:['Being wrong','Losing money','FOMO','Leaving money'],datasets:[{label:'Hypothetical fear profile',data:values,borderColor:'#e7a43e',backgroundColor:'rgba(231,164,62,.18)',pointBackgroundColor:'#e7a43e',pointRadius:4,borderWidth:2}]},
+      options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}},scales:{r:{min:0,max:100,ticks:{display:false,stepSize:25},pointLabels:{color:'#d3deec',font:{size:10}},grid:{color:'rgba(140,153,169,.28)'},angleLines:{color:'rgba(140,153,169,.25)'}}}}
+    });
+  }else{
+    statsFearRadarInstance.data.datasets[0].data=values;
+    statsFearRadarInstance.update('none');
+    statsFearRadarInstance.resize();
+  }
+}
+['Wrong','Losing','Fomo','Leaving'].forEach(name=>{
+  const input=document.getElementById('statsFear'+name);
+  const output=document.getElementById('statsFear'+name+'Value');
+  input?.addEventListener('input',()=>{
+    if(output)output.textContent=input.value+'%';
+    if(statsFearRadarInstance){
+      statsFearRadarInstance.data.datasets[0].data=['Wrong','Losing','Fomo','Leaving'].map(key=>Number(document.getElementById('statsFear'+key)?.value||0));
+      statsFearRadarInstance.update('none');
+    }
+  });
+});
 const statisticsViewTabs=$$('[data-stats-view]');
 statisticsViewTabs.forEach((button,index)=>{
   button.addEventListener('click',()=>setStatisticsView(button.dataset.statsView));
