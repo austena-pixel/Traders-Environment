@@ -8127,7 +8127,7 @@ function persistStatsRangePreference(range){
 }
 
 function syncStatsRangeButtons(){
-  $('[data-stats-range]').forEach(btn=>{
+  $$('[data-stats-range]').forEach(btn=>{
     btn.classList.toggle('active',btn.dataset.statsRange===statsRange);
   });
 }
@@ -14191,7 +14191,7 @@ if(statsIndicatorStack){
 setStatsAutoZoom(statsAutoZoom);
 
 syncStatsRangeButtons();
-$('[data-stats-range]').forEach(btn=>{
+$$('[data-stats-range]').forEach(btn=>{
   btn.addEventListener('click',()=>{
     const nextRange=btn.dataset.statsRange;
     if(!STATS_RANGE_OPTIONS.includes(nextRange))return;
