@@ -6199,6 +6199,30 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 <link rel="stylesheet" href="technical-instruments/period-rules.css">
 <link rel="stylesheet" href="hios-themes.css" data-hios-theme-sheet>
 <script src="hios-themes.js"></script>
+<style>
+.journal-level-tabs{margin:0 0 16px}
+.journal-level-view[hidden]{display:none!important}
+.journal-scope-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+.journal-scope-head h2{margin:0 0 5px;font-size:18px}
+.journal-scope-head p,.journal-session-meta,.journal-session-note,.journal-view-help{color:var(--muted,#9aa7b8)}
+.journal-scope-head p{margin:0}
+.journal-session-list{display:grid;gap:12px}
+.journal-session-card{padding:16px;border:1px solid var(--border,#263446);border-radius:14px;background:rgba(12,19,29,.6)}
+.journal-session-head,.journal-period-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.journal-session-head strong{font-size:15px}
+.journal-session-meta{font-size:12px;margin-top:4px}
+.journal-session-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}
+.journal-session-stat,.journal-review-stat{padding:12px;border:1px solid var(--border,#263446);border-radius:10px;background:rgba(20,30,43,.65)}
+.journal-session-stat span,.journal-review-stat span{display:block;color:var(--muted,#9aa7b8);font-size:11px;margin-bottom:5px}
+.journal-session-stat strong,.journal-review-stat strong{font-size:15px}
+.journal-session-note{font-size:13px;line-height:1.5;margin:8px 0 14px}
+.journal-review-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:16px 0}
+.journal-period-controls input{max-width:180px}
+.journal-review-note{padding:14px;border:1px solid var(--border,#263446);border-radius:12px;background:rgba(12,19,29,.6);color:var(--muted,#9aa7b8);line-height:1.6}
+.journal-view-help{font-size:12px;margin:10px 0 0}
+@media(max-width:900px){.journal-review-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.journal-session-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+
 </head>
 
 <body>
@@ -6477,6 +6501,12 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
         </div>
       </header>
 
+      <div class="range-tabs journal-level-tabs" role="tablist" aria-label="Journal record level">
+        <button class="range-btn active" type="button" role="tab" aria-selected="true" data-journal-view="trades">Trades</button>
+        <button class="range-btn" type="button" role="tab" aria-selected="false" data-journal-view="sessions">Sessions</button>
+        <button class="range-btn" type="button" role="tab" aria-selected="false" data-journal-view="reviews">Period Reviews</button>
+      </div>
+      <div class="journal-level-view" id="journalTradesView">
       <section class="journal-summary journal-execution-summary">
         <div class="metric journal-grade-card grade-aplus-card">
           <div class="label">A+ Trades</div>
@@ -6573,6 +6603,47 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <button class="btn small" id="journalNext">Next →</button>
           </div>
         </div>
+      </section>
+      </div>
+
+      <section class="journal-level-view panel" id="journalSessionsView" hidden>
+        <div class="journal-scope-head">
+          <div><h2>Trading sessions</h2><p>Session plans, rule checks and reflections saved in Psychology, with same-date trade context.</p></div>
+          <button class="btn small" type="button" id="journalOpenPsychology">Open Psychology</button>
+        </div>
+        <div class="journal-review-stats">
+          <div class="journal-review-stat"><span>Saved sessions</span><strong id="journalSessionCount">0</strong></div>
+          <div class="journal-review-stat"><span>Average session rule compliance</span><strong id="journalSessionRules">—</strong></div>
+          <div class="journal-review-stat"><span>Average identity score</span><strong id="journalSessionIdentity">—</strong></div>
+          <div class="journal-review-stat"><span>Trades across sessions</span><strong id="journalSessionTrades">0</strong></div>
+          <div class="journal-review-stat"><span>P&amp;L on session dates</span><strong id="journalSessionPnl">—</strong></div>
+        </div>
+        <div class="journal-session-list" id="journalSessionsList"></div>
+      </section>
+
+      <section class="journal-level-view panel" id="journalReviewsView" hidden>
+        <div class="journal-scope-head">
+          <div><h2 id="journalReviewTitle">Weekly review</h2><p id="journalReviewDates">—</p></div>
+          <div class="journal-period-controls">
+            <button class="btn small" type="button" id="journalReviewPrev">← Previous</button>
+            <input type="date" id="journalReviewAnchor" aria-label="Choose review date">
+            <button class="btn small" type="button" id="journalReviewNext">Next →</button>
+          </div>
+        </div>
+        <div class="range-tabs" role="group" aria-label="Review period">
+          <button class="range-btn" type="button" data-journal-period="day">Day</button>
+          <button class="range-btn active" type="button" data-journal-period="week">Week</button>
+          <button class="range-btn" type="button" data-journal-period="month">Month</button>
+        </div>
+        <div class="journal-review-stats">
+          <div class="journal-review-stat"><span>Trades</span><strong id="journalPeriodTradeCount">0</strong></div>
+          <div class="journal-review-stat"><span>Net P&amp;L</span><strong id="journalPeriodPnl">—</strong></div>
+          <div class="journal-review-stat"><span>Average execution quality</span><strong id="journalPeriodExecution">—</strong></div>
+          <div class="journal-review-stat"><span>Trading sessions</span><strong id="journalPeriodSessionCount">0</strong></div>
+          <div class="journal-review-stat"><span>Session rule compliance</span><strong id="journalPeriodRules">—</strong></div>
+        </div>
+        <div class="journal-review-note" id="journalPeriodSummary">Period totals are calculated from the trades and session reviews saved for the selected dates.</div>
+        <p class="journal-view-help">Trade execution quality stays trade-specific. This view summarizes activity and session-level rule checks. Trades are grouped by date because the current data does not assign a trade to one session.</p>
       </section>
     </section>
 
@@ -8055,6 +8126,9 @@ let viewDate = new Date();
 let editingTradeId = null;
 
 let journalPage = 1;
+let journalScopeView = 'trades';
+let journalReviewPeriod = 'week';
+let journalReviewAnchor = new Date();
 let journalReflectionContext = null;
 const JOURNAL_PAGE_SIZE = 25;
 
@@ -10403,6 +10477,142 @@ $('#journalReflectionModal').addEventListener('keydown',event=>{
   else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
 });
 
+
+function journalLocalDateKey(date){
+  return [date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-');
+}
+function journalPeriodBounds(anchor,period){
+  const date=new Date(String(anchor||journalLocalDateKey(new Date()))+'T00:00:00');
+  if(Number.isNaN(date.getTime()))return null;
+  let start=new Date(date),end=new Date(date);
+  if(period==='week'){
+    start.setDate(start.getDate()-((start.getDay()+6)%7));
+    end=new Date(start);end.setDate(end.getDate()+6);
+  }else if(period==='month'){
+    start=new Date(date.getFullYear(),date.getMonth(),1);
+    end=new Date(date.getFullYear(),date.getMonth()+1,0);
+  }
+  return {start:journalLocalDateKey(start),end:journalLocalDateKey(end)};
+}
+function journalScopePercent(value){
+  return value===null||!Number.isFinite(value)?'—':value.toFixed(1)+'%';
+}
+function renderJournalSessions(){
+  const sessions=psychologySessions.filter(session=>!tradingAccount?.id||!session.account_id||session.account_id===tradingAccount.id).slice().sort((a,b)=>
+    String(b.session_date||'').localeCompare(String(a.session_date||''))||
+    String(b.created_at||'').localeCompare(String(a.created_at||''))
+  );
+  const sessionDates=new Set(sessions.map(session=>session.session_date));
+  const allTrades=trades.filter(trade=>sessionDates.has(trade.trade_date));
+  const ruleScores=sessions.map(session=>rulePercentForSession(session.id)).filter(Number.isFinite);
+  const identityValues=sessions.map(session=>identityPercentForSession(session.id)).filter(Number.isFinite);
+  const totalPnl=allTrades.reduce((sum,trade)=>sum+(Number(trade.pnl)||0),0);
+  $('#journalSessionCount').textContent=String(sessions.length);
+  $('#journalSessionRules').textContent=journalScopePercent(averageFinite(ruleScores));
+  $('#journalSessionIdentity').textContent=journalScopePercent(averageFinite(identityValues));
+  $('#journalSessionTrades').textContent=String(allTrades.length);
+  const pnlEl=$('#journalSessionPnl');pnlEl.textContent=signedMoney(totalPnl);pnlEl.className=pnlClass(totalPnl);
+  const list=$('#journalSessionsList');
+  if(!sessions.length){
+    list.innerHTML='<div class="empty-state">No saved sessions yet. Create a session in Psychology to track its plan, rules and reflection here.</div>';
+    return;
+  }
+  list.innerHTML='';
+  sessions.forEach((session,index)=>{
+    const relatedTrades=trades.filter(trade=>trade.trade_date===session.session_date);
+    const pnl=relatedTrades.reduce((sum,trade)=>sum+(Number(trade.pnl)||0),0);
+    const card=document.createElement('article');card.className='journal-session-card';
+    const head=document.createElement('div');head.className='journal-session-head';
+    const title=document.createElement('div');
+    const name=document.createElement('strong');name.textContent=session.session_label||('Session '+(sessions.length-index));
+    const meta=document.createElement('div');meta.className='journal-session-meta';
+    meta.textContent=formatDate(session.session_date)+' · '+relatedTrades.length+' same-date '+(relatedTrades.length===1?'trade':'trades');
+    title.append(name,meta);
+    const pnlStrong=document.createElement('strong');pnlStrong.className=pnlClass(pnl);pnlStrong.textContent=signedMoney(pnl);pnlStrong.title='Total P&L on this date; trades are not assigned to this session.';
+    head.append(title,pnlStrong);
+    const stats=document.createElement('div');stats.className='journal-session-stats';
+    [
+      ['Session rules',journalScopePercent(rulePercentForSession(session.id))],
+      ['Identity',journalScopePercent(identityPercentForSession(session.id))],
+      ['Affirmations',session.affirmation_before&&session.affirmation_after?'Complete':session.affirmation_before||session.affirmation_after?'Partial':'Not done'],
+      ['Same-date trades',String(relatedTrades.length)]
+    ].forEach(item=>{
+      const box=document.createElement('div');box.className='journal-session-stat';
+      const label=document.createElement('span');label.textContent=item[0];
+      const value=document.createElement('strong');value.textContent=item[1];
+      box.append(label,value);stats.appendChild(box);
+    });
+    const note=document.createElement('p');note.className='journal-session-note';
+    note.textContent=session.signal||session.adjustments||session.comments||'No session reflection was saved.';
+    const actions=document.createElement('div');actions.className='session-card-actions';
+    const edit=document.createElement('button');edit.type='button';edit.className='btn small';edit.textContent='Review / Edit';
+    edit.addEventListener('click',()=>{
+      document.querySelector('.nav-btn[data-page="psychology"]')?.click();
+      loadPsychSessionIntoForm(session);
+    });
+    actions.appendChild(edit);card.append(head,stats,note,actions);list.appendChild(card);
+  });
+}
+function renderJournalPeriodReview(){
+  const anchor=$('#journalReviewAnchor');
+  if(anchor&&!anchor.value)anchor.value=journalLocalDateKey(journalReviewAnchor);
+  const selected=anchor?.value||journalLocalDateKey(journalReviewAnchor);
+  const bounds=journalPeriodBounds(selected,journalReviewPeriod);
+  if(!bounds)return;
+  journalReviewAnchor=new Date(selected+'T00:00:00');
+  const label=journalReviewPeriod==='day'?'Daily':journalReviewPeriod==='week'?'Weekly':'Monthly';
+  $('#journalReviewTitle').textContent=label+' review';
+  $('#journalReviewDates').textContent=bounds.start===bounds.end?formatDate(bounds.start):formatDate(bounds.start)+' – '+formatDate(bounds.end);
+  $('[data-journal-period]').forEach(button=>{
+    const active=button.dataset.journalPeriod===journalReviewPeriod;
+    button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));
+  });
+  const periodTrades=trades.filter(trade=>trade.trade_date>=bounds.start&&trade.trade_date<=bounds.end);
+  const periodSessions=psychologySessions.filter(session=>session.session_date>=bounds.start&&session.session_date<=bounds.end);
+  const pnl=periodTrades.reduce((sum,trade)=>sum+(Number(trade.pnl)||0),0);
+  const execution=averageFinite(periodTrades.map(trade=>executionScoreForTrade(trade.id)).filter(Number.isFinite));
+  const rules=averageFinite(periodSessions.map(session=>rulePercentForSession(session.id)).filter(Number.isFinite));
+  $('#journalPeriodTradeCount').textContent=String(periodTrades.length);
+  const pnlEl=$('#journalPeriodPnl');pnlEl.textContent=signedMoney(pnl);pnlEl.className=pnlClass(pnl);
+  $('#journalPeriodExecution').textContent=journalScopePercent(execution);
+  $('#journalPeriodSessionCount').textContent=String(periodSessions.length);
+  $('#journalPeriodRules').textContent=journalScopePercent(rules);
+  $('#journalPeriodSummary').textContent=periodTrades.length+' trades across '+periodSessions.length+' saved sessions. Session rule compliance averages sessions with saved rule checks; execution quality averages trades with a measurable score.';
+}
+function renderJournalScopeViews(){
+  $('[data-journal-view]').forEach(button=>{
+    const active=button.dataset.journalView===journalScopeView;
+    button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));
+  });
+  $('#journalTradesView').hidden=journalScopeView!=='trades';
+  $('#journalSessionsView').hidden=journalScopeView!=='sessions';
+  $('#journalReviewsView').hidden=journalScopeView!=='reviews';
+  if(journalScopeView==='sessions')renderJournalSessions();
+  if(journalScopeView==='reviews')renderJournalPeriodReview();
+}
+$('[data-journal-view]').forEach(button=>button.addEventListener('click',()=>{
+  journalScopeView=button.dataset.journalView;renderJournalScopeViews();
+}));
+$('[data-journal-period]').forEach(button=>button.addEventListener('click',()=>{
+  journalReviewPeriod=button.dataset.journalPeriod;renderJournalPeriodReview();
+}));
+$('#journalReviewAnchor').addEventListener('change',event=>{
+  journalReviewAnchor=new Date(event.target.value+'T00:00:00');renderJournalPeriodReview();
+});
+$('#journalReviewPrev').addEventListener('click',()=>{
+  if(journalReviewPeriod==='month'){journalReviewAnchor.setDate(1);journalReviewAnchor.setMonth(journalReviewAnchor.getMonth()-1);}
+  else journalReviewAnchor.setDate(journalReviewAnchor.getDate()-(journalReviewPeriod==='week'?7:1));
+  $('#journalReviewAnchor').value=journalLocalDateKey(journalReviewAnchor);renderJournalPeriodReview();
+});
+$('#journalReviewNext').addEventListener('click',()=>{
+  if(journalReviewPeriod==='month'){journalReviewAnchor.setDate(1);journalReviewAnchor.setMonth(journalReviewAnchor.getMonth()+1);}
+  else journalReviewAnchor.setDate(journalReviewAnchor.getDate()+(journalReviewPeriod==='week'?7:1));
+  $('#journalReviewAnchor').value=journalLocalDateKey(journalReviewAnchor);renderJournalPeriodReview();
+});
+$('#journalOpenPsychology').addEventListener('click',()=>{
+  document.querySelector('.nav-btn[data-page="psychology"]')?.click();
+});
+
 function renderJournal(){
   if(journalReflectionContext&&(
     journalReflectionContext.userId!==currentUser?.id||
@@ -10498,6 +10708,7 @@ function renderJournal(){
   $('#journalPageText').textContent=`Page ${journalPage} of ${totalPages}`;
   $('#journalPrev').disabled=journalPage<=1;
   $('#journalNext').disabled=journalPage>=totalPages;
+  renderJournalScopeViews();
   if(journalReflectionContext)journalReflectionContext.trigger=[...body.querySelectorAll('[data-journal-playbook],[data-journal-reflection],[data-journal-rules]')].find(button=>button.dataset.journalPlaybook===journalReflectionContext.tradeId||button.dataset.journalReflection===journalReflectionContext.tradeId||button.dataset.journalRules===journalReflectionContext.tradeId)||null;
 
   $$('.edit-trade').forEach(btn=>{
