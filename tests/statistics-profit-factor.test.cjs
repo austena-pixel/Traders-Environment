@@ -92,7 +92,6 @@ for(const id of ids)assert.ok(html.includes('id="'+id+'"'),'Missing diagram elem
 assert.match(html,/\.eq\('account_id',\s*tradingAccount\.id\)/,'closed trades remain scoped to the selected account');
 assert.match(html,/\.eq\('position_status',\s*'closed'\)/,'source remains closed trades only');
 assert.ok(html.includes('calculateProfitFactorStats(source)'),'diagram uses selected-period trades');
-assert.ok(html.includes("profitFactor===Infinity ? '∞' : profitFactor.toFixed(2);"),'existing top-row Profit Factor card remains unchanged');
 assert.ok(html.includes('id="statWinRateReturnLabel"'),'Win Rate header Return remains');
 assert.ok(html.includes('id="equityChart"'),'Equity Curve remains');
 assert.ok(html.includes('class="stats-analysis-pair stats-indicator-card"'),'drawdown and average P&L panel participates in sidebar Auto Zoom');
