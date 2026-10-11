@@ -67,7 +67,9 @@ function extractFunction(name){
   const marker='function '+name+'(';
   const start=html.indexOf(marker);
   assert.ok(start>=0,'Missing '+name+' helper');
-  const open=html.indexOf('{',start);
+  const signatureEnd=html.indexOf('){',start);
+  assert.ok(signatureEnd>=0,'Missing body for '+name);
+  const open=signatureEnd+1;
   let depth=0;
   for(let i=open;i<html.length;i++){
     if(html[i]==='{')depth++;
@@ -79,7 +81,7 @@ function extractFunction(name){
 const stackClasses=createClassList(['stats-autozoom']);
 const button={attributes:{},setAttribute(name,value){this.attributes[name]=value;}};
 const state={textContent:'ON'};
-const cards=['profit','win'].map(name=>({
+const cards=['profit','win','risk'].map(name=>({
   name,
   classes:createClassList(),
   matches(selector){return selector==='.stats-indicator-card';},
@@ -111,22 +113,26 @@ vm.runInContext(
 );
 zoomContext.profitCard=cards[0];
 zoomContext.winCard=cards[1];
+zoomContext.riskCard=cards[2];
 zoomContext.outsideCard=outsideCard;
 vm.runInContext('setZoomedStatsCard(profitCard)',zoomContext);
-assert.equal(cards[0].classes.contains('stats-card-zoomed'),true);
-assert.equal(cards[1].classes.contains('stats-card-zoomed'),false,'only one analytics section zooms at a time');
+assert.equal(cards[0].classes.contains('stats-card-zoomed'),true,'Profit Factor can zoom');
+assert.equal(cards[1].classes.contains('stats-card-zoomed'),false);
 vm.runInContext('setZoomedStatsCard(winCard)',zoomContext);
 assert.equal(cards[0].classes.contains('stats-card-zoomed'),false);
-assert.equal(cards[1].classes.contains('stats-card-zoomed'),true);
+assert.equal(cards[1].classes.contains('stats-card-zoomed'),true,'Win Rate can zoom');
+vm.runInContext('setZoomedStatsCard(riskCard)',zoomContext);
+assert.equal(cards[1].classes.contains('stats-card-zoomed'),false);
+assert.equal(cards[2].classes.contains('stats-card-zoomed'),true,'Risk & Expectancy can zoom with its separate bottom anchor');
 vm.runInContext('setZoomedStatsCard(outsideCard)',zoomContext);
-assert.equal(cards[1].classes.contains('stats-card-zoomed'),false,'sections outside the analytics sidebar cannot zoom');
-vm.runInContext('setZoomedStatsCard(profitCard);setStatsAutoZoom(false)',zoomContext);
+assert.equal(cards[2].classes.contains('stats-card-zoomed'),false,'sections outside the analytics sidebar cannot zoom');
+vm.runInContext('setZoomedStatsCard(riskCard);setStatsAutoZoom(false)',zoomContext);
 assert.equal(stackClasses.contains('stats-autozoom'),false);
 assert.equal(button.attributes['aria-pressed'],'false');
 assert.equal(state.textContent,'OFF');
-assert.equal(cards[0].classes.contains('stats-card-zoomed'),false,'turning Auto Zoom off clears the zoomed section');
-vm.runInContext('setZoomedStatsCard(winCard)',zoomContext);
-assert.equal(cards[1].classes.contains('stats-card-zoomed'),false,'disabled Auto Zoom cannot zoom cards');
+assert.equal(cards[2].classes.contains('stats-card-zoomed'),false,'turning Auto Zoom off clears the zoomed section');
+vm.runInContext('setZoomedStatsCard(riskCard)',zoomContext);
+assert.equal(cards[2].classes.contains('stats-card-zoomed'),false,'disabled Auto Zoom cannot zoom cards');
 vm.runInContext('setStatsAutoZoom(true);setZoomedStatsCard(winCard)',zoomContext);
 assert.equal(stackClasses.contains('stats-autozoom'),true);
 assert.equal(button.attributes['aria-pressed'],'true');
@@ -137,7 +143,10 @@ assert.ok(!html.includes('class="chart-legend-note"'),'highlighted trade-number 
 assert.ok(!html.includes('X-axis = trade number (T0, T1, T2, T3...).'),'highlighted X-axis explanation was removed');
 assert.match(html,/id="statsAutoZoomBtn"[^>]*aria-pressed="true"[^>]*aria-controls="statsIndicatorStack"/,'Auto Zoom starts enabled and controls the sidebar');
 assert.match(html,/<aside class="stats-indicator-stack stats-autozoom" id="statsIndicatorStack"/,'zoom scope is the right analytics sidebar');
-assert.match(html,/\.stats-indicator-stack\.stats-autozoom \.stats-indicator-card\.stats-card-zoomed\{\s*transform:scale\(/,'only sidebar indicator sections receive the zoom transform');
+assert.match(html,/\.stats-indicator-stack\.stats-autozoom \.stats-indicator-card\.stats-card-zoomed\{\s*transform:scale\(/,'sidebar analytics cards receive the zoom transform');
+assert.ok(html.includes('class="stats-analysis-pair stats-indicator-card stats-autozoom-bottom-anchor"'),'Risk & Expectancy keeps its bottom-up zoom anchor');
+assert.match(html,/\.stats-indicator-stack\.stats-autozoom \.stats-indicator-card\.stats-autozoom-bottom-anchor\.stats-card-zoomed\{\s*transform-origin:right bottom;/,'Risk & Expectancy expands upward from its bottom-right edge');
+assert.match(html,/transform-origin:right top;/,'top analytics cards keep their right edge inside the page while zooming');
 assert.ok(html.includes('id="equityChart"'),'Equity Curve remains present');
 assert.match(html,/\$\$\('\[data-stats-range\]'\)\.forEach\(btn=>\{/,'timeframe handlers are scoped to Statistics buttons');
 assert.match(html,/persistStatsRangePreference\(statsRange\);/,'selected timeframe is persisted after selection');
@@ -145,3 +154,73 @@ assert.match(html,/persistStatsRangePreference\(statsRange\);/,'selected timefra
 console.log('PASS selected timeframe persists, restores, and falls back safely');
 console.log('PASS Auto Zoom is accessible, toggleable, and restricted to sidebar analytics cards');
 console.log('PASS highlighted labels are removed while the Equity Curve remains intact');
+const zoomRange={min:'100',max:'150',value:'125',attributes:{},setAttribute(name,value){this.attributes[name]=value;}};
+const zoomOutput={textContent:'125%'};
+const zoomPreferenceStorage=createStorage(null);
+const zoomScaleStack={style:{values:{},setProperty(name,value){this.values[name]=value;}}};
+const zoomElements=new Map([
+  ['#statsAutoZoomRange',zoomRange],
+  ['#statsAutoZoomValue',zoomOutput],
+  ['#statsIndicatorStack',zoomScaleStack]
+]);
+const zoomViewport={innerWidth:1440};
+const scaleContext=vm.createContext({
+  $:selector=>zoomElements.get(selector),
+  window:zoomViewport,
+  document:{documentElement:{clientWidth:1440}},
+  localStorage:zoomPreferenceStorage
+});
+vm.runInContext(
+  "const STATS_AUTOZOOM_PREFERENCE_KEY='tios_statistics_autozoom_percent_v1'; let statsAutoZoomPercent=125;\n"+
+  extractFunction('statsAutoZoomMaxPercent')+'\n'+
+  extractFunction('persistStatsAutoZoomPreference')+'\n'+
+  extractFunction('setStatsAutoZoomPercent')+'\n'+
+  extractFunction('syncStatsAutoZoomViewportLimit'),
+  scaleContext
+);
+scaleContext.setStatsAutoZoomPercent(137);
+assert.equal(zoomRange.value,'137','manual zoom value updates');
+assert.equal(zoomPreferenceStorage.value,'137','manual zoom adjustment becomes the saved default');
+assert.equal(zoomOutput.textContent,'137%','manual zoom percentage is readable');
+assert.equal(zoomScaleStack.style.values['--stats-autozoom-scale'],'1.37','manual zoom scales sidebar cards');
+assert.equal(zoomRange.max,'150','desktop maximum stays at the current zoom');
+zoomViewport.innerWidth=800;
+scaleContext.syncStatsAutoZoomViewportLimit();
+assert.equal(zoomRange.max,'122','tablet maximum follows its current zoom');
+assert.equal(zoomRange.value,'122','existing zoom clamps to the tablet maximum');
+zoomViewport.innerWidth=500;
+scaleContext.syncStatsAutoZoomViewportLimit();
+assert.equal(zoomRange.max,'106','mobile maximum follows its current zoom');
+assert.equal(zoomRange.value,'106','maximum setting tracks the responsive zoom ceiling');
+assert.equal(zoomPreferenceStorage.value,'137','viewport caps do not overwrite the saved desktop preference');
+scaleContext.setStatsAutoZoomPercent(104);
+assert.equal(zoomPreferenceStorage.value,'104','a new manual choice replaces the previous default');
+zoomViewport.innerWidth=1400;
+scaleContext.syncStatsAutoZoomViewportLimit();
+assert.equal(zoomRange.value,'104','a manually chosen level below the maximum survives viewport changes');
+assert.equal(zoomRange.max,'150','desktop zoom ceiling is restored');
+assert.match(html,/<label class="stats-autozoom-zoom" for="statsAutoZoomRange">[\s\S]*?<input id="statsAutoZoomRange" type="range" min="100" max="150" step="1" value="125"/,'manual zoom range starts at 125%');
+assert.match(html,/transform-origin:right bottom;/,'zoom remains anchored at its bottom-right edge');
+assert.match(html,/transform:scale\(var\(--stats-autozoom-scale\)\)/,'the selected zoom controls the enlarged sidebar section');
+assert.match(html,/window.addEventListener\('resize',syncStatsAutoZoomViewportLimit\)/,'responsive limits update when viewport size changes');
+console.log('PASS manual zoom controls stay within the responsive current zoom limit and expand upward');
+assert.match(html,/const STATS_AUTOZOOM_PREFERENCE_KEY = 'tios_statistics_autozoom_percent_v1'/,'manual zoom uses a stable local preference key');
+assert.match(html,/let statsAutoZoomPercent = loadStatsAutoZoomPreference\(\);/,'saved zoom setting loads on startup');
+const savedZoomContext=vm.createContext({localStorage:createStorage('138')});
+vm.runInNewContext(
+  "const STATS_AUTOZOOM_PREFERENCE_KEY='tios_statistics_autozoom_percent_v1';\n"+
+  extractFunction('loadStatsAutoZoomPreference')+'\n'+extractFunction('persistStatsAutoZoomPreference')+'\n'+
+  'let statsAutoZoomPercent=loadStatsAutoZoomPreference();',
+  savedZoomContext
+);
+assert.equal(vm.runInContext('statsAutoZoomPercent',savedZoomContext),138,'saved adjustment restores on reload');
+savedZoomContext.persistStatsAutoZoomPreference(128);
+assert.equal(savedZoomContext.localStorage.value,'128','new adjustment replaces the saved default');
+const invalidZoomContext=vm.createContext({localStorage:createStorage('99')});
+vm.runInNewContext(
+  "const STATS_AUTOZOOM_PREFERENCE_KEY='tios_statistics_autozoom_percent_v1';\n"+
+  extractFunction('loadStatsAutoZoomPreference'),
+  invalidZoomContext
+);
+assert.equal(invalidZoomContext.loadStatsAutoZoomPreference(),125,'invalid saved zoom falls back to 125%');
+console.log('PASS 125% is the default and user-selected zoom persists across reloads');

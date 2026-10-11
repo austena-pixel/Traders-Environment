@@ -6906,49 +6906,6 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
         </div>
       </div>
 
-      <section class="stats-grid">
-        <div class="metric">
-          <div class="label">Ending Equity</div>
-          <div class="value neutral" id="statEndingEquity">$0.00</div>
-          <div class="sub">End of selected period</div>
-        </div>
-        <div class="metric">
-          <div class="label">Net P&amp;L</div>
-          <div class="value neutral" id="statNetPnl">$0.00</div>
-          <div class="sub">Selected period</div>
-        </div>
-        <div class="metric">
-          <div class="label">Period Return</div>
-          <div class="value neutral" id="statReturn">0.00%</div>
-          <div class="sub">Net P&amp;L ÷ initial balance</div>
-        </div>
-        <div class="metric">
-          <div class="label">Max Drawdown</div>
-          <div class="value neutral" id="statMaxDd">$0.00</div>
-          <div class="sub" id="statMaxDdPct">0.00%</div>
-        </div>
-        <div class="metric">
-          <div class="label">Win Rate</div>
-          <div class="value neutral" id="statWinRate">0.0%</div>
-          <div class="sub">Winning trades</div>
-        </div>
-        <div class="metric">
-          <div class="label">Profit Factor</div>
-          <div class="value neutral" id="statProfitFactor">0.00</div>
-          <div class="sub">Gross profit / gross loss</div>
-        </div>
-        <div class="metric">
-          <div class="label">Average Trade Return</div>
-          <div class="value neutral" id="statAvgTradeReturn">0.00%</div>
-          <div class="sub">Average trade P&amp;L ÷ initial balance</div>
-        </div>
-        <div class="metric">
-          <div class="label">Expectancy</div>
-          <div class="value neutral" id="statExpectancy">$0.00</div>
-          <div class="sub">Average P&amp;L per trade</div>
-        </div>
-      </section>
-
       <section class="panel chart-panel">
         <div class="chart-panel-head">
           <div class="stats-equity-heading">
@@ -14749,43 +14706,14 @@ function renderStatistics(){
       ? `Individual monthly equity curve for ${statsAnchorDate.toLocaleString(undefined,{month:'long',year:'numeric'})}. T0 is the equity at the start of that month; each closed trade is then plotted in sequence.`
       : `Cumulative account equity after every trade across the selected ${statsRangeLabel(statsRange)}. The vertical scale adjusts to keep real changes visible without flattening the curve.`;
 
-  $('#statEndingEquity').textContent=money(endingEquity);
-
-  $('#statNetPnl').textContent=signedMoney(netPnl);
-  $('#statNetPnl').className='value '+pnlClass(netPnl);
-
-  // Mirror the selected-period values beside the Equity Curve.
+  // Display the selected-period values beside the Equity Curve.
   $('#statEquityHeaderEnding').textContent=money(endingEquity);
   $('#statEquityHeaderNetPnl').textContent=signedMoney(netPnl);
   $('#statEquityHeaderNetPnl').className=pnlClass(netPnl);
 
-  $('#statReturn').textContent=formatReturnPct(returnPct);
-  $('#statReturn').className='value '+(returnPct===null?'neutral':pnlClass(returnPct));
-
-  $('#statMaxDd').textContent=
-    drawdown.amount>0 ? '-'+money(drawdown.amount) : money(0);
-  $('#statMaxDd').className=
-    'value '+(drawdown.amount>0?'neg':'neutral');
-
-  $('#statMaxDdPct').textContent=
-    drawdown.amount>0
-      ? `-${drawdown.pct.toFixed(2)}%`
-      : '0.00%';
-
   const winRate=source.length
     ? wins.length/source.length*100
     : 0;
-
-  $('#statWinRate').textContent=winRate.toFixed(1)+'%';
-
-  $('#statProfitFactor').textContent=
-    profitFactor===Infinity ? '∞' : profitFactor.toFixed(2);
-
-  $('#statAvgTradeReturn').textContent=formatReturnPct(avgTradeReturn);
-  $('#statAvgTradeReturn').className='value '+(avgTradeReturn===null?'neutral':pnlClass(avgTradeReturn));
-
-  $('#statExpectancy').textContent=signedMoney(expectancy);
-  $('#statExpectancy').className='value '+pnlClass(expectancy);
 
   $('#statTrades').textContent=source.length;
   $('#statTradingDays').textContent=dayRows.length;
