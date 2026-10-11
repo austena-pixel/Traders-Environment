@@ -14337,7 +14337,7 @@ function renderDrawdownExpectancyDiagram(drawdown,series,expectancy,avgTradeRetu
     drawdownValue.className='stats-analysis-value '+(drawdown.amount>0?'neg':'neutral');
     drawdownCaption.textContent=drawdown.amount>0
       ? Number.isFinite(drawdown.pct)
-        ? formatReturnPct(-drawdown.pct)+' vs profit peak'
+        ? formatReturnPct(-drawdown.pct)+' vs '+formatProfitFactorCurrency(drawdown.profitPeak)+' profit peak'
         : 'From profit peak · percentage unavailable'
       : 'No drawdown recorded from a profit peak.';
     const points=Array.isArray(series?.points)?series.points:[];
@@ -14358,7 +14358,7 @@ function renderDrawdownExpectancyDiagram(drawdown,series,expectancy,avgTradeRetu
       : '';
     drawdownPath.setAttribute('d',path);
     drawdownDescription.textContent=drawdown.amount>0
-      ? 'Red curve shows how selected-period profit fell from its peak and recovered. Maximum drawdown was '+signedMoney(-drawdown.amount)+(Number.isFinite(drawdown.pct)?', or '+formatReturnPct(-drawdown.pct)+' of the profit peak.':'; percentage is unavailable because no positive profit peak was recorded.')
+      ? 'Red curve shows how selected-period profit fell from its peak and recovered. Maximum drawdown was '+signedMoney(-drawdown.amount)+(Number.isFinite(drawdown.pct)?', or '+formatReturnPct(-drawdown.pct)+' of the '+formatProfitFactorCurrency(drawdown.profitPeak)+' profit peak.':'; percentage is unavailable because no positive profit peak was recorded.')
       : 'No drawdown was recorded from a profit peak across '+trades.length+' selected closed trades.';
   }
 
