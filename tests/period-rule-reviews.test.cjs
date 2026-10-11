@@ -74,3 +74,13 @@ test('record validation rejects trade reviews and records with mismatched owners
   store.setItem(rules.storageKey('user-a','account-a'),JSON.stringify([{...record,userId:'other-user'}]));
   assert.equal(rules.read(store,'user-a','account-a').length,0);
 });
+
+
+test('scope labels use Trading Day and Intraday Window language while preserving stored scope keys',()=>{
+  assert.deepEqual(Object.keys(rules.scopes),['trade','session','daily','weekly','monthly']);
+  assert.equal(rules.scopes.trade,'Individual trade');
+  assert.equal(rules.scopes.session,'Intraday Window');
+  assert.equal(rules.scopes.daily,'Trading Day');
+  assert.equal(rules.scopes.weekly,'Weekly');
+  assert.equal(rules.scopes.monthly,'Monthly');
+});

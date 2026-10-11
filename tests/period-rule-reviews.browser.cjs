@@ -58,7 +58,7 @@ async function answer(text,value=8){
 async function save(){
   await page.locator('#executionMapSaveReflectionsBtn').click();
   await page.waitForFunction(()=>!executionMappingReflectionSaving);
-  assert.match(await page.locator('#executionMapReflectionSaveState').textContent(),/saved for this (session|day|week|month).*Saved on this device/);
+  assert.match(await page.locator('#executionMapReflectionSaveState').textContent(),/saved for this (intraday window|trading day|week|month).*Saved on this device/i);
 }
 async function blank(){assert.equal(await condition().isChecked(),false);assert.equal(await score().inputValue(),'');assert.equal(await response().inputValue(),'');}
 async function restored(text,value=8){assert.equal(await condition().isChecked(),true);assert.equal(await score().inputValue(),String(value));assert.equal(await response().inputValue(),text);}

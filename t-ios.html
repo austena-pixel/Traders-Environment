@@ -6218,6 +6218,17 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 .journal-period-controls input{max-width:180px}
 .journal-review-note{padding:14px;border:1px solid var(--border,#263446);border-radius:12px;background:rgba(12,19,29,.6);color:var(--muted,#9aa7b8);line-height:1.6}
 .journal-view-help{font-size:12px;margin:10px 0 0}
+.journal-rule-list{display:grid;gap:12px}
+.journal-rule-card{padding:16px;border:1px solid var(--border,#263446);border-radius:14px;background:rgba(12,19,29,.6)}
+.journal-rule-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.journal-rule-card h3{margin:0;font-size:15px}
+.journal-rule-card p{color:var(--muted,#9aa7b8);line-height:1.55;margin:8px 0}
+.journal-rule-preview{padding:10px;border:1px solid var(--border,#263446);border-radius:9px;background:rgba(20,30,43,.45);font-size:12px}
+.journal-rule-scope{color:var(--muted,#9aa7b8);font-size:11px;white-space:nowrap}
+.journal-rule-status{font-size:12px;margin:10px 0;color:var(--muted,#9aa7b8)}
+.journal-rule-card-actions{display:flex;gap:8px;flex-wrap:wrap}
+.journal-rule-period-controls{justify-content:flex-start;margin:12px 0}
+.journal-rule-period-label{margin:8px 0 14px}
 @media(max-width:900px){.journal-review-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.journal-session-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 
@@ -6501,7 +6512,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
       <div class="range-tabs journal-level-tabs" role="tablist" aria-label="Journal record level">
         <button class="range-btn active" type="button" role="tab" aria-selected="true" data-journal-view="trades">Trades</button>
-        <button class="range-btn" type="button" role="tab" aria-selected="false" data-journal-view="sessions">Sessions</button>
+        <button class="range-btn" type="button" role="tab" aria-selected="false" data-journal-view="trading-days">Trading Day</button>
+        <button class="range-btn" type="button" role="tab" aria-selected="false" data-journal-view="rules">Rules</button>
         <button class="range-btn" type="button" role="tab" aria-selected="false" data-journal-view="reviews">Period Reviews</button>
       </div>
       <div class="journal-level-view" id="journalTradesView">
@@ -6604,18 +6616,38 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
       </section>
       </div>
 
-      <section class="journal-level-view panel" id="journalSessionsView" hidden>
+      <section class="journal-level-view panel" id="journalTradingDaysView" hidden>
         <div class="journal-scope-head">
-          <div><h2>Session scoreboards</h2><p>Review identity, affirmations and reflections for each session. Trading Day Rules are tracked separately by date.</p></div>
+          <div><h2>Trading Day</h2><p>Review identity, affirmations, reflections and date-level trade results for each trading day.</p></div>
           <button class="btn small" type="button" id="journalOpenPsychology">Open Psychology</button>
         </div>
         <div class="journal-review-stats journal-session-summary-stats">
-          <div class="journal-review-stat"><span>Saved sessions</span><strong id="journalSessionCount">0</strong></div>
-          <div class="journal-review-stat"><span>Average identity score</span><strong id="journalSessionIdentity">—</strong></div>
-          <div class="journal-review-stat"><span>Trades on session dates</span><strong id="journalSessionTrades">0</strong></div>
-          <div class="journal-review-stat"><span>P&amp;L on session dates</span><strong id="journalSessionPnl">—</strong></div>
+          <div class="journal-review-stat"><span>Saved trading days</span><strong id="journalTradingDayCount">0</strong></div>
+          <div class="journal-review-stat"><span>Average identity score</span><strong id="journalTradingDayIdentity">—</strong></div>
+          <div class="journal-review-stat"><span>Trades on trading days</span><strong id="journalTradingDayTrades">0</strong></div>
+          <div class="journal-review-stat"><span>P&amp;L on trading days</span><strong id="journalTradingDayPnl">—</strong></div>
         </div>
-        <div class="journal-session-list" id="journalSessionsList"></div>
+        <div class="journal-session-list" id="journalTradingDaysList"></div>
+      </section>
+
+      <section class="journal-level-view panel" id="journalRulesView" hidden>
+        <div class="journal-scope-head">
+          <div><h2>Rules</h2><p>Browse the rule sets configured in Technical Instruments and review them at the matching trade or time scope.</p></div>
+          <button class="btn small" type="button" id="journalManageRules">Open Technical Instruments</button>
+        </div>
+        <div class="range-tabs journal-rule-scope-tabs" role="group" aria-label="Rules scope">
+          <button class="range-btn active" type="button" data-journal-rule-scope="trade" aria-pressed="true">Individual Trade</button>
+          <button class="range-btn" type="button" data-journal-rule-scope="daily" aria-pressed="false">Trading Day</button>
+          <button class="range-btn" type="button" data-journal-rule-scope="weekly" aria-pressed="false">Weekly</button>
+          <button class="range-btn" type="button" data-journal-rule-scope="monthly" aria-pressed="false">Monthly</button>
+        </div>
+        <div class="journal-period-controls journal-rule-period-controls" id="journalRulePeriodControls" hidden>
+          <button class="btn small" type="button" id="journalRulePrev">← Previous</button>
+          <input type="date" id="journalRuleAnchor" aria-label="Choose Rules review date">
+          <button class="btn small" type="button" id="journalRuleNext">Next →</button>
+        </div>
+        <div class="journal-review-note journal-rule-period-label" id="journalRulePeriodLabel"></div>
+        <div class="journal-rule-list" id="journalRuleList"></div>
       </section>
 
       <section class="journal-level-view panel" id="journalReviewsView" hidden>
@@ -6625,7 +6657,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <button class="btn small" type="button" id="journalReviewPrev">← Previous</button>
             <input type="date" id="journalReviewAnchor" aria-label="Choose review date">
             <button class="btn small" type="button" id="journalReviewNext">Next →</button>
-            <button class="btn small" type="button" id="journalOpenDayRules">Open Trading Day Rules</button>
+            <button class="btn small" type="button" id="journalOpenDayRules">Open Rules</button>
           </div>
         </div>
         <div class="range-tabs" role="group" aria-label="Review period">
@@ -6637,11 +6669,11 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           <div class="journal-review-stat"><span>Trades</span><strong id="journalPeriodTradeCount">0</strong></div>
           <div class="journal-review-stat"><span>Net P&amp;L</span><strong id="journalPeriodPnl">—</strong></div>
           <div class="journal-review-stat"><span>Average execution quality</span><strong id="journalPeriodExecution">—</strong></div>
-          <div class="journal-review-stat"><span>Trading sessions</span><strong id="journalPeriodSessionCount">0</strong></div>
+          <div class="journal-review-stat"><span>Trading days</span><strong id="journalPeriodSessionCount">0</strong></div>
           <div class="journal-review-stat"><span>Trading Day Rules reviewed</span><strong id="journalPeriodRuleDays">0 days</strong></div>
         </div>
-        <div class="journal-review-note" id="journalPeriodSummary">Period totals are calculated from the trades and session reviews saved for the selected dates.</div>
-        <p class="journal-view-help">Trade execution quality stays trade-specific. Trading Day Rules come from daily-scope Rules reviews saved on this device and are counted once per date. Sessions remain separate scoreboards; same-date trade figures are date context.</p>
+        <div class="journal-review-note" id="journalPeriodSummary">Period totals use trades and saved Trading Day reviews for the selected dates.</div>
+        <p class="journal-view-help">Trade execution quality stays trade-specific. Trading Day Rules use daily-scope reviews saved on this device and count once per date. Trading Day records group psychology evidence with trades from the same date.</p>
       </section>
     </section>
 
@@ -6876,17 +6908,17 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
       <header class="page-head">
         <div>
           <h1>Psychology</h1>
-          <p>Train your trading identity, measure rule compliance and close each session with a structured feedback loop.</p>
+          <p>Train your trading identity, measure rule compliance and close each trading day with a structured feedback loop.</p>
         </div>
         <div class="top-actions">
-          <button class="btn" id="newPsychSessionBtn">New Session</button>
-          <button class="btn primary" id="savePsychSessionTop">Save Session</button>
+          <button class="btn" id="newPsychSessionBtn">New Trading Day</button>
+          <button class="btn primary" id="savePsychSessionTop">Save Trading Day</button>
         </div>
       </header>
 
       <section class="psych-summary">
         <div class="metric">
-          <div class="label">Recorded Sessions</div>
+          <div class="label">Recorded Trading Days</div>
           <div class="value neutral" id="psychTotalSessions">0</div>
           <div class="sub">All time</div>
         </div>
@@ -6898,7 +6930,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
         <div class="metric">
           <div class="label">Avg Rule Compliance</div>
           <div class="value neutral" id="psychAvgRules">—</div>
-          <div class="sub">Six session rules</div>
+          <div class="sub">Six Trading Day rules</div>
         </div>
         <div class="metric">
           <div class="label">Affirmation Completion</div>
@@ -6913,17 +6945,17 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           <div class="psych-section">
             <div class="psych-section-head">
               <div>
-                <h3>Session</h3>
-                <p>One record represents one trading session. P&amp;L remains an outcome; the scores below measure your process.</p>
+                <h3>Trading Day</h3>
+                <p>One record represents one trading day. P&amp;L remains an outcome; the scores below measure your process.</p>
               </div>
               <span class="score-chip" id="psychSessionMode">New</span>
             </div>
 
             <div class="session-meta-grid">
               <div class="field">
-                <label>Session Date</label>
+                <label>Trading Day Date</label>
                 <input type="date" id="psychSessionDate">
-                <small class="psych-date-help">You can record today or any previous trading/session day.</small>
+                <small class="psych-date-help">You can record today or any previous trading day.</small>
               </div>
               <div class="field">
                 <label>Past Trading Day <span class="optional">(quick select)</span></label>
@@ -6933,8 +6965,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
                 <small class="psych-date-help">This only fills the date. You can still type any date manually.</small>
               </div>
               <div class="field psych-session-label-field">
-                <label>Session Label</label>
-                <input type="text" id="psychSessionLabel" placeholder="e.g. Session 12 / New York">
+                <label>Trading Day Label</label>
+                <input type="text" id="psychSessionLabel" placeholder="Optional label, e.g. New York open">
               </div>
             </div>
           </div>
@@ -6943,7 +6975,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <div class="psych-section-head">
               <div>
                 <h3>Affirmations</h3>
-                <p>Use the values as identity rehearsal before the session and reinforcement after the session.</p>
+                <p>Use the values as identity rehearsal before and after each trading day.</p>
               </div>
             </div>
 
@@ -6959,7 +6991,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               <input type="checkbox" id="affirmationAfter">
               <span class="check-copy">
                 <strong>Affirmations completed after trading</strong>
-                <span>I reinforced the identity after the session regardless of the financial outcome.</span>
+                <span>I reinforced the identity after the trading day regardless of the financial outcome.</span>
               </span>
             </label>
           </div>
@@ -6968,7 +7000,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <div class="psych-section-head">
               <div>
                 <h3>Expression / Identity Scoreboard</h3>
-                <p>Score the degree to which each value was expressed in your actual behaviour, not how profitable the session was.</p>
+                <p>Score the degree to which each value was expressed in your actual behaviour, not how profitable the trading day was.</p>
               </div>
               <span class="score-chip" id="identityLiveScore">0.0%</span>
             </div>
@@ -7043,7 +7075,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           <div class="psych-section">
             <div class="psych-section-head">
               <div>
-                <h3>Trading Rules — Applied Per Session</h3>
+                <h3>Trading Day Rules</h3>
                 <p>These are observable behaviours. Check a rule only when it was actually followed.</p>
               </div>
               <span class="score-chip" id="rulesLiveScore">0.0%</span>
@@ -7052,7 +7084,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <div class="rule-row" data-rule="1">
               <div class="rule-main">
                 <input type="checkbox" class="rule-check" data-rule-number="1">
-                <div class="rule-text"><strong>1.</strong> Perform affirmations before and after the trading session.</div>
+                <div class="rule-text"><strong>1.</strong> Perform affirmations before and after the trading day.</div>
               </div>
               <input class="rule-comment" data-rule-comment="1" type="text" placeholder="Optional comment">
             </div>
@@ -7092,7 +7124,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <div class="rule-row" data-rule="6">
               <div class="rule-main">
                 <input type="checkbox" class="rule-check" data-rule-number="6">
-                <div class="rule-text"><strong>6.</strong> Review the trading rules before every trading session.</div>
+                <div class="rule-text"><strong>6.</strong> Review the trading rules before every trading day.</div>
               </div>
               <input class="rule-comment" data-rule-comment="6" type="text" placeholder="Optional comment">
             </div>
@@ -7109,7 +7141,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <div class="reflection-grid">
               <div class="field">
                 <label>Signal</label>
-                <textarea id="psychSignal" placeholder="What actually mattered during this session?"></textarea>
+                <textarea id="psychSignal" placeholder="What actually mattered during this trading day?"></textarea>
               </div>
               <div class="field">
                 <label>Noise</label>
@@ -7148,7 +7180,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
           <div class="psych-section">
             <div class="field">
-              <label>Adjustments for the Next Session</label>
+              <label>Adjustments for the Next Trading Day</label>
               <textarea id="psychAdjustments" placeholder="What specific behaviour or process will I reinforce, change or remove?"></textarea>
             </div>
 
@@ -7159,20 +7191,20 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
             <div class="psych-actions">
               <button class="btn" type="button" id="clearPsychSessionBtn">Clear</button>
-              <button class="btn primary" type="button" id="savePsychSessionBtn">Save Session</button>
+              <button class="btn primary" type="button" id="savePsychSessionBtn">Save Trading Day</button>
             </div>
           </div>
         </section>
 
         <aside class="panel psych-history">
-          <h3>Session History</h3>
+          <h3>Trading Day History</h3>
 
           <div class="psych-note" style="margin-bottom:12px">
-            Identity score, rule compliance and P&amp;L are intentionally separate. A disciplined loss can still be a high-quality session.
+            Identity score, rule compliance and P&amp;L are intentionally separate. A disciplined loss can still be a high-quality trading day.
           </div>
 
           <div class="psych-history-list" id="psychHistoryList">
-            <div class="empty-state">No psychology sessions recorded yet.</div>
+            <div class="empty-state">No Trading Day records yet.</div>
           </div>
         </aside>
       </div>
@@ -7546,13 +7578,13 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           <div class="execution-period-context" id="executionMapPeriodContext" hidden>
             <label><span id="executionMapPeriodDateLabel">Review date</span><input type="date" id="executionMapPeriodDate" aria-label="Period to review"></label>
             <div class="execution-period-session" id="executionMapSessionFields" hidden>
-              <label><span>Session name</span><input type="text" id="executionMapSessionName" maxlength="80" placeholder="e.g. Morning or London"></label>
-              <label id="executionMapSavedSessionControl" hidden><span>Saved sessions on this date</span><select id="executionMapSavedSession" aria-label="Saved session to review"></select></label>
+              <label><span>Intraday window name</span><input type="text" id="executionMapSessionName" maxlength="80" placeholder="e.g. London open or afternoon"></label>
+              <label id="executionMapSavedSessionControl" hidden><span>Saved windows on this date</span><select id="executionMapSavedSession" aria-label="Saved intraday window to review"></select></label>
               <div class="execution-period-times">
-                <label><span>From</span><input type="time" id="executionMapSessionStart" aria-label="Session start time"></label>
-                <label><span>Until</span><input type="time" id="executionMapSessionEnd" aria-label="Session end time"></label>
+                <label><span>From</span><input type="time" id="executionMapSessionStart" aria-label="Window start time"></label>
+                <label><span>Until</span><input type="time" id="executionMapSessionEnd" aria-label="Window end time"></label>
               </div>
-              <small id="executionMapSessionTimeHelp">Session times use this device’s time zone.</small>
+              <small id="executionMapSessionTimeHelp">Intraday window times use this device’s time zone.</small>
             </div>
             <small id="executionMapPeriodHelp">Review the whole period’s behaviour.</small>
           </div>
@@ -8151,6 +8183,8 @@ let journalPage = 1;
 let journalScopeView = 'trades';
 let journalReviewPeriod = 'week';
 let journalReviewAnchor = new Date();
+let journalRuleScope = 'trade';
+let journalRuleAnchor = new Date();
 let journalReflectionContext = null;
 const JOURNAL_PAGE_SIZE = 25;
 
@@ -8397,7 +8431,7 @@ function tiosRequestedEvidenceMetric(metric){
   }
   if(metric==='identity_expression'){
     const values=(Array.isArray(psychologySessions)?psychologySessions:[]).map(session=>identityPercentForSession(session.id)).filter(value=>value!==null&&Number.isFinite(Number(value)));
-    if(!values.length)return{available:false,reason:'No psychology identity-expression sessions have been scored yet.'};
+    if(!values.length)return{available:false,reason:'No Trading Day identity-expression scores have been recorded yet.'};
     return{available:true,value:roundEvidence(values.reduce((a,b)=>a+Number(b),0)/values.length,1),unit:'%',sampleSize:values.length,details:{measure:'average identity expression'}};
   }
   if(metric==='discipline_score')return psychologyIdentityMetric('discipline','Discipline');
@@ -8405,11 +8439,11 @@ function tiosRequestedEvidenceMetric(metric){
   if(metric==='objectivity_score')return psychologyIdentityMetric('objectivity','Objectivity');
   if(metric==='psychology_rule_adherence'){
     const values=(Array.isArray(psychologySessions)?psychologySessions:[]).map(session=>rulePercentForSession(session.id)).filter(value=>value!==null&&Number.isFinite(Number(value)));
-    if(!values.length)return{available:false,reason:'No psychology rule-adherence sessions have been recorded yet.'};
+    if(!values.length)return{available:false,reason:'No Trading Day rule-adherence scores have been recorded yet.'};
     return{available:true,value:roundEvidence(values.reduce((a,b)=>a+Number(b),0)/values.length,1),unit:'%',sampleSize:values.length,details:{measure:'average psychology rule adherence'}};
   }
   if(metric==='affirmation_consistency'){
-    const sessions=Array.isArray(psychologySessions)?psychologySessions:[];if(!sessions.length)return{available:false,reason:'No psychology sessions have been recorded yet.'};
+    const sessions=Array.isArray(psychologySessions)?psychologySessions:[];if(!sessions.length)return{available:false,reason:'No Trading Day reflections have been recorded yet.'};
     const complete=sessions.filter(session=>session.affirmation_before&&session.affirmation_after).length;
     return{available:true,value:roundEvidence(complete/sessions.length*100,1),unit:'%',sampleSize:sessions.length,details:{completeSessions:complete}};
   }
@@ -8800,7 +8834,7 @@ async function initializeSupabase(){
   const { data:{ session }, error } = await db.auth.getSession();
 
   if(error){
-    console.warn('Could not restore the H·IOS session in T·IOS:', error);
+    console.warn('Could not restore the H·IOS sign-in state in T·IOS:', error);
     window.location.replace('index.html?view=home');
     return;
   }
@@ -9086,7 +9120,7 @@ async function loadPsychologyData(){
     console.error(
       sessionsRes.error || scoresRes.error || rulesRes.error
     );
-    showStatus('Could not load psychology sessions',4000);
+    showStatus('Could not load Trading Day reflections',4000);
     psychologySessions = sessionsRes.data || [];
     identityScores = scoresRes.data || [];
     ruleChecks = rulesRes.data || [];
@@ -10528,55 +10562,99 @@ function journalTradingDayRuleDates(records,startDate='',endDate=''){
     .map(record=>String(record.period.startDate).slice(0,10));
   return [...new Set(dates)].sort();
 }
-function journalStoredTradingDayRuleReviews(){
+function journalTradingDayGroups(records){
+  const grouped=new Map();
+  (Array.isArray(records)?records:[]).forEach(record=>{
+    const date=String(record?.session_date||'').slice(0,10);
+    const parsed=new Date(date+'T00:00:00Z');
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(parsed.getTime())||parsed.toISOString().slice(0,10)!==date)return;
+    if(!grouped.has(date))grouped.set(date,[]);
+    grouped.get(date).push(record);
+  });
+  return [...grouped.entries()]
+    .sort(([first],[second])=>second.localeCompare(first))
+    .map(([date,dayRecords])=>({
+      date,
+      records:dayRecords.slice().sort((a,b)=>
+        String(b?.updated_at||b?.created_at||'').localeCompare(String(a?.updated_at||a?.created_at||''))
+      )
+    }));
+}
+function journalRuleDocumentsForScope(documents,scope){
+  const scopes=['trade','daily','weekly','monthly'];
+  if(!scopes.includes(scope))return [];
+  return (Array.isArray(documents)?documents:[])
+    .filter(doc=>doc&&!doc.templateDraft&&doc.ruleScope===scope)
+    .slice()
+    .sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
+}
+function journalRuleScopeLabel(scope){
+  return ({trade:'Individual Trade',daily:'Trading Day',weekly:'Weekly',monthly:'Monthly'})[scope]||'Rules';
+}
+function journalStoredPeriodRuleReviews(){
   if(!currentUser?.id||!tradingAccount?.id||!window.TIOSPeriodRules?.read)return [];
   try{
     return window.TIOSPeriodRules.read(localStorage,currentUser.id,tradingAccount.id)
-      .filter(record=>record.ruleScope==='daily');
+      .filter(record=>['daily','weekly','monthly'].includes(record.ruleScope));
   }catch(error){
-    console.warn('Trading Day Rules reviews could not be read:',error);
+    console.warn('Period Rules reviews could not be read:',error);
     return [];
   }
+}
+function journalStoredTradingDayRuleReviews(){
+  return journalStoredPeriodRuleReviews().filter(record=>record.ruleScope==='daily');
 }
 function journalScopePercent(value){
   return value===null||!Number.isFinite(value)?'—':value.toFixed(1)+'%';
 }
-function renderJournalSessions(){
-  const sessions=psychologySessions.filter(session=>!tradingAccount?.id||!session.account_id||session.account_id===tradingAccount.id).slice().sort((a,b)=>
-    String(b.session_date||'').localeCompare(String(a.session_date||''))||
-    String(b.created_at||'').localeCompare(String(a.created_at||''))
-  );
-  const sessionDates=new Set(sessions.map(session=>session.session_date));
-  const allTrades=trades.filter(trade=>sessionDates.has(trade.trade_date));
-  const identityValues=sessions.map(session=>identityPercentForSession(session.id)).filter(Number.isFinite);
-  const totalPnl=allTrades.reduce((sum,trade)=>sum+(Number(trade.pnl)||0),0);
-  $('#journalSessionCount').textContent=String(sessions.length);
-  $('#journalSessionIdentity').textContent=journalScopePercent(averageFinite(identityValues));
-  $('#journalSessionTrades').textContent=String(allTrades.length);
-  const pnlEl=$('#journalSessionPnl');pnlEl.textContent=signedMoney(totalPnl);pnlEl.className=pnlClass(totalPnl);
-  const list=$('#journalSessionsList');
-  if(!sessions.length){
-    list.innerHTML='<div class="empty-state">No saved sessions yet. Create a session in Psychology to record identity, affirmations and reflection as a session scoreboard.</div>';
+function renderJournalTradingDays(){
+  const records=psychologySessions
+    .filter(record=>!tradingAccount?.id||!record.account_id||record.account_id===tradingAccount.id)
+    .slice()
+    .sort((a,b)=>
+      String(b.session_date||'').localeCompare(String(a.session_date||''))||
+      String(b.updated_at||b.created_at||'').localeCompare(String(a.updated_at||a.created_at||''))
+    );
+  const days=journalTradingDayGroups(records);
+  const dayDates=new Set(days.map(day=>day.date));
+  const dayTrades=trades.filter(trade=>dayDates.has(String(trade.trade_date||'').slice(0,10)));
+  const identityValues=days
+    .map(day=>averageFinite(day.records.map(record=>identityPercentForSession(record.id)).filter(Number.isFinite)))
+    .filter(Number.isFinite);
+  const totalPnl=dayTrades.reduce((sum,trade)=>sum+(Number(trade.pnl)||0),0);
+  $('#journalTradingDayCount').textContent=String(days.length);
+  $('#journalTradingDayIdentity').textContent=journalScopePercent(averageFinite(identityValues));
+  $('#journalTradingDayTrades').textContent=String(dayTrades.length);
+  const pnlEl=$('#journalTradingDayPnl');pnlEl.textContent=signedMoney(totalPnl);pnlEl.className=pnlClass(totalPnl);
+  const list=$('#journalTradingDaysList');
+  if(!days.length){
+    list.innerHTML='<div class="empty-state">No Trading Day records yet. Use Psychology to record identity, affirmations and reflections for a trading day.</div>';
     return;
   }
   list.innerHTML='';
-  sessions.forEach((session,index)=>{
-    const relatedTrades=trades.filter(trade=>trade.trade_date===session.session_date);
+  days.forEach(day=>{
+    const relatedTrades=trades.filter(trade=>String(trade.trade_date||'').slice(0,10)===day.date);
     const pnl=relatedTrades.reduce((sum,trade)=>sum+(Number(trade.pnl)||0),0);
+    const identity=averageFinite(day.records.map(record=>identityPercentForSession(record.id)).filter(Number.isFinite));
+    const latest=day.records[0];
+    const affirmations=latest?.affirmation_before&&latest?.affirmation_after
+      ? 'Complete'
+      : latest?.affirmation_before||latest?.affirmation_after?'Partial':'Not done';
+    const reflections=[...new Set(day.records.map(record=>record.signal||record.adjustments||record.comments||'').map(value=>String(value).trim()).filter(Boolean))];
     const card=document.createElement('article');card.className='journal-session-card';
     const head=document.createElement('div');head.className='journal-session-head';
     const title=document.createElement('div');
-    const name=document.createElement('strong');name.textContent=session.session_label||('Session '+(sessions.length-index));
+    const name=document.createElement('strong');name.textContent='Trading Day — '+formatDate(day.date);
     const meta=document.createElement('div');meta.className='journal-session-meta';
-    meta.textContent=formatDate(session.session_date)+' · '+relatedTrades.length+' same-date '+(relatedTrades.length===1?'trade':'trades');
+    meta.textContent=relatedTrades.length+' trade'+(relatedTrades.length===1?'':'s')+(day.records.length>1?' · '+day.records.length+' saved reflections':'');
     title.append(name,meta);
-    const pnlStrong=document.createElement('strong');pnlStrong.className=pnlClass(pnl);pnlStrong.textContent=signedMoney(pnl);pnlStrong.title='Total P&L on this date; trades are not assigned to this session.';
+    const pnlStrong=document.createElement('strong');pnlStrong.className=pnlClass(pnl);pnlStrong.textContent=signedMoney(pnl);pnlStrong.title='Total P&L for this trading day; trades are grouped by date.';
     head.append(title,pnlStrong);
     const stats=document.createElement('div');stats.className='journal-session-stats';
     [
-      ['Identity',journalScopePercent(identityPercentForSession(session.id))],
-      ['Affirmations',session.affirmation_before&&session.affirmation_after?'Complete':session.affirmation_before||session.affirmation_after?'Partial':'Not done'],
-      ['Same-date trades',String(relatedTrades.length)]
+      ['Identity',journalScopePercent(identity)],
+      ['Affirmations',affirmations],
+      ['Trades',String(relatedTrades.length)]
     ].forEach(item=>{
       const box=document.createElement('div');box.className='journal-session-stat';
       const label=document.createElement('span');label.textContent=item[0];
@@ -10584,14 +10662,18 @@ function renderJournalSessions(){
       box.append(label,value);stats.appendChild(box);
     });
     const note=document.createElement('p');note.className='journal-session-note';
-    note.textContent=session.signal||session.adjustments||session.comments||'No session reflection was saved.';
+    note.textContent=reflections.length?reflections.join(' · '):'No Trading Day reflection was saved.';
     const actions=document.createElement('div');actions.className='session-card-actions';
-    const edit=document.createElement('button');edit.type='button';edit.className='btn small';edit.textContent='Review / Edit';
-    edit.addEventListener('click',()=>{
-      document.querySelector('.nav-btn[data-page="psychology"]')?.click();
-      loadPsychSessionIntoForm(session);
+    day.records.forEach((record,index)=>{
+      const edit=document.createElement('button');edit.type='button';edit.className='btn small';
+      edit.textContent=day.records.length===1?'Review / Edit':'Edit reflection '+(index+1);
+      edit.addEventListener('click',()=>{
+        document.querySelector('.nav-btn[data-page="psychology"]')?.click();
+        loadPsychSessionIntoForm(record);
+      });
+      actions.appendChild(edit);
     });
-    actions.appendChild(edit);card.append(head,stats,note,actions);list.appendChild(card);
+    card.append(head,stats,note,actions);list.appendChild(card);
   });
 }
 function renderJournalPeriodReview(){
@@ -10609,16 +10691,109 @@ function renderJournalPeriodReview(){
     button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));
   });
   const periodTrades=trades.filter(trade=>trade.trade_date>=bounds.start&&trade.trade_date<=bounds.end);
-  const periodSessions=psychologySessions.filter(session=>session.session_date>=bounds.start&&session.session_date<=bounds.end);
+  const periodRecords=psychologySessions.filter(record=>record.session_date>=bounds.start&&record.session_date<=bounds.end);
+  const periodTradingDays=new Set(periodRecords.map(record=>String(record.session_date||'').slice(0,10))).size;
   const pnl=periodTrades.reduce((sum,trade)=>sum+(Number(trade.pnl)||0),0);
   const execution=averageFinite(periodTrades.map(trade=>executionScoreForTrade(trade.id)).filter(Number.isFinite));
   const tradingDayRuleDates=journalTradingDayRuleDates(journalStoredTradingDayRuleReviews(),bounds.start,bounds.end);
   $('#journalPeriodTradeCount').textContent=String(periodTrades.length);
   const pnlEl=$('#journalPeriodPnl');pnlEl.textContent=signedMoney(pnl);pnlEl.className=pnlClass(pnl);
   $('#journalPeriodExecution').textContent=journalScopePercent(execution);
-  $('#journalPeriodSessionCount').textContent=String(periodSessions.length);
+  $('#journalPeriodSessionCount').textContent=String(periodTradingDays);
   $('#journalPeriodRuleDays').textContent=tradingDayRuleDates.length+' day'+(tradingDayRuleDates.length===1?'':'s');
-  $('#journalPeriodSummary').textContent=periodTrades.length+' trades across '+periodSessions.length+' saved sessions. Trading Day Rules were reviewed on '+tradingDayRuleDates.length+' distinct date'+(tradingDayRuleDates.length===1?'':'s')+'.';
+  $('#journalPeriodSummary').textContent=periodTrades.length+' trades across '+periodTradingDays+' trading day'+(periodTradingDays===1?'':'s')+'. Trading Day Rules were reviewed on '+tradingDayRuleDates.length+' distinct date'+(tradingDayRuleDates.length===1?'':'s')+'.';
+}
+function journalRulePeriodBounds(scope,date){
+  const period=scope==='daily'?'day':scope==='weekly'?'week':scope==='monthly'?'month':null;
+  return period?journalPeriodBounds(date,period):null;
+}
+function journalRuleDocumentPreview(doc){
+  const source=String(doc?.documentHtml||'').trim();
+  if(!source)return '';
+  try{
+    const parsed=new DOMParser().parseFromString(source,'text/html');
+    parsed.querySelectorAll('script,style,iframe,object,embed').forEach(node=>node.remove());
+    return String(parsed.body?.textContent||'').replace(/\s+/g,' ').trim().slice(0,420);
+  }catch(error){return ''}
+}
+function renderJournalRules(){
+  loadSecondaryDocuments('checklist');
+  const anchor=$('#journalRuleAnchor');
+  if(anchor&&!anchor.value)anchor.value=journalLocalDateKey(journalRuleAnchor);
+  const selectedDate=anchor?.value||journalLocalDateKey(journalRuleAnchor);
+  journalRuleAnchor=new Date(selectedDate+'T00:00:00');
+  $$('[data-journal-rule-scope]').forEach(button=>{
+    const active=button.dataset.journalRuleScope===journalRuleScope;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-pressed',String(active));
+  });
+  $('#journalRulePeriodControls').hidden=journalRuleScope==='trade';
+  const bounds=journalRulePeriodBounds(journalRuleScope,selectedDate);
+  $('#journalRulePeriodLabel').textContent=journalRuleScope==='trade'
+    ? 'Trade-specific Rules reviews are saved with each trade in Execution Quality.'
+    : !bounds
+      ? 'Choose a valid review date.'
+      : journalRuleScopeLabel(journalRuleScope)+' Rules · '+(bounds.start===bounds.end?formatDate(bounds.start):formatDate(bounds.start)+' – '+formatDate(bounds.end));
+  const list=$('#journalRuleList');
+  list.replaceChildren();
+  const docs=journalRuleDocumentsForScope(secondaryState('checklist').docs,journalRuleScope);
+  if(!docs.length){
+    const empty=document.createElement('div');empty.className='empty-state';
+    empty.textContent='No '+journalRuleScopeLabel(journalRuleScope)+' Rules are saved in Technical Instruments yet.';
+    const manage=document.createElement('button');manage.type='button';manage.className='btn small';manage.textContent='Open Technical Instruments';
+    manage.addEventListener('click',()=>openJournalTechnicalRules());
+    empty.appendChild(document.createElement('br'));empty.appendChild(manage);list.appendChild(empty);
+    return;
+  }
+  const selectedPeriod=journalRuleScope==='trade'?null:window.TIOSPeriodRules?.period(journalRuleScope,{date:selectedDate});
+  const savedReviews=journalRuleScope==='trade'?[]:journalStoredPeriodRuleReviews();
+  docs.forEach(doc=>{
+    const saved=selectedPeriod?savedReviews.find(record=>
+      record.ruleScope===journalRuleScope&&record.documentId===doc.id&&record.period?.key===selectedPeriod.key
+    ):null;
+    const card=document.createElement('article');card.className='journal-rule-card';
+    const head=document.createElement('div');head.className='journal-rule-card-head';
+    const title=document.createElement('h3');title.textContent=doc.name||'Untitled Rules';
+    const scope=document.createElement('span');scope.className='journal-rule-scope';scope.textContent=journalRuleScopeLabel(journalRuleScope);
+    head.append(title,scope);card.appendChild(head);
+    if(doc.description){
+      const description=document.createElement('p');description.textContent=doc.description;card.appendChild(description);
+    }
+    const previewText=journalRuleDocumentPreview(doc);
+    if(previewText){
+      const preview=document.createElement('p');preview.className='journal-rule-preview';preview.textContent=previewText;card.appendChild(preview);
+    }
+    const status=document.createElement('div');status.className='journal-rule-status';
+    status.textContent=journalRuleScope==='trade'
+      ? 'Trade-specific answers appear in the Rules reflection for each trade.'
+      : saved
+        ? 'Review saved · '+saved.answers.length+' response'+(saved.answers.length===1?'':'s')
+        : 'No review saved for this period yet.';
+    card.appendChild(status);
+    const actions=document.createElement('div');actions.className='journal-rule-card-actions';
+    const review=document.createElement('button');review.type='button';review.className='btn small';review.textContent='Review in Execution Quality';
+    review.addEventListener('click',()=>{
+      executionMappingActiveInstrument='checklist';
+      executionMappingRuleScope=journalRuleScope;
+      if(journalRuleScope==='trade')executionMappingChecklistId=doc.id;
+      else{
+        executionMappingPeriodRuleIds[journalRuleScope]=doc.id;
+        executionMappingPeriodDate=selectedDate;
+      }
+      navigate('execution');
+    });
+    actions.appendChild(review);
+    card.appendChild(actions);list.appendChild(card);
+  });
+}
+function openJournalTechnicalRules(documentId=null){
+  loadSecondaryDocuments('checklist');
+  const state=secondaryState('checklist');
+  if(documentId&&state.docs.some(doc=>doc.id===documentId)){
+    state.selectedId=documentId;
+    if(state.storeKey)localStorage.setItem(state.storeKey+':selected',documentId);
+  }
+  navigate('checklists');
 }
 function renderJournalScopeViews(){
   $$('[data-journal-view]').forEach(button=>{
@@ -10626,13 +10801,18 @@ function renderJournalScopeViews(){
     button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));
   });
   $('#journalTradesView').hidden=journalScopeView!=='trades';
-  $('#journalSessionsView').hidden=journalScopeView!=='sessions';
+  $('#journalTradingDaysView').hidden=journalScopeView!=='trading-days';
+  $('#journalRulesView').hidden=journalScopeView!=='rules';
   $('#journalReviewsView').hidden=journalScopeView!=='reviews';
-  if(journalScopeView==='sessions')renderJournalSessions();
+  if(journalScopeView==='trading-days')renderJournalTradingDays();
+  if(journalScopeView==='rules')renderJournalRules();
   if(journalScopeView==='reviews')renderJournalPeriodReview();
 }
 $$('[data-journal-view]').forEach(button=>button.addEventListener('click',()=>{
   journalScopeView=button.dataset.journalView;renderJournalScopeViews();
+}));
+$$('[data-journal-rule-scope]').forEach(button=>button.addEventListener('click',()=>{
+  journalRuleScope=button.dataset.journalRuleScope;renderJournalRules();
 }));
 $$('[data-journal-period]').forEach(button=>button.addEventListener('click',()=>{
   journalReviewPeriod=button.dataset.journalPeriod;renderJournalPeriodReview();
@@ -10650,7 +10830,28 @@ $('#journalReviewNext').addEventListener('click',()=>{
   else journalReviewAnchor.setDate(journalReviewAnchor.getDate()+(journalReviewPeriod==='week'?7:1));
   $('#journalReviewAnchor').value=journalLocalDateKey(journalReviewAnchor);renderJournalPeriodReview();
 });
-$('#journalOpenDayRules')?.addEventListener('click',()=>navigate('checklists'));
+function stepJournalRuleDate(direction){
+  const anchor=$('#journalRuleAnchor');
+  const date=new Date((anchor?.value||journalLocalDateKey(journalRuleAnchor))+'T00:00:00');
+  if(journalRuleScope==='monthly'){date.setDate(1);date.setMonth(date.getMonth()+direction);}
+  else date.setDate(date.getDate()+direction*(journalRuleScope==='weekly'?7:1));
+  journalRuleAnchor=date;
+  if(anchor)anchor.value=journalLocalDateKey(date);
+  renderJournalRules();
+}
+$('#journalRuleAnchor').addEventListener('change',event=>{
+  journalRuleAnchor=new Date(event.target.value+'T00:00:00');renderJournalRules();
+});
+$('#journalRulePrev').addEventListener('click',()=>stepJournalRuleDate(-1));
+$('#journalRuleNext').addEventListener('click',()=>stepJournalRuleDate(1));
+$('#journalManageRules').addEventListener('click',()=>{
+  loadSecondaryDocuments('checklist');
+  const doc=journalRuleDocumentsForScope(secondaryState('checklist').docs,journalRuleScope)[0];
+  openJournalTechnicalRules(doc?.id||null);
+});
+$('#journalOpenDayRules')?.addEventListener('click',()=>{
+  journalRuleScope='daily';journalScopeView='rules';renderJournalScopeViews();
+});
 $('#journalOpenPsychology').addEventListener('click',()=>{
   document.querySelector('.nav-btn[data-page="psychology"]')?.click();
 });
@@ -10766,6 +10967,9 @@ function renderJournal(){
       if(trade) deleteTrade(trade);
     });
   });
+  if(journalScopeView==='trading-days')renderJournalTradingDays();
+  if(journalScopeView==='rules')renderJournalRules();
+  if(journalScopeView==='reviews')renderJournalPeriodReview();
 }
 
 [
@@ -12117,7 +12321,7 @@ let executionMappingChecklistId=null;
 let executionMappingRuleScope='trade';
 const executionMappingPeriodRuleIds={};
 let executionMappingPeriodDate=null;
-let executionMappingSessionName='Main session';
+let executionMappingSessionName='Main window';
 let executionMappingSessionStart='00:00';
 let executionMappingSessionEnd='23:59';
 let executionMappingSessionPreset=null;
@@ -12382,11 +12586,11 @@ function renderExecutionMappingPeriodContext(){
   $('#executionMapSessionEnd').value=executionMappingSessionEnd;
   const savedSessions=executionMappingSavedSessions(),sessionSelect=$('#executionMapSavedSession');
   $('#executionMapSavedSessionControl').hidden=!savedSessions.length;
-  sessionSelect.innerHTML='<option value="">New session…</option>'+savedSessions.map(saved=>'<option value="'+escapeHtml(saved.key)+'" '+(saved.key===period?.key?'selected':'')+'>'+escapeHtml(saved.sessionLabel+' · '+saved.startTime+'–'+saved.endTime+(saved.endDate!==saved.startDate?' (next day)':''))+'</option>').join('');
-  $('#executionMapSessionTimeHelp').textContent='Session times: '+(period?.timeZone||Intl.DateTimeFormat().resolvedOptions().timeZone)+(period&&period.endDate!==period.startDate?' · ends the next day.':'.');
-  $('#executionMapPeriodHelp').textContent=scope==='weekly'?'The week runs Monday to Sunday.':scope==='monthly'?'Review the entire calendar month.':scope==='session'?'Review the whole session’s behaviour.':'Review all behaviour across the selected day.';
+  sessionSelect.innerHTML='<option value="">New window…</option>'+savedSessions.map(saved=>'<option value="'+escapeHtml(saved.key)+'" '+(saved.key===period?.key?'selected':'')+'>'+escapeHtml(saved.sessionLabel+' · '+saved.startTime+'–'+saved.endTime+(saved.endDate!==saved.startDate?' (next day)':''))+'</option>').join('');
+  $('#executionMapSessionTimeHelp').textContent='Window times: '+(period?.timeZone||Intl.DateTimeFormat().resolvedOptions().timeZone)+(period&&period.endDate!==period.startDate?' · ends the next day.':'.');
+  $('#executionMapPeriodHelp').textContent=scope==='weekly'?'The week runs Monday to Sunday.':scope==='monthly'?'Review the entire calendar month.':scope==='session'?'Review behaviour across this intraday window.':'Review all behaviour across the selected Trading Day.';
   $('#executionMapTradeTitle').textContent=executionMappingPeriodLabel(period);
-  $('#executionMapTradeMeta').textContent=period?'Whole '+(scope==='daily'?'day':scope==='weekly'?'week':scope==='monthly'?'month':'session')+' review · '+(tradingAccount?.account_name||'selected account'):'Enter a valid date, session name and different start/end times.';
+  $('#executionMapTradeMeta').textContent=period?'Whole '+(scope==='daily'?'Trading Day':scope==='weekly'?'week':scope==='monthly'?'month':'intraday window')+' review · '+(tradingAccount?.account_name||'selected account'):'Enter a valid date, intraday window name and different start/end times.';
   const periodTrades=period?trades.filter(trade=>window.TIOSPeriodRules.includesTrade(trade,period)):[];
   $('#executionMapPeriodTradeCount').textContent=String(periodTrades.length);
   $('#executionMapPeriodPnl').textContent=period?signedMoney(periodTrades.reduce((sum,trade)=>sum+(Number(trade.pnl)||0),0)):'—';
@@ -12620,7 +12824,7 @@ function renderExecutionMappingForm(){
   };
 
   captureExecutionMappingReflectionDraft();
-  body.innerHTML=(executionMappingIsPeriod()?'<div class="execution-period-review-note">Review the whole '+({session:'session',daily:'day',weekly:'week',monthly:'month'}[executionMappingRuleScope])+'. Conditions, scores and reflections are saved once for this period and Rules document. They do not change an individual trade’s score.</div>':'')+instrumentHtml[activeInstrument];
+  body.innerHTML=(executionMappingIsPeriod()?'<div class="execution-period-review-note">Review the whole '+({session:'intraday window',daily:'Trading Day',weekly:'week',monthly:'month'}[executionMappingRuleScope])+'. Conditions, scores and reflections are saved once for this period and Rules document. They do not change an individual trade’s score.</div>':'')+instrumentHtml[activeInstrument];
   restoreExecutionMappingReflections();
   hydratePlaybookImages(body);
   renderExecutionMappingControls();
@@ -12805,7 +13009,7 @@ async function saveExecutionMappingReflections(){
       }
     }
     if(!review?.id||review.user_id!==scope.userId||review.trade_id!==scope.tradeId)throw new Error('Could not find the selected trade review.');
-    if(currentUser?.id!==scope.userId)throw new Error('Your session changed. Sign in again before saving.');
+    if(currentUser?.id!==scope.userId)throw new Error('Your sign-in state changed. Sign in again before saving.');
     const existingRows=executionChecks.filter(item=>item.review_id===review.id);
     const lastOrder=Math.max(0,...existingRows.map(row=>Number(row.sort_order)||0));
     const rows=answers.map((answer,index)=>({
@@ -12904,7 +13108,7 @@ function updateExecutionMappingScore(){
   }
 
   score.textContent=conditionPct.toFixed(1)+'%';
-  meta.textContent=`${followed} of ${total} planned condition${total===1?'':'s'} met for this ${executionMappingIsPeriod()?({session:'session',daily:'day',weekly:'week',monthly:'month'}[executionMappingRuleScope]):'trade'}.`;
+  meta.textContent=`${followed} of ${total} planned condition${total===1?'':'s'} met for this ${executionMappingIsPeriod()?({session:'intraday window',daily:'Trading Day',weekly:'week',monthly:'month'}[executionMappingRuleScope]):'trade'}.`;
 }
 
 function resetExecutionMappingInputs(){
@@ -14676,7 +14880,7 @@ const INSTRUMENT_DEFAULT_TEMPLATES={
     {id:'rules-sections',variant:'sections',name:'Sectioned Rules',description:'Before, during and after a trade.'},
     {id:'rules-cards',variant:'cards',name:'Card Rules',description:'Rules in two-column cards.'},
     {id:'rules-patterns',variant:'patterns',name:'Picture Rules',description:'Choice / Check picture groups.'},
-    {id:'session-rules',variant:'insert',name:'Session Rules',description:'Reusable rules for when and how you are allowed to trade.',html:`<h2>Session Rules</h2><ul><li>Define the allowed trading session.</li><li>Define when trading must stop.</li><li>Define the maximum number of attempts.</li></ul>`},
+    {id:'session-rules',variant:'insert',name:'Trading Day Rules',description:'Reusable rules for how you trade throughout a Trading Day.',html:`<h2>Trading Day Rules</h2><ul><li>Define the trading hours you follow each Trading Day.</li><li>Define when trading must stop for the day.</li><li>Define the maximum number of attempts per Trading Day.</li></ul>`},
     {id:'risk-rules',variant:'insert',name:'Risk Rules',description:'Position sizing, daily loss and exposure controls.',html:`<h2>Risk Rules</h2><ul><li>Define maximum risk per trade.</li><li>Define maximum daily loss.</li><li>Define maximum simultaneous exposure.</li></ul>`},
     {id:'execution-rules',variant:'insert',name:'Execution Rules',description:'Rules that protect entry discipline and trade management.',html:`<h2>Execution Rules</h2><ol><li>Wait for the defined confirmation.</li><li>Enter only at the planned location.</li><li>Do not widen the stop after entry.</li><li>Manage the trade according to the plan.</li></ol>`}
   ],
@@ -17002,7 +17206,7 @@ function renderSecondaryPreview(kind){
   if(kind==='checklist'){
     const scope=window.TIOSPeriodRules.normalizeScope(secondaryFind(kind,'[data-ti-rule-scope]')?.value||doc.ruleScope);
     const help=secondaryFind(kind,'[data-ti-rule-scope-help]');
-    if(help)help.textContent=scope==='trade'?'Applied separately to each individual trade.':'Reviewed once for the whole '+({session:'named trading session',daily:'day',weekly:'week',monthly:'month'}[scope])+', independently of individual trades.';
+    if(help)help.textContent=scope==='trade'?'Applied separately to each individual trade.':'Reviewed once for the whole '+({session:'named intraday window',daily:'Trading Day',weekly:'week',monthly:'month'}[scope])+', independently of individual trades.';
   }
   const sourceHtml=secondaryFind(kind,'[data-ti-editor]')?.innerHTML||doc.documentHtml||'';
   const items=playbookStructuredPreviewItems(sourceHtml,{kind,area:'preview'});
@@ -19174,14 +19378,26 @@ function setPsychSessionDate(date,{fromQuickSelect=false}={}){
   }
 }
 
+function psychologyTradingDayLabel(value){
+  return String(value||'').trim()
+    .replace(/\bsessions?\b/gi,'Trading Day')
+    .replace(/^Trading Day\s*\d*\s*(?:[·/:—-]\s*)?/i,'')
+    .replace(/\s+Trading Day\b/gi,'')
+    .trim();
+}
+function psychologyTradingDayTitle(record){
+  const date=formatDate(record?.session_date||'');
+  const label=psychologyTradingDayLabel(record?.session_label);
+  return 'Trading Day — '+date+(label?' · '+label:'');
+}
+
 function clearPsychForm(){
   editingPsychSessionId=null;
 
   renderPsychTradingDayOptions();
   setPsychSessionDate(localDateString(new Date()));
 
-  const suggestedNumber=psychologySessions.length+1;
-  $('#psychSessionLabel').value=`Session ${suggestedNumber}`;
+  $('#psychSessionLabel').value='';
 
   $('#affirmationBefore').checked=false;
   $('#affirmationAfter').checked=false;
@@ -19201,8 +19417,8 @@ function clearPsychForm(){
   $('#psychComments').value='';
 
   $('#psychSessionMode').textContent='New';
-  $('#savePsychSessionBtn').textContent='Save Session';
-  $('#savePsychSessionTop').textContent='Save Session';
+  $('#savePsychSessionBtn').textContent='Save Trading Day';
+  $('#savePsychSessionTop').textContent='Save Trading Day';
 
   updatePsychLiveScores();
 }
@@ -19212,7 +19428,7 @@ function loadPsychSessionIntoForm(session){
 
   renderPsychTradingDayOptions(session.session_date||'');
   setPsychSessionDate(session.session_date||'');
-  $('#psychSessionLabel').value=session.session_label || '';
+  $('#psychSessionLabel').value=psychologyTradingDayLabel(session.session_label);
 
   $('#affirmationBefore').checked=Boolean(session.affirmation_before);
   $('#affirmationAfter').checked=Boolean(session.affirmation_after);
@@ -19251,8 +19467,8 @@ function loadPsychSessionIntoForm(session){
   $('#psychComments').value=session.comments || '';
 
   $('#psychSessionMode').textContent='Editing';
-  $('#savePsychSessionBtn').textContent='Update Session';
-  $('#savePsychSessionTop').textContent='Update Session';
+  $('#savePsychSessionBtn').textContent='Update Trading Day';
+  $('#savePsychSessionTop').textContent='Update Trading Day';
 
   updatePsychLiveScores();
 
@@ -19265,7 +19481,7 @@ async function savePsychSession(){
   const date=$('#psychSessionDate').value;
 
   if(!date){
-    alert('Select the session date.');
+    alert('Select the trading day date.');
     return;
   }
 
@@ -19363,11 +19579,11 @@ async function savePsychSession(){
   }
 
   respondToGoalEvidenceRequest('psychology_session_saved');
-  showStatus('Psychology session saved');
+  showStatus('Trading Day record saved');
 }
 
 async function deletePsychSession(session){
-  if(!confirm(`Delete ${session.session_label || 'this session'} on ${formatDate(session.session_date)}?`)){
+  if(!confirm(`Delete ${psychologyTradingDayTitle(session)}?`)){
     return;
   }
 
@@ -19389,113 +19605,82 @@ async function deletePsychSession(session){
   }
 
   renderPsychology();
-  showStatus('Psychology session deleted');
+  showStatus('Trading Day record deleted');
 }
 
 function renderPsychSummary(){
-  $('#psychTotalSessions').textContent=psychologySessions.length;
+  const days=journalTradingDayGroups(psychologySessions);
+  $('#psychTotalSessions').textContent=String(days.length);
 
-  const identityValues=psychologySessions
-    .map(s=>identityPercentForSession(s.id))
-    .filter(v=>v!==null);
+  const identityValues=days
+    .map(day=>averageFinite(day.records.map(record=>identityPercentForSession(record.id)).filter(Number.isFinite)))
+    .filter(Number.isFinite);
 
-  const rulesValues=psychologySessions
-    .map(s=>rulePercentForSession(s.id))
-    .filter(v=>v!==null);
+  const rulesValues=days
+    .map(day=>averageFinite(day.records.map(record=>rulePercentForSession(record.id)).filter(Number.isFinite)))
+    .filter(Number.isFinite);
 
-  const affirmationComplete=psychologySessions.filter(
-    s=>s.affirmation_before && s.affirmation_after
+  const affirmationComplete=days.filter(day=>
+    day.records[0]?.affirmation_before&&day.records[0]?.affirmation_after
   ).length;
 
-  const avgIdentity=identityValues.length
-    ? identityValues.reduce((a,b)=>a+b,0)/identityValues.length
-    : null;
-
-  const avgRules=rulesValues.length
-    ? rulesValues.reduce((a,b)=>a+b,0)/rulesValues.length
-    : null;
-
-  const affirmationRate=psychologySessions.length
-    ? affirmationComplete/psychologySessions.length*100
-    : null;
+  const avgIdentity=averageFinite(identityValues);
+  const avgRules=averageFinite(rulesValues);
+  const affirmationRate=days.length?affirmationComplete/days.length*100:null;
 
   $('#psychAvgIdentity').textContent=
-    avgIdentity===null ? '—' : avgIdentity.toFixed(1)+'%';
-
+    avgIdentity===null?'—':avgIdentity.toFixed(1)+'%';
   $('#psychAvgRules').textContent=
-    avgRules===null ? '—' : avgRules.toFixed(1)+'%';
-
+    avgRules===null?'—':avgRules.toFixed(1)+'%';
   $('#psychAffirmationRate').textContent=
-    affirmationRate===null ? '—' : affirmationRate.toFixed(1)+'%';
+    affirmationRate===null?'—':affirmationRate.toFixed(1)+'%';
 }
 
 function renderPsychHistory(){
   const box=$('#psychHistoryList');
-
   if(!psychologySessions.length){
-    box.innerHTML='<div class="empty-state">No psychology sessions recorded yet.</div>';
+    box.innerHTML='<div class="empty-state">No Trading Day records yet.</div>';
     return;
   }
-
   box.innerHTML='';
-
-  psychologySessions.forEach((session,index)=>{
+  const dayGroups=new Map(journalTradingDayGroups(psychologySessions).map(day=>[day.date,day]));
+  psychologySessions.forEach(session=>{
     const identity=identityPercentForSession(session.id);
     const rules=rulePercentForSession(session.id);
     const pnl=dayPnlForDate(session.session_date);
-
+    const date=String(session.session_date||'').slice(0,10);
+    const day=dayGroups.get(date);
+    const recordNumber=(day?.records.findIndex(record=>record.id===session.id)??-1)+1;
+    const recordLabel=day?.records.length>1
+      ? 'Reflection '+recordNumber+' of '+day.records.length
+      : 'Trading Day reflection';
     const card=document.createElement('div');
     card.className='session-card';
-
     const affirmationText=
-      session.affirmation_before && session.affirmation_after
+      session.affirmation_before&&session.affirmation_after
         ? 'Complete'
-        : session.affirmation_before || session.affirmation_after
-          ? 'Partial'
-          : 'Not done';
-
+        : session.affirmation_before||session.affirmation_after?'Partial':'Not done';
     card.innerHTML=`
       <div class="session-card-head">
         <div>
-          <div class="session-card-title">${escapeHtml(session.session_label || `Session ${psychologySessions.length-index}`)}</div>
-          <div class="session-card-date">${formatDate(session.session_date)}</div>
+          <div class="session-card-title">${escapeHtml(psychologyTradingDayTitle(session))}</div>
+          <div class="session-card-date">${escapeHtml(recordLabel)}</div>
         </div>
         <strong class="${pnlClass(pnl)}">${signedMoney(pnl)}</strong>
       </div>
-
       <div class="session-card-stats">
-        <div class="session-stat">
-          <span>Identity</span>
-          <strong>${identity===null?'—':identity.toFixed(1)+'%'}</strong>
-        </div>
-        <div class="session-stat">
-          <span>Rules</span>
-          <strong>${rules===null?'—':rules.toFixed(1)+'%'}</strong>
-        </div>
-        <div class="session-stat">
-          <span>Affirmations</span>
-          <strong>${affirmationText}</strong>
-        </div>
-        <div class="session-stat">
-          <span>Day P&amp;L</span>
-          <strong class="${pnlClass(pnl)}">${signedMoney(pnl)}</strong>
-        </div>
+        <div class="session-stat"><span>Identity</span><strong>${identity===null?'—':identity.toFixed(1)+'%'}</strong></div>
+        <div class="session-stat"><span>Rules</span><strong>${rules===null?'—':rules.toFixed(1)+'%'}</strong></div>
+        <div class="session-stat"><span>Affirmations</span><strong>${affirmationText}</strong></div>
+        <div class="session-stat"><span>Day P&amp;L</span><strong class="${pnlClass(pnl)}">${signedMoney(pnl)}</strong></div>
       </div>
-
       <div class="session-card-actions">
         <button class="btn small edit-session">Review / Edit</button>
         <button class="btn small danger delete-session">Delete</button>
       </div>
     `;
-
-    card.querySelector('.edit-session').addEventListener('click',()=>{
-      loadPsychSessionIntoForm(session);
-    });
-
-    card.querySelector('.delete-session').addEventListener('click',()=>{
-      deletePsychSession(session);
-    });
-
+    card.querySelector('.edit-session').addEventListener('click',()=>loadPsychSessionIntoForm(session));
+    card.querySelector('.delete-session').addEventListener('click',()=>deletePsychSession(session));
     box.appendChild(card);
   });
 }
@@ -20149,7 +20334,7 @@ function renderIntelligence(){
 
   const executionReviewed=executionIntelligence.sample.reviewedTrades;
   const edgeReviewed=data.edgeScores.length;
-  const psychCount=psychologySessions.length;
+  const psychCount=journalTradingDayGroups(psychologySessions).length;
   const processEvidenceCount=executionReviewed+edgeReviewed+psychCount;
   const maturity=intelligenceMaturity(processEvidenceCount);
 
@@ -20198,21 +20383,21 @@ function renderIntelligence(){
   $('#intelPsychScore').textContent=
     data.avgPsych===null ? '—' : data.avgPsych.toFixed(1)+'%';
   $('#intelPsychEvidence').textContent=
-    `${psychCount} recorded session${psychCount===1?'':'s'}`;
+    `${psychCount} recorded Trading Day${psychCount===1?'':'s'}`;
   $('#intelPsychIdentity').textContent=
     data.avgIdentity===null ? '—' : data.avgIdentity.toFixed(1)+'%';
   $('#intelPsychRules').textContent=
     data.avgRules===null ? '—' : data.avgRules.toFixed(1)+'%';
 
   if(psychCount===0){
-    setIntelligenceState('#intelPsychState','Needs sessions');
-    $('#intelPsychNote').textContent='Psychology Intelligence is waiting for structured sessions. Record thoughts, identity expression and rule compliance instead of asking T·IOS to guess your mental state.';
+    setIntelligenceState('#intelPsychState','Needs Trading Days');
+    $('#intelPsychNote').textContent='Psychology Intelligence is waiting for Trading Day reflections. Record thoughts, identity expression and rule compliance instead of asking T·IOS to guess your mental state.';
   }else if(psychCount<3){
     setIntelligenceState('#intelPsychState','Building','building');
-    $('#intelPsychNote').textContent=`Psychology Intelligence has ${psychCount} session${psychCount===1?'':'s'}. Continue recording comparable sessions before treating psychological tendencies as recurring patterns.`;
+    $('#intelPsychNote').textContent=`Psychology Intelligence has ${psychCount} Trading Day${psychCount===1?'':'s'} of reflection. Continue recording comparable Trading Days before treating psychological tendencies as recurring patterns.`;
   }else{
     setIntelligenceState('#intelPsychState','Active','active');
-    $('#intelPsychNote').textContent='Psychology Intelligence is active at the session-process level. Deeper trigger-to-behaviour relationships will strengthen as more structured sessions accumulate.';
+    $('#intelPsychNote').textContent='Psychology Intelligence is active at the Trading Day process level. Deeper trigger-to-behaviour relationships will strengthen as more structured Trading Day reflections accumulate.';
   }
 
   /* Specialized Intelligence — Edge */
@@ -20509,7 +20694,7 @@ function renderIntelligence(){
   if(trades.length>0 && processAreas.length===0){
     personalSummary=`Performance Intelligence is active from ${trades.length} trades${winRate===null?'':` with a ${winRate.toFixed(1)}% win rate`}${allTimeReturn===null?'':` and ${formatReturnPct(allTimeReturn)} return on the initial account balance`}. However, T·IOS does not yet have enough Execution, Edge or Psychology evidence to explain why these results occurred. Continue structured reviews before treating any explanation as personal intelligence.`;
   }else{
-    personalSummary='T·IOS is still building evidence. Continue reviewing trades and psychology sessions before treating any pattern as a stable personal conclusion.';
+    personalSummary='T·IOS is still building evidence. Continue reviewing trades and Trading Day reflections before treating any pattern as a stable personal conclusion.';
   }
 
   if(processAreas.length>=2 && processEvidenceCount>=10){
