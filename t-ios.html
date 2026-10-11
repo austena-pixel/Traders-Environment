@@ -1817,6 +1817,7 @@ body.playbook-workspace .main{
   .stats-indicator-card,.stats-autozoom-thumb{transition:none}
 }
 .stats-analysis-pair{
+  display:block;
   grid-column:1 / -1;
   min-width:0;
   min-height:140px;
@@ -6931,7 +6932,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               </div>
             </section>
 
-            <section class="stats-analysis-pair" aria-label="Drawdown and trade expectancy analytics">
+            <section class="stats-analysis-pair stats-indicator-card" aria-label="Maximum drawdown and average P&amp;L per trade analytics">
               <header class="stats-analysis-pair-head">
                 <span>Risk &amp; expectancy</span>
                 <strong id="statAnalysisWinRate">—</strong>
@@ -6939,7 +6940,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               <div class="stats-analysis-pair-grid">
                 <section class="stats-analysis-module" aria-labelledby="statDrawdownTitle">
                   <div class="stats-analysis-title-row">
-                    <h4 id="statDrawdownTitle">Drawdown &amp; Risk</h4>
+                    <h4 id="statDrawdownTitle">Maximum drawdown vs profit peak</h4>
                     <span class="stats-analysis-kicker">MAX</span>
                   </div>
                   <strong class="stats-analysis-value neutral" id="statDrawdownValue">—</strong>
@@ -6953,7 +6954,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
                 </section>
                 <section class="stats-analysis-module" aria-labelledby="statExpectancyTitle">
                   <div class="stats-analysis-title-row">
-                    <h4 id="statExpectancyTitle">Trade Expectancy</h4>
+                    <h4 id="statExpectancyTitle">Average P&amp;L per trade</h4>
                     <span class="stats-analysis-kicker">PER TRADE</span>
                   </div>
                   <strong class="stats-analysis-value neutral" id="statExpectancyValue">—</strong>
@@ -13987,6 +13988,26 @@ function maxDrawdownFromEquity(points,openingEquity){
   return {amount:maxDd,pct:maxDdPct};
 }
 
+function maxDrawdownFromProfitPeak(points,openingEquity){
+  let peakProfit=0;
+  let maxDrawdown=0;
+  let maxDrawdownPct=null;
+  let peakAtMaxDrawdown=0;
+  (Array.isArray(points)?points:[]).forEach(point=>{
+    const equity=Number(point?.equity);
+    if(!Number.isFinite(equity))return;
+    const profit=equity-openingEquity;
+    if(profit>peakProfit)peakProfit=profit;
+    const amount=peakProfit-profit;
+    if(amount>maxDrawdown){
+      maxDrawdown=amount;
+      peakAtMaxDrawdown=peakProfit;
+      maxDrawdownPct=peakProfit>0?amount/peakProfit*100:null;
+    }
+  });
+  return {amount:maxDrawdown,pct:maxDrawdownPct,profitPeak:peakAtMaxDrawdown};
+}
+
 function dailyStatsFromTrades(sourceTrades){
   const map={};
 
@@ -14305,7 +14326,7 @@ function renderDrawdownExpectancyDiagram(drawdown,series,expectancy,avgTradeRetu
     drawdownCaption.textContent='No closed trades in this period.';
     drawdownPath.setAttribute('d','');
     drawdownDescription.textContent='No closed trades are available to show a drawdown profile.';
-  }else if(!complete||!Number.isFinite(drawdown?.amount)||!Number.isFinite(drawdown?.pct)){
+  }else if(!complete||!Number.isFinite(drawdown?.amount)){
     drawdownValue.textContent='—';
     drawdownValue.className='stats-analysis-value neutral';
     drawdownCaption.textContent='Unavailable: recorded P&L is incomplete.';
@@ -14315,8 +14336,10 @@ function renderDrawdownExpectancyDiagram(drawdown,series,expectancy,avgTradeRetu
     drawdownValue.textContent=drawdown.amount>0?signedMoney(-drawdown.amount):signedMoney(0);
     drawdownValue.className='stats-analysis-value '+(drawdown.amount>0?'neg':'neutral');
     drawdownCaption.textContent=drawdown.amount>0
-      ? formatReturnPct(-drawdown.pct)+' maximum drawdown'
-      : 'No drawdown recorded in this period.';
+      ? Number.isFinite(drawdown.pct)
+        ? formatReturnPct(-drawdown.pct)+' vs '+formatProfitFactorCurrency(drawdown.profitPeak)+' profit peak'
+        : 'From profit peak · percentage unavailable'
+      : 'No drawdown recorded from a profit peak.';
     const points=Array.isArray(series?.points)?series.points:[];
     const sampled=points.length>36?points.filter((_,index)=>index===0||index===points.length-1||index%Math.ceil(points.length/35)===0):points;
     let peak=-Infinity;
@@ -14335,8 +14358,8 @@ function renderDrawdownExpectancyDiagram(drawdown,series,expectancy,avgTradeRetu
       : '';
     drawdownPath.setAttribute('d',path);
     drawdownDescription.textContent=drawdown.amount>0
-      ? 'Red curve shows the selected period moving from equity peaks into drawdowns and recovery. Maximum drawdown was '+signedMoney(-drawdown.amount)+', or '+formatReturnPct(-drawdown.pct)+'.'
-      : 'No drawdown was recorded across '+trades.length+' selected closed trades.';
+      ? 'Red curve shows how selected-period profit fell from its peak and recovered. Maximum drawdown was '+signedMoney(-drawdown.amount)+(Number.isFinite(drawdown.pct)?', or '+formatReturnPct(-drawdown.pct)+' of the '+formatProfitFactorCurrency(drawdown.profitPeak)+' profit peak.':'; percentage is unavailable because no positive profit peak was recorded.')
+      : 'No drawdown was recorded from a profit peak across '+trades.length+' selected closed trades.';
   }
 
   if(!hasTrades||!complete||!Number.isFinite(expectancy)){
@@ -14444,6 +14467,11 @@ function renderStatistics(){
     : 0;
 
   const drawdown=maxDrawdownFromEquity(
+    series.points,
+    series.openingEquity
+  );
+
+  const profitPeakDrawdown=maxDrawdownFromProfitPeak(
     series.points,
     series.openingEquity
   );
@@ -14556,7 +14584,7 @@ function renderStatistics(){
     recoveryFactor===Infinity ? '∞' : recoveryFactor.toFixed(2);
 
   renderStatisticsIndicators(returnPct,winRate,source,profitFactorStats);
-  renderDrawdownExpectancyDiagram(drawdown,series,expectancy,avgTradeReturn,winRate,source,avgWin,avgLoss);
+  renderDrawdownExpectancyDiagram(profitPeakDrawdown,series,expectancy,avgTradeReturn,winRate,source,avgWin,avgLoss);
   renderEquityChart(series);
   renderInstrumentStats(source);
 }
