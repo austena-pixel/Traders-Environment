@@ -13875,12 +13875,20 @@ function renderStatistics(){
 
   const returnPct=returnPctFromPnl(netPnl);
 
-  const profitFactorStats=calculateProfitFactorStats(source);
   const wins=source.filter(t=>Number(t.pnl)>0);
   const losses=source.filter(t=>Number(t.pnl)<0);
-  const grossProfit=profitFactorStats.grossProfit;
-  const grossLoss=profitFactorStats.grossLoss;
-  const profitFactor=profitFactorStats.value;
+
+  const grossProfit=wins.reduce((s,t)=>s+(Number(t.pnl)||0),0);
+
+  const grossLoss=Math.abs(
+    losses.reduce((s,t)=>s+(Number(t.pnl)||0),0)
+  );
+
+  const profitFactor=grossLoss
+    ? grossProfit/grossLoss
+    : grossProfit>0 ? Infinity : 0;
+
+  const profitFactorStats=calculateProfitFactorStats(source);
 
   const avgTradeReturn=averageTradeReturnPct(source);
 
@@ -13964,7 +13972,7 @@ function renderStatistics(){
   $('#statWinRate').textContent=winRate.toFixed(1)+'%';
 
   $('#statProfitFactor').textContent=
-    profitFactor===Infinity?'∞':Number.isFinite(profitFactor)?profitFactor.toFixed(2):'—';
+    profitFactor===Infinity ? '∞' : profitFactor.toFixed(2);
 
   $('#statAvgTradeReturn').textContent=formatReturnPct(avgTradeReturn);
   $('#statAvgTradeReturn').className='value '+(avgTradeReturn===null?'neutral':pnlClass(avgTradeReturn));
