@@ -44,6 +44,11 @@ test('Deriv choices work within existing version-one preferences without changin
  assert.equal(P.widgetSettings(p.charts.single[0],p).symbol,P.preferredDerivSymbol);
 });
 
+test('Add Market names the active chart symbol and rejects invalid symbols',()=>{
+ assert.deepEqual(P.marketFromSymbol('deriv:volatility_75_1s_index'),{name:'Volatility 75 (1s) Index',symbol:'DERIV:VOLATILITY_75_1S_INDEX'});
+ assert.deepEqual(P.marketFromSymbol('nasdaq:ndx'),{name:'NASDAQ:NDX',symbol:'NASDAQ:NDX'});
+ assert.equal(P.marketFromSymbol('https://example.com'),null);
+});
 test('market list starts with both supported Volatility 75 markets',()=>{
  const markets=P.defaultMarkets();
  assert.equal(markets.length,2);
