@@ -79,10 +79,13 @@ function extractFunction(name){
 const stackClasses=createClassList(['stats-autozoom']);
 const button={attributes:{},setAttribute(name,value){this.attributes[name]=value;}};
 const state={textContent:'ON'};
-const cards=['profit','win'].map(name=>({
+const cards=['profit','win','risk'].map(name=>({
   name,
   classes:createClassList(),
-  matches(selector){return selector==='.stats-indicator-card';},
+  matches(selector){
+    return selector==='.stats-indicator-card'||
+      (selector==='.stats-indicator-card.stats-autozoom-target'&&name==='risk');
+  },
   classList:{
     add(className){this.owner.classes.add(className);},
     remove(className){this.owner.classes.remove(className);},
@@ -94,7 +97,7 @@ const stack={
   classList:stackClasses,
   contains(node){return cards.includes(node);},
   querySelectorAll(selector){
-    assert.equal(selector,'.stats-indicator-card.stats-card-zoomed');
+    assert.equal(selector,'.stats-indicator-card.stats-autozoom-target.stats-card-zoomed');
     return cards.filter(card=>card.classes.contains('stats-card-zoomed'));
   }
 };
@@ -111,33 +114,36 @@ vm.runInContext(
 );
 zoomContext.profitCard=cards[0];
 zoomContext.winCard=cards[1];
+zoomContext.riskCard=cards[2];
 zoomContext.outsideCard=outsideCard;
 vm.runInContext('setZoomedStatsCard(profitCard)',zoomContext);
-assert.equal(cards[0].classes.contains('stats-card-zoomed'),true);
-assert.equal(cards[1].classes.contains('stats-card-zoomed'),false,'only one analytics section zooms at a time');
+assert.equal(cards[0].classes.contains('stats-card-zoomed'),false,'Profit Factor stays at its normal size');
 vm.runInContext('setZoomedStatsCard(winCard)',zoomContext);
-assert.equal(cards[0].classes.contains('stats-card-zoomed'),false);
-assert.equal(cards[1].classes.contains('stats-card-zoomed'),true);
+assert.equal(cards[1].classes.contains('stats-card-zoomed'),false,'Win Rate stays at its normal size');
+vm.runInContext('setZoomedStatsCard(riskCard)',zoomContext);
+assert.equal(cards[2].classes.contains('stats-card-zoomed'),true,'only Risk & Expectancy can zoom');
 vm.runInContext('setZoomedStatsCard(outsideCard)',zoomContext);
-assert.equal(cards[1].classes.contains('stats-card-zoomed'),false,'sections outside the analytics sidebar cannot zoom');
-vm.runInContext('setZoomedStatsCard(profitCard);setStatsAutoZoom(false)',zoomContext);
+assert.equal(cards[2].classes.contains('stats-card-zoomed'),false,'sections outside the analytics sidebar cannot zoom');
+vm.runInContext('setZoomedStatsCard(riskCard);setStatsAutoZoom(false)',zoomContext);
 assert.equal(stackClasses.contains('stats-autozoom'),false);
 assert.equal(button.attributes['aria-pressed'],'false');
 assert.equal(state.textContent,'OFF');
-assert.equal(cards[0].classes.contains('stats-card-zoomed'),false,'turning Auto Zoom off clears the zoomed section');
-vm.runInContext('setZoomedStatsCard(winCard)',zoomContext);
-assert.equal(cards[1].classes.contains('stats-card-zoomed'),false,'disabled Auto Zoom cannot zoom cards');
-vm.runInContext('setStatsAutoZoom(true);setZoomedStatsCard(winCard)',zoomContext);
+assert.equal(cards[2].classes.contains('stats-card-zoomed'),false,'turning Auto Zoom off clears the zoomed section');
+vm.runInContext('setZoomedStatsCard(riskCard)',zoomContext);
+assert.equal(cards[2].classes.contains('stats-card-zoomed'),false,'disabled Auto Zoom cannot zoom cards');
+vm.runInContext('setStatsAutoZoom(true);setZoomedStatsCard(riskCard)',zoomContext);
 assert.equal(stackClasses.contains('stats-autozoom'),true);
 assert.equal(button.attributes['aria-pressed'],'true');
 assert.equal(state.textContent,'ON');
-assert.equal(cards[1].classes.contains('stats-card-zoomed'),true);
+assert.equal(cards[2].classes.contains('stats-card-zoomed'),true);
 
 assert.ok(!html.includes('class="chart-legend-note"'),'highlighted trade-number note was removed');
 assert.ok(!html.includes('X-axis = trade number (T0, T1, T2, T3...).'),'highlighted X-axis explanation was removed');
 assert.match(html,/id="statsAutoZoomBtn"[^>]*aria-pressed="true"[^>]*aria-controls="statsIndicatorStack"/,'Auto Zoom starts enabled and controls the sidebar');
 assert.match(html,/<aside class="stats-indicator-stack stats-autozoom" id="statsIndicatorStack"/,'zoom scope is the right analytics sidebar');
-assert.match(html,/\.stats-indicator-stack\.stats-autozoom \.stats-indicator-card\.stats-card-zoomed\{\s*transform:scale\(/,'only sidebar indicator sections receive the zoom transform');
+assert.match(html,/\.stats-indicator-stack\.stats-autozoom \.stats-indicator-card\.stats-autozoom-target\.stats-card-zoomed\{\s*transform:scale\(/,'only the intended sidebar target receives the zoom transform');
+assert.ok(html.includes('class="stats-analysis-pair stats-indicator-card stats-autozoom-target"'),'Risk & Expectancy is the only zoom-enabled analytics card');
+assert.match(html,/transform-origin:right bottom;/,'zoom stays inside the sidebar edge and grows upward from the bottom');
 assert.ok(html.includes('id="equityChart"'),'Equity Curve remains present');
 assert.match(html,/\$\$\('\[data-stats-range\]'\)\.forEach\(btn=>\{/,'timeframe handlers are scoped to Statistics buttons');
 assert.match(html,/persistStatsRangePreference\(statsRange\);/,'selected timeframe is persisted after selection');
@@ -185,7 +191,7 @@ scaleContext.syncStatsAutoZoomViewportLimit();
 assert.equal(zoomRange.value,'104','a manually chosen level below the maximum survives viewport changes');
 assert.equal(zoomRange.max,'150','desktop zoom ceiling is restored');
 assert.match(html,/<label class="stats-autozoom-zoom" for="statsAutoZoomRange">[\s\S]*?<input id="statsAutoZoomRange" type="range" min="100" max="150" step="1" value="150"/,'manual zoom range starts at the current desktop zoom ceiling');
-assert.match(html,/transform-origin:center bottom;/,'zoom remains anchored at its bottom edge');
+assert.match(html,/transform-origin:right bottom;/,'zoom remains anchored at its bottom-right edge');
 assert.match(html,/transform:scale\(var\(--stats-autozoom-scale\)\)/,'the selected zoom controls the enlarged sidebar section');
 assert.match(html,/window.addEventListener\('resize',syncStatsAutoZoomViewportLimit\)/,'responsive limits update when viewport size changes');
 console.log('PASS manual zoom controls stay within the responsive current zoom limit and expand upward');
