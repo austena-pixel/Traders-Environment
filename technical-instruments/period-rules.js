@@ -2,7 +2,7 @@
   'use strict';
 
   const SCHEMA='tios.period-rule-review.v1';
-  const SCOPES={trade:'Individual trade',session:'Session',daily:'Daily',weekly:'Weekly',monthly:'Monthly'};
+  const SCOPES={trade:'Individual trade',session:'Intraday Window',daily:'Trading Day',weekly:'Weekly',monthly:'Monthly'};
   const normalizeScope=value=>Object.hasOwn(SCOPES,value)?value:'trade';
   const dayString=date=>date.toISOString().slice(0,10);
   const periodKey=value=>JSON.stringify([value.scope,value.startDate,value.endDate,
