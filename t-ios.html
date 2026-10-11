@@ -1702,6 +1702,144 @@ body.playbook-workspace .main{
   text-align:right;
   line-height:1.5;
 }
+.stats-visuals-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1.8fr) minmax(250px,.95fr);
+  gap:14px;
+  align-items:stretch;
+}
+.stats-equity-column{min-width:0}
+.stats-indicator-stack{
+  display:grid;
+  grid-template-rows:repeat(2,minmax(0,1fr));
+  gap:12px;
+  min-width:0;
+}
+.stats-indicator-card{
+  min-height:190px;
+  padding:16px;
+  border:1px solid #1c2a39;
+  border-radius:14px;
+  background:linear-gradient(145deg,#101a26,#0b1119);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.stats-indicator-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:12px;
+}
+.stats-indicator-head h4{
+  margin:0;
+  color:#e8edf5;
+  font-size:12px;
+  font-weight:750;
+}
+.stats-indicator-head span{
+  color:#8794a7;
+  font-size:9px;
+}
+.stats-indicator-value{
+  color:#f3f6fb;
+  font-size:23px;
+  font-weight:800;
+  letter-spacing:-.4px;
+  font-variant-numeric:tabular-nums;
+}
+.stats-indicator-value.pos{color:#45d69a}
+.stats-indicator-value.neg{color:#ff727c}
+.stats-indicator-note{
+  min-height:26px;
+  margin:8px 0 0;
+  color:#93a2b6;
+  font-size:9px;
+  line-height:1.45;
+}
+.stats-return-bar{
+  position:relative;
+  height:12px;
+  margin:18px 0 8px;
+  border-radius:999px;
+  background:#53282f;
+}
+.stats-return-zero{
+  position:absolute;
+  left:38.46%;
+  top:-4px;
+  bottom:-4px;
+  width:1px;
+  background:#dce4ef;
+  opacity:.75;
+}
+.stats-return-threshold{
+  position:absolute;
+  left:62.5%;
+  top:-4px;
+  bottom:-4px;
+  width:1px;
+  background:#f1c36b;
+  opacity:.8;
+}
+.stats-return-fill{
+  position:absolute;
+  top:0;
+  height:100%;
+  border-radius:999px;
+  background:#45d69a;
+  box-shadow:0 0 12px rgba(69,214,154,.34);
+}
+.stats-return-marker{
+  position:absolute;
+  top:-5px;
+  height:22px;
+  width:3px;
+  border:1px solid #0a1119;
+  border-radius:3px;
+  background:#f4f7fb;
+  transform:translateX(-50%);
+  box-shadow:0 0 0 1px rgba(244,247,251,.55);
+}
+.stats-return-scale{
+  display:flex;
+  justify-content:space-between;
+  color:#77879a;
+  font-size:8px;
+  font-variant-numeric:tabular-nums;
+}
+.stats-win-gauge{
+  display:block;
+  width:min(100%,235px);
+  max-height:120px;
+  margin:0 auto -4px;
+  overflow:visible;
+}
+.stats-win-arc{
+  fill:none;
+  stroke-width:16;
+  stroke-linecap:round;
+}
+.stats-win-track{stroke:#56353a}
+.stats-win-progress{
+  stroke:#45d69a;
+  filter:drop-shadow(0 0 5px rgba(69,214,154,.28));
+}
+.stats-win-needle{
+  stroke:#edf3fa;
+  stroke-width:3;
+  stroke-linecap:round;
+}
+.stats-win-pivot{fill:#edf3fa;stroke:#0c141d;stroke-width:3}
+.stats-win-value{text-align:center;margin-top:-2px}
+.stats-win-value .stats-indicator-value{font-size:21px}
+.stats-win-count{
+  margin:5px 0 0;
+  color:#93a2b6;
+  font-size:9px;
+  text-align:center;
+}
 .equity-canvas-wrap{
   position:relative;
   height:420px;
@@ -1763,6 +1901,12 @@ body.playbook-workspace .main{
 }
 @media(max-width:900px){
   .stats-lower{grid-template-columns:1fr}
+  .stats-visuals-layout{grid-template-columns:1fr}
+  .stats-indicator-stack{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none}
+}
+@media(max-width:520px){
+  .stats-indicator-stack{grid-template-columns:1fr}
+  .stats-indicator-card{min-height:175px}
 }
 @media(max-width:700px){
   .stats-grid{grid-template-columns:repeat(2,1fr)}
@@ -6466,12 +6610,57 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           </div>
         </div>
 
-        <div class="equity-canvas-wrap" id="equityCanvasWrap">
-          <canvas id="equityChart"></canvas>
-        </div>
+        <div class="stats-visuals-layout">
+          <div class="stats-equity-column">
+            <div class="equity-canvas-wrap" id="equityCanvasWrap">
+              <canvas id="equityChart"></canvas>
+            </div>
 
-        <div class="stats-empty hidden" id="equityEmptyState" style="min-height:160px">
-          No trades were recorded in this selected period.
+            <div class="stats-empty hidden" id="equityEmptyState" style="min-height:160px">
+              No trades were recorded in this selected period.
+            </div>
+          </div>
+
+          <aside class="stats-indicator-stack" aria-label="Selected-period indicators">
+            <section class="stats-indicator-card" aria-labelledby="statReturnGaugeTitle">
+              <div class="stats-indicator-head">
+                <h4 id="statReturnGaugeTitle">Return</h4>
+                <span>Initial balance</span>
+              </div>
+              <div class="stats-indicator-value neutral" id="statReturnGaugeValue">—</div>
+              <div class="stats-return-bar" role="img" aria-label="Return indicator">
+                <span class="stats-return-zero" aria-hidden="true"></span>
+                <span class="stats-return-threshold" id="statReturnGaugeThreshold" aria-hidden="true" hidden></span>
+                <span class="stats-return-fill" id="statReturnGaugeFill" hidden></span>
+                <span class="stats-return-marker" id="statReturnGaugeMarker" hidden></span>
+              </div>
+              <div class="stats-return-scale" aria-hidden="true">
+                <span id="statReturnScaleLeft">0%</span>
+                <span id="statReturnScaleMiddle">50%</span>
+                <span id="statReturnScaleRight">100%</span>
+              </div>
+              <p class="stats-indicator-note" id="statReturnGaugeNote">Return on initial balance for the selected period.</p>
+            </section>
+
+            <section class="stats-indicator-card" aria-labelledby="statWinRateGaugeTitle">
+              <div class="stats-indicator-head">
+                <h4 id="statWinRateGaugeTitle">Win rate</h4>
+                <span>Winning trades</span>
+              </div>
+              <svg class="stats-win-gauge" id="statWinRateGauge" viewBox="0 0 200 120" role="img" aria-label="Win rate indicator">
+                <path class="stats-win-arc stats-win-track" d="M 20 100 A 80 80 0 0 1 180 100" pathLength="100"></path>
+                <path class="stats-win-arc stats-win-progress" id="statWinRateGaugeProgress" d="M 20 100 A 80 80 0 0 1 180 100" pathLength="100" stroke-dasharray="0 100"></path>
+                <g id="statWinRateGaugeNeedle" transform="rotate(-90 100 100)">
+                  <line class="stats-win-needle" x1="100" y1="100" x2="100" y2="31"></line>
+                </g>
+                <circle class="stats-win-pivot" cx="100" cy="100" r="5"></circle>
+              </svg>
+              <div class="stats-win-value">
+                <div class="stats-indicator-value neutral" id="statWinRateGaugeValue">—</div>
+                <p class="stats-win-count" id="statWinRateGaugeCount">No trades in this period.</p>
+              </div>
+            </section>
+          </aside>
         </div>
       </section>
 
@@ -13226,6 +13415,102 @@ function renderInstrumentStats(sourceTrades){
   });
 }
 
+function renderStatisticsIndicators(returnPct,winRate,source){
+  const returnValue=$('#statReturnGaugeValue');
+  const returnFill=$('#statReturnGaugeFill');
+  const returnMarker=$('#statReturnGaugeMarker');
+  const returnBar=$('.stats-return-bar');
+  const returnThreshold=$('#statReturnGaugeThreshold');
+  const returnNote=$('#statReturnGaugeNote');
+  const scaleLeft=$('#statReturnScaleLeft');
+  const scaleMiddle=$('#statReturnScaleMiddle');
+  const scaleRight=$('#statReturnScaleRight');
+
+  if(Number.isFinite(returnPct)){
+    const isNegative=returnPct<0;
+    const extendedScale=returnPct>100;
+    const minReturn=isNegative?-100:0;
+    const maxReturn=isNegative?0:(extendedScale?160:100);
+    const zeroPosition=(0-minReturn)/(maxReturn-minReturn)*100;
+    const bounded=Math.max(minReturn,Math.min(maxReturn,returnPct));
+    const position=(bounded-minReturn)/(maxReturn-minReturn)*100;
+
+    returnValue.textContent=formatReturnPct(returnPct);
+    returnValue.className='stats-indicator-value '+pnlClass(returnPct);
+    returnFill.hidden=false;
+    returnMarker.hidden=false;
+    returnMarker.style.left=position+'%';
+    returnThreshold.hidden=!extendedScale;
+    returnBar.style.background=extendedScale
+      ? 'linear-gradient(90deg,#53282f 0%,#53282f 62.5%,#5b4725 62.5%,#5b4725 100%)'
+      : '#53282f';
+
+    if(isNegative){
+      returnFill.style.left=position+'%';
+      returnFill.style.width=(zeroPosition-position)+'%';
+      returnFill.style.background='#ff727c';
+      scaleLeft.textContent='−100%';
+      scaleMiddle.textContent='−50%';
+      scaleRight.textContent='0%';
+    }else{
+      returnFill.style.left='0%';
+      returnFill.style.width=position+'%';
+      const threshold=extendedScale?Math.max(0,Math.min(100,100/returnPct*100)):100;
+      returnFill.style.background=extendedScale
+        ? `linear-gradient(90deg,#45d69a 0%,#45d69a ${threshold}%,#f1bd5d ${threshold}%,#f1bd5d 100%)`
+        : '#45d69a';
+      scaleLeft.textContent='0%';
+      scaleMiddle.textContent=extendedScale?'100%':'50%';
+      scaleRight.textContent=extendedScale?'160%':'100%';
+    }
+
+    returnThreshold.style.left=(extendedScale?62.5:100)+'%';
+    returnBar.setAttribute('aria-label',isNegative
+      ? `Return ${formatReturnPct(returnPct)} on a scale from minus 100% to 0%.`
+      : `Return ${formatReturnPct(returnPct)} on a scale from 0% to ${maxReturn}%; 100% is marked when the scale extends.`);
+    returnNote.textContent=returnPct>160
+      ? 'Above the 160% display scale; full return shown above.'
+      : returnPct<minReturn
+        ? 'Below the −100% display scale; full return shown above.'
+        : source.length
+          ? 'Return on initial balance for the selected period.'
+          : 'No trades in this period.';
+  }else{
+    returnValue.textContent='—';
+    returnValue.className='stats-indicator-value neutral';
+    returnFill.hidden=true;
+    returnMarker.hidden=true;
+    returnThreshold.hidden=true;
+    returnBar.style.background='#53282f';
+    returnNote.textContent='Set an initial account balance to calculate return.';
+    returnBar.setAttribute('aria-label','Return unavailable until an initial account balance is set.');
+    scaleLeft.textContent='0%';
+    scaleMiddle.textContent='50%';
+    scaleRight.textContent='100%';
+  }
+
+  const gauge=$('#statWinRateGauge');
+  const progress=$('#statWinRateGaugeProgress');
+  const needle=$('#statWinRateGaugeNeedle');
+  const winValue=$('#statWinRateGaugeValue');
+  const count=$('#statWinRateGaugeCount');
+  const wins=source.filter(trade=>Number(trade.pnl)>0).length;
+  const hasTrades=source.length>0;
+  const boundedWinRate=hasTrades&&Number.isFinite(winRate)
+    ? Math.max(0,Math.min(100,winRate))
+    : 0;
+
+  progress.setAttribute('stroke-dasharray',`${boundedWinRate} 100`);
+  needle.setAttribute('transform',`rotate(${boundedWinRate*1.8-90} 100 100)`);
+  gauge.setAttribute('aria-label',hasTrades
+    ? `Win rate ${boundedWinRate.toFixed(1)} percent, ${wins} winning trades out of ${source.length}.`
+    : 'Win rate unavailable because there are no trades in this period.');
+  winValue.textContent=hasTrades?boundedWinRate.toFixed(1)+'%':'—';
+  winValue.className='stats-indicator-value '+(hasTrades?'pos':'neutral');
+  count.textContent=hasTrades
+    ? `${wins} win${wins===1?'':'s'} of ${source.length} trade${source.length===1?'':'s'} in this period.`
+    : 'No trades in this period.';
+}
 function renderStatistics(){
   if(!tradingAccount){
     return;
@@ -13389,6 +13674,7 @@ function renderStatistics(){
   $('#statRecoveryFactor').textContent=
     recoveryFactor===Infinity ? '∞' : recoveryFactor.toFixed(2);
 
+  renderStatisticsIndicators(returnPct,winRate,source);
   renderEquityChart(series);
   renderInstrumentStats(source);
 }
