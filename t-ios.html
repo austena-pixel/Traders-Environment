@@ -1050,6 +1050,7 @@ body.playbook-workspace .main{
 .pager{display:flex;gap:7px;align-items:center}
 .pager-text{font-size:11px;color:var(--muted)}
 .journal-psychology-cell{display:flex;align-items:flex-start;flex-direction:column;gap:5px}
+.journal-playbook-cell{display:flex;align-items:flex-start;flex-direction:column;gap:5px}
 .journal-psychology-cell small{color:var(--muted);font-size:10px}
 .journal-reflection-button{white-space:nowrap}
 .journal-reflection-button.has-reflections{border-color:#5b406d;color:#dfc4ef;background:#1d1426}
@@ -10317,13 +10318,19 @@ function journalReflectionEntries(tradeId,kind='psych'){
       if(parts.length<5||parts[2]!==kind)return [];
       const score=executionIsScoreResponseKey(key)?executionScoreResponseFromComment(row.comment):null;
       if(executionIsScoreResponseKey(key)&&!score)return [];
-      try{return [{group:'psych:'+parts[3],documentId:decodeURIComponent(parts[3]),label:row.criterion_label||'Reflection',answer:score?score.value+' / '+score.max:String(row.comment)}]}
+      try{return [{group:kind+':'+parts[3],documentId:decodeURIComponent(parts[3]),label:row.criterion_label||'Reflection',answer:score?score.value+' / '+score.max:String(row.comment)}]}
       catch(error){return []}
     });
   if(kind==='psych')reviews.forEach(review=>{
     if(String(review.notes||'').trim())entries.push({group:'execution',label:'Reflection notes',answer:String(review.notes)});
   });
   return entries;
+}
+
+function journalPlaybookCellHtml(trade,number){
+  const count=journalReflectionEntries(trade.id,'playbook').length;
+  const label=`View Playbook reflection for Trade ${number}, ${trade.instrument||'Unknown instrument'}, ${formatDate(trade.trade_date)}`;
+  return `<div class="journal-playbook-cell"><span>${escapeHtml(trade.setup||'—')}</span><button class="btn small journal-reflection-button${count?' has-reflections':''}" type="button" data-journal-playbook="${escapeHtml(trade.id)}" aria-label="${escapeHtml(label)}" title="${count?count+' saved Playbook response'+(count===1?'':'s'):'No saved Playbook reflection yet'}">View Playbook</button></div>`;
 }
 
 function journalPsychologyCellHtml(trade,number){
@@ -10342,15 +10349,15 @@ function openJournalReflection(tradeId,trigger,kind='psych'){
   const trade=trades.find(item=>item.id===tradeId);
   if(!trade||!currentUser?.id)return;
   const modal=$('#journalReflectionModal');
+  if(kind==='playbook')loadPlaybookDocuments();else loadSecondaryDocuments(kind);
   const entries=journalReflectionEntries(tradeId,kind),groups=new Map();
-  loadSecondaryDocuments(kind);
   entries.forEach(entry=>{
-    if(!groups.has(entry.group))groups.set(entry.group,{title:entry.documentId?(secondaryState(kind).docs.find(doc=>doc.id===entry.documentId)?.name||(kind==='checklist'?'Rules':'Psychological Reflection')):'Execution Reflection',entries:[]});
+    if(!groups.has(entry.group))groups.set(entry.group,{title:entry.documentId?(kind==='playbook'?(playbookDocuments.find(doc=>doc.id===entry.documentId)?.name||'Playbook'):(secondaryState(kind).docs.find(doc=>doc.id===entry.documentId)?.name||(kind==='checklist'?'Rules':'Psychological Reflection'))):'Execution Reflection',entries:[]});
     groups.get(entry.group).entries.push(entry);
   });
   const number=trigger?.closest('tr')?.querySelector('.journal-trade-number')?.textContent;
-  $('#journalReflectionTitle').textContent=kind==='checklist'?'Trade Rules':'Psychological Reflection';
-  $('#journalReflectionClose').setAttribute('aria-label',kind==='checklist'?'Close rules':'Close reflection');
+  $('#journalReflectionTitle').textContent=kind==='checklist'?'Trade Rules':kind==='playbook'?'Playbook / Edge Reflection':'Psychological Reflection';
+  $('#journalReflectionClose').setAttribute('aria-label',kind==='checklist'?'Close rules':kind==='playbook'?'Close Playbook reflection':'Close reflection');
   $('#journalReflectionTrade').textContent=[number,trade.instrument,formatDate(trade.trade_date),trade.direction,signedMoney(Number(trade.pnl)||0)].filter(Boolean).join(' · ');
   $('#journalReflectionBody').innerHTML=groups.size
     ? [...groups.values()].map(group=>`<section class="journal-reflection-group"><h3>${escapeHtml(group.title)}</h3>${group.entries.map(entry=>`<dl class="journal-reflection-answer"><dt>${escapeHtml(entry.label)}</dt><dd>${escapeHtml(entry.answer)}</dd></dl>`).join('')}</section>`).join('')
@@ -10371,9 +10378,10 @@ function closeJournalReflection({restoreFocus=true}={}){
 }
 
 $('#journalBody').addEventListener('click',event=>{
-  const button=event.target.closest('[data-journal-reflection],[data-journal-rules]');
+  const button=event.target.closest('[data-journal-playbook],[data-journal-reflection],[data-journal-rules]');
   if(!button)return;
-  if(button.dataset.journalRules)openJournalReflection(button.dataset.journalRules,button,'checklist');
+  if(button.dataset.journalPlaybook)openJournalReflection(button.dataset.journalPlaybook,button,'playbook');
+  else if(button.dataset.journalRules)openJournalReflection(button.dataset.journalRules,button,'checklist');
   else openJournalReflection(button.dataset.journalReflection,button,'psych');
 });
 $('#journalReflectionClose').addEventListener('click',()=>closeJournalReflection());
@@ -10457,7 +10465,7 @@ function renderJournal(){
               ${escapeHtml(t.direction||'—')}
             </span>
           </td>
-          <td>${escapeHtml(t.setup||'—')}</td>
+          <td>${journalPlaybookCellHtml(t,number)}</td>
           <td>${journalRulesCellHtml(t,number)}</td>
           <td>${journalPsychologyCellHtml(t,number)}</td>
           <td class="${pnlClass(pnl)}"><strong>${signedMoney(pnl)}</strong></td>
@@ -10483,7 +10491,7 @@ function renderJournal(){
   $('#journalPageText').textContent=`Page ${journalPage} of ${totalPages}`;
   $('#journalPrev').disabled=journalPage<=1;
   $('#journalNext').disabled=journalPage>=totalPages;
-  if(journalReflectionContext)journalReflectionContext.trigger=[...body.querySelectorAll('[data-journal-reflection]')].find(button=>button.dataset.journalReflection===journalReflectionContext.tradeId)||null;
+  if(journalReflectionContext)journalReflectionContext.trigger=[...body.querySelectorAll('[data-journal-playbook],[data-journal-reflection],[data-journal-rules]')].find(button=>button.dataset.journalPlaybook===journalReflectionContext.tradeId||button.dataset.journalReflection===journalReflectionContext.tradeId||button.dataset.journalRules===journalReflectionContext.tradeId)||null;
 
   $$('.edit-trade').forEach(btn=>{
     btn.addEventListener('click',()=>{
