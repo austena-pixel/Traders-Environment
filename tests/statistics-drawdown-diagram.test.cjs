@@ -20,7 +20,7 @@ function extractFunction(name){
 
 const context=vm.createContext({});
 vm.runInContext(
-  extractFunction('maxDrawdownFromProfitPeak')+'\\n'+
+  extractFunction('maxDrawdownFromProfitPeak')+'\n'+
   extractFunction('buildDrawdownProfileDiagram'),
   context
 );
@@ -40,9 +40,9 @@ assert.ok(profile.maxLossPath.startsWith('M130.6 '),'red segment starts at the p
 assert.ok(profile.lossDropPath,'red connector marks the peak-to-trough loss');
 assert.ok(profile.peakPoint&&profile.troughPoint,'profit peak and maximum-loss trough are marked');
 assert.match(html,/class="stats-drawdown-legend"[^>]*aria-hidden="true"/);
-assert.match(html,/<span><i class="peak"><\\/i>Profit peak<\\/span>/);
-assert.match(html,/<span><i class="equity"><\\/i>Equity path<\\/span>/);
-assert.match(html,/<span><i class="loss"><\\/i>Max loss<\\/span>/);
+assert.match(html,/<span><i class="peak"><\/i>Profit peak<\/span>/);
+assert.match(html,/<span><i class="equity"><\/i>Equity path<\/span>/);
+assert.match(html,/<span><i class="loss"><\/i>Max loss<\/span>/);
 
 const losingPoints=[100,95,90].map(equity=>({equity}));
 const noPositivePeak=context.maxDrawdownFromProfitPeak(losingPoints,100);
