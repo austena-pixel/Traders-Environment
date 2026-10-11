@@ -145,3 +145,47 @@ assert.match(html,/persistStatsRangePreference\(statsRange\);/,'selected timefra
 console.log('PASS selected timeframe persists, restores, and falls back safely');
 console.log('PASS Auto Zoom is accessible, toggleable, and restricted to sidebar analytics cards');
 console.log('PASS highlighted labels are removed while the Equity Curve remains intact');
+const zoomRange={min:'100',max:'150',value:'150',attributes:{},setAttribute(name,value){this.attributes[name]=value;}};
+const zoomOutput={textContent:'150%'};
+const zoomScaleStack={style:{values:{},setProperty(name,value){this.values[name]=value;}}};
+const zoomElements=new Map([
+  ['#statsAutoZoomRange',zoomRange],
+  ['#statsAutoZoomValue',zoomOutput],
+  ['#statsIndicatorStack',zoomScaleStack]
+]);
+const zoomViewport={innerWidth:1440};
+const scaleContext=vm.createContext({
+  $:selector=>zoomElements.get(selector),
+  window:zoomViewport,
+  document:{documentElement:{clientWidth:1440}}
+});
+vm.runInContext(
+  'let statsAutoZoomPercent=150;\n'+
+  extractFunction('statsAutoZoomMaxPercent')+'\n'+
+  extractFunction('setStatsAutoZoomPercent')+'\n'+
+  extractFunction('syncStatsAutoZoomViewportLimit'),
+  scaleContext
+);
+scaleContext.setStatsAutoZoomPercent(137);
+assert.equal(zoomRange.value,'137','manual zoom value updates');
+assert.equal(zoomOutput.textContent,'137%','manual zoom percentage is readable');
+assert.equal(zoomScaleStack.style.values['--stats-autozoom-scale'],'1.37','manual zoom scales sidebar cards');
+assert.equal(zoomRange.max,'150','desktop maximum stays at the current zoom');
+zoomViewport.innerWidth=800;
+scaleContext.syncStatsAutoZoomViewportLimit();
+assert.equal(zoomRange.max,'122','tablet maximum follows its current zoom');
+assert.equal(zoomRange.value,'122','existing zoom clamps to the tablet maximum');
+zoomViewport.innerWidth=500;
+scaleContext.syncStatsAutoZoomViewportLimit();
+assert.equal(zoomRange.max,'106','mobile maximum follows its current zoom');
+assert.equal(zoomRange.value,'106','maximum setting tracks the responsive zoom ceiling');
+scaleContext.setStatsAutoZoomPercent(104);
+zoomViewport.innerWidth=1400;
+scaleContext.syncStatsAutoZoomViewportLimit();
+assert.equal(zoomRange.value,'104','a manually chosen level below the maximum survives viewport changes');
+assert.equal(zoomRange.max,'150','desktop zoom ceiling is restored');
+assert.match(html,/<label class="stats-autozoom-zoom" for="statsAutoZoomRange">[\s\S]*?<input id="statsAutoZoomRange" type="range" min="100" max="150" step="1" value="150"/,'manual zoom range starts at the current desktop zoom ceiling');
+assert.match(html,/transform-origin:center bottom;/,'zoom remains anchored at its bottom edge');
+assert.match(html,/transform:scale\(var\(--stats-autozoom-scale\)\)/,'the selected zoom controls the enlarged sidebar section');
+assert.match(html,/window.addEventListener\('resize',syncStatsAutoZoomViewportLimit\)/,'responsive limits update when viewport size changes');
+console.log('PASS manual zoom controls stay within the responsive current zoom limit and expand upward');
