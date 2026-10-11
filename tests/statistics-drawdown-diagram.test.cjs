@@ -1,4 +1,4 @@
-// Regression coverage for the Statistics maximum-loss / profit-peak illustration.
+// Regression coverage for the Statistics drawdown illustration and maximum winning trade value.
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
