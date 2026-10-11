@@ -17,7 +17,7 @@
     const instances=new Map();
     const verification=window.TIOSMarketVerification.create({getClient,getUser,getAccounts,getSelectedAccount,getNumber});
     let pendingEvidenceTrade=null;
-    let sidebarMode='settings',instrumentWorkspace=null,instrumentLoadEpoch=0;
+    let sidebarMode='settings',instrumentWorkspace=null,instrumentLoadEpoch=0,marketTargetChartId='';
     let chartProfile=null,accountStep='entry',accountBusy=false,accountError='';
     let firstRunLayout='single',firstRunSaving=false;
     function renderSidebar(){
@@ -131,6 +131,7 @@
         const panel=button.closest('[data-charts-setup-id]');
         button.disabled=!panel?.querySelector('[data-saved-market]')?.value;
       });
+      renderMarketList();
       updateMarketActionButtons();
     }
     function updateMarketActionButtons(){
@@ -145,6 +146,83 @@
         button.title=exists?'Already saved in your market list':'Add this chart market to your list';
       });
     }
+    function renderMarketList(){
+      const list=host.querySelector('[data-charts-market-list]');
+      if(!list)return;
+      const charts=activeCharts();
+      if(!charts.some(chart=>chart.id===marketTargetChartId))marketTargetChartId=charts[0]?.id||'';
+      const target=charts.find(chart=>chart.id===marketTargetChartId)||charts[0]||null;
+      const targetWrap=host.querySelector('[data-market-target-wrap]');
+      const targetSelect=host.querySelector('[data-market-target]');
+      if(targetWrap)targetWrap.hidden=charts.length<2;
+      if(targetSelect){
+        targetSelect.replaceChildren();
+        charts.forEach((chart,index)=>{
+          const option=document.createElement('option');
+          option.value=chart.id;
+          option.textContent='Chart '+(index+1)+' · '+chart.symbol;
+          targetSelect.appendChild(option);
+        });
+        targetSelect.value=marketTargetChartId;
+      }
+      list.replaceChildren();
+      if(!markets.length){
+        const empty=document.createElement('p');
+        empty.className='charts-market-list-empty';
+        empty.textContent='No saved markets yet. Use Add market at the top of a chart to add one.';
+        list.appendChild(empty);
+        return;
+      }
+      markets.forEach(market=>{
+        const row=document.createElement('div');
+        row.className='charts-market-row';
+        row.setAttribute('role','listitem');
+        const use=document.createElement('button');
+        use.type='button';
+        use.className='btn small charts-market-use';
+        use.dataset.chartsAction='select-listed-market';
+        use.dataset.marketSymbol=market.symbol;
+        use.setAttribute('aria-pressed',String(target?.symbol?.trim().toUpperCase()===market.symbol));
+        use.title='Use '+market.name+' in '+(target?'Chart '+(charts.indexOf(target)+1):'the selected chart');
+        const name=document.createElement('strong');
+        name.textContent=market.name;
+        const symbol=document.createElement('span');
+        symbol.className='charts-market-list-symbol';
+        symbol.textContent=market.symbol;
+        use.append(name,symbol);
+        const remove=document.createElement('button');
+        remove.type='button';
+        remove.className='btn small charts-market-remove-list';
+        remove.dataset.chartsAction='remove-listed-market';
+        remove.dataset.marketSymbol=market.symbol;
+        remove.textContent='Remove';
+        remove.title='Remove '+market.name+' from your saved markets';
+        remove.setAttribute('aria-label','Remove '+market.name+' from your saved markets');
+        row.append(use,remove);
+        list.appendChild(row);
+      });
+    }
+    function applyListedMarket(symbol){
+      if(!prefs||!symbol)return;
+      const charts=activeCharts();
+      const chart=charts.find(item=>item.id===marketTargetChartId)||charts[0];
+      if(!chart)return;
+      const panel=[...host.querySelectorAll('[data-charts-setup-id]')].find(item=>item.dataset.chartsSetupId===chart.id);
+      const field=panel?.querySelector('[data-chart-field="symbol"]');
+      if(!field)return;
+      marketTargetChartId=chart.id;
+      if(field.value.trim().toUpperCase()===symbol){
+        renderMarketList();
+        const market=markets.find(item=>item.symbol===symbol);
+        status((market?.name||symbol)+' is already selected for Chart '+(charts.indexOf(chart)+1)+'.');
+        return;
+      }
+      field.value=symbol;
+      capture();syncDerivHint(panel);changed();updateMarketSelects();
+      mountChart(cardForControl(field));
+      const market=markets.find(item=>item.symbol===symbol);
+      status((market?.name||symbol)+' selected for Chart '+(charts.indexOf(chart)+1)+'.');
+    }
     function addCurrentMarket(card){
       if(!loaded||!prefs||!card)return;
       capture();
@@ -155,19 +233,22 @@
       const next=[...markets,market],invalid=P.validateMarkets(next);
       if(invalid){status(invalid,true);return;}
       if(!persistMarketList(next)){status('Your market list could not be saved in this browser.',true);return;}
+      marketTargetChartId=chart.id;
       updateMarketSelects();
       status(market.name+' added to your market list.');
     }
-    function removeSelectedMarket(button){
-      const panel=button.closest('[data-charts-setup-id]');
-      const select=panel?.querySelector('[data-saved-market]');
-      const symbol=select?.value;
+    function removeMarket(symbol){
       if(!symbol)return;
       const market=markets.find(item=>item.symbol===symbol);
       if(!market)return;
       if(!persistMarketList(markets.filter(item=>item.symbol!==symbol))){status('Your market list could not be saved in this browser.',true);return;}
       updateMarketSelects();
       status(market.name+' removed from your market list.');
+    }
+    function removeSelectedMarket(button){
+      const panel=button.closest('[data-charts-setup-id]');
+      const symbol=panel?.querySelector('[data-saved-market]')?.value;
+      removeMarket(symbol);
     }
     function status(message,error=false){
       const node=host.querySelector('[data-charts-status]');
@@ -704,6 +785,11 @@
             <button class="btn small" type="button" data-charts-action="manage-deriv-account">Manage Deriv MT5 inside T-IOS</button>
             <p class="charts-account-note">Your linked MT5 account is selected in T-IOS Settings &amp; Connections. The embedded TradingView chart is a separate market-data widget; it does not inherit Deriv or MT5 authentication. Direct Deriv sign-in requires a registered Deriv OAuth application.</p>
           </div>
+          <div class="charts-section-title">My markets</div>
+          <div class="charts-market-manager">
+            <label class="charts-market-target" data-market-target-wrap hidden>Apply to chart<select data-market-target aria-label="Select chart for saved market"></select></label>
+            <div class="charts-market-list" data-charts-market-list role="list" aria-label="Saved markets"></div>
+          </div>
           <div class="charts-section-title">Layout</div>
           <div class="charts-layout" role="group" aria-label="Chart layout">
             <button type="button" data-charts-layout="single" aria-pressed="${prefs.layout==='single'}">Single Chart</button>
@@ -822,6 +908,9 @@
         if(quoteActive())return;
         quoteMarket=event.target.value;quoteMarketChosen=true;stopPublicQuote('Public market selection changed. Press Start to receive this separate instrument.',true);return;
       }
+      if(event.target.matches('[data-market-target]')){
+        marketTargetChartId=event.target.value;renderMarketList();return;
+      }
       if(event.target.matches('[data-saved-market]')){
         if(!event.target.value)return;
         const panel=event.target.closest('[data-charts-setup-id]');
@@ -860,6 +949,8 @@
       if(action==='manage-deriv-account')document.querySelector('.nav-btn[data-page="settings"]')?.click();
       if(action==='retry-instruments')mountInstruments();
       if(action==='add-market'){addCurrentMarket(button.closest('[data-chart-id]'));return;}
+      if(action==='select-listed-market'){applyListedMarket(button.dataset.marketSymbol);return;}
+      if(action==='remove-listed-market'){removeMarket(button.dataset.marketSymbol);return;}
       if(action==='remove-saved-market'){removeSelectedMarket(button);return;}
       if(action==='start-public-quote')startPublicQuote();
       if(action==='stop-public-quote')stopPublicQuote();
