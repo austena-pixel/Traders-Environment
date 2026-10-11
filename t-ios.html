@@ -6197,12 +6197,14 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 <link rel="stylesheet" href="hios-themes.css" data-hios-theme-sheet>
 <script src="hios-themes.js"></script>
 <style>
-.journal-level-tabs{margin:0 0 16px}
+.journal-level-tabs{margin:0 0 20px}
 .journal-level-view[hidden]{display:none!important}
+#page-journal .journal-level-view.panel{padding:20px}
 .journal-scope-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
-.journal-scope-head h2{margin:0 0 5px;font-size:18px}
+.journal-scope-head>div{min-width:0}
+.journal-scope-head h2{margin:0 0 8px;font-size:18px;line-height:1.35}
 .journal-scope-head p,.journal-session-meta,.journal-session-note,.journal-view-help{color:var(--muted,#9aa7b8)}
-.journal-scope-head p{margin:0}
+.journal-scope-head p{margin:0;line-height:1.5}
 .journal-session-list{display:grid;gap:12px}
 .journal-session-card{padding:16px;border:1px solid var(--border,#263446);border-radius:14px;background:rgba(12,19,29,.6)}
 .journal-session-head,.journal-period-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
@@ -6230,6 +6232,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 .journal-rule-period-controls{justify-content:flex-start;margin:12px 0}
 .journal-rule-period-label{margin:8px 0 14px}
 @media(max-width:900px){.journal-review-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.journal-session-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){#page-journal .journal-level-view.panel{padding:14px}.journal-scope-head{flex-wrap:wrap}.journal-review-stats,.journal-session-summary-stats,.journal-session-stats{grid-template-columns:minmax(0,1fr)}}
 </style>
 
 </head>
@@ -6619,7 +6622,6 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
       <section class="journal-level-view panel" id="journalTradingDaysView" hidden>
         <div class="journal-scope-head">
           <div><h2>Trading Day</h2><p>Review identity, affirmations, reflections and date-level trade results for each trading day.</p></div>
-          <button class="btn small" type="button" id="journalOpenPsychology">Open Psychology</button>
         </div>
         <div class="journal-review-stats journal-session-summary-stats">
           <div class="journal-review-stat"><span>Saved trading days</span><strong id="journalTradingDayCount">0</strong></div>
@@ -10852,10 +10854,6 @@ $('#journalManageRules').addEventListener('click',()=>{
 $('#journalOpenDayRules')?.addEventListener('click',()=>{
   journalRuleScope='daily';journalScopeView='rules';renderJournalScopeViews();
 });
-$('#journalOpenPsychology').addEventListener('click',()=>{
-  document.querySelector('.nav-btn[data-page="psychology"]')?.click();
-});
-
 function renderJournal(){
   if(journalReflectionContext&&(
     journalReflectionContext.userId!==currentUser?.id||
