@@ -31,3 +31,21 @@ test('Historical review metadata remains available to canonical execution intell
   assert.ok(source.includes('Historical execution reflection'));
   assert.ok(source.includes('Historical reviews will not be deleted.'));
 });
+
+test('Journal groups Setup / Edge, Rules, and Psychology on each trade row', () => {
+  const table = source.slice(source.indexOf('<table class="trade-table">'), source.indexOf('</table>', source.indexOf('<table class="trade-table">')));
+  const headers = [...table.matchAll(/<th>(.*?)<\/th>/g)].map(match => match[1].replace(/&amp;/g, '&'));
+  assert.deepEqual(headers, ['Trade','Instrument','Direction','Setup / Edge','Rules','Psychology','P&L','Execution','Actions']);
+  assert.ok(source.includes('journalRulesCellHtml(t,number)'));
+  assert.ok(source.includes('journalPsychologyCellHtml(t,number)'));
+  assert.ok(source.includes('data-journal-rules='));
+  assert.ok(source.includes('journalReflectionEntries(trade.id,\'checklist\')'));
+  assert.ok(source.includes('colspan="9"'));
+});
+
+test('Rules viewer reads the selected trade’s saved checklist reflection rows', () => {
+  assert.ok(source.includes("function journalReflectionEntries(tradeId,kind='psych')"));
+  assert.ok(source.includes("row.trade_id===tradeId&&review.user_id===owner"));
+  assert.ok(source.includes("openJournalReflection(button.dataset.journalRules,button,'checklist')"));
+  assert.ok(source.includes("saved.kind!==kind"));
+});
