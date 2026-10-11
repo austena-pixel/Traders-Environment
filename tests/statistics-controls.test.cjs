@@ -82,10 +82,7 @@ const state={textContent:'ON'};
 const cards=['profit','win','risk'].map(name=>({
   name,
   classes:createClassList(),
-  matches(selector){
-    return selector==='.stats-indicator-card'||
-      (selector==='.stats-indicator-card.stats-autozoom-target'&&name==='risk');
-  },
+  matches(selector){return selector==='.stats-indicator-card';},
   classList:{
     add(className){this.owner.classes.add(className);},
     remove(className){this.owner.classes.remove(className);},
@@ -97,7 +94,7 @@ const stack={
   classList:stackClasses,
   contains(node){return cards.includes(node);},
   querySelectorAll(selector){
-    assert.equal(selector,'.stats-indicator-card.stats-autozoom-target.stats-card-zoomed');
+    assert.equal(selector,'.stats-indicator-card.stats-card-zoomed');
     return cards.filter(card=>card.classes.contains('stats-card-zoomed'));
   }
 };
@@ -117,11 +114,14 @@ zoomContext.winCard=cards[1];
 zoomContext.riskCard=cards[2];
 zoomContext.outsideCard=outsideCard;
 vm.runInContext('setZoomedStatsCard(profitCard)',zoomContext);
-assert.equal(cards[0].classes.contains('stats-card-zoomed'),false,'Profit Factor stays at its normal size');
+assert.equal(cards[0].classes.contains('stats-card-zoomed'),true,'Profit Factor can zoom');
+assert.equal(cards[1].classes.contains('stats-card-zoomed'),false);
 vm.runInContext('setZoomedStatsCard(winCard)',zoomContext);
-assert.equal(cards[1].classes.contains('stats-card-zoomed'),false,'Win Rate stays at its normal size');
+assert.equal(cards[0].classes.contains('stats-card-zoomed'),false);
+assert.equal(cards[1].classes.contains('stats-card-zoomed'),true,'Win Rate can zoom');
 vm.runInContext('setZoomedStatsCard(riskCard)',zoomContext);
-assert.equal(cards[2].classes.contains('stats-card-zoomed'),true,'only Risk & Expectancy can zoom');
+assert.equal(cards[1].classes.contains('stats-card-zoomed'),false);
+assert.equal(cards[2].classes.contains('stats-card-zoomed'),true,'Risk & Expectancy can zoom with its separate bottom anchor');
 vm.runInContext('setZoomedStatsCard(outsideCard)',zoomContext);
 assert.equal(cards[2].classes.contains('stats-card-zoomed'),false,'sections outside the analytics sidebar cannot zoom');
 vm.runInContext('setZoomedStatsCard(riskCard);setStatsAutoZoom(false)',zoomContext);
@@ -131,19 +131,20 @@ assert.equal(state.textContent,'OFF');
 assert.equal(cards[2].classes.contains('stats-card-zoomed'),false,'turning Auto Zoom off clears the zoomed section');
 vm.runInContext('setZoomedStatsCard(riskCard)',zoomContext);
 assert.equal(cards[2].classes.contains('stats-card-zoomed'),false,'disabled Auto Zoom cannot zoom cards');
-vm.runInContext('setStatsAutoZoom(true);setZoomedStatsCard(riskCard)',zoomContext);
+vm.runInContext('setStatsAutoZoom(true);setZoomedStatsCard(winCard)',zoomContext);
 assert.equal(stackClasses.contains('stats-autozoom'),true);
 assert.equal(button.attributes['aria-pressed'],'true');
 assert.equal(state.textContent,'ON');
-assert.equal(cards[2].classes.contains('stats-card-zoomed'),true);
+assert.equal(cards[1].classes.contains('stats-card-zoomed'),true);
 
 assert.ok(!html.includes('class="chart-legend-note"'),'highlighted trade-number note was removed');
 assert.ok(!html.includes('X-axis = trade number (T0, T1, T2, T3...).'),'highlighted X-axis explanation was removed');
 assert.match(html,/id="statsAutoZoomBtn"[^>]*aria-pressed="true"[^>]*aria-controls="statsIndicatorStack"/,'Auto Zoom starts enabled and controls the sidebar');
 assert.match(html,/<aside class="stats-indicator-stack stats-autozoom" id="statsIndicatorStack"/,'zoom scope is the right analytics sidebar');
-assert.match(html,/\.stats-indicator-stack\.stats-autozoom \.stats-indicator-card\.stats-autozoom-target\.stats-card-zoomed\{\s*transform:scale\(/,'only the intended sidebar target receives the zoom transform');
-assert.ok(html.includes('class="stats-analysis-pair stats-indicator-card stats-autozoom-target"'),'Risk & Expectancy is the only zoom-enabled analytics card');
-assert.match(html,/transform-origin:right bottom;/,'zoom stays inside the sidebar edge and grows upward from the bottom');
+assert.match(html,/\.stats-indicator-stack\.stats-autozoom \.stats-indicator-card\.stats-card-zoomed\{\s*transform:scale\(/,'sidebar analytics cards receive the zoom transform');
+assert.ok(html.includes('class="stats-analysis-pair stats-indicator-card stats-autozoom-bottom-anchor"'),'Risk & Expectancy keeps its bottom-up zoom anchor');
+assert.match(html,/\.stats-indicator-stack\.stats-autozoom \.stats-indicator-card\.stats-autozoom-bottom-anchor\.stats-card-zoomed\{\s*transform-origin:right bottom;/,'Risk & Expectancy expands upward from its bottom-right edge');
+assert.match(html,/transform-origin:right top;/,'top analytics cards keep their right edge inside the page while zooming');
 assert.ok(html.includes('id="equityChart"'),'Equity Curve remains present');
 assert.match(html,/\$\$\('\[data-stats-range\]'\)\.forEach\(btn=>\{/,'timeframe handlers are scoped to Statistics buttons');
 assert.match(html,/persistStatsRangePreference\(statsRange\);/,'selected timeframe is persisted after selection');
