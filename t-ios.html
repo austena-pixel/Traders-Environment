@@ -13799,9 +13799,10 @@ function renderProfitFactorIndicator(stats){
   const tone=!hasValue?'neutral':factor===1?'neutral':factor>1?'pos':'neg';
   value.textContent=hasValue?(factor===Infinity?'∞':factor.toFixed(2)+'×'):'—';
   value.className='stats-indicator-value stats-profit-factor-value '+tone;
-  grossProfit.textContent=formatProfitFactorCurrency(stats?.grossProfit||0);
-  grossLoss.textContent=formatProfitFactorCurrency(stats?.grossLoss||0);
-  const totalGross=(stats?.grossProfit||0)+(stats?.grossLoss||0);
+  const hasRecordedPnl=Boolean(stats&&stats.recordedTradeCount>0);
+  grossProfit.textContent=hasRecordedPnl?formatProfitFactorCurrency(stats.grossProfit):'—';
+  grossLoss.textContent=hasRecordedPnl?formatProfitFactorCurrency(stats.grossLoss):'—';
+  const totalGross=hasRecordedPnl?stats.grossProfit+stats.grossLoss:0;
   const profitShare=totalGross>0?stats.grossProfit/totalGross*100:0;
   profitFill.style.width=profitShare+'%';
   lossFill.style.width=(totalGross>0?100-profitShare:0)+'%';
