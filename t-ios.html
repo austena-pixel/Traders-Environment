@@ -1711,12 +1711,13 @@ body.playbook-workspace .main{
 .stats-equity-column{min-width:0}
 .stats-indicator-stack{
   display:grid;
-  grid-template-rows:repeat(2,minmax(0,1fr));
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-template-rows:minmax(160px,auto) minmax(140px,1fr);
   gap:12px;
   width:100%;
-  height:332px;
+  height:100%;
   min-width:0;
-  align-self:center;
+  align-self:stretch;
 }
 .stats-indicator-card{
   min-height:160px;
@@ -1727,6 +1728,38 @@ body.playbook-workspace .main{
   display:flex;
   flex-direction:column;
   justify-content:center;
+}
+.stats-future-analysis{
+  grid-column:1 / -1;
+  min-height:140px;
+  padding:16px;
+  border:1px dashed #29364a;
+  border-radius:14px;
+  background:linear-gradient(145deg,rgba(16,26,38,.58),rgba(11,17,25,.38));
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  text-align:center;
+  color:#93a2b6;
+}
+.stats-future-analysis strong{
+  color:#c9d4e2;
+  font-size:11px;
+  font-weight:750;
+}
+.stats-future-analysis>span:last-child{font-size:9px}
+.stats-future-mark{
+  display:grid;
+  place-items:center;
+  width:24px;
+  height:24px;
+  border:1px solid #29364a;
+  border-radius:8px;
+  color:#69a8ff;
+  font-size:17px;
+  line-height:1;
 }
 .stats-indicator-head{
   display:flex;
@@ -1907,7 +1940,7 @@ body.playbook-workspace .main{
   .stats-visuals-layout{grid-template-columns:1fr}
   .stats-indicator-stack{
     grid-template-columns:repeat(2,minmax(0,1fr));
-    grid-template-rows:none;
+    grid-template-rows:auto auto;
     width:auto;
     height:auto;
     align-self:stretch;
@@ -6669,6 +6702,12 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
                 <div class="stats-indicator-value neutral" id="statWinRateGaugeValue">—</div>
                 <p class="stats-win-count" id="statWinRateGaugeCount">No trades in this period.</p>
               </div>
+            </section>
+
+            <section class="stats-future-analysis" aria-label="Future analytical instruments">
+              <span class="stats-future-mark" aria-hidden="true">+</span>
+              <strong>More analytical instruments</strong>
+              <span>Future diagrams will appear here.</span>
             </section>
           </aside>
         </div>
