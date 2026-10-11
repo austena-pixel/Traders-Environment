@@ -21,6 +21,7 @@ function extractFunction(name){
 const context=vm.createContext({});
 vm.runInContext(
   extractFunction('maxDrawdownFromProfitPeak')+'\n'+
+  extractFunction('maxWinningTradeStats')+'\n'+
   extractFunction('buildDrawdownProfileDiagram'),
   context
 );
@@ -32,6 +33,23 @@ assert.equal(drawdown.pct,25/30*100);
 assert.equal(drawdown.profitPeak,30);
 assert.equal(drawdown.peakIndex,3);
 assert.equal(drawdown.troughIndex,4);
+
+const maxWin=context.maxWinningTradeStats([
+  {pnl:12},{pnl:-3},{pnl:28},{pnl:5}
+]);
+assert.equal(maxWin.status,'available');
+assert.equal(maxWin.value,28,'the highlighted value is the largest positive closed-trade P&L');
+
+const noWins=context.maxWinningTradeStats([{pnl:-8},{pnl:0}]);
+assert.deepEqual(JSON.parse(JSON.stringify(noWins)),{status:'no-winners',value:null});
+const missingPnlStats=context.maxWinningTradeStats([{pnl:28},{pnl:null}]);
+assert.deepEqual(JSON.parse(JSON.stringify(missingPnlStats)),{status:'incomplete',value:null});
+const noTradesStats=context.maxWinningTradeStats([]);
+assert.deepEqual(JSON.parse(JSON.stringify(noTradesStats)),{status:'empty',value:null});
+
+assert.match(html,/id="statDrawdownMaxWin" hidden aria-live="polite"/);
+assert.match(html,/const label='Max win '\+signedMoney\(maxWinStats.value\)/);
+assert.match(html,/Largest winning trade: '\+signedMoney\(maxWinStats.value\)/);
 
 const profile=context.buildDrawdownProfileDiagram({points,openingEquity:100},drawdown);
 assert.ok(profile.equityPath.startsWith('M7.0 '),'gold equity path begins at opening equity');
@@ -66,4 +84,5 @@ const missingPnl=context.buildDrawdownProfileDiagram({
 assert.equal(missingPnl.equityPath,'','missing equity is not plotted as a verified zero');
 
 console.log('PASS maximum drawdown endpoints, percentage, and illustration paths match known equity data');
+console.log('PASS maximum winning trade uses the largest positive recorded P&L and hides incomplete values');
 console.log('PASS no-positive-peak, no-loss, and missing-equity states are handled');
