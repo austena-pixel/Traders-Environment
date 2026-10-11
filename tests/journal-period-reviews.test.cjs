@@ -114,3 +114,15 @@ test('Psychology displays saved daily records as Trading Days and translates leg
   assert.equal(labelContext.display('Session 2'),'');
   assert.equal(labelContext.display('Session 12 / New York'),'New York');
 });
+
+
+test('Execution review uses Trading Day and Intraday Window language',()=>{
+  const executionStart=source.indexOf('<section class="page" id="page-execution">');
+  const executionEnd=source.indexOf('<section class="page" id="page-settings">',executionStart);
+  assert.ok(executionStart>=0&&executionEnd>executionStart);
+  const visibleExecution=source.slice(executionStart,executionEnd).replace(/<script\b[\s\S]*?<\/script>/gi,' ').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ');
+  assert.doesNotMatch(visibleExecution,/\bsessions?\b/i);
+  assert.match(source,/Review behaviour across this intraday window/);
+  const scopes=fs.readFileSync(path.join(__dirname,'..','technical-instruments','period-rules.js'),'utf8');
+  assert.match(scopes,/session:'Intraday Window',daily:'Trading Day',weekly:'Weekly',monthly:'Monthly'/);
+});
