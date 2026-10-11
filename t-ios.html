@@ -12709,7 +12709,7 @@ async function saveExecutionReview(){
 
   const mappedComposite=executionMappedCompositeForTrade(trade.id);
   const scorePct=mappedComposite.hasMappedData
-    ? (mappedComposite.score===null?null:mappedComposite.score*100)
+    ? (mappedComposite.score===null?null:mappedComposite.score*10)
     : currentExecutionScore();
   const tradeUpdateResult=await db
     .from('trades')
