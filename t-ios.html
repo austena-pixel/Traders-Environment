@@ -1643,25 +1643,29 @@ body.playbook-workspace .main{
 .stats-psychology-view{padding:20px;min-height:280px}
 .stats-psychology-view h3{margin:0 0 8px;font-size:18px}
 .stats-psychology-view p{color:#93a2b6;font-size:12px;line-height:1.6}
-.stats-fear-layout{display:grid;grid-template-columns:minmax(0,2.4fr) minmax(280px,1fr);gap:14px;margin-top:18px}
-.stats-fear-panel{min-width:0;border:1px solid var(--line,#202a38);border-radius:14px;padding:16px;background:linear-gradient(145deg,#101a26,#0b1119)}
-.stats-fear-panel h4{font-size:14px;margin:0 0 6px;color:#e9f0fa}
+.stats-fear-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,.9fr) minmax(0,.85fr);gap:12px;margin-top:16px;align-items:stretch}
+.stats-fear-panel{min-width:0;border:1px solid var(--line,#202a38);border-radius:14px;padding:12px;background:linear-gradient(145deg,#101a26,#0b1119)}
+.stats-fear-panel h4{font-size:13px;margin:0 0 5px;color:#e9f0fa}
 .stats-fear-panel>p{font-size:10px;margin:0 0 12px}
 .stats-fear-sample-control{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 8px}
 .stats-fear-sample-control label{font-size:11px;color:#c4d0df}
 .stats-fear-sample-control select{width:auto;max-width:100%;padding:7px 10px;font-size:11px}
 .stats-fear-axis-guide{display:flex;flex-wrap:wrap;gap:4px 16px;color:#aebcd0;font-size:10px;line-height:1.5;margin-bottom:10px}
-.stats-fear-canvas-wrap{height:315px;position:relative}
-.stats-fear-radar-wrap{height:245px;position:relative}
+.stats-fear-canvas-wrap{height:245px;position:relative}
+.stats-fear-radar-wrap{height:210px;position:relative}
 .stats-fear-legend{display:flex;justify-content:center;gap:10px 16px;flex-wrap:wrap;margin-top:10px}
 .stats-fear-legend span{font-size:10px;color:#c4d0df;white-space:nowrap}
 .stats-fear-legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
-.stats-fear-demo-note{color:#92a1b5;font-size:10px;margin-top:12px}
+.stats-fear-demo-note{color:#92a1b5;font-size:10px;margin-top:10px}
+.stats-fear-readings-panel .stats-fear-controls{grid-template-columns:1fr;gap:14px;margin-top:16px}
+.stats-fear-readings-panel .stats-fear-controls label{gap:8px}
+@media(min-width:701px) and (max-width:1100px){.stats-fear-readings-panel .stats-fear-controls{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .stats-fear-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
 .stats-fear-controls label{display:grid;gap:5px;color:#aebcd0;font-size:10px}
 .stats-fear-controls label span{display:flex;justify-content:space-between;gap:6px}
 .stats-fear-controls input{width:100%;accent-color:#e7a43e}
-@media(max-width:900px){.stats-fear-layout{grid-template-columns:1fr}}
+@media(max-width:1100px){.stats-fear-layout{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}.stats-fear-readings-panel{grid-column:1 / -1}.stats-fear-controls{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:700px){.stats-fear-layout{grid-template-columns:1fr}.stats-fear-readings-panel{grid-column:auto}.stats-fear-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.stats-view-tabs{margin-left:0;justify-content:flex-start}.stats-psychology-view{padding:14px}.stats-fear-panel{padding:12px}.stats-fear-controls{grid-template-columns:1fr}.stats-fear-canvas-wrap{height:260px}}
 
 .stats-toolbar{
@@ -7186,17 +7190,21 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             </div>
             <div class="stats-fear-demo-note" id="statsFearTrendNote" aria-live="polite">Illustrative example only — X = 10 and Y = 2 means 2 detections across the first 10 trades. Counts build from zero as more trades are observed. Not measured from your actual records yet.</div>
           </article>
-          <article class="stats-fear-panel" aria-labelledby="statsFearRadarTitle">
+          <article class="stats-fear-panel stats-fear-diagram-panel" aria-labelledby="statsFearRadarTitle">
             <h4 id="statsFearRadarTitle">Four-Fear Profile</h4>
-            <p>Adjust the hypothetical levels to explore the diagram. These are not psychological diagnoses.</p>
+            <p>Hypothetical diagram — not a psychological diagnosis.</p>
             <div class="stats-fear-radar-wrap"><canvas id="statsFearRadarChart" role="img" aria-label="Demonstration radar diagram of four adjustable hypothetical trading fear levels."></canvas></div>
+          </article>
+          <article class="stats-fear-panel stats-fear-readings-panel" aria-labelledby="statsFearReadingsTitle">
+            <h4 id="statsFearReadingsTitle">Four-Fear Profile Readings</h4>
+            <p>Adjust example levels to explore the diagram in Section B.</p>
             <div class="stats-fear-controls">
               <label><span>Being wrong <output id="statsFearWrongValue">50%</output></span><input id="statsFearWrong" type="range" min="0" max="100" value="50"></label>
               <label><span>Losing money <output id="statsFearLosingValue">55%</output></span><input id="statsFearLosing" type="range" min="0" max="100" value="55"></label>
               <label><span>FOMO <output id="statsFearFomoValue">50%</output></span><input id="statsFearFomo" type="range" min="0" max="100" value="50"></label>
               <label><span>Leaving money <output id="statsFearLeavingValue">40%</output></span><input id="statsFearLeaving" type="range" min="0" max="100" value="40"></label>
             </div>
-            <div class="stats-fear-demo-note">Interactive illustration only. Actual detection requires validated evidence.</div>
+            <div class="stats-fear-demo-note">Illustrative readings only. Actual detection requires validated evidence.</div>
           </article>
         </div>
       </section>
