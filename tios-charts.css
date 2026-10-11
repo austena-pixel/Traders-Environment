@@ -33,7 +33,7 @@ body.charts-workspace .main{height:100vh;height:100dvh;min-height:0;display:flex
 #chartsWorkspace .charts-symbol input{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
 #chartsWorkspace .charts-responsibility{grid-column:1/-1}
 #chartsWorkspace .charts-apply{height:32px}
-#chartsWorkspace .charts-widget{position:relative;flex:1;min-width:0;min-height:300px;background:#131722}
+#chartsWorkspace .charts-widget{position:relative;flex:1;min-width:0;min-height:300px;background:#0f0f0f}
 #chartsWorkspace .charts-frame{display:block;border:0;width:100%;height:100%;position:absolute;inset:0}
 #chartsWorkspace .charts-widget-status{flex:none;color:var(--muted);padding:6px 12px;font-size:11px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line)}
 #chartsWorkspace [hidden]{display:none!important}
@@ -77,9 +77,9 @@ body.charts-workspace .main{height:100vh;height:100dvh;min-height:0;display:flex
 #chartsWorkspace .charts-toolbar{display:flex;flex-direction:column;align-items:stretch;flex-wrap:nowrap;border:0;border-radius:0;padding:12px;gap:12px;background:transparent}
 #chartsWorkspace .charts-section-title{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;padding-top:4px;border-top:1px solid var(--line)}
 #chartsWorkspace .charts-section-title:first-child{border-top:0}
-#chartsWorkspace .charts-account{display:flex;flex-direction:column;gap:8px;min-width:0}
-#chartsWorkspace .charts-account .btn{white-space:normal;text-align:center;line-height:1.35;min-height:36px}
-#chartsWorkspace .charts-account-note{font-size:10px;line-height:1.45;color:var(--muted);overflow-wrap:anywhere}
+
+
+
 #chartsWorkspace .charts-layout{display:flex;min-width:0}
 #chartsWorkspace .charts-layout button{flex:1;min-width:0;padding:8px 4px;font-size:11px}
 #chartsWorkspace .charts-setting{width:100%;min-width:0}
@@ -104,6 +104,20 @@ body.charts-workspace .main{height:100vh;height:100dvh;min-height:0;display:flex
 #chartsWorkspace .charts-card-top{padding:6px 10px 5px}
 #chartsWorkspace .charts-widget{min-height:280px}
 #chartsWorkspace .charts-card-expanded .charts-controls{display:none}
+/* Desktop panes fill the viewport instead of reserving 480px for every row. */
+@media(min-width:861px){
+  #chartsWorkspace .charts-grid[data-charts-mode=single]{grid-template-rows:minmax(0,1fr);scrollbar-gutter:auto}
+  #chartsWorkspace .charts-grid[data-charts-mode=single] .charts-card,
+  #chartsWorkspace .charts-card-expanded,
+  #chartsWorkspace .charts-card-expanded .charts-widget,
+  #chartsWorkspace .charts-grid[data-charts-mode=single] .charts-widget{min-height:0}
+  @container(min-width:1001px){
+    #chartsWorkspace .charts-grid[data-charts-mode=multiple]{grid-template-rows:minmax(0,1fr);grid-auto-rows:minmax(0,1fr);scrollbar-gutter:auto}
+    #chartsWorkspace .charts-grid[data-charts-mode=multiple]:is([data-chart-count="4"],[data-chart-count="5"],[data-chart-count="6"]){grid-template-rows:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(0,1fr)}
+    #chartsWorkspace .charts-grid[data-charts-mode=multiple] .charts-card,
+    #chartsWorkspace .charts-grid[data-charts-mode=multiple] .charts-widget{min-height:0}
+  }
+}
 @container(max-width:720px){
   #chartsWorkspace .charts-workbench{grid-template-columns:220px minmax(0,1fr)}
 }
@@ -131,7 +145,29 @@ body.charts-workspace .main{padding:8px 10px}
 }
 
 /* Optional Deriv MT5-to-TradingView symbol catalogue (Charts only). */
-#chartsWorkspace .charts-deriv-picker{grid-column:1/-1}
+#chartsWorkspace .charts-market-field{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:6px;min-width:0}
+#chartsWorkspace .charts-market-picker{min-width:0}
+#chartsWorkspace .charts-market-picker select{width:100%}
+#chartsWorkspace .charts-market-remove{min-height:32px;padding-inline:8px;white-space:nowrap}
+#chartsWorkspace .charts-market-remove:disabled{opacity:.55;cursor:not-allowed}
+#chartsWorkspace #chartsWorkspace .charts-market-control{display:flex;flex-direction:column;gap:5px;width:100%;min-width:0}
+#chartsWorkspace .charts-market-label{font-size:11px;font-weight:600;color:var(--muted)}
+#chartsWorkspace .charts-market-section{display:block;width:100%;min-width:0}
+#chartsWorkspace .charts-market-summary{position:relative;display:flex;align-items:center;min-height:32px;width:100%;padding:6px 30px 6px 8px;border:1px solid var(--line2);border-radius:6px;background:var(--panel3);color:var(--text);font-size:12px;font-weight:600;line-height:1.3;cursor:pointer;list-style:none}
+#chartsWorkspace .charts-market-summary::-webkit-details-marker{display:none}
+#chartsWorkspace .charts-market-summary:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+#chartsWorkspace .charts-market-summary::after{content:"";position:absolute;right:11px;top:calc(50% - 4px);width:7px;height:7px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(-45deg);transition:transform .16s ease}
+#chartsWorkspace .charts-market-section[open]>.charts-market-summary::after{transform:rotate(45deg)}
+#chartsWorkspace .charts-market-menu{display:grid;gap:8px;min-width:0;margin-top:6px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}
+#chartsWorkspace .charts-market-target{display:flex;flex-direction:column;gap:5px;min-width:0}
+#chartsWorkspace .charts-market-list{display:grid;gap:5px;max-height:190px;overflow-y:auto;overscroll-behavior:contain;padding-right:2px}
+#chartsWorkspace .charts-market-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:6px;min-width:0}
+#chartsWorkspace .charts-market-use{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;width:100%;min-width:0;padding:6px 8px;text-align:left;white-space:normal}
+#chartsWorkspace .charts-market-use[aria-pressed=true]{border-color:var(--blue);background:var(--panel2)}
+#chartsWorkspace .charts-market-use strong{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+#chartsWorkspace .charts-market-list-symbol{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+#chartsWorkspace .charts-market-remove-list{min-height:32px;padding-inline:8px;white-space:nowrap}
+#chartsWorkspace .charts-market-list-empty{margin:0;color:var(--muted);font-size:10px;line-height:1.4}
 #chartsWorkspace .charts-deriv-mapping{grid-column:1/-1;font-size:10px;line-height:1.4;color:var(--muted);overflow-wrap:anywhere}
 #chartsWorkspace .charts-deriv-default{width:100%;white-space:normal;text-align:center;line-height:1.35;min-height:36px}
 #chartsWorkspace .charts-deriv-note{font-size:10px;line-height:1.45;color:var(--muted);margin:0}
@@ -435,3 +471,7 @@ body.charts-workspace .main{padding:8px 10px}
 #chartsWorkspace .charts-welcome-card .charts-welcome-disclosure{font-size:10px;color:#a995b7;margin-bottom:0}
 #chartsWorkspace .charts-welcome-card .charts-welcome-error{color:#ffbcb5}
 @media(max-width:520px){#chartsWorkspace .charts-welcome-setup{padding:10px}#chartsWorkspace .charts-welcome-card{padding:17px}#chartsWorkspace .charts-welcome-layouts,#chartsWorkspace .charts-welcome-actions{grid-template-columns:1fr}#chartsWorkspace .charts-welcome-layout-icon{height:32px}}
+
+/* Saved markets use the same compact selector pattern as the chart timeframe. */
+#chartsWorkspace .charts-card-actions [data-charts-action="add-market"]{border-color:var(--line2);color:var(--text)}
+#chartsWorkspace .charts-card-actions [data-charts-action="add-market"]:disabled{opacity:.55;cursor:default}

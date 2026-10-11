@@ -11,12 +11,13 @@
   }}){
     let visible=false,userId=null,prefs=null,loaded=false,loading=false,saving=false;
     let revision=null,saved=null,generation=0,expanded=null,focusBeforeExpand=null,previousOverflow='';
+    let markets=P.defaultMarkets();
     let layoutSaveQueued=false;
     let controlsCollapsed=window.matchMedia('(max-width: 860px)').matches;
     const instances=new Map();
     const verification=window.TIOSMarketVerification.create({getClient,getUser,getAccounts,getSelectedAccount,getNumber});
     let pendingEvidenceTrade=null;
-    let sidebarMode='settings',instrumentWorkspace=null,instrumentLoadEpoch=0;
+    let sidebarMode='settings',instrumentWorkspace=null,instrumentLoadEpoch=0,marketTargetChartId='';
     let chartProfile=null,accountStep='entry',accountBusy=false,accountError='';
     let firstRunLayout='single',firstRunSaving=false;
     function renderSidebar(){
@@ -108,6 +109,156 @@
     const alive=(id,epoch)=>userId===id&&generation===epoch&&getUser()?.id===id;
     const activeCharts=()=>prefs.charts[prefs.layout];
     const dirty=()=>prefs&&JSON.stringify(prefs)!==saved;
+    function marketStorage(){try{return window.localStorage}catch(_){return null}}
+    function loadMarketList(id){markets=P.loadMarkets(marketStorage(),id)}
+    function persistMarketList(next){
+      try{markets=P.saveMarkets(marketStorage(),userId,next);return true}catch(_){return false}
+    }
+    function populateMarketSelect(select,symbol=''){
+      if(!select)return;
+      const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Choose a saved market';
+      select.replaceChildren(placeholder);
+      markets.forEach(market=>{const option=document.createElement('option');option.value=market.symbol;option.textContent=market.name;option.title=market.symbol;select.appendChild(option)});
+      select.value=markets.some(market=>market.symbol===symbol)?symbol:'';
+    }
+    function updateMarketSelects(){
+      host.querySelectorAll('[data-saved-market]').forEach(select=>{
+        const panel=select.closest('[data-charts-setup-id]');
+        const symbol=panel?.querySelector('[data-chart-field="symbol"]')?.value.trim().toUpperCase()||'';
+        populateMarketSelect(select,symbol);
+      });
+      host.querySelectorAll('[data-charts-action="remove-saved-market"]').forEach(button=>{
+        const panel=button.closest('[data-charts-setup-id]');
+        button.disabled=!panel?.querySelector('[data-saved-market]')?.value;
+      });
+      renderMarketList();
+      updateMarketActionButtons();
+    }
+    function updateMarketActionButtons(){
+      host.querySelectorAll('.charts-card[data-chart-id]').forEach(card=>{
+        const chart=activeCharts().find(item=>item.id===card.dataset.chartId);
+        const symbol=chart?.symbol?.trim().toUpperCase()||'';
+        const button=card.querySelector('[data-charts-action="add-market"]');
+        if(!button)return;
+        const market=P.marketFromSymbol(symbol);
+        const exists=Boolean(market&&markets.some(item=>item.symbol===market.symbol));
+        button.disabled=!market||exists;
+        button.title=exists?'Already saved in your market list':'Add this chart market to your list';
+      });
+    }
+    function renderMarketList(){
+      const list=host.querySelector('[data-charts-market-list]');
+      if(!list)return;
+      const charts=activeCharts();
+      if(!charts.some(chart=>chart.id===marketTargetChartId))marketTargetChartId=charts[0]?.id||'';
+      const target=charts.find(chart=>chart.id===marketTargetChartId)||charts[0]||null;
+      const currentLabel=host.querySelector('[data-market-current]');
+      const currentMarket=markets.find(item=>item.symbol===target?.symbol?.trim().toUpperCase());
+      if(currentLabel)currentLabel.textContent=currentMarket?.name||'Select a saved market';
+      const targetWrap=host.querySelector('[data-market-target-wrap]');
+      const targetSelect=host.querySelector('[data-market-target]');
+      if(targetWrap)targetWrap.hidden=charts.length<2;
+      if(targetSelect){
+        targetSelect.replaceChildren();
+        charts.forEach((chart,index)=>{
+          const option=document.createElement('option');
+          option.value=chart.id;
+          option.textContent='Chart '+(index+1)+' · '+chart.symbol;
+          targetSelect.appendChild(option);
+        });
+        targetSelect.value=marketTargetChartId;
+      }
+      list.replaceChildren();
+      if(!markets.length){
+        const empty=document.createElement('p');
+        empty.className='charts-market-list-empty';
+        empty.textContent='No saved markets yet. Use Add market at the top of a chart to add one.';
+        list.appendChild(empty);
+        return;
+      }
+      markets.forEach(market=>{
+        const row=document.createElement('div');
+        row.className='charts-market-row';
+        row.setAttribute('role','listitem');
+        const use=document.createElement('button');
+        use.type='button';
+        use.className='btn small charts-market-use';
+        use.dataset.chartsAction='select-listed-market';
+        use.dataset.marketSymbol=market.symbol;
+        use.setAttribute('aria-pressed',String(target?.symbol?.trim().toUpperCase()===market.symbol));
+        use.title='Use '+market.name+' in '+(target?'Chart '+(charts.indexOf(target)+1):'the selected chart');
+        const name=document.createElement('strong');
+        name.textContent=market.name;
+        const symbol=document.createElement('span');
+        symbol.className='charts-market-list-symbol';
+        symbol.textContent=market.symbol;
+        use.append(name,symbol);
+        const remove=document.createElement('button');
+        remove.type='button';
+        remove.className='btn small charts-market-remove-list';
+        remove.dataset.chartsAction='remove-listed-market';
+        remove.dataset.marketSymbol=market.symbol;
+        remove.textContent='Remove';
+        remove.title='Remove '+market.name+' from your saved markets';
+        remove.setAttribute('aria-label','Remove '+market.name+' from your saved markets');
+        row.append(use,remove);
+        list.appendChild(row);
+      });
+    }
+    function applyListedMarket(symbol){
+      if(!prefs||!symbol)return;
+      const charts=activeCharts();
+      const chart=charts.find(item=>item.id===marketTargetChartId)||charts[0];
+      if(!chart)return;
+      const panel=[...host.querySelectorAll('[data-charts-setup-id]')].find(item=>item.dataset.chartsSetupId===chart.id);
+      const field=panel?.querySelector('[data-chart-field="symbol"]');
+      if(!field)return;
+      marketTargetChartId=chart.id;
+      if(field.value.trim().toUpperCase()===symbol){
+        const marketDisclosure=host.querySelector('[data-charts-market-disclosure]');
+        if(marketDisclosure)marketDisclosure.open=false;
+        renderMarketList();
+        const market=markets.find(item=>item.symbol===symbol);
+        status((market?.name||symbol)+' is already selected for Chart '+(charts.indexOf(chart)+1)+'.');
+        return;
+      }
+      field.value=symbol;
+      capture();syncDerivHint(panel);changed();updateMarketSelects();
+      mountChart(cardForControl(field));
+      const market=markets.find(item=>item.symbol===symbol);
+      const marketDisclosure=host.querySelector('[data-charts-market-disclosure]');
+      if(marketDisclosure)marketDisclosure.open=false;
+      status((market?.name||symbol)+' selected for Chart '+(charts.indexOf(chart)+1)+'.');
+    }
+    function addCurrentMarket(card){
+      if(!loaded||!prefs||!card)return;
+      capture();
+      const chart=activeCharts().find(item=>item.id===card.dataset.chartId);
+      const market=P.marketFromSymbol(chart?.symbol);
+      if(!market){status('Enter a valid EXCHANGE:SYMBOL instrument first.',true);return;}
+      if(markets.some(item=>item.symbol===market.symbol)){status(market.name+' is already in your market list.');return;}
+      const next=[...markets,market],invalid=P.validateMarkets(next);
+      if(invalid){status(invalid,true);return;}
+      if(!persistMarketList(next)){status('Your market list could not be saved in this browser.',true);return;}
+      marketTargetChartId=chart.id;
+      const marketDisclosure=host.querySelector('[data-charts-market-disclosure]');
+      if(marketDisclosure)marketDisclosure.open=true;
+      updateMarketSelects();
+      status(market.name+' added to your market list.');
+    }
+    function removeMarket(symbol){
+      if(!symbol)return;
+      const market=markets.find(item=>item.symbol===symbol);
+      if(!market)return;
+      if(!persistMarketList(markets.filter(item=>item.symbol!==symbol))){status('Your market list could not be saved in this browser.',true);return;}
+      updateMarketSelects();
+      status(market.name+' removed from your market list.');
+    }
+    function removeSelectedMarket(button){
+      const panel=button.closest('[data-charts-setup-id]');
+      const symbol=panel?.querySelector('[data-saved-market]')?.value;
+      removeMarket(symbol);
+    }
     function status(message,error=false){
       const node=host.querySelector('[data-charts-status]');
       if(node){node.textContent=message;node.classList.toggle('charts-status-error',error)}
@@ -133,23 +284,22 @@
       if(!panel)return;
       const input=panel.querySelector('[data-chart-field="symbol"]');
       const hint=panel.querySelector('[data-deriv-mapping]');
-      const select=panel.querySelector('[data-deriv-preset]');
+      const select=panel.querySelector('[data-saved-market]');
       if(!input||!hint||!select)return;
-      const mapping=P.derivBySymbol(input.value);
-      select.value=mapping?.symbol||'';
+      const symbol=input.value.trim().toUpperCase();
+      const mapping=P.derivBySymbol(symbol);
+      select.value=markets.some(market=>market.symbol===symbol)?symbol:'';
       hint.textContent=mapping?'MT5: '+mapping.mt5Symbol+' (name mapping only; price data not verified)':'Manual symbol — no automatic Deriv MT5 mapping';
     }
-    function applyPreferredDeriv(){
-      if(!loaded||saving)return;
+    function applyMarketToBothLayouts(market){
+      if(!loaded||saving||!market)return;
       capture();
-      for(const mode of ['single','multiple']){
-        for(const chart of prefs.charts[mode])chart.symbol=P.preferredDerivSymbol;
-      }
+      for(const mode of ['single','multiple'])for(const chart of prefs.charts[mode])chart.symbol=market.symbol;
       host.querySelectorAll('[data-charts-setup-id]').forEach(panel=>{
-        panel.querySelector('[data-chart-field="symbol"]').value=P.preferredDerivSymbol;syncDerivHint(panel);
+        panel.querySelector('[data-chart-field="symbol"]').value=market.symbol;syncDerivHint(panel);
       });
-      changed();refreshWidgets();
-      status('Volatility 75 (1s) selected for both layouts. Save preferences to make it your default.');
+      updateMarketSelects();changed();refreshWidgets();closeMarketDialog();
+      status(market.name+' selected for both layouts. Save preferences to make it your default.');
     }
     function cardForControl(target){
       const panel=target.closest('[data-charts-setup-id]');
@@ -172,18 +322,18 @@
       description.textContent=chart?.responsibility||'Configure chart';
       title.append(label,description);
       const instrument=form.querySelector('.charts-symbol');
+      const marketField=document.createElement('div');marketField.className='charts-market-field';
       const preset=document.createElement('label');
-      preset.className='charts-deriv-picker';
-      preset.textContent='Deriv synthetic indices';
+      preset.className='charts-market-picker';
+      preset.textContent='Market';
       const select=document.createElement('select');
-      select.dataset.derivPreset='';
-      select.setAttribute('aria-label','Chart '+(index+1)+' Deriv synthetic index');
-      const manual=document.createElement('option');manual.value='';manual.textContent='Manual instrument';
-      select.append(manual,...P.derivSymbols.map(item=>{
-        const option=document.createElement('option');option.value=item.symbol;option.textContent=item.label;return option;
-      }));
+      select.dataset.savedMarket='';
+      select.setAttribute('aria-label','Chart '+(index+1)+' market');
       preset.appendChild(select);
-      instrument.before(preset);
+      populateMarketSelect(select,chart?.symbol||'');
+      const remove=document.createElement('button');remove.type='button';remove.className='btn small charts-market-remove';remove.dataset.chartsAction='remove-saved-market';remove.textContent='Remove';remove.title='Remove the selected market from your saved list';remove.setAttribute('aria-label','Remove selected market from your saved list');remove.disabled=true;
+      marketField.append(preset,remove);
+      instrument.before(marketField);
       const hint=document.createElement('div');
       hint.className='charts-deriv-mapping';
       hint.dataset.derivMapping='';
@@ -382,13 +532,13 @@
       if(stored){chart.symbol=stored.symbol;chart.interval=stored.interval;}
       const panel=[...host.querySelectorAll('[data-charts-setup-id]')].find(p=>p.dataset.chartsSetupId===chart.id);
       if(panel){panel.querySelector('[data-chart-field="symbol"]').value=chart.symbol;panel.querySelector('[data-chart-field="interval"]').value=chart.interval;syncDerivHint(panel);}
-      mountChart(card,true);changed();
+      updateMarketSelects();mountChart(card,true);changed();
     }
     function refreshWidgets(){host.querySelectorAll('[data-chart-id]').forEach(card=>mountChart(card))}
     function cardMarkup(chart,index){return `<section class="charts-card" data-chart-id="${escape(chart.id)}" aria-label="Chart ${index+1}">
             <div class="charts-card-top"><strong>Chart ${index+1}</strong><div class="charts-card-actions">
               ${index===0?`<button class="btn small charts-reveal-controls" type="button" data-charts-action="toggle-panel" aria-controls="chartsPanel" aria-expanded="${!controlsCollapsed}" ${controlsCollapsed?'':'hidden'}>Show controls</button><button class="btn small charts-account-link" type="button" data-charts-action="manage-deriv-account" title="Manage the selected Deriv MT5 account inside T-IOS">Deriv account</button><a class="btn small charts-tv-link" href="https://www.tradingview.com/chart/?symbol=${escape(encodeURIComponent(chart.symbol))}" target="_blank" rel="noopener noreferrer" data-charts-tv-chart title="Open the T-IOS configured symbol on TradingView in a new tab; widget toolbar changes are not tracked">Open TradingView ↗</a>`:''}
-              <button class="btn small" type="button" data-charts-action="capture" title="Capture this chart as evidence for a trade">Capture</button><button class="btn small" type="button" data-charts-action="reset-chart" title="Reload this chart to its saved instrument, or the configured instrument if no saved chart exists">Reset instrument</button><button class="btn small" type="button" data-charts-action="expand" aria-expanded="false">Expand</button></div></div>
+              <button class="btn small" type="button" data-charts-action="capture" title="Capture this chart as evidence for a trade">Capture</button><button class="btn small" type="button" data-charts-action="add-market" title="Add this chart market to your saved list">Add market</button><button class="btn small" type="button" data-charts-action="reset-chart" title="Reload this chart to its saved instrument, or the configured instrument if no saved chart exists">Reset instrument</button><button class="btn small" type="button" data-charts-action="expand" aria-expanded="false">Expand</button></div></div>
             <form class="charts-controls">
               <label class="charts-symbol">Instrument<input data-chart-field="symbol" aria-label="Chart ${index+1} instrument" value="${escape(chart.symbol)}" maxlength="81" placeholder="FX:EURUSD" list="charts-symbols" required spellcheck="false" autocomplete="off"></label>
               <label>Timeframe<select data-chart-field="interval" aria-label="Chart ${index+1} timeframe">${P.intervals.map(([value,label])=>`<option value="${value}" ${chart.interval===value?'selected':''}>${label}</option>`).join('')}</select></label>
@@ -487,6 +637,7 @@
       chartProfile=result.profile;
       const row=result.preferences;
       prefs=row?P.clone(row.configuration):P.defaults();
+      loadMarketList(userId);
       revision=row?.revision??null;saved=row?JSON.stringify(prefs):null;loaded=true;
       accountStep=!chartProfile?'entry':row?'ready':'layout';
       firstRunLayout=prefs.layout;accountError='';
@@ -625,10 +776,6 @@
     function render(){
       if(!visible||!loaded||!prefs||getUser()?.id!==userId)return;
       if(accountStep!=='ready'||!chartProfile){renderAccountEntry();return;}
-      const selectedAccount=getSelectedAccount?.();
-      const selectedAccountName=selectedAccount?.account_name||'No trading account selected';
-      const mt5Linked=selectedAccount?.platform==='MT5';
-      const selectedAccountStatus=mt5Linked?(selectedAccount.connection_status||'pending'):'manual account';
       instrumentLoadEpoch++;instrumentWorkspace?.unmount();closeExpanded(false);dispose();
       host.innerHTML=`
         <div class="charts-workbench ${controlsCollapsed?'charts-panel-collapsed':''}">
@@ -636,12 +783,15 @@
             <div class="charts-panel-head"><strong data-charts-sidebar-title>Charts</strong><button class="btn small" type="button" data-charts-action="instruments" aria-controls="chartsInstruments" aria-pressed="false">Instruments</button><button class="btn small charts-panel-dismiss" type="button" data-charts-action="toggle-panel" aria-controls="chartsPanel" aria-expanded="${!controlsCollapsed}">Hide controls</button></div>
             <div class="charts-panel-scroll">
               <div class="charts-toolbar">
-          <div class="charts-section-title">Deriv / MT5 connection</div>
-          <div class="charts-account">
-            <strong class="charts-account-current">${escape(selectedAccountName)}</strong>
-            <span class="charts-account-note">T-IOS account status: ${escape(selectedAccountStatus)}</span>
-            <button class="btn small" type="button" data-charts-action="manage-deriv-account">Manage Deriv MT5 inside T-IOS</button>
-            <p class="charts-account-note">Your linked MT5 account is selected in T-IOS Settings &amp; Connections. The embedded TradingView chart is a separate market-data widget; it does not inherit Deriv or MT5 authentication. Direct Deriv sign-in requires a registered Deriv OAuth application.</p>
+          <div class="charts-setting charts-market-control">
+            <span class="charts-market-label">My markets</span>
+            <details class="charts-market-section" data-charts-market-disclosure>
+              <summary class="charts-market-summary"><span data-market-current>Select a saved market</span></summary>
+              <div class="charts-market-menu">
+                <label class="charts-market-target" data-market-target-wrap hidden>Apply to chart<select data-market-target aria-label="Select chart for saved market"></select></label>
+                <div class="charts-market-list" data-charts-market-list role="list" aria-label="Saved markets"></div>
+              </div>
+            </details>
           </div>
           <div class="charts-section-title">Layout</div>
           <div class="charts-layout" role="group" aria-label="Chart layout">
@@ -652,9 +802,7 @@
           <div class="charts-section-title">Appearance</div>
           <label class="charts-setting">Chart theme<select data-charts-setting="theme"><option value="dark" ${prefs.theme==='dark'?'selected':''}>Dark</option><option value="light" ${prefs.theme==='light'?'selected':''}>Light</option></select></label>
           <label class="charts-setting">Timezone<select data-charts-setting="timezone">${P.timezones.map(([value,label])=>`<option value="${value}" ${prefs.timezone===value?'selected':''}>${label}</option>`).join('')}</select></label>
-          <div class="charts-section-title">Deriv preferences</div>
-          <button class="btn small charts-deriv-default" type="button" data-charts-action="prefer-deriv">Use V75 (1s) as my default</button>
-          <p class="charts-deriv-note">Sets the instrument for all charts in both layouts. Your timeframe and responsibility settings remain unchanged. Save preferences to persist.</p>
+          <div class="charts-section-title">Deriv data tools</div>
           <a class="btn small charts-deriv-default" href="deriv-feed-check.html" target="_blank" rel="noopener noreferrer" data-charts-feed-test aria-describedby="charts-feed-test-note">Open Deriv feed test ↗</a>
           <p id="charts-feed-test-note" class="charts-deriv-note">Read-only connection test. On the test page, press Connect public feed. Public prices remain unverified against MT5.</p>
           <button class="btn small charts-deriv-default" type="button" data-charts-action="start-public-quote">Start live Deriv quote</button>
@@ -685,6 +833,7 @@
         <datalist id="charts-symbols"><option value="FX:EURUSD"><option value="FX:GBPUSD"><option value="OANDA:XAUUSD"><option value="NASDAQ:AAPL"><option value="BINANCE:BTCUSDT"></datalist>`;
       initializeChartsPanelResize();
       host.querySelectorAll('.charts-grid [data-chart-id]').forEach((card,index)=>relocateControls(card,index));
+      updateMarketSelects();
       host.querySelector('.charts-panel').inert=controlsCollapsed;
       changed();refreshWidgets();
       renderPublicQuote();
@@ -744,12 +893,12 @@
     }
     host.addEventListener('submit',event=>{
       if(!event.target.matches('.charts-controls'))return;
-      event.preventDefault();capture();mountChart(cardForControl(event.target));changed();
+      event.preventDefault();capture();updateMarketSelects();mountChart(cardForControl(event.target));changed();
     });
     host.addEventListener('input',event=>{
       if(!event.target.matches('[data-chart-field]'))return;
       capture();changed();
-      if(event.target.dataset.chartField==='symbol')syncDerivHint(event.target.closest('[data-charts-setup-id]'));
+      if(event.target.dataset.chartField==='symbol'){const panel=event.target.closest('[data-charts-setup-id]');syncDerivHint(panel);updateMarketSelects();}
       const card=cardForControl(event.target);
       if(event.target.dataset.chartField==='responsibility'){
         const summary=event.target.closest('[data-charts-setup-id]')?.querySelector('.charts-setup-caption');
@@ -762,11 +911,14 @@
         if(quoteActive())return;
         quoteMarket=event.target.value;quoteMarketChosen=true;stopPublicQuote('Public market selection changed. Press Start to receive this separate instrument.',true);return;
       }
-      if(event.target.matches('[data-deriv-preset]')){
+      if(event.target.matches('[data-market-target]')){
+        marketTargetChartId=event.target.value;renderMarketList();return;
+      }
+      if(event.target.matches('[data-saved-market]')){
         if(!event.target.value)return;
         const panel=event.target.closest('[data-charts-setup-id]');
         panel.querySelector('[data-chart-field="symbol"]').value=event.target.value;
-        capture();syncDerivHint(panel);changed();
+        capture();syncDerivHint(panel);changed();updateMarketSelects();
         mountChart(cardForControl(event.target));
         return;
       }
@@ -799,7 +951,10 @@
       if(action==='instruments')setSidebarMode(sidebarMode==='settings'?'instruments':'settings');
       if(action==='manage-deriv-account')document.querySelector('.nav-btn[data-page="settings"]')?.click();
       if(action==='retry-instruments')mountInstruments();
-      if(action==='prefer-deriv')applyPreferredDeriv();
+      if(action==='add-market'){addCurrentMarket(button.closest('[data-chart-id]'));return;}
+      if(action==='select-listed-market'){applyListedMarket(button.dataset.marketSymbol);return;}
+      if(action==='remove-listed-market'){removeMarket(button.dataset.marketSymbol);return;}
+      if(action==='remove-saved-market'){removeSelectedMarket(button);return;}
       if(action==='start-public-quote')startPublicQuote();
       if(action==='stop-public-quote')stopPublicQuote();
       if(action==='hide-public-quote'){quoteShown=false;stopPublicQuote();}
@@ -857,7 +1012,7 @@
         verification.openTrade(trade);
       },
       hide(){capture();instrumentLoadEpoch++;instrumentWorkspace?.unmount();verification.hide();visible=false;stopPublicQuote('Paused while Charts is closed. Press Start to reconnect.');closeExpanded(false);dispose();host.replaceChildren()},
-      reset(){api.hide();instrumentWorkspace?.reset();instrumentWorkspace=null;sidebarMode='settings';chartProfile=null;accountStep='entry';accountBusy=false;accountError='';firstRunLayout='single';firstRunSaving=false;quoteFeed?.dispose();quoteFeed=null;quoteState=null;quoteShown=false;quoteMarket='v75_1s';quoteMarketChosen=false;verification.reset();pendingEvidenceTrade=null;generation++;userId=null;prefs=null;loaded=false;loading=false;saving=false;layoutSaveQueued=false;revision=null;saved=null}
+      reset(){api.hide();instrumentWorkspace?.reset();instrumentWorkspace=null;sidebarMode='settings';markets=P.defaultMarkets();chartProfile=null;accountStep='entry';accountBusy=false;accountError='';firstRunLayout='single';firstRunSaving=false;quoteFeed?.dispose();quoteFeed=null;quoteState=null;quoteShown=false;quoteMarket='v75_1s';quoteMarketChosen=false;verification.reset();pendingEvidenceTrade=null;generation++;userId=null;prefs=null;loaded=false;loading=false;saving=false;layoutSaveQueued=false;revision=null;saved=null}
     };
     return api;
   }};

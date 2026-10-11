@@ -6,6 +6,7 @@
 })(typeof window==='object'?window:globalThis,function(){
   'use strict';
   const intervals=[['1','M1'],['3','M3'],['5','M5'],['15','M15'],['30','M30'],['60','H1'],['120','H2'],['240','H4'],['D','D1'],['W','W1'],['M','MN1']];
+  const marketListKey='tios_chart_markets_v1:';
   const timezones=[['Etc/UTC','UTC'],['exchange','Exchange timezone']];
   // Verified public TradingView symbols paired with exact Deriv MT5 names
   // observed in the existing T-IOS deal history. This mapping does NOT prove
@@ -17,10 +18,45 @@
   const preferredDerivSymbol=derivSymbols[0].symbol;
   const derivBySymbol=value=>derivSymbols.find(item=>item.symbol===String(value||'').trim().toUpperCase())||null;
   const derivByMt5Symbol=value=>derivSymbols.find(item=>item.mt5Symbol.toLowerCase()===String(value||'').trim().toLowerCase())||null;
+  function marketFromSymbol(value){
+    const raw=String(value||'').trim();
+    if(/^[a-z][a-z0-9+.-]*:\/\//i.test(raw))return null;
+    const symbol=raw.toUpperCase();
+    if(!symbolPattern.test(symbol))return null;
+    return {name:derivBySymbol(symbol)?.label||symbol,symbol};
+  }
   const symbolPattern=/^[A-Z0-9_]{1,20}:[A-Z0-9_./!^\-]{1,60}$/;
   const clone=value=>JSON.parse(JSON.stringify(value));
   const object=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
   const exactKeys=(value,keys)=>object(value)&&Object.keys(value).length===keys.length&&keys.every(key=>Object.hasOwn(value,key));
+  const defaultMarkets=()=>derivSymbols.map(item=>({name:item.label,symbol:item.symbol}));
+  function validateMarkets(value){
+    if(!Array.isArray(value)||value.length>30)return 'Keep up to 30 markets in your saved list.';
+    const symbols=new Set();
+    for(const market of value){
+      if(!exactKeys(market,['name','symbol'])||typeof market.name!=='string'||typeof market.symbol!=='string')return 'Each market needs a name and a TradingView symbol.';
+      if(!market.name.trim()||market.name!==market.name.trim()||Array.from(market.name).length>60)return 'Market names must be 1–60 characters with no extra spaces at the ends.';
+      if(market.symbol!==market.symbol.trim().toUpperCase()||!symbolPattern.test(market.symbol))return 'Use an uppercase EXCHANGE:SYMBOL, such as FX:EURUSD.';
+      if(symbols.has(market.symbol))return 'That symbol is already in your market list.';
+      symbols.add(market.symbol);
+    }
+    return null;
+  }
+  function loadMarkets(storage,userId){
+    try{
+      const record=JSON.parse(storage?.getItem(marketListKey+userId)||'null');
+      if(exactKeys(record,['version','userId','markets'])&&record.version===1&&record.userId===userId&&!validateMarkets(record.markets))return clone(record.markets);
+    }catch(_){/* Use the safe supported-market defaults when browser storage is unavailable. */}
+    return defaultMarkets();
+  }
+  function saveMarkets(storage,userId,value){
+    const invalid=validateMarkets(value);
+    if(invalid)throw Error(invalid);
+    if(!storage||typeof storage.setItem!=='function'||typeof userId!=='string'||!userId)throw Error('Market list storage is unavailable.');
+    const record={version:1,userId,markets:clone(value)};
+    storage.setItem(marketListKey+userId,JSON.stringify(record));
+    return clone(record.markets);
+  }
   function defaults(){
     return {version:1,layout:'single',theme:'dark',timezone:'Etc/UTC',charts:{
       single:[{id:'single',symbol:'FX:EURUSD',interval:'60',responsibility:'Market analysis'}],
@@ -56,5 +92,5 @@
       withdateranges:true,hide_volume:true,studies:[],save_image:false,show_popup_button:true,popup_width:'1200',popup_height:'800',
       support_host:'https://www.tradingview.com'};
   }
-  return {defaults,clone,validate,intervals,timezones,symbolPattern,widgetSettings,derivSymbols,preferredDerivSymbol,derivBySymbol,derivByMt5Symbol};
+  return {defaults,clone,validate,intervals,timezones,symbolPattern,widgetSettings,derivSymbols,preferredDerivSymbol,derivBySymbol,derivByMt5Symbol,marketFromSymbol,defaultMarkets,validateMarkets,loadMarkets,saveMarkets};
 });
