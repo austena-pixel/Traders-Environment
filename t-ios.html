@@ -1644,6 +1644,16 @@ body.playbook-workspace .main{
 .stats-psychology-view h3{margin:0 0 8px;font-size:18px}
 .stats-psychology-view p{color:#93a2b6;font-size:12px;line-height:1.6}
 .stats-fear-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,.9fr) minmax(0,.85fr);gap:12px;margin-top:16px;align-items:stretch}
+.stats-behavior-secondary{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:12px;margin-top:12px}
+.stats-behavior-sequence-canvas{position:relative;height:200px}
+.stats-condition-heatmap{display:grid;grid-template-columns:minmax(92px,1.35fr) repeat(4,minmax(0,1fr));gap:5px;align-items:center;margin-top:13px}
+.stats-condition-heatmap .axis{font-size:9px;color:#a9b7c9;line-height:1.25}
+.stats-condition-heatmap .col{font-size:9px;text-align:center;color:#b7c4d4;overflow-wrap:anywhere}
+.stats-condition-heatmap .cell{height:31px;border-radius:5px;border:1px solid rgba(255,255,255,.08);display:grid;place-items:center;color:#f8fafc;font-size:10px;font-weight:700;font-variant-numeric:tabular-nums}
+.stats-heatmap-key{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;font-size:9px;color:#aebcd0;align-items:center}
+.stats-heatmap-key i{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:middle;margin-right:3px}
+@media(max-width:900px){.stats-behavior-secondary{grid-template-columns:1fr}}
+@media(max-width:520px){.stats-condition-heatmap{grid-template-columns:minmax(76px,1.3fr) repeat(4,minmax(0,1fr));gap:3px}.stats-condition-heatmap .cell{height:28px;font-size:9px}.stats-behavior-sequence-canvas{height:190px}}
 .stats-fear-panel{min-width:0;border:1px solid var(--line,#202a38);border-radius:14px;padding:12px;background:linear-gradient(145deg,#101a26,#0b1119)}
 .stats-fear-panel h4{font-size:13px;margin:0 0 5px;color:#e9f0fa}
 .stats-fear-panel>p{font-size:10px;margin:0 0 12px}
@@ -7205,6 +7215,21 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               <label><span>Leaving money <output id="statsFearLeavingValue">40%</output></span><input id="statsFearLeaving" type="range" min="0" max="100" value="40"></label>
             </div>
             <div class="stats-fear-demo-note">Illustrative readings only. Actual detection requires validated evidence.</div>
+          </article>
+        </div>
+        <div class="stats-behavior-secondary">
+          <article class="stats-fear-panel" aria-labelledby="statsBehaviorSequenceTitle">
+            <h4 id="statsBehaviorSequenceTitle">Behavior Sequence Diagram</h4>
+            <p>Illustrates how behavioural deviation might change before entry, at entry, during profit and risk management, at exit, and after the trade.</p>
+            <div class="stats-behavior-sequence-canvas"><canvas id="statsBehaviorSequenceChart" role="img" aria-label="Illustrative behavioural deviation scores across five phases: before entry 2, entry 4, profit and risk management 7, exit 5, after trade 3. Not recorded trading evidence."></canvas></div>
+            <div class="stats-fear-demo-note">Demonstration only — example deviation scores, not detected psychological states. Future evidence will link actions across all five phases.</div>
+          </article>
+          <article class="stats-fear-panel" aria-labelledby="statsConditionHeatmapTitle">
+            <h4 id="statsConditionHeatmapTitle">Behavioural Conditions Heatmap</h4>
+            <p>Illustrates where specific trading conditions could coincide with behavioural deviations.</p>
+            <div class="stats-condition-heatmap" id="statsConditionHeatmap" role="table" aria-label="Illustrative condition by deviation frequency heatmap"></div>
+            <div class="stats-heatmap-key" aria-hidden="true"><span><i style="background:#1b4a42"></i>0–1</span><span><i style="background:#427e78"></i>2–3</span><span><i style="background:#c28b4c"></i>4–5</span><span><i style="background:#c65b54"></i>6+</span><span>Example co-occurrences</span></div>
+            <div class="stats-fear-demo-note">Hypothetical counts only — not correlations established from your records. More data and context are needed before drawing conclusions.</div>
           </article>
         </div>
       </section>
@@ -14958,7 +14983,10 @@ function setStatisticsView(view){
   $('#statsPsychologyView').hidden=selected!=='psychology';
   setZoomedStatsCard(null);
   if(selected==='technical')requestAnimationFrame(()=>{if(equityChartInstance)equityChartInstance.resize();});
-  else requestAnimationFrame(renderStatisticsFearDemonstration);
+  else requestAnimationFrame(()=>{
+    renderStatisticsFearDemonstration();
+    renderStatsBehaviorExtras();
+  });
 }
 let statsFearTrendInstance=null;
 let statsFearRadarInstance=null;
@@ -15033,6 +15061,69 @@ function renderStatisticsFearDemonstration(){
     statsFearRadarInstance.data.datasets[0].data=values;
     statsFearRadarInstance.update('none');
     statsFearRadarInstance.resize();
+  }
+}
+let statsBehaviorSequenceInstance=null;
+function renderStatsBehaviorExtras(){
+  const sequence=document.getElementById('statsBehaviorSequenceChart');
+  if(sequence&&typeof Chart!=='undefined'){
+    if(!statsBehaviorSequenceInstance){
+      statsBehaviorSequenceInstance=new Chart(sequence,{
+        type:'line',
+        data:{labels:['Before entry','Entry','Profit / risk','Exit','After trade'],datasets:[{
+          label:'Illustrative behavioural deviation score',data:[2,4,7,5,3],
+          borderColor:'#e7a43e',backgroundColor:'rgba(231,164,62,.14)',
+          pointBackgroundColor:'#e7a43e',pointRadius:4,borderWidth:2,tension:.25,fill:true
+        }]},
+        options:{responsive:true,maintainAspectRatio:false,animation:false,
+          plugins:{legend:{display:false},tooltip:{callbacks:{label:context=>'Example deviation score: '+context.parsed.y+' / 10'}}},
+          scales:{
+            x:{ticks:{color:'#b7c4d4',maxRotation:0,font:{size:9}},grid:{display:false}},
+            y:{min:0,max:10,title:{display:true,text:'Example deviation score (0–10)',color:'#b7c4d4'},
+              ticks:{stepSize:2,precision:0,color:'#b7c4d4'},grid:{color:'rgba(118,136,160,.12)'}}
+          }}
+      });
+    }else statsBehaviorSequenceInstance.resize();
+  }
+  const heatmap=document.getElementById('statsConditionHeatmap');
+  if(heatmap&&!heatmap.children.length){
+    const fears=['Being wrong','Losing money','FOMO','Leaving money'];
+    const conditions=[
+      {label:'After a loss',values:[6,7,4,3]},
+      {label:'High volatility',values:[3,5,6,4]},
+      {label:'Long wait',values:[2,2,7,5]},
+      {label:'Time of day',values:[4,3,5,6]}
+    ];
+    const color=value=>value<=1?'#1b4a42':value<=3?'#427e78':value<=5?'#c28b4c':'#c65b54';
+    const label=document.createElement('span');
+    label.className='axis';
+    label.setAttribute('role','columnheader');
+    label.textContent='Condition';
+    heatmap.append(label);
+    fears.forEach(fear=>{
+      const head=document.createElement('span');
+      head.className='col';
+      head.setAttribute('role','columnheader');
+      head.textContent=fear;
+      heatmap.append(head);
+    });
+    conditions.forEach(condition=>{
+      const head=document.createElement('span');
+      head.className='axis';
+      head.setAttribute('role','rowheader');
+      head.textContent=condition.label;
+      heatmap.append(head);
+      condition.values.forEach((value,index)=>{
+        const cell=document.createElement('span');
+        cell.className='cell';
+        cell.style.backgroundColor=color(value);
+        cell.setAttribute('role','cell');
+        cell.setAttribute('aria-label',condition.label+' and '+fears[index]+': '+value+' hypothetical co-occurrences');
+        cell.title=condition.label+' / '+fears[index]+': '+value+' example co-occurrences';
+        cell.textContent=String(value);
+        heatmap.append(cell);
+      });
+    });
   }
 }
 document.getElementById('statsFearTradeSample')?.addEventListener('change',renderStatisticsFearDemonstration);
