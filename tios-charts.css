@@ -77,9 +77,9 @@ body.charts-workspace .main{height:100vh;height:100dvh;min-height:0;display:flex
 #chartsWorkspace .charts-toolbar{display:flex;flex-direction:column;align-items:stretch;flex-wrap:nowrap;border:0;border-radius:0;padding:12px;gap:12px;background:transparent}
 #chartsWorkspace .charts-section-title{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;padding-top:4px;border-top:1px solid var(--line)}
 #chartsWorkspace .charts-section-title:first-child{border-top:0}
-#chartsWorkspace .charts-account{display:flex;flex-direction:column;gap:8px;min-width:0}
-#chartsWorkspace .charts-account .btn{white-space:normal;text-align:center;line-height:1.35;min-height:36px}
-#chartsWorkspace .charts-account-note{font-size:10px;line-height:1.45;color:var(--muted);overflow-wrap:anywhere}
+
+
+
 #chartsWorkspace .charts-layout{display:flex;min-width:0}
 #chartsWorkspace .charts-layout button{flex:1;min-width:0;padding:8px 4px;font-size:11px}
 #chartsWorkspace .charts-setting{width:100%;min-width:0}
