@@ -1769,91 +1769,28 @@ body.playbook-workspace .main{
   gap:8px;
   margin-bottom:8px;
 }
-.stats-indicator-head h4{
-  margin:0;
-  color:#e8edf5;
-  font-size:12px;
-  font-weight:750;
-}
-.stats-indicator-head span{
-  color:#8794a7;
-  font-size:9px;
-}
-.stats-indicator-head .stats-win-return{
-  font-size:11px;
-  font-weight:800;
-  white-space:nowrap;
-  font-variant-numeric:tabular-nums;
-}
+.stats-indicator-head h4{margin:0;color:#e8edf5;font-size:12px;font-weight:750}
+.stats-indicator-head span{color:#8794a7;font-size:9px}
+.stats-indicator-head .stats-win-return{font-size:11px;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}
 .stats-indicator-head .stats-win-return.pos{color:#45d69a}
 .stats-indicator-head .stats-win-return.neg{color:#ff727c}
-.stats-indicator-value{
-  color:#f3f6fb;
-  font-size:20px;
-  font-weight:800;
-  letter-spacing:-.4px;
-  font-variant-numeric:tabular-nums;
-}
+.stats-indicator-caption{display:block;margin-top:2px;color:#8794a7;font-size:8px;line-height:1.25}
+.stats-indicator-value{color:#f3f6fb;font-size:20px;font-weight:800;letter-spacing:-.4px;font-variant-numeric:tabular-nums}
 .stats-indicator-value.pos{color:#45d69a}
 .stats-indicator-value.neg{color:#ff727c}
-.stats-indicator-note{
-  min-height:18px;
-  margin:6px 0 0;
-  color:#93a2b6;
-  font-size:9px;
-  line-height:1.45;
-}
-.stats-return-bar{
-  position:relative;
-  height:10px;
-  margin:12px 0 6px;
-  border-radius:999px;
-  background:#53282f;
-}
-.stats-return-zero{
-  position:absolute;
-  left:38.46%;
-  top:-4px;
-  bottom:-4px;
-  width:1px;
-  background:#dce4ef;
-  opacity:.75;
-}
-.stats-return-threshold{
-  position:absolute;
-  left:62.5%;
-  top:-4px;
-  bottom:-4px;
-  width:1px;
-  background:#f1c36b;
-  opacity:.8;
-}
-.stats-return-fill{
-  position:absolute;
-  top:0;
-  height:100%;
-  border-radius:999px;
-  background:#45d69a;
-  box-shadow:0 0 12px rgba(69,214,154,.34);
-}
-.stats-return-marker{
-  position:absolute;
-  top:-5px;
-  height:22px;
-  width:3px;
-  border:1px solid #0a1119;
-  border-radius:3px;
-  background:#f4f7fb;
-  transform:translateX(-50%);
-  box-shadow:0 0 0 1px rgba(244,247,251,.55);
-}
-.stats-return-scale{
-  display:flex;
-  justify-content:space-between;
-  color:#77879a;
-  font-size:8px;
-  font-variant-numeric:tabular-nums;
-}
+.stats-profit-factor-value{margin:2px 0 0;font-size:25px;line-height:1;letter-spacing:-.7px}
+.stats-profit-factor-explanation{min-height:22px;margin:5px 0 8px;color:#aab7c7;font-size:8.5px;line-height:1.35}
+.stats-profit-factor-bar{display:flex;width:100%;height:9px;overflow:hidden;border-radius:999px;background:#202a38;box-shadow:inset 0 0 0 1px rgba(255,255,255,.035)}
+.stats-profit-factor-segment{height:100%;min-width:0}
+.stats-profit-factor-profit{background:#25d07d;box-shadow:0 0 10px rgba(37,208,125,.24)}
+.stats-profit-factor-loss{background:#ff5d68;box-shadow:0 0 10px rgba(255,93,104,.2)}
+.stats-profit-factor-totals{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-top:6px}
+.stats-profit-factor-totals>div{min-width:0}
+.stats-profit-factor-totals>div:last-child{text-align:right}
+.stats-profit-factor-totals span{display:block;color:#8290a2;font-size:7px;line-height:1.15}
+.stats-profit-factor-totals strong{display:block;margin-top:2px;color:#e7edf5;font-size:9px;font-weight:750;line-height:1.15;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.stats-profit-factor-totals .profit strong{color:#45d69a}
+.stats-profit-factor-totals .loss strong{color:#ff727c}
 .stats-win-gauge{
   display:block;
   width:min(100%,190px);
@@ -6745,24 +6682,21 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           </div>
 
           <aside class="stats-indicator-stack" aria-label="Selected-period indicators">
-            <section class="stats-indicator-card" aria-labelledby="statReturnGaugeTitle">
-              <div class="stats-indicator-head">
-                <h4 id="statReturnGaugeTitle">Return</h4>
-                <span>Initial balance</span>
+            <section class="stats-indicator-card stats-profit-factor-card" aria-labelledby="statProfitFactorDiagramTitle">
+              <div class="stats-indicator-head"><div>
+                <h4 id="statProfitFactorDiagramTitle">Profit Factor</h4>
+                <span class="stats-indicator-caption">Gross profit ÷ gross loss</span>
+              </div></div>
+              <div class="stats-indicator-value neutral stats-profit-factor-value" id="statProfitFactorDiagramValue" aria-live="polite">—</div>
+              <p class="stats-profit-factor-explanation" id="statProfitFactorExplanation" aria-live="polite">Record closed trades with P&amp;L to calculate profit factor.</p>
+              <div class="stats-profit-factor-bar" id="statProfitFactorBar" role="img" aria-label="Gross profit and gross loss comparison">
+                <span class="stats-profit-factor-segment stats-profit-factor-profit" id="statProfitFactorProfitFill" aria-hidden="true"></span>
+                <span class="stats-profit-factor-segment stats-profit-factor-loss" id="statProfitFactorLossFill" aria-hidden="true"></span>
               </div>
-              <div class="stats-indicator-value neutral" id="statReturnGaugeValue">—</div>
-              <div class="stats-return-bar" role="img" aria-label="Return indicator">
-                <span class="stats-return-zero" aria-hidden="true"></span>
-                <span class="stats-return-threshold" id="statReturnGaugeThreshold" aria-hidden="true" hidden></span>
-                <span class="stats-return-fill" id="statReturnGaugeFill" hidden></span>
-                <span class="stats-return-marker" id="statReturnGaugeMarker" hidden></span>
+              <div class="stats-profit-factor-totals">
+                <div class="profit"><span>Gross profit</span><strong id="statProfitFactorGrossProfit">—</strong></div>
+                <div class="loss"><span>Gross loss</span><strong id="statProfitFactorGrossLoss">—</strong></div>
               </div>
-              <div class="stats-return-scale" aria-hidden="true">
-                <span id="statReturnScaleLeft">0%</span>
-                <span id="statReturnScaleMiddle">50%</span>
-                <span id="statReturnScaleRight">100%</span>
-              </div>
-              <p class="stats-indicator-note" id="statReturnGaugeNote">Return on initial balance for the selected period.</p>
             </section>
 
             <section class="stats-indicator-card" aria-labelledby="statWinRateGaugeTitle">
@@ -13828,109 +13762,81 @@ function renderInstrumentStats(sourceTrades){
   });
 }
 
-function renderStatisticsIndicators(returnPct,winRate,source){
-  const returnValue=$('#statReturnGaugeValue');
-  const returnFill=$('#statReturnGaugeFill');
-  const returnMarker=$('#statReturnGaugeMarker');
-  const returnBar=$('.stats-return-bar');
-  const returnThreshold=$('#statReturnGaugeThreshold');
-  const returnNote=$('#statReturnGaugeNote');
-  const scaleLeft=$('#statReturnScaleLeft');
-  const scaleMiddle=$('#statReturnScaleMiddle');
-  const scaleRight=$('#statReturnScaleRight');
+function calculateProfitFactorStats(source){
+  const selected=Array.isArray(source)?source:[];
+  let grossProfit=0,grossLoss=0,recordedTradeCount=0;
+  selected.forEach(trade=>{
+    const raw=trade?.pnl;
+    if(raw===null||raw===undefined||String(raw).trim()==='')return;
+    const pnl=Number(raw);
+    if(!Number.isFinite(pnl))return;
+    recordedTradeCount++;
+    if(pnl>0)grossProfit+=pnl;
+    if(pnl<0)grossLoss+=Math.abs(pnl);
+  });
+  const missingPnlCount=selected.length-recordedTradeCount;
+  let state='finite',value=null;
+  if(!selected.length)state='no-trades';
+  else if(missingPnlCount)state='incomplete';
+  else if(grossProfit===0&&grossLoss===0)state='no-outcomes';
+  else if(grossLoss===0&&grossProfit>0){state='infinite';value=Infinity}
+  else value=grossProfit/grossLoss;
+  return{state,value,grossProfit,grossLoss,selectedTradeCount:selected.length,recordedTradeCount,missingPnlCount};
+}
 
-  if(Number.isFinite(returnPct)){
-    const isNegative=returnPct<0;
-    const extendedScale=returnPct>100;
-    const minReturn=isNegative?-100:0;
-    const maxReturn=isNegative?0:(extendedScale?160:100);
-    const zeroPosition=(0-minReturn)/(maxReturn-minReturn)*100;
-    const bounded=Math.max(minReturn,Math.min(maxReturn,returnPct));
-    const position=(bounded-minReturn)/(maxReturn-minReturn)*100;
+function formatProfitFactorCurrency(value){
+  const raw=String(tradingAccount?.currency||'USD').trim().toUpperCase();
+  const currency=/^[A-Z]{3}$/.test(raw)?raw:'USD';
+  try{return new Intl.NumberFormat(undefined,{style:'currency',currency,minimumFractionDigits:2,maximumFractionDigits:2}).format(value)}
+  catch{return `${raw||'Account currency'} ${Number(value).toFixed(2)}`}
+}
 
-    returnValue.textContent=formatReturnPct(returnPct);
-    returnValue.className='stats-indicator-value '+pnlClass(returnPct);
-    returnFill.hidden=false;
-    returnMarker.hidden=false;
-    returnMarker.style.left=position+'%';
-    returnThreshold.hidden=!extendedScale;
-    returnBar.style.background=extendedScale
-      ? 'linear-gradient(90deg,#53282f 0%,#53282f 62.5%,#5b4725 62.5%,#5b4725 100%)'
-      : '#53282f';
+function renderProfitFactorIndicator(stats){
+  const value=$('#statProfitFactorDiagramValue'),explanation=$('#statProfitFactorExplanation');
+  const bar=$('#statProfitFactorBar'),profitFill=$('#statProfitFactorProfitFill'),lossFill=$('#statProfitFactorLossFill');
+  const grossProfit=$('#statProfitFactorGrossProfit'),grossLoss=$('#statProfitFactorGrossLoss');
+  const factor=stats?.value,hasValue=typeof factor==='number'&&(Number.isFinite(factor)||factor===Infinity);
+  const tone=!hasValue?'neutral':factor===1?'neutral':factor>1?'pos':'neg';
+  value.textContent=hasValue?(factor===Infinity?'∞':factor.toFixed(2)+'×'):'—';
+  value.className='stats-indicator-value stats-profit-factor-value '+tone;
+  const hasRecordedPnl=Boolean(stats&&stats.recordedTradeCount>0);
+  grossProfit.textContent=hasRecordedPnl?formatProfitFactorCurrency(stats.grossProfit):'—';
+  grossLoss.textContent=hasRecordedPnl?formatProfitFactorCurrency(stats.grossLoss):'—';
+  const totalGross=hasRecordedPnl?stats.grossProfit+stats.grossLoss:0;
+  const profitShare=totalGross>0?stats.grossProfit/totalGross*100:0;
+  profitFill.style.width=profitShare+'%';
+  lossFill.style.width=(totalGross>0?100-profitShare:0)+'%';
+  bar.setAttribute('aria-label',totalGross>0
+    ? `Gross profit ${formatProfitFactorCurrency(stats.grossProfit)} compared with gross loss ${formatProfitFactorCurrency(stats.grossLoss)}. ${value.textContent} profit factor. Green represents gross profit; red represents gross loss.`
+    : 'No recorded gross profit or gross loss is available for comparison.');
+  if(!stats||stats.state==='no-trades')explanation.textContent='No closed trades in this selected period.';
+  else if(stats.state==='incomplete'){
+    const missing=stats.missingPnlCount;
+    explanation.textContent=`Unavailable: ${missing} selected trade${missing===1?' is':'s are'} missing recorded P&L.`;
+  }else if(stats.state==='no-outcomes')explanation.textContent='All recorded trades are break-even; no gross profit or loss.';
+  else if(stats.state==='infinite')explanation.textContent=`No losses recorded; gross profit is ${formatProfitFactorCurrency(stats.grossProfit)}.`;
+  else explanation.textContent=`For every ${formatProfitFactorCurrency(1)} lost, ${formatProfitFactorCurrency(factor)} was earned on winning trades.`;
+}
 
-    if(isNegative){
-      returnFill.style.left=position+'%';
-      returnFill.style.width=(zeroPosition-position)+'%';
-      returnFill.style.background='#ff727c';
-      scaleLeft.textContent='−100%';
-      scaleMiddle.textContent='−50%';
-      scaleRight.textContent='0%';
-    }else{
-      returnFill.style.left='0%';
-      returnFill.style.width=position+'%';
-      const threshold=extendedScale?Math.max(0,Math.min(100,100/returnPct*100)):100;
-      returnFill.style.background=extendedScale
-        ? `linear-gradient(90deg,#45d69a 0%,#45d69a ${threshold}%,#f1bd5d ${threshold}%,#f1bd5d 100%)`
-        : '#45d69a';
-      scaleLeft.textContent='0%';
-      scaleMiddle.textContent=extendedScale?'100%':'50%';
-      scaleRight.textContent=extendedScale?'160%':'100%';
-    }
-
-    returnThreshold.style.left=(extendedScale?62.5:100)+'%';
-    returnBar.setAttribute('aria-label',isNegative
-      ? `Return ${formatReturnPct(returnPct)} on a scale from minus 100% to 0%.`
-      : `Return ${formatReturnPct(returnPct)} on a scale from 0% to ${maxReturn}%; 100% is marked when the scale extends.`);
-    returnNote.textContent=returnPct>160
-      ? 'Above the 160% display scale; full return shown above.'
-      : returnPct<minReturn
-        ? 'Below the −100% display scale; full return shown above.'
-        : source.length
-          ? 'Return on initial balance for the selected period.'
-          : 'No trades in this period.';
-  }else{
-    returnValue.textContent='—';
-    returnValue.className='stats-indicator-value neutral';
-    returnFill.hidden=true;
-    returnMarker.hidden=true;
-    returnThreshold.hidden=true;
-    returnBar.style.background='#53282f';
-    returnNote.textContent='Set an initial account balance to calculate return.';
-    returnBar.setAttribute('aria-label','Return unavailable until an initial account balance is set.');
-    scaleLeft.textContent='0%';
-    scaleMiddle.textContent='50%';
-    scaleRight.textContent='100%';
-  }
-
-  const gauge=$('#statWinRateGauge');
-  const progress=$('#statWinRateGaugeProgress');
-  const needle=$('#statWinRateGaugeNeedle');
-  const winValue=$('#statWinRateGaugeValue');
-  const count=$('#statWinRateGaugeCount');
-  const returnLabel=$('#statWinRateReturnLabel');
+function renderStatisticsIndicators(returnPct,winRate,source,profitFactorStats){
+  renderProfitFactorIndicator(profitFactorStats);
+  const gauge=$('#statWinRateGauge'),progress=$('#statWinRateGaugeProgress');
+  const needle=$('#statWinRateGaugeNeedle'),winValue=$('#statWinRateGaugeValue');
+  const count=$('#statWinRateGaugeCount'),returnLabel=$('#statWinRateReturnLabel');
   const wins=source.filter(trade=>Number(trade.pnl)>0).length;
-  returnLabel.textContent=Number.isFinite(returnPct)
-    ? `${formatReturnPct(returnPct)} return`
-    : '— return';
+  returnLabel.textContent=Number.isFinite(returnPct)?`${formatReturnPct(returnPct)} return`:'— return';
   returnLabel.className='stats-win-return '+(Number.isFinite(returnPct)?pnlClass(returnPct):'neutral');
   const hasTrades=source.length>0;
-  const boundedWinRate=hasTrades&&Number.isFinite(winRate)
-    ? Math.max(0,Math.min(100,winRate))
-    : 0;
-
+  const boundedWinRate=hasTrades&&Number.isFinite(winRate)?Math.max(0,Math.min(100,winRate)):0;
   progress.setAttribute('stroke-dasharray',`${boundedWinRate} 100`);
   needle.setAttribute('transform',`rotate(${boundedWinRate*1.8-90} 100 100)`);
-  const returnAccessibility=Number.isFinite(returnPct)
-    ? ` Period return ${formatReturnPct(returnPct)}.`
-    : '';
+  const returnAccessibility=Number.isFinite(returnPct)?` Period return ${formatReturnPct(returnPct)}.`:'';
   gauge.setAttribute('aria-label',hasTrades
     ? `Win rate ${boundedWinRate.toFixed(1)} percent, ${wins} winning trades out of ${source.length}.${returnAccessibility}`
     : 'Win rate unavailable because there are no trades in this period.'+returnAccessibility);
   winValue.textContent=hasTrades?boundedWinRate.toFixed(1)+'%':'—';
   winValue.className='stats-indicator-value '+(hasTrades?'pos':'neutral');
-  count.textContent=hasTrades
-    ? `${wins} win${wins===1?'':'s'} of ${source.length} trade${source.length===1?'':'s'} in this period.`
-    : 'No trades in this period.';
+  count.textContent=hasTrades?`${wins} win${wins===1?'':'s'} of ${source.length} trade${source.length===1?'':'s'} in this period.`:'No trades in this period.';
 }
 function renderStatistics(){
   if(!tradingAccount){
@@ -13981,6 +13887,8 @@ function renderStatistics(){
   const profitFactor=grossLoss
     ? grossProfit/grossLoss
     : grossProfit>0 ? Infinity : 0;
+
+  const profitFactorStats=calculateProfitFactorStats(source);
 
   const avgTradeReturn=averageTradeReturnPct(source);
 
@@ -14095,7 +14003,7 @@ function renderStatistics(){
   $('#statRecoveryFactor').textContent=
     recoveryFactor===Infinity ? '∞' : recoveryFactor.toFixed(2);
 
-  renderStatisticsIndicators(returnPct,winRate,source);
+  renderStatisticsIndicators(returnPct,winRate,source,profitFactorStats);
   renderEquityChart(series);
   renderInstrumentStats(source);
 }
