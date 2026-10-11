@@ -18,7 +18,7 @@ Execution averages the measurable items within each area, then averages the thre
 
 An overall score remains null until each of the three areas has at least one measurable saved input. Text-only reflection answers remain available as journal evidence but do not add points. Older trades with no mapped trade-specific category reviews continue to use their existing legacy score.
 
-The Journal shows the combined score out of 10. Its existing review grade remains A+ when there are no missed measurable items, A when one item is missed, and B when more than one is missed. Incomplete combined reviews remain pending and are not included as completed graded reviews.
+The Journal displays the combined score as a percentage (the stored 0–10 score multiplied by 10). Its existing review grade remains A+ when there are no missed measurable items, A when one item is missed, and B when more than one is missed. Incomplete combined reviews remain pending and are not included as completed graded reviews.
 
 ## Statistics integration
 
