@@ -112,3 +112,35 @@ test('Combined Execution score remains pending until all three areas have measur
   assert.equal(context.result.hasMappedData,true);
   assert.equal(context.result.score,null);
 });
+
+test('Combined score keeps conditional criteria inactive and scores a condition group once', () => {
+  const start = source.indexOf('function executionMappedValuesForKind(');
+  const end = source.indexOf('async function updateTradeExecutionCompositeScore(', start);
+  const definition = [
+    {type:'checkbox',condition:'prerequisite'},
+    {type:'checkbox',condition:'dependent',dependsOn:'prerequisite'},
+    {type:'checkbox',condition:'option-a',name:'logic',logic:'any'},
+    {type:'checkbox',condition:'option-b',name:'logic',logic:'any'}
+  ];
+  const stateRow = (kind, documentId, fields, controls) => ({
+    criterion_key:'text__ti_state__'+kind+'__'+encodeURIComponent(documentId),
+    comment:JSON.stringify({
+      schema:'tios.execution-form.v1',kind,documentId,
+      definition:JSON.stringify(fields),controls
+    })
+  });
+  const rows = [
+    stateRow('playbook','edge-a',definition,[{checked:false},{checked:true},{checked:false},{checked:true}]),
+    stateRow('checklist','rules-a',[{type:'checkbox'}],[{checked:true}]),
+    stateRow('psych','psych-a',[{type:'checkbox'}],[{checked:true}])
+  ];
+  const context = {
+    executionIsScoreResponseKey:key=>String(key||'').startsWith('text__ti__')&&/__score_[a-zA-Z0-9_-]+$/.test(key),
+    executionScoreResponseFromComment:()=>null,
+    executionReviewForTrade:()=>({id:'review-1'}),
+    executionChecksForReview:()=>rows
+  };
+  vm.runInNewContext(source.slice(start,end)+'\nthis.result=executionMappedCompositeForTrade("trade-1");',context);
+  assert.deepEqual(Array.from(context.result.categories.playbook.values),[1,0]);
+  assert.ok(Math.abs(context.result.score-(25/3))<0.0001);
+});
