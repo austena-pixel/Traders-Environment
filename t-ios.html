@@ -1963,22 +1963,22 @@ body.playbook-workspace .main{
 .stats-expectancy-bar{
   position:relative;
   width:100%;
-  height:8px;
-  margin:13px 0 9px;
-  overflow:hidden;
-  border-radius:999px;
-  background:#18222e;
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.035);
+  height:16px;
+  margin:8px 0 12px;
+  overflow:visible;
+  border-top:1px dashed #66758b;
+  border-bottom:1px dashed #66758b;
+  background:transparent;
 }
-.stats-expectancy-zero{position:absolute;z-index:2;top:-2px;bottom:-2px;left:50%;width:1px;background:#8391a2}
+.stats-expectancy-zero{position:absolute;z-index:2;top:-2px;bottom:-2px;left:50%;width:1px;background:#a4b1c2}
 .stats-expectancy-loss,.stats-expectancy-win{position:absolute;top:0;height:100%;min-width:0}
-.stats-expectancy-loss{background:#ff5d68}
-.stats-expectancy-win{background:#25d07d}
-.stats-expectancy-labels{display:flex;justify-content:space-between;gap:6px}
-.stats-expectancy-labels>span{min-width:0}
+.stats-expectancy-loss{background:#ff5d68;border-radius:999px 0 0 999px}
+.stats-expectancy-win{background:#25d07d;border-radius:0 999px 999px 0}
+.stats-expectancy-labels{display:flex;justify-content:space-between;gap:8px;margin-top:14px}
+.stats-expectancy-labels>span{min-width:0;flex:1}
 .stats-expectancy-labels>span:last-child{text-align:right}
-.stats-expectancy-labels small{display:block;color:#738298;font-size:6px;font-weight:800;letter-spacing:.45px}
-.stats-expectancy-labels strong{display:block;margin-top:2px;font-size:8px;line-height:1.15;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.stats-expectancy-labels small{display:block;color:#9ba8bb;font-size:8px;font-weight:700}
+.stats-expectancy-labels strong{display:block;margin-top:4px;font-size:13px;line-height:1.2;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 @media(max-width:520px){
   .stats-analysis-pair{padding:9px}
   .stats-analysis-module:first-child{padding-right:8px}
@@ -6913,7 +6913,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <p id="equityChartDescription">Account equity after every trade in the selected period.</p>
             <div class="stats-equity-summary" role="group" aria-label="Selected-period equity performance">
               <div class="stats-equity-summary-item">
-                <span>Ending Equity</span>
+                <span>Current Balance</span>
                 <strong id="statEquityHeaderEnding" aria-live="polite">—</strong>
               </div>
               <div class="stats-equity-summary-item">
@@ -7023,14 +7023,14 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
                     <span class="stats-analysis-kicker">PER TRADE</span>
                   </div>
                   <strong class="stats-analysis-value neutral" id="statExpectancyValue">—</strong>
+                  <div class="stats-expectancy-labels">
+                    <span><small>Average loss</small><strong class="neg" id="statExpectancyAvgLoss">—</strong></span>
+                    <span><small>Average profit</small><strong class="pos" id="statExpectancyAvgWin">—</strong></span>
+                  </div>
                   <div class="stats-expectancy-bar" id="statExpectancyBar" role="img" aria-label="Average win and loss comparison unavailable.">
                     <span class="stats-expectancy-loss" id="statExpectancyLossFill"></span>
                     <span class="stats-expectancy-zero"></span>
                     <span class="stats-expectancy-win" id="statExpectancyWinFill"></span>
-                  </div>
-                  <div class="stats-expectancy-labels">
-                    <span><small>AVG LOSS</small><strong class="neg" id="statExpectancyAvgLoss">—</strong></span>
-                    <span><small>AVG WIN</small><strong class="pos" id="statExpectancyAvgWin">—</strong></span>
                   </div>
                   <span class="stats-analysis-caption" id="statExpectancyCaption">Average trade return unavailable.</span>
                 </section>
