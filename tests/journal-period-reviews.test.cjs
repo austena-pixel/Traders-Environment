@@ -10,7 +10,7 @@ const end = source.indexOf('function journalScopePercent(',start);
 assert.ok(start >= 0 && end > start, 'journal period helpers should be present');
 const context = {};
 vm.runInNewContext(
-  source.slice(start,end)+'\\nthis.journalPeriodBounds=journalPeriodBounds;',
+  source.slice(start,end)+'\nthis.journalPeriodBounds=journalPeriodBounds;',
   context
 );
 const bounds = (date,period) => JSON.parse(JSON.stringify(context.journalPeriodBounds(date,period)));
