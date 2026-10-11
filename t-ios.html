@@ -10472,7 +10472,7 @@ function renderJournal(){
           <td>${journalExecutionBadge(t.id,t.execution_score)}</td>
           <td>
             <div class="table-actions">
-              <button class="btn small" type="button" data-trade-evidence-open="${escapeHtml(t.id)}">Setup pictures</button><button class="btn small" type="button" data-trade-captures-open="${escapeHtml(t.id)}">Captures</button>
+              <button class="btn small" type="button" data-trade-captures-open="${escapeHtml(t.id)}">Captures</button>
               ${t.source==='mt5'&&window.TIOSFeedVerification.marketForSymbol(t.instrument)?`<button class="btn small" type="button" data-market-evidence-trade="${escapeHtml(t.id)}">Market evidence</button>`:''}
               <button class="btn small edit-trade" data-id="${t.id}">Edit</button>
               <button class="btn small danger delete-trade" data-id="${t.id}">Delete</button>
@@ -10627,7 +10627,7 @@ function renderDayTrades(date){
       <span class="${pnlClass(Number(t.pnl))}">${signedMoney(Number(t.pnl))}</span>
       <span>${formatReturnPct(tradeReturnPct(t))}</span>
       <div class="table-actions">
-        <button class="btn small" type="button" data-trade-evidence-open="${escapeHtml(t.id)}">Setup pictures</button><button class="btn small" type="button" data-trade-captures-open="${escapeHtml(t.id)}">Captures</button>
+        <button class="btn small" type="button" data-trade-captures-open="${escapeHtml(t.id)}">Captures</button>
               ${t.source==='mt5'&&window.TIOSFeedVerification.marketForSymbol(t.instrument)?`<button class="btn small" type="button" data-market-evidence-trade="${escapeHtml(t.id)}">Market evidence</button>`:''}
         <button class="btn danger small" type="button">Delete</button>
       </div>
