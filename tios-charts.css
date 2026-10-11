@@ -151,6 +151,12 @@ body.charts-workspace .main{padding:8px 10px}
 #chartsWorkspace .charts-market-remove{min-height:32px;padding-inline:8px;white-space:nowrap}
 #chartsWorkspace .charts-market-remove:disabled{opacity:.55;cursor:not-allowed}
 #chartsWorkspace .charts-market-manager{display:grid;gap:8px;min-width:0}
+#chartsWorkspace .charts-market-summary{display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;list-style:none}
+#chartsWorkspace .charts-market-summary::-webkit-details-marker{display:none}
+#chartsWorkspace .charts-market-summary::after{content:"";width:7px;height:7px;flex:none;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);transition:transform .16s ease}
+#chartsWorkspace .charts-market-section:not([open])>.charts-market-summary::after{transform:rotate(-45deg)}
+#chartsWorkspace .charts-market-section[open]>.charts-market-summary{margin-bottom:8px}
+#chartsWorkspace .charts-market-summary-count{margin-left:auto;min-width:20px;text-align:center;padding:2px 6px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:10px;line-height:1.2;letter-spacing:0}
 #chartsWorkspace .charts-market-target{display:flex;flex-direction:column;gap:5px;min-width:0}
 #chartsWorkspace .charts-market-list{display:grid;gap:5px;max-height:190px;overflow-y:auto;overscroll-behavior:contain;padding-right:2px}
 #chartsWorkspace .charts-market-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:6px;min-width:0}
