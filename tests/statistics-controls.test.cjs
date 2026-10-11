@@ -67,7 +67,9 @@ function extractFunction(name){
   const marker='function '+name+'(';
   const start=html.indexOf(marker);
   assert.ok(start>=0,'Missing '+name+' helper');
-  const open=html.indexOf('{',start);
+  const signatureEnd=html.indexOf('){',start);
+  assert.ok(signatureEnd>=0,'Missing body for '+name);
+  const open=signatureEnd+1;
   let depth=0;
   for(let i=open;i<html.length;i++){
     if(html[i]==='{')depth++;
@@ -152,8 +154,9 @@ assert.match(html,/persistStatsRangePreference\(statsRange\);/,'selected timefra
 console.log('PASS selected timeframe persists, restores, and falls back safely');
 console.log('PASS Auto Zoom is accessible, toggleable, and restricted to sidebar analytics cards');
 console.log('PASS highlighted labels are removed while the Equity Curve remains intact');
-const zoomRange={min:'100',max:'150',value:'150',attributes:{},setAttribute(name,value){this.attributes[name]=value;}};
-const zoomOutput={textContent:'150%'};
+const zoomRange={min:'100',max:'150',value:'125',attributes:{},setAttribute(name,value){this.attributes[name]=value;}};
+const zoomOutput={textContent:'125%'};
+const zoomPreferenceStorage=createStorage(null);
 const zoomScaleStack={style:{values:{},setProperty(name,value){this.values[name]=value;}}};
 const zoomElements=new Map([
   ['#statsAutoZoomRange',zoomRange],
@@ -164,17 +167,20 @@ const zoomViewport={innerWidth:1440};
 const scaleContext=vm.createContext({
   $:selector=>zoomElements.get(selector),
   window:zoomViewport,
-  document:{documentElement:{clientWidth:1440}}
+  document:{documentElement:{clientWidth:1440}},
+  localStorage:zoomPreferenceStorage
 });
 vm.runInContext(
-  'let statsAutoZoomPercent=150;\n'+
+  "const STATS_AUTOZOOM_PREFERENCE_KEY='tios_statistics_autozoom_percent_v1'; let statsAutoZoomPercent=125;\n"+
   extractFunction('statsAutoZoomMaxPercent')+'\n'+
+  extractFunction('persistStatsAutoZoomPreference')+'\n'+
   extractFunction('setStatsAutoZoomPercent')+'\n'+
   extractFunction('syncStatsAutoZoomViewportLimit'),
   scaleContext
 );
 scaleContext.setStatsAutoZoomPercent(137);
 assert.equal(zoomRange.value,'137','manual zoom value updates');
+assert.equal(zoomPreferenceStorage.value,'137','manual zoom adjustment becomes the saved default');
 assert.equal(zoomOutput.textContent,'137%','manual zoom percentage is readable');
 assert.equal(zoomScaleStack.style.values['--stats-autozoom-scale'],'1.37','manual zoom scales sidebar cards');
 assert.equal(zoomRange.max,'150','desktop maximum stays at the current zoom');
@@ -186,13 +192,35 @@ zoomViewport.innerWidth=500;
 scaleContext.syncStatsAutoZoomViewportLimit();
 assert.equal(zoomRange.max,'106','mobile maximum follows its current zoom');
 assert.equal(zoomRange.value,'106','maximum setting tracks the responsive zoom ceiling');
+assert.equal(zoomPreferenceStorage.value,'137','viewport caps do not overwrite the saved desktop preference');
 scaleContext.setStatsAutoZoomPercent(104);
+assert.equal(zoomPreferenceStorage.value,'104','a new manual choice replaces the previous default');
 zoomViewport.innerWidth=1400;
 scaleContext.syncStatsAutoZoomViewportLimit();
 assert.equal(zoomRange.value,'104','a manually chosen level below the maximum survives viewport changes');
 assert.equal(zoomRange.max,'150','desktop zoom ceiling is restored');
-assert.match(html,/<label class="stats-autozoom-zoom" for="statsAutoZoomRange">[\s\S]*?<input id="statsAutoZoomRange" type="range" min="100" max="150" step="1" value="150"/,'manual zoom range starts at the current desktop zoom ceiling');
+assert.match(html,/<label class="stats-autozoom-zoom" for="statsAutoZoomRange">[\s\S]*?<input id="statsAutoZoomRange" type="range" min="100" max="150" step="1" value="125"/,'manual zoom range starts at 125%');
 assert.match(html,/transform-origin:right bottom;/,'zoom remains anchored at its bottom-right edge');
 assert.match(html,/transform:scale\(var\(--stats-autozoom-scale\)\)/,'the selected zoom controls the enlarged sidebar section');
 assert.match(html,/window.addEventListener\('resize',syncStatsAutoZoomViewportLimit\)/,'responsive limits update when viewport size changes');
 console.log('PASS manual zoom controls stay within the responsive current zoom limit and expand upward');
+assert.match(html,/const STATS_AUTOZOOM_PREFERENCE_KEY = 'tios_statistics_autozoom_percent_v1'/,'manual zoom uses a stable local preference key');
+assert.match(html,/let statsAutoZoomPercent = loadStatsAutoZoomPreference\(\);/,'saved zoom setting loads on startup');
+const savedZoomContext=vm.createContext({localStorage:createStorage('138')});
+vm.runInNewContext(
+  "const STATS_AUTOZOOM_PREFERENCE_KEY='tios_statistics_autozoom_percent_v1';\n"+
+  extractFunction('loadStatsAutoZoomPreference')+'\n'+extractFunction('persistStatsAutoZoomPreference')+'\n'+
+  'let statsAutoZoomPercent=loadStatsAutoZoomPreference();',
+  savedZoomContext
+);
+assert.equal(vm.runInContext('statsAutoZoomPercent',savedZoomContext),138,'saved adjustment restores on reload');
+savedZoomContext.persistStatsAutoZoomPreference(128);
+assert.equal(savedZoomContext.localStorage.value,'128','new adjustment replaces the saved default');
+const invalidZoomContext=vm.createContext({localStorage:createStorage('99')});
+vm.runInNewContext(
+  "const STATS_AUTOZOOM_PREFERENCE_KEY='tios_statistics_autozoom_percent_v1';\n"+
+  extractFunction('loadStatsAutoZoomPreference'),
+  invalidZoomContext
+);
+assert.equal(invalidZoomContext.loadStatsAutoZoomPreference(),125,'invalid saved zoom falls back to 125%');
+console.log('PASS 125% is the default and user-selected zoom persists across reloads');
