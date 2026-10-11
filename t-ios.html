@@ -1713,7 +1713,10 @@ body.playbook-workspace .main{
   display:grid;
   grid-template-rows:repeat(2,minmax(0,1fr));
   gap:12px;
+  width:100%;
+  height:392px;
   min-width:0;
+  align-self:center;
 }
 .stats-indicator-card{
   min-height:190px;
@@ -1902,7 +1905,13 @@ body.playbook-workspace .main{
 @media(max-width:900px){
   .stats-lower{grid-template-columns:1fr}
   .stats-visuals-layout{grid-template-columns:1fr}
-  .stats-indicator-stack{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none}
+  .stats-indicator-stack{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    grid-template-rows:none;
+    width:auto;
+    height:auto;
+    align-self:stretch;
+  }
 }
 @media(max-width:520px){
   .stats-indicator-stack{grid-template-columns:1fr}
