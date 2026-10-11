@@ -65,6 +65,8 @@ assert.equal(stats.value,null);
 assert.equal(stats.state,'no-trades');
 paint([]);
 assert.match(explanation().textContent,/No closed trades/);
+assert.equal(elements.get('#statProfitFactorGrossProfit').textContent,'—');
+assert.equal(elements.get('#statProfitFactorGrossLoss').textContent,'—');
 stats=calculate([{pnl:200},{pnl:null},{pnl:-25}]);
 assert.equal(stats.value,null,'unknown P&L must not be treated as zero');
 assert.equal(stats.grossProfit,200);
@@ -77,6 +79,9 @@ assert.match(explanation().textContent,/1 selected trade is missing recorded P&L
 stats=calculate([{pnl:''},{pnl:undefined},{pnl:'not-a-number'}]);
 assert.equal(stats.recordedTradeCount,0);
 assert.equal(stats.missingPnlCount,3);
+paint([{pnl:''},{pnl:undefined},{pnl:'not-a-number'}]);
+assert.equal(elements.get('#statProfitFactorGrossProfit').textContent,'—');
+assert.equal(elements.get('#statProfitFactorGrossLoss').textContent,'—');
 
 for(const id of ids)assert.ok(html.includes('id="'+id+'"'),'Missing diagram element '+id);
 assert.match(html,/\.eq\('account_id',\s*tradingAccount\.id\)/,'closed trades remain scoped to the selected account');
