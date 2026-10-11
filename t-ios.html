@@ -7164,27 +7164,27 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           <article class="stats-fear-panel" aria-labelledby="statsFearTrendTitle">
             <h4 id="statsFearTrendTitle">Psychological Behaviour Trend</h4>
             <div class="stats-fear-sample-control">
-              <label for="statsFearTradeSample">Trade sample per week</label>
+              <label for="statsFearTradeSample">X-axis step (trades)</label>
               <select id="statsFearTradeSample" aria-describedby="statsFearAxes statsFearTrendNote">
-                <option value="10">10 trades</option>
-                <option value="20" selected>20 trades</option>
+                <option value="10" selected>10 trades</option>
+                <option value="20">20 trades</option>
                 <option value="30">30 trades</option>
                 <option value="40">40 trades</option>
                 <option value="50">50 trades</option>
               </select>
             </div>
             <div class="stats-fear-axis-guide" id="statsFearAxes">
-              <span><strong>X-axis:</strong> Start = zero baseline, followed by weekly observation periods (W1–W5)</span>
-              <span><strong>Y-axis:</strong> number of detections within each week's selected trade sample</span>
+              <span><strong>X-axis:</strong> number of trades observed from the start (0, 10, 20, 30… when 10 is selected)</span>
+              <span><strong>Y-axis:</strong> total detections across the trades shown on the X-axis</span>
             </div>
-            <div class="stats-fear-canvas-wrap"><canvas id="statsFearTrendChart" role="img" aria-label="Illustrative five-week trends for being wrong, losing money, FOMO and leaving money. These are hypothetical values, not detected emotions."></canvas></div>
+            <div class="stats-fear-canvas-wrap"><canvas id="statsFearTrendChart" role="img" aria-label="Illustrative total fear-related detections against the number of trades observed. All lines begin at 0 trades and 0 detections. Not actual trading records."></canvas></div>
             <div class="stats-fear-legend" aria-hidden="true">
               <span><i style="background:#4d95ff"></i>Being wrong</span>
               <span><i style="background:#63c77d"></i>Losing money</span>
               <span><i style="background:#ff8754"></i>FOMO</span>
               <span><i style="background:#f3cb54"></i>Leaving money</span>
             </div>
-            <div class="stats-fear-demo-note" id="statsFearTrendNote" aria-live="polite">Illustrative example only — shows how many times each fear/behavior could be detected within 20 trades during each weekly observation period. Start marks the zero baseline before observation begins. Not measured from your actual records yet.</div>
+            <div class="stats-fear-demo-note" id="statsFearTrendNote" aria-live="polite">Illustrative example only — X = 10 and Y = 2 means 2 detections across the first 10 trades. Counts build from zero as more trades are observed. Not measured from your actual records yet.</div>
           </article>
           <article class="stats-fear-panel" aria-labelledby="statsFearRadarTitle">
             <h4 id="statsFearRadarTitle">Four-Fear Profile</h4>
@@ -14963,30 +14963,51 @@ function renderStatisticsFearDemonstration(){
   const selected=Number(selector?.value);
   const sample=[10,20,30,40,50].includes(selected)?selected:20;
   if(selector)selector.value=String(sample);
-  const makeSeries=(label,base,color)=>({label,data:[0,...base.map(value=>Math.round(value*sample/20))],borderColor:color,backgroundColor:color,pointRadius:3,borderWidth:2,tension:0,fill:false});
+  // Plot the total detections observed from trade 1 through each X value.
+  const makeSeries=(label,increments,color)=>{
+    let detections=0;
+    const data=[{x:0,y:0},...increments.map((value,index)=>{
+      detections+=Math.round(value*sample/20);
+      return{x:(index+1)*sample,y:detections};
+    })];
+    return{label,data,borderColor:color,backgroundColor:color,pointRadius:3,borderWidth:2,tension:0,fill:false};
+  };
   const datasets=[
     makeSeries('Being wrong',[7,6,5,3,2],'#4d95ff'),
     makeSeries('Losing money',[10,8,7,5,4],'#63c77d'),
-    makeSeries('FOMO',[8,9,6,4,3],'#ff8754'),
+    makeSeries('FOMO',[4,6,4,2,4],'#ff8754'),
     makeSeries('Leaving money',[4,5,3,2,2],'#f3cb54')
   ];
   const options={
     responsive:true,maintainAspectRatio:false,animation:false,
     plugins:{legend:{display:false},tooltip:{callbacks:{
-      title:items=>items[0]?.dataIndex===0?'Illustrative starting baseline':'Illustrative '+(items[0]?.label||''),
-      label:context=>context.dataIndex===0?`${context.dataset.label}: 0 detections before observation`:`${context.dataset.label}: ${context.parsed.y} detections within ${sample} trades`
+      title:items=>{
+        const ending=Number(items[0]?.parsed.x||0);
+        return ending===0?'0 trades — starting point':`First ${ending} trades`;
+      },
+      label:context=>`${context.dataset.label}: ${context.parsed.y} detections across ${context.parsed.x} trades`
     }}},
     scales:{
-      x:{title:{display:true,text:'Weekly observation period',color:'#aebcd0'},ticks:{color:'#a1adc0'},grid:{display:false}},
-      y:{min:0,beginAtZero:true,suggestedMax:Math.max(2,...datasets.flatMap(item=>item.data)),title:{display:true,text:`Detections within ${sample} trades`,color:'#aebcd0'},ticks:{stepSize:1,precision:0,color:'#a1adc0'},grid:{color:'rgba(118,136,160,.12)'}}
+      x:{type:'linear',min:0,max:sample*5,
+        title:{display:true,text:'Number of trades observed',color:'#aebcd0'},
+        ticks:{stepSize:sample,precision:0,color:'#a1adc0'},
+        grid:{display:false}},
+      y:{min:0,beginAtZero:true,suggestedMax:Math.max(2,...datasets.flatMap(item=>item.data.map(point=>point.y))),
+        title:{display:true,text:'Total number of detections',color:'#aebcd0'},
+        ticks:{stepSize:1,precision:0,color:'#a1adc0'},
+        grid:{color:'rgba(118,136,160,.12)'}}
     }
   };
   const note=document.getElementById('statsFearTrendNote');
-  if(note)note.textContent=`Illustrative example only — shows how many times each fear/behavior could be detected within ${sample} trades during each weekly observation period. Start marks the zero baseline before observation begins. Not measured from your actual records yet.`;
-  trend.setAttribute('aria-label',`Illustrative detection counts within ${sample} trades per weekly observation period. Start is a zero baseline before W1, followed by W1 to W5. Y-axis starts at zero. `+datasets.map(item=>item.label+': '+item.data.join(', ')).join('; ')+'. Not actual trading records.');
+  const endpoints=Array.from({length:6},(_,i)=>i*sample);
+  const axes=document.getElementById('statsFearAxes');
+  if(axes)axes.innerHTML=`<span><strong>X-axis:</strong> number of trades observed (${endpoints.join(', ')})</span><span><strong>Y-axis:</strong> total detections across those trades</span>`;
+  if(note)note.textContent=`Illustrative example only — points are shown every ${sample} trades. X = 10 and Y = 2 means 2 detections across the first 10 trades. Each later point counts detections from the start through that number of trades. Not measured from your actual records yet.`;
+  trend.setAttribute('aria-label',`Illustrative total detections across the first ${endpoints.join(', ')} trades. All lines start at zero trades and zero detections. `+datasets.map(item=>item.label+': '+item.data.map(point=>point.x+' trades = '+point.y+' detections').join(', ')).join('; ')+'. Not actual trading records.');
   if(!statsFearTrendInstance){
-    statsFearTrendInstance=new Chart(trend,{type:'line',data:{labels:['Start','W1','W2','W3','W4','W5'],datasets},options});
+    statsFearTrendInstance=new Chart(trend,{type:'line',data:{datasets},options});
   }else{
+    statsFearTrendInstance.data.labels=[];
     statsFearTrendInstance.data.datasets=datasets;
     statsFearTrendInstance.options=options;
     statsFearTrendInstance.update('none');
