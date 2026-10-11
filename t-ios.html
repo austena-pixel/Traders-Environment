@@ -6360,9 +6360,10 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
                 <th>Instrument</th>
                 <th>Direction</th>
                 <th>Setup / Edge</th>
+                <th>Rules</th>
+                <th>Psychology</th>
                 <th>P&amp;L</th>
                 <th>Execution</th>
-                <th>Psychology</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -10042,15 +10043,15 @@ function journalDayHeaderHtml(group){
        <span class="journal-day-stat"><b>B</b> ${formatGradeShare(distribution.percentages['B'])}</span>`
     : '<span class="journal-day-stat muted">No reviewed trades yet</span>';
 
-  return `<tr class="journal-day-divider"><td colspan="8"><div class="journal-day-divider-inner"><div class="journal-day-title"><strong>${escapeHtml(dateLabel)}</strong><span>${total} trade${total===1?'':'s'}</span></div><div class="journal-day-execution">${executionSummary}<span class="journal-day-stat coverage">Reviewed ${reviewed}/${total} · ${coverage.toFixed(0)}%</span></div></div></td></tr>`;
+  return `<tr class="journal-day-divider"><td colspan="9"><div class="journal-day-divider-inner"><div class="journal-day-title"><strong>${escapeHtml(dateLabel)}</strong><span>${total} trade${total===1?'':'s'}</span></div><div class="journal-day-execution">${executionSummary}<span class="journal-day-stat coverage">Reviewed ${reviewed}/${total} · ${coverage.toFixed(0)}%</span></div></div></td></tr>`;
 }
 
-function journalSavedFormReflectionEntries(row){
+function journalSavedFormReflectionEntries(row,kind='psych'){
   let saved,definition,documentKey;
   try{saved=JSON.parse(row.comment);definition=JSON.parse(saved.definition);documentKey=encodeURIComponent(saved.documentId)}catch(error){return []}
-  if(saved.schema!=='tios.execution-form.v1'||saved.kind!=='psych'||typeof saved.documentId!=='string'||row.criterion_key!=='text__ti_state__psych__'+documentKey||!Array.isArray(definition)||!Array.isArray(saved.controls)||definition.length!==saved.controls.length)return [];
+  if(saved.schema!=='tios.execution-form.v1'||saved.kind!==kind||typeof saved.documentId!=='string'||row.criterion_key!=='text__ti_state__'+kind+'__'+documentKey||!Array.isArray(definition)||!Array.isArray(saved.controls)||definition.length!==saved.controls.length)return [];
   if(definition.some((field,index)=>!field||!['checkbox','radio','text','textarea'].includes(field.type)||!saved.controls[index]||(['checkbox','radio'].includes(field.type)?typeof saved.controls[index].checked!=='boolean':typeof saved.controls[index].value!=='string')))return [];
-  const seenChoices=new Set(),group='psych:'+documentKey;
+  const seenChoices=new Set(),group=kind+':'+documentKey;
   return definition.flatMap((field,index)=>{
     const control=saved.controls[index];let label=field.label||'Reflection',answer='';
     if(field.type==='checkbox')answer=control.checked?'Selected':'Not selected';
@@ -10063,7 +10064,7 @@ function journalSavedFormReflectionEntries(row){
   });
 }
 
-function journalReflectionEntries(tradeId){
+function journalReflectionEntries(tradeId,kind='psych'){
   const owner=currentUser?.id;
   if(!owner||!trades.some(trade=>trade.id===tradeId))return [];
   const reviews=executionReviews.filter(review=>review.trade_id===tradeId&&review.user_id===owner);
@@ -10073,38 +10074,46 @@ function journalReflectionEntries(tradeId){
     .sort((a,b)=>Number(a.sort_order||0)-Number(b.sort_order||0))
     .flatMap(row=>{
       const key=String(row.criterion_key||'');
-      if(key.startsWith('text__ti_state__'))return journalSavedFormReflectionEntries(row);
-      if(!key.startsWith('text__ti__'))return [{group:'execution',label:row.criterion_label||'Reflection',answer:String(row.comment)}];
+      if(key.startsWith('text__ti_state__'))return journalSavedFormReflectionEntries(row,kind);
+      if(!key.startsWith('text__ti__'))return kind==='psych'?[{group:'execution',label:row.criterion_label||'Reflection',answer:String(row.comment)}]:[];
       const parts=key.split('__');
-      if(parts.length<5||parts[2]!=='psych')return [];
+      if(parts.length<5||parts[2]!==kind)return [];
       const score=executionIsScoreResponseKey(key)?executionScoreResponseFromComment(row.comment):null;
       if(executionIsScoreResponseKey(key)&&!score)return [];
       try{return [{group:'psych:'+parts[3],documentId:decodeURIComponent(parts[3]),label:row.criterion_label||'Reflection',answer:score?score.value+' / '+score.max:String(row.comment)}]}
       catch(error){return []}
     });
-  reviews.forEach(review=>{
+  if(kind==='psych')reviews.forEach(review=>{
     if(String(review.notes||'').trim())entries.push({group:'execution',label:'Reflection notes',answer:String(review.notes)});
   });
   return entries;
 }
 
 function journalPsychologyCellHtml(trade,number){
-  const count=journalReflectionEntries(trade.id).length;
+  const count=journalReflectionEntries(trade.id,'psych').length;
   const label=`View psychological reflection for Trade ${number}, ${trade.instrument||'Unknown instrument'}, ${formatDate(trade.trade_date)}`;
   return `<div class="journal-psychology-cell"><button class="btn small journal-reflection-button${count?' has-reflections':''}" type="button" data-journal-reflection="${escapeHtml(trade.id)}" aria-label="${escapeHtml(label)}" title="${count?count+' saved response'+(count===1?'':'s'):'No saved reflection yet'}">View reflection</button>${trade.psychology?'<small>'+escapeHtml(trade.psychology)+'</small>':''}</div>`;
 }
 
-function openJournalReflection(tradeId,trigger){
+function journalRulesCellHtml(trade,number){
+  const count=journalReflectionEntries(trade.id,'checklist').length;
+  const label=`View Rules review for Trade ${number}, ${trade.instrument||'Unknown instrument'}, ${formatDate(trade.trade_date)}`;
+  return `<button class="btn small journal-reflection-button${count?' has-reflections':''}" type="button" data-journal-rules="${escapeHtml(trade.id)}" aria-label="${escapeHtml(label)}" title="${count?count+' saved rule response'+(count===1?'':'s'):'No saved Rules review yet'}">View rules</button>`;
+}
+
+function openJournalReflection(tradeId,trigger,kind='psych'){
   const trade=trades.find(item=>item.id===tradeId);
   if(!trade||!currentUser?.id)return;
   const modal=$('#journalReflectionModal');
-  const entries=journalReflectionEntries(tradeId),groups=new Map();
-  loadSecondaryDocuments('psych');
+  const entries=journalReflectionEntries(tradeId,kind),groups=new Map();
+  loadSecondaryDocuments(kind);
   entries.forEach(entry=>{
-    if(!groups.has(entry.group))groups.set(entry.group,{title:entry.documentId?(secondaryState('psych').docs.find(doc=>doc.id===entry.documentId)?.name||'Psychological Reflection'):'Execution Reflection',entries:[]});
+    if(!groups.has(entry.group))groups.set(entry.group,{title:entry.documentId?(secondaryState(kind).docs.find(doc=>doc.id===entry.documentId)?.name||(kind==='checklist'?'Rules':'Psychological Reflection')):'Execution Reflection',entries:[]});
     groups.get(entry.group).entries.push(entry);
   });
   const number=trigger?.closest('tr')?.querySelector('.journal-trade-number')?.textContent;
+  $('#journalReflectionTitle').textContent=kind==='checklist'?'Trade Rules':'Psychological Reflection';
+  $('#journalReflectionClose').setAttribute('aria-label',kind==='checklist'?'Close rules':'Close reflection');
   $('#journalReflectionTrade').textContent=[number,trade.instrument,formatDate(trade.trade_date),trade.direction,signedMoney(Number(trade.pnl)||0)].filter(Boolean).join(' · ');
   $('#journalReflectionBody').innerHTML=groups.size
     ? [...groups.values()].map(group=>`<section class="journal-reflection-group"><h3>${escapeHtml(group.title)}</h3>${group.entries.map(entry=>`<dl class="journal-reflection-answer"><dt>${escapeHtml(entry.label)}</dt><dd>${escapeHtml(entry.answer)}</dd></dl>`).join('')}</section>`).join('')
@@ -10125,8 +10134,10 @@ function closeJournalReflection({restoreFocus=true}={}){
 }
 
 $('#journalBody').addEventListener('click',event=>{
-  const button=event.target.closest('[data-journal-reflection]');
-  if(button)openJournalReflection(button.dataset.journalReflection,button);
+  const button=event.target.closest('[data-journal-reflection],[data-journal-rules]');
+  if(!button)return;
+  if(button.dataset.journalRules)openJournalReflection(button.dataset.journalRules,button,'checklist');
+  else openJournalReflection(button.dataset.journalReflection,button,'psych');
 });
 $('#journalReflectionClose').addEventListener('click',()=>closeJournalReflection());
 $('#journalReflectionModal').addEventListener('click',event=>{
@@ -10184,7 +10195,7 @@ function renderJournal(){
   if(!pageItems.length){
     body.innerHTML=`
       <tr>
-        <td colspan="8">
+        <td colspan="9">
           <div class="empty-state" style="padding:18px">
             No trades match the current filters.
           </div>
@@ -10210,9 +10221,10 @@ function renderJournal(){
             </span>
           </td>
           <td>${escapeHtml(t.setup||'—')}</td>
+          <td>${journalRulesCellHtml(t,number)}</td>
+          <td>${journalPsychologyCellHtml(t,number)}</td>
           <td class="${pnlClass(pnl)}"><strong>${signedMoney(pnl)}</strong></td>
           <td>${journalExecutionBadge(t.id,t.execution_score)}</td>
-          <td>${journalPsychologyCellHtml(t,number)}</td>
           <td>
             <div class="table-actions">
               <button class="btn small" type="button" data-trade-evidence-open="${escapeHtml(t.id)}">Setup pictures</button><button class="btn small" type="button" data-trade-captures-open="${escapeHtml(t.id)}">Captures</button>
