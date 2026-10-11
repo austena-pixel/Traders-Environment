@@ -144,3 +144,12 @@ test('Combined score keeps conditional criteria inactive and scores a condition 
   assert.deepEqual(Array.from(context.result.categories.playbook.values),[1,0]);
   assert.ok(Math.abs(context.result.score-(25/3))<0.0001);
 });
+
+test('Journal opens saved Playbook reflections from the Setup / Edge trade row', () => {
+  assert.ok(source.includes("function journalPlaybookCellHtml(trade,number)"));
+  assert.ok(source.includes("journalReflectionEntries(trade.id,'playbook')"));
+  assert.ok(source.includes('journalPlaybookCellHtml(t,number)'));
+  assert.ok(source.includes("openJournalReflection(button.dataset.journalPlaybook,button,'playbook')"));
+  assert.ok(source.includes("kind==='playbook')loadPlaybookDocuments()"));
+  assert.ok(source.includes("group:kind+':'+parts[3]"));
+});
