@@ -10436,7 +10436,8 @@ function journalTradingDayRuleDates(records,startDate='',endDate=''){
   const dates=(Array.isArray(records)?records:[])
     .filter(record=>{
       const date=String(record?.period?.startDate||'').slice(0,10);
-      return record?.ruleScope==='daily'&&/^\d{4}-\d{2}-\d{2}$/.test(date)&&date>=start&&date<=end;
+      const parsed=new Date(date+'T00:00:00Z');
+      return record?.ruleScope==='daily'&&/^\d{4}-\d{2}-\d{2}$/.test(date)&&Number.isFinite(parsed.getTime())&&parsed.toISOString().slice(0,10)===date&&date>=start&&date<=end;
     })
     .map(record=>String(record.period.startDate).slice(0,10));
   return [...new Set(dates)].sort();
