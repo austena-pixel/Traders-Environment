@@ -1697,12 +1697,54 @@ body.playbook-workspace .main{
   font-size:10px;
   line-height:1.5;
 }
-.chart-legend-note{
-  color:#96a4b7;
-  font-size:10px;
-  text-align:right;
-  line-height:1.5;
+.stats-autozoom-toggle{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  min-height:30px;
+  padding:5px 8px;
+  border:1px solid #28553f;
+  border-radius:999px;
+  background:#0b1d16;
+  color:#94dfb7;
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:.35px;
+  white-space:nowrap;
+  transition:border-color .15s ease,background .15s ease,color .15s ease;
 }
+.stats-autozoom-toggle:hover{border-color:#3b7659;background:#10271d}
+.stats-autozoom-toggle:focus-visible{outline:2px solid #63dba3;outline-offset:2px}
+.stats-autozoom-toggle[aria-pressed="false"]{
+  border-color:#3a4654;
+  background:#111820;
+  color:#aab6c5;
+}
+.stats-autozoom-track{
+  display:inline-flex;
+  align-items:center;
+  width:25px;
+  height:14px;
+  padding:2px;
+  border:1px solid currentColor;
+  border-radius:999px;
+  opacity:.78;
+}
+.stats-autozoom-thumb{
+  display:block;
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#45d69a;
+  transform:translateX(10px);
+  transition:transform .16s ease,background .16s ease;
+}
+.stats-autozoom-toggle[aria-pressed="false"] .stats-autozoom-thumb{
+  transform:translateX(0);
+  background:#8391a2;
+}
+.stats-autozoom-state{font-size:8px;letter-spacing:.55px;min-width:14px}
 .stats-visuals-layout{
   display:grid;
   grid-template-columns:minmax(0,1.8fr) minmax(250px,.95fr);
@@ -1711,6 +1753,8 @@ body.playbook-workspace .main{
 }
 .stats-equity-column{min-width:0}
 .stats-indicator-stack{
+  position:relative;
+  isolation:isolate;
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
   grid-template-rows:minmax(160px,auto) minmax(140px,1fr);
@@ -1721,6 +1765,7 @@ body.playbook-workspace .main{
   align-self:stretch;
 }
 .stats-indicator-card{
+  position:relative;
   min-height:160px;
   padding:12px;
   border:1px solid #1c2a39;
@@ -1729,6 +1774,20 @@ body.playbook-workspace .main{
   display:flex;
   flex-direction:column;
   justify-content:center;
+  transform-origin:center;
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.stats-indicator-stack.stats-autozoom .stats-indicator-card.stats-card-zoomed{
+  transform:scale(1.045);
+  z-index:2;
+  border-color:#38577b;
+  box-shadow:0 12px 28px rgba(0,0,0,.38),0 0 0 1px rgba(105,168,255,.18);
+}
+@media(max-width:520px){
+  .stats-indicator-stack.stats-autozoom .stats-indicator-card.stats-card-zoomed{transform:scale(1.015)}
+}
+@media(prefers-reduced-motion:reduce){
+  .stats-indicator-card,.stats-autozoom-thumb{transition:none}
 }
 .stats-future-analysis{
   grid-column:1 / -1;
@@ -6697,10 +6756,11 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <h3>Equity Curve</h3>
             <p id="equityChartDescription">Account equity after every trade in the selected period.</p>
           </div>
-          <div class="chart-legend-note">
-            X-axis = trade number (T0, T1, T2, T3...).<br>
-            T0 is opening equity; every recorded trade is then plotted in sequence.
-          </div>
+          <button class="stats-autozoom-toggle" id="statsAutoZoomBtn" type="button" aria-pressed="true" aria-controls="statsIndicatorStack" title="Automatically zoom an analytics section when hovered or focused">
+            <span>Auto Zoom</span>
+            <span class="stats-autozoom-track" aria-hidden="true"><span class="stats-autozoom-thumb"></span></span>
+            <strong class="stats-autozoom-state" id="statsAutoZoomState">ON</strong>
+          </button>
         </div>
 
         <div class="stats-visuals-layout">
@@ -6714,8 +6774,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             </div>
           </div>
 
-          <aside class="stats-indicator-stack" aria-label="Selected-period indicators">
-            <section class="stats-indicator-card stats-profit-factor-card" aria-labelledby="statProfitFactorDiagramTitle">
+          <aside class="stats-indicator-stack stats-autozoom" id="statsIndicatorStack" aria-label="Selected-period indicators">
+            <section class="stats-indicator-card stats-profit-factor-card" tabindex="0" aria-labelledby="statProfitFactorDiagramTitle">
               <div class="stats-indicator-head"><div>
                 <h4 id="statProfitFactorDiagramTitle">Profit Factor</h4>
                 <span class="stats-indicator-caption">Gross profit ÷ gross loss</span>
@@ -6732,7 +6792,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               </div>
             </section>
 
-            <section class="stats-indicator-card" aria-labelledby="statWinRateGaugeTitle">
+            <section class="stats-indicator-card" tabindex="0" aria-labelledby="statWinRateGaugeTitle">
               <div class="stats-indicator-head">
                 <h4 id="statWinRateGaugeTitle">Win rate</h4>
                 <span class="stats-win-return neutral" id="statWinRateReturnLabel">— return</span>
@@ -7518,13 +7578,13 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           <div class="execution-period-context" id="executionMapPeriodContext" hidden>
             <label><span id="executionMapPeriodDateLabel">Review date</span><input type="date" id="executionMapPeriodDate" aria-label="Period to review"></label>
             <div class="execution-period-session" id="executionMapSessionFields" hidden>
-              <label><span>Session name</span><input type="text" id="executionMapSessionName" maxlength="80" placeholder="e.g. Morning or London"></label>
-              <label id="executionMapSavedSessionControl" hidden><span>Saved sessions on this date</span><select id="executionMapSavedSession" aria-label="Saved session to review"></select></label>
+              <label><span>Intraday window name</span><input type="text" id="executionMapSessionName" maxlength="80" placeholder="e.g. London open or afternoon"></label>
+              <label id="executionMapSavedSessionControl" hidden><span>Saved windows on this date</span><select id="executionMapSavedSession" aria-label="Saved intraday window to review"></select></label>
               <div class="execution-period-times">
-                <label><span>From</span><input type="time" id="executionMapSessionStart" aria-label="Session start time"></label>
-                <label><span>Until</span><input type="time" id="executionMapSessionEnd" aria-label="Session end time"></label>
+                <label><span>From</span><input type="time" id="executionMapSessionStart" aria-label="Window start time"></label>
+                <label><span>Until</span><input type="time" id="executionMapSessionEnd" aria-label="Window end time"></label>
               </div>
-              <small id="executionMapSessionTimeHelp">Session times use this device’s time zone.</small>
+              <small id="executionMapSessionTimeHelp">Intraday window times use this device’s time zone.</small>
             </div>
             <small id="executionMapPeriodHelp">Review the whole period’s behaviour.</small>
           </div>
@@ -8079,7 +8139,33 @@ let planReviews = [];
 let planChecks = [];
 let selectedEdgeTradeId = null;
 
-let statsRange = '1d';
+const STATS_RANGE_PREFERENCE_KEY = 'tios_statistics_selected_range_v1';
+const STATS_RANGE_OPTIONS = Object.freeze(['1d', '1w', '1m', '6m', '1y', 'all']);
+
+function loadStatsRangePreference(){
+  try{
+    const saved=localStorage.getItem(STATS_RANGE_PREFERENCE_KEY);
+    return STATS_RANGE_OPTIONS.includes(saved)?saved:'1d';
+  }catch(error){
+    return '1d';
+  }
+}
+
+function persistStatsRangePreference(range){
+  if(!STATS_RANGE_OPTIONS.includes(range))return;
+  try{
+    localStorage.setItem(STATS_RANGE_PREFERENCE_KEY,range);
+  }catch(error){}
+}
+
+function syncStatsRangeButtons(){
+  $$('[data-stats-range]').forEach(btn=>{
+    btn.classList.toggle('active',btn.dataset.statsRange===statsRange);
+  });
+}
+
+let statsRange = loadStatsRangePreference();
+let statsAutoZoom = true;
 let statsAnchorDate = new Date();
 let equityChartInstance = null;
 
@@ -8345,7 +8431,7 @@ function tiosRequestedEvidenceMetric(metric){
   }
   if(metric==='identity_expression'){
     const values=(Array.isArray(psychologySessions)?psychologySessions:[]).map(session=>identityPercentForSession(session.id)).filter(value=>value!==null&&Number.isFinite(Number(value)));
-    if(!values.length)return{available:false,reason:'No psychology identity-expression sessions have been scored yet.'};
+    if(!values.length)return{available:false,reason:'No Trading Day identity-expression scores have been recorded yet.'};
     return{available:true,value:roundEvidence(values.reduce((a,b)=>a+Number(b),0)/values.length,1),unit:'%',sampleSize:values.length,details:{measure:'average identity expression'}};
   }
   if(metric==='discipline_score')return psychologyIdentityMetric('discipline','Discipline');
@@ -8353,11 +8439,11 @@ function tiosRequestedEvidenceMetric(metric){
   if(metric==='objectivity_score')return psychologyIdentityMetric('objectivity','Objectivity');
   if(metric==='psychology_rule_adherence'){
     const values=(Array.isArray(psychologySessions)?psychologySessions:[]).map(session=>rulePercentForSession(session.id)).filter(value=>value!==null&&Number.isFinite(Number(value)));
-    if(!values.length)return{available:false,reason:'No psychology rule-adherence sessions have been recorded yet.'};
+    if(!values.length)return{available:false,reason:'No Trading Day rule-adherence scores have been recorded yet.'};
     return{available:true,value:roundEvidence(values.reduce((a,b)=>a+Number(b),0)/values.length,1),unit:'%',sampleSize:values.length,details:{measure:'average psychology rule adherence'}};
   }
   if(metric==='affirmation_consistency'){
-    const sessions=Array.isArray(psychologySessions)?psychologySessions:[];if(!sessions.length)return{available:false,reason:'No psychology sessions have been recorded yet.'};
+    const sessions=Array.isArray(psychologySessions)?psychologySessions:[];if(!sessions.length)return{available:false,reason:'No Trading Day reflections have been recorded yet.'};
     const complete=sessions.filter(session=>session.affirmation_before&&session.affirmation_after).length;
     return{available:true,value:roundEvidence(complete/sessions.length*100,1),unit:'%',sampleSize:sessions.length,details:{completeSessions:complete}};
   }
@@ -8748,7 +8834,7 @@ async function initializeSupabase(){
   const { data:{ session }, error } = await db.auth.getSession();
 
   if(error){
-    console.warn('Could not restore the H·IOS session in T·IOS:', error);
+    console.warn('Could not restore the H·IOS sign-in state in T·IOS:', error);
     window.location.replace('index.html?view=home');
     return;
   }
@@ -9034,7 +9120,7 @@ async function loadPsychologyData(){
     console.error(
       sessionsRes.error || scoresRes.error || rulesRes.error
     );
-    showStatus('Could not load psychology sessions',4000);
+    showStatus('Could not load Trading Day reflections',4000);
     psychologySessions = sessionsRes.data || [];
     identityScores = scoresRes.data || [];
     ruleChecks = rulesRes.data || [];
@@ -12235,7 +12321,7 @@ let executionMappingChecklistId=null;
 let executionMappingRuleScope='trade';
 const executionMappingPeriodRuleIds={};
 let executionMappingPeriodDate=null;
-let executionMappingSessionName='Main session';
+let executionMappingSessionName='Main window';
 let executionMappingSessionStart='00:00';
 let executionMappingSessionEnd='23:59';
 let executionMappingSessionPreset=null;
@@ -12500,11 +12586,11 @@ function renderExecutionMappingPeriodContext(){
   $('#executionMapSessionEnd').value=executionMappingSessionEnd;
   const savedSessions=executionMappingSavedSessions(),sessionSelect=$('#executionMapSavedSession');
   $('#executionMapSavedSessionControl').hidden=!savedSessions.length;
-  sessionSelect.innerHTML='<option value="">New session…</option>'+savedSessions.map(saved=>'<option value="'+escapeHtml(saved.key)+'" '+(saved.key===period?.key?'selected':'')+'>'+escapeHtml(saved.sessionLabel+' · '+saved.startTime+'–'+saved.endTime+(saved.endDate!==saved.startDate?' (next day)':''))+'</option>').join('');
-  $('#executionMapSessionTimeHelp').textContent='Session times: '+(period?.timeZone||Intl.DateTimeFormat().resolvedOptions().timeZone)+(period&&period.endDate!==period.startDate?' · ends the next day.':'.');
-  $('#executionMapPeriodHelp').textContent=scope==='weekly'?'The week runs Monday to Sunday.':scope==='monthly'?'Review the entire calendar month.':scope==='session'?'Review the whole session’s behaviour.':'Review all behaviour across the selected day.';
+  sessionSelect.innerHTML='<option value="">New window…</option>'+savedSessions.map(saved=>'<option value="'+escapeHtml(saved.key)+'" '+(saved.key===period?.key?'selected':'')+'>'+escapeHtml(saved.sessionLabel+' · '+saved.startTime+'–'+saved.endTime+(saved.endDate!==saved.startDate?' (next day)':''))+'</option>').join('');
+  $('#executionMapSessionTimeHelp').textContent='Window times: '+(period?.timeZone||Intl.DateTimeFormat().resolvedOptions().timeZone)+(period&&period.endDate!==period.startDate?' · ends the next day.':'.');
+  $('#executionMapPeriodHelp').textContent=scope==='weekly'?'The week runs Monday to Sunday.':scope==='monthly'?'Review the entire calendar month.':scope==='session'?'Review behaviour across this intraday window.':'Review all behaviour across the selected Trading Day.';
   $('#executionMapTradeTitle').textContent=executionMappingPeriodLabel(period);
-  $('#executionMapTradeMeta').textContent=period?'Whole '+(scope==='daily'?'day':scope==='weekly'?'week':scope==='monthly'?'month':'session')+' review · '+(tradingAccount?.account_name||'selected account'):'Enter a valid date, session name and different start/end times.';
+  $('#executionMapTradeMeta').textContent=period?'Whole '+(scope==='daily'?'Trading Day':scope==='weekly'?'week':scope==='monthly'?'month':'intraday window')+' review · '+(tradingAccount?.account_name||'selected account'):'Enter a valid date, intraday window name and different start/end times.';
   const periodTrades=period?trades.filter(trade=>window.TIOSPeriodRules.includesTrade(trade,period)):[];
   $('#executionMapPeriodTradeCount').textContent=String(periodTrades.length);
   $('#executionMapPeriodPnl').textContent=period?signedMoney(periodTrades.reduce((sum,trade)=>sum+(Number(trade.pnl)||0),0)):'—';
@@ -12738,7 +12824,7 @@ function renderExecutionMappingForm(){
   };
 
   captureExecutionMappingReflectionDraft();
-  body.innerHTML=(executionMappingIsPeriod()?'<div class="execution-period-review-note">Review the whole '+({session:'session',daily:'day',weekly:'week',monthly:'month'}[executionMappingRuleScope])+'. Conditions, scores and reflections are saved once for this period and Rules document. They do not change an individual trade’s score.</div>':'')+instrumentHtml[activeInstrument];
+  body.innerHTML=(executionMappingIsPeriod()?'<div class="execution-period-review-note">Review the whole '+({session:'intraday window',daily:'Trading Day',weekly:'week',monthly:'month'}[executionMappingRuleScope])+'. Conditions, scores and reflections are saved once for this period and Rules document. They do not change an individual trade’s score.</div>':'')+instrumentHtml[activeInstrument];
   restoreExecutionMappingReflections();
   hydratePlaybookImages(body);
   renderExecutionMappingControls();
@@ -12923,7 +13009,7 @@ async function saveExecutionMappingReflections(){
       }
     }
     if(!review?.id||review.user_id!==scope.userId||review.trade_id!==scope.tradeId)throw new Error('Could not find the selected trade review.');
-    if(currentUser?.id!==scope.userId)throw new Error('Your session changed. Sign in again before saving.');
+    if(currentUser?.id!==scope.userId)throw new Error('Your sign-in state changed. Sign in again before saving.');
     const existingRows=executionChecks.filter(item=>item.review_id===review.id);
     const lastOrder=Math.max(0,...existingRows.map(row=>Number(row.sort_order)||0));
     const rows=answers.map((answer,index)=>({
@@ -13022,7 +13108,7 @@ function updateExecutionMappingScore(){
   }
 
   score.textContent=conditionPct.toFixed(1)+'%';
-  meta.textContent=`${followed} of ${total} planned condition${total===1?'':'s'} met for this ${executionMappingIsPeriod()?({session:'session',daily:'day',weekly:'week',monthly:'month'}[executionMappingRuleScope]):'trade'}.`;
+  meta.textContent=`${followed} of ${total} planned condition${total===1?'':'s'} met for this ${executionMappingIsPeriod()?({session:'intraday window',daily:'Trading Day',weekly:'week',monthly:'month'}[executionMappingRuleScope]):'trade'}.`;
 }
 
 function resetExecutionMappingInputs(){
@@ -14260,9 +14346,61 @@ function moveStatsPeriod(direction){
   renderStatistics();
 }
 
-$$('.range-btn').forEach(btn=>{
+/* STATISTICS ANALYTICS AUTO-ZOOM */
+function setStatsAutoZoom(enabled){
+  statsAutoZoom=Boolean(enabled);
+  const stack=$('#statsIndicatorStack');
+  const toggle=$('#statsAutoZoomBtn');
+  const state=$('#statsAutoZoomState');
+  if(stack)stack.classList.toggle('stats-autozoom',statsAutoZoom);
+  if(toggle)toggle.setAttribute('aria-pressed',String(statsAutoZoom));
+  if(state)state.textContent=statsAutoZoom?'ON':'OFF';
+  if(!statsAutoZoom)setZoomedStatsCard(null);
+}
+
+function setZoomedStatsCard(card){
+  const stack=$('#statsIndicatorStack');
+  if(!stack)return;
+  const zoomed=statsAutoZoom&&card&&card.matches('.stats-indicator-card')&&stack.contains(card)?card:null;
+  stack.querySelectorAll('.stats-indicator-card.stats-card-zoomed').forEach(current=>{
+    if(current!==zoomed)current.classList.remove('stats-card-zoomed');
+  });
+  if(zoomed)zoomed.classList.add('stats-card-zoomed');
+}
+
+$('#statsAutoZoomBtn').addEventListener('click',()=>setStatsAutoZoom(!statsAutoZoom));
+
+const statsIndicatorStack=$('#statsIndicatorStack');
+if(statsIndicatorStack){
+  const cardFromStatsEvent=event=>{
+    const target=event.target;
+    return target&&typeof target.closest==='function'?target.closest('.stats-indicator-card'):null;
+  };
+  statsIndicatorStack.addEventListener('pointerover',event=>{
+    if(!statsAutoZoom)return;
+    const card=cardFromStatsEvent(event);
+    if(!card||!statsIndicatorStack.contains(card))return;
+    if(event.relatedTarget&&card.contains(event.relatedTarget))return;
+    setZoomedStatsCard(card);
+  });
+  statsIndicatorStack.addEventListener('pointerleave',()=>setZoomedStatsCard(null));
+  statsIndicatorStack.addEventListener('focusin',event=>{
+    const card=cardFromStatsEvent(event);
+    setZoomedStatsCard(card&&statsIndicatorStack.contains(card)?card:null);
+  });
+  statsIndicatorStack.addEventListener('focusout',event=>{
+    if(!statsIndicatorStack.contains(event.relatedTarget))setZoomedStatsCard(null);
+  });
+}
+setStatsAutoZoom(statsAutoZoom);
+
+syncStatsRangeButtons();
+$$('[data-stats-range]').forEach(btn=>{
   btn.addEventListener('click',()=>{
-    statsRange=btn.dataset.statsRange;
+    const nextRange=btn.dataset.statsRange;
+    if(!STATS_RANGE_OPTIONS.includes(nextRange))return;
+    statsRange=nextRange;
+    persistStatsRangePreference(statsRange);
 
     if(statsRange==='1m'){
       statsAnchorDate=new Date(
@@ -14272,10 +14410,7 @@ $$('.range-btn').forEach(btn=>{
       );
     }
 
-    $$('.range-btn').forEach(x=>{
-      x.classList.toggle('active',x===btn);
-    });
-
+    syncStatsRangeButtons();
     renderStatistics();
   });
 });
@@ -14312,13 +14447,8 @@ $('#statsMonthInput').addEventListener('change',e=>{
   if(Number.isFinite(year) && Number.isFinite(month)){
     statsAnchorDate=new Date(year,month-1,1);
     statsRange='1m';
-
-    $$('.range-btn').forEach(btn=>{
-      btn.classList.toggle(
-        'active',
-        btn.dataset.statsRange==='1m'
-      );
-    });
+    persistStatsRangePreference(statsRange);
+    syncStatsRangeButtons();
 
     renderStatistics();
   }
@@ -14750,7 +14880,7 @@ const INSTRUMENT_DEFAULT_TEMPLATES={
     {id:'rules-sections',variant:'sections',name:'Sectioned Rules',description:'Before, during and after a trade.'},
     {id:'rules-cards',variant:'cards',name:'Card Rules',description:'Rules in two-column cards.'},
     {id:'rules-patterns',variant:'patterns',name:'Picture Rules',description:'Choice / Check picture groups.'},
-    {id:'session-rules',variant:'insert',name:'Session Rules',description:'Reusable rules for when and how you are allowed to trade.',html:`<h2>Session Rules</h2><ul><li>Define the allowed trading session.</li><li>Define when trading must stop.</li><li>Define the maximum number of attempts.</li></ul>`},
+    {id:'session-rules',variant:'insert',name:'Trading Day Rules',description:'Reusable rules for how you trade throughout a Trading Day.',html:`<h2>Trading Day Rules</h2><ul><li>Define the trading hours you follow each Trading Day.</li><li>Define when trading must stop for the day.</li><li>Define the maximum number of attempts per Trading Day.</li></ul>`},
     {id:'risk-rules',variant:'insert',name:'Risk Rules',description:'Position sizing, daily loss and exposure controls.',html:`<h2>Risk Rules</h2><ul><li>Define maximum risk per trade.</li><li>Define maximum daily loss.</li><li>Define maximum simultaneous exposure.</li></ul>`},
     {id:'execution-rules',variant:'insert',name:'Execution Rules',description:'Rules that protect entry discipline and trade management.',html:`<h2>Execution Rules</h2><ol><li>Wait for the defined confirmation.</li><li>Enter only at the planned location.</li><li>Do not widen the stop after entry.</li><li>Manage the trade according to the plan.</li></ol>`}
   ],
@@ -17076,7 +17206,7 @@ function renderSecondaryPreview(kind){
   if(kind==='checklist'){
     const scope=window.TIOSPeriodRules.normalizeScope(secondaryFind(kind,'[data-ti-rule-scope]')?.value||doc.ruleScope);
     const help=secondaryFind(kind,'[data-ti-rule-scope-help]');
-    if(help)help.textContent=scope==='trade'?'Applied separately to each individual trade.':'Reviewed once for the whole '+({session:'named trading session',daily:'day',weekly:'week',monthly:'month'}[scope])+', independently of individual trades.';
+    if(help)help.textContent=scope==='trade'?'Applied separately to each individual trade.':'Reviewed once for the whole '+({session:'named intraday window',daily:'Trading Day',weekly:'week',monthly:'month'}[scope])+', independently of individual trades.';
   }
   const sourceHtml=secondaryFind(kind,'[data-ti-editor]')?.innerHTML||doc.documentHtml||'';
   const items=playbookStructuredPreviewItems(sourceHtml,{kind,area:'preview'});
@@ -20204,7 +20334,7 @@ function renderIntelligence(){
 
   const executionReviewed=executionIntelligence.sample.reviewedTrades;
   const edgeReviewed=data.edgeScores.length;
-  const psychCount=psychologySessions.length;
+  const psychCount=journalTradingDayGroups(psychologySessions).length;
   const processEvidenceCount=executionReviewed+edgeReviewed+psychCount;
   const maturity=intelligenceMaturity(processEvidenceCount);
 
@@ -20253,21 +20383,21 @@ function renderIntelligence(){
   $('#intelPsychScore').textContent=
     data.avgPsych===null ? '—' : data.avgPsych.toFixed(1)+'%';
   $('#intelPsychEvidence').textContent=
-    `${psychCount} recorded session${psychCount===1?'':'s'}`;
+    `${psychCount} recorded Trading Day${psychCount===1?'':'s'}`;
   $('#intelPsychIdentity').textContent=
     data.avgIdentity===null ? '—' : data.avgIdentity.toFixed(1)+'%';
   $('#intelPsychRules').textContent=
     data.avgRules===null ? '—' : data.avgRules.toFixed(1)+'%';
 
   if(psychCount===0){
-    setIntelligenceState('#intelPsychState','Needs sessions');
-    $('#intelPsychNote').textContent='Psychology Intelligence is waiting for structured sessions. Record thoughts, identity expression and rule compliance instead of asking T·IOS to guess your mental state.';
+    setIntelligenceState('#intelPsychState','Needs Trading Days');
+    $('#intelPsychNote').textContent='Psychology Intelligence is waiting for Trading Day reflections. Record thoughts, identity expression and rule compliance instead of asking T·IOS to guess your mental state.';
   }else if(psychCount<3){
     setIntelligenceState('#intelPsychState','Building','building');
-    $('#intelPsychNote').textContent=`Psychology Intelligence has ${psychCount} session${psychCount===1?'':'s'}. Continue recording comparable sessions before treating psychological tendencies as recurring patterns.`;
+    $('#intelPsychNote').textContent=`Psychology Intelligence has ${psychCount} Trading Day${psychCount===1?'':'s'} of reflection. Continue recording comparable Trading Days before treating psychological tendencies as recurring patterns.`;
   }else{
     setIntelligenceState('#intelPsychState','Active','active');
-    $('#intelPsychNote').textContent='Psychology Intelligence is active at the session-process level. Deeper trigger-to-behaviour relationships will strengthen as more structured sessions accumulate.';
+    $('#intelPsychNote').textContent='Psychology Intelligence is active at the Trading Day process level. Deeper trigger-to-behaviour relationships will strengthen as more structured Trading Day reflections accumulate.';
   }
 
   /* Specialized Intelligence — Edge */
@@ -20564,7 +20694,7 @@ function renderIntelligence(){
   if(trades.length>0 && processAreas.length===0){
     personalSummary=`Performance Intelligence is active from ${trades.length} trades${winRate===null?'':` with a ${winRate.toFixed(1)}% win rate`}${allTimeReturn===null?'':` and ${formatReturnPct(allTimeReturn)} return on the initial account balance`}. However, T·IOS does not yet have enough Execution, Edge or Psychology evidence to explain why these results occurred. Continue structured reviews before treating any explanation as personal intelligence.`;
   }else{
-    personalSummary='T·IOS is still building evidence. Continue reviewing trades and psychology sessions before treating any pattern as a stable personal conclusion.';
+    personalSummary='T·IOS is still building evidence. Continue reviewing trades and Trading Day reflections before treating any pattern as a stable personal conclusion.';
   }
 
   if(processAreas.length>=2 && processEvidenceCount>=10){
