@@ -46,7 +46,7 @@ test('Journal groups Setup / Edge, Rules, and Psychology on each trade row', () 
 
 test('Rules viewer reads the selected trade’s saved checklist reflection rows', () => {
   assert.ok(source.includes("function journalReflectionEntries(tradeId,kind='psych')"));
-  assert.ok(source.includes("row.trade_id===tradeId&&review.user_id===owner"));
+  assert.ok(source.includes("review.trade_id===tradeId&&review.user_id===owner"));
   assert.ok(source.includes("openJournalReflection(button.dataset.journalRules,button,'checklist')"));
   assert.ok(source.includes("saved.kind!==kind"));
 });
