@@ -1798,16 +1798,97 @@ body.playbook-workspace .main{
   transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
 }
 .stats-indicator-stack.stats-autozoom .stats-indicator-card.stats-card-zoomed{
-  transform:scale(1.045);
+  transform:scale(1.12);
   z-index:2;
   border-color:#38577b;
   box-shadow:0 12px 28px rgba(0,0,0,.38),0 0 0 1px rgba(105,168,255,.18);
 }
 @media(max-width:520px){
-  .stats-indicator-stack.stats-autozoom .stats-indicator-card.stats-card-zoomed{transform:scale(1.015)}
+  .stats-indicator-stack.stats-autozoom .stats-indicator-card.stats-card-zoomed{transform:scale(1.05)}
 }
 @media(prefers-reduced-motion:reduce){
   .stats-indicator-card,.stats-autozoom-thumb{transition:none}
+}
+.stats-analysis-pair{
+  grid-column:1 / -1;
+  min-width:0;
+  min-height:140px;
+  padding:10px 12px 11px;
+  border:1px solid #1c2a39;
+  border-radius:14px;
+  background:linear-gradient(145deg,#101a26,#0b1119);
+}
+.stats-analysis-pair-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:8px;
+  color:#8f9bad;
+  font-size:8px;
+  font-weight:750;
+  letter-spacing:.65px;
+  text-transform:uppercase;
+}
+.stats-analysis-pair-head strong{
+  color:#cbd6e4;
+  font-size:9px;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:0;
+}
+.stats-analysis-pair-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  min-width:0;
+}
+.stats-analysis-module{min-width:0;padding:0 10px}
+.stats-analysis-module:first-child{padding-left:0;padding-right:12px}
+.stats-analysis-module+ .stats-analysis-module{border-left:1px solid #263446;padding-right:0;padding-left:12px}
+.stats-analysis-title-row{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.stats-analysis-title-row h4{margin:0;color:#dce5f0;font-size:9px;font-weight:750}
+.stats-analysis-kicker{color:#738298;font-size:6px;font-weight:800;letter-spacing:.55px;white-space:nowrap}
+.stats-analysis-value{
+  display:block;
+  margin-top:5px;
+  font-size:16px;
+  line-height:1.05;
+  font-weight:800;
+  letter-spacing:-.35px;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+.stats-analysis-value.pos{color:#45d69a}
+.stats-analysis-value.neg{color:#ff727c}
+.stats-analysis-value.neutral{color:#d9e1ec}
+.stats-drawdown-spark{display:block;width:100%;height:39px;margin:3px 0 0;overflow:visible}
+.stats-drawdown-baseline{fill:none;stroke:#324052;stroke-width:1;stroke-dasharray:2 4}
+.stats-drawdown-line{fill:none;stroke:#ff6873;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.stats-analysis-caption{display:block;margin-top:2px;color:#92a0b2;font-size:7px;line-height:1.3}
+.stats-expectancy-bar{
+  position:relative;
+  width:100%;
+  height:8px;
+  margin:13px 0 9px;
+  overflow:hidden;
+  border-radius:999px;
+  background:#18222e;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.035);
+}
+.stats-expectancy-zero{position:absolute;z-index:2;top:-2px;bottom:-2px;left:50%;width:1px;background:#8391a2}
+.stats-expectancy-loss,.stats-expectancy-win{position:absolute;top:0;height:100%;min-width:0}
+.stats-expectancy-loss{background:#ff5d68}
+.stats-expectancy-win{background:#25d07d}
+.stats-expectancy-labels{display:flex;justify-content:space-between;gap:6px}
+.stats-expectancy-labels>span{min-width:0}
+.stats-expectancy-labels>span:last-child{text-align:right}
+.stats-expectancy-labels small{display:block;color:#738298;font-size:6px;font-weight:800;letter-spacing:.45px}
+.stats-expectancy-labels strong{display:block;margin-top:2px;font-size:8px;line-height:1.15;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+@media(max-width:520px){
+  .stats-analysis-pair{padding:9px}
+  .stats-analysis-module:first-child{padding-right:8px}
+  .stats-analysis-module+ .stats-analysis-module{padding-left:8px}
+  .stats-analysis-title-row h4{font-size:8px}
+  .stats-analysis-value{font-size:14px}
 }
 .stats-future-analysis{
   grid-column:1 / -1;
@@ -6843,10 +6924,44 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               </div>
             </section>
 
-            <section class="stats-future-analysis" aria-label="Future analytical instruments">
-              <span class="stats-future-mark" aria-hidden="true">+</span>
-              <strong>More analytical instruments</strong>
-              <span>Future diagrams will appear here.</span>
+            <section class="stats-analysis-pair" aria-label="Drawdown and trade expectancy analytics">
+              <header class="stats-analysis-pair-head">
+                <span>Risk &amp; expectancy</span>
+                <strong id="statAnalysisWinRate">—</strong>
+              </header>
+              <div class="stats-analysis-pair-grid">
+                <section class="stats-analysis-module" aria-labelledby="statDrawdownTitle">
+                  <div class="stats-analysis-title-row">
+                    <h4 id="statDrawdownTitle">Drawdown &amp; Risk</h4>
+                    <span class="stats-analysis-kicker">MAX</span>
+                  </div>
+                  <strong class="stats-analysis-value neutral" id="statDrawdownValue">—</strong>
+                  <svg class="stats-drawdown-spark" viewBox="0 0 220 54" role="img" aria-labelledby="statDrawdownSparkTitle statDrawdownSparkDesc">
+                    <title id="statDrawdownSparkTitle">Selected-period drawdown profile</title>
+                    <desc id="statDrawdownSparkDesc">Drawdown profile unavailable.</desc>
+                    <path class="stats-drawdown-baseline" d="M4 8H216"></path>
+                    <path class="stats-drawdown-line" id="statDrawdownPath" d=""></path>
+                  </svg>
+                  <span class="stats-analysis-caption" id="statDrawdownCaption">Maximum drawdown unavailable.</span>
+                </section>
+                <section class="stats-analysis-module" aria-labelledby="statExpectancyTitle">
+                  <div class="stats-analysis-title-row">
+                    <h4 id="statExpectancyTitle">Trade Expectancy</h4>
+                    <span class="stats-analysis-kicker">PER TRADE</span>
+                  </div>
+                  <strong class="stats-analysis-value neutral" id="statExpectancyValue">—</strong>
+                  <div class="stats-expectancy-bar" id="statExpectancyBar" role="img" aria-label="Average win and loss comparison unavailable.">
+                    <span class="stats-expectancy-loss" id="statExpectancyLossFill"></span>
+                    <span class="stats-expectancy-zero"></span>
+                    <span class="stats-expectancy-win" id="statExpectancyWinFill"></span>
+                  </div>
+                  <div class="stats-expectancy-labels">
+                    <span><small>AVG LOSS</small><strong class="neg" id="statExpectancyAvgLoss">—</strong></span>
+                    <span><small>AVG WIN</small><strong class="pos" id="statExpectancyAvgWin">—</strong></span>
+                  </div>
+                  <span class="stats-analysis-caption" id="statExpectancyCaption">Average trade return unavailable.</span>
+                </section>
+              </div>
             </section>
           </aside>
         </div>
@@ -14157,6 +14272,92 @@ function renderProfitFactorIndicator(stats){
   else explanation.textContent=`For every ${formatProfitFactorCurrency(1)} lost, ${formatProfitFactorCurrency(factor)} was earned on winning trades.`;
 }
 
+function renderDrawdownExpectancyDiagram(drawdown,series,expectancy,avgTradeReturn,winRate,source,avgWin,avgLoss){
+  const winRateNode=$('#statAnalysisWinRate');
+  const drawdownValue=$('#statDrawdownValue');
+  const drawdownCaption=$('#statDrawdownCaption');
+  const drawdownPath=$('#statDrawdownPath');
+  const drawdownDescription=$('#statDrawdownSparkDesc');
+  const expectancyValue=$('#statExpectancyValue');
+  const expectancyCaption=$('#statExpectancyCaption');
+  const expectancyBar=$('#statExpectancyBar');
+  const lossFill=$('#statExpectancyLossFill');
+  const winFill=$('#statExpectancyWinFill');
+  const avgLossNode=$('#statExpectancyAvgLoss');
+  const avgWinNode=$('#statExpectancyAvgWin');
+  const trades=Array.isArray(source)?source:[];
+  const validTrades=trades.filter(trade=>trade&&trade.pnl!==null&&trade.pnl!==undefined&&String(trade.pnl).trim()!==''&&Number.isFinite(Number(trade.pnl)));
+  const complete=validTrades.length===trades.length;
+  const hasTrades=trades.length>0;
+  const winners=validTrades.filter(trade=>Number(trade.pnl)>0).length;
+  winRateNode.textContent=hasTrades&&complete&&Number.isFinite(winRate)?winRate.toFixed(1)+'% win rate':'— win rate';
+
+  if(!hasTrades){
+    drawdownValue.textContent='—';
+    drawdownValue.className='stats-analysis-value neutral';
+    drawdownCaption.textContent='No closed trades in this period.';
+    drawdownPath.setAttribute('d','');
+    drawdownDescription.textContent='No closed trades are available to show a drawdown profile.';
+  }else if(!complete||!Number.isFinite(drawdown?.amount)||!Number.isFinite(drawdown?.pct)){
+    drawdownValue.textContent='—';
+    drawdownValue.className='stats-analysis-value neutral';
+    drawdownCaption.textContent='Unavailable: recorded P&L is incomplete.';
+    drawdownPath.setAttribute('d','');
+    drawdownDescription.textContent='Drawdown profile unavailable because one or more selected trades have missing P&L.';
+  }else{
+    drawdownValue.textContent=drawdown.amount>0?signedMoney(-drawdown.amount):signedMoney(0);
+    drawdownValue.className='stats-analysis-value '+(drawdown.amount>0?'neg':'neutral');
+    drawdownCaption.textContent=drawdown.amount>0
+      ? formatReturnPct(-drawdown.pct)+' maximum drawdown'
+      : 'No drawdown recorded in this period.';
+    const points=Array.isArray(series?.points)?series.points:[];
+    const sampled=points.length>36?points.filter((_,index)=>index===0||index===points.length-1||index%Math.ceil(points.length/35)===0):points;
+    let peak=-Infinity;
+    const underwater=sampled.map(point=>{
+      const equity=Number(point?.equity);
+      if(equity>peak)peak=equity;
+      return Math.max(0,peak-equity);
+    });
+    const maximum=Math.max(0,...underwater);
+    const path=underwater.length>1
+      ? underwater.map((value,index)=>{
+          const x=4+(index/(underwater.length-1))*212;
+          const y=8+(maximum>0?value/maximum*34:0);
+          return (index?'L':'M')+x.toFixed(1)+' '+y.toFixed(1);
+        }).join(' ')
+      : '';
+    drawdownPath.setAttribute('d',path);
+    drawdownDescription.textContent=drawdown.amount>0
+      ? 'Red curve shows the selected period moving from equity peaks into drawdowns and recovery. Maximum drawdown was '+signedMoney(-drawdown.amount)+', or '+formatReturnPct(-drawdown.pct)+'.'
+      : 'No drawdown was recorded across '+trades.length+' selected closed trades.';
+  }
+
+  if(!hasTrades||!complete||!Number.isFinite(expectancy)){
+    expectancyValue.textContent='—';
+    expectancyValue.className='stats-analysis-value neutral';
+    expectancyCaption.textContent=!hasTrades?'No closed trades in this period.':!complete?'Unavailable: recorded P&L is incomplete.':'Expectancy unavailable.';
+    avgLossNode.textContent='—';
+    avgWinNode.textContent='—';
+    lossFill.style.left='0%';lossFill.style.width='0%';
+    winFill.style.left='50%';winFill.style.width='0%';
+    expectancyBar.setAttribute('aria-label','Trade expectancy comparison unavailable because selected trade data is incomplete or empty.');
+    return;
+  }
+
+  expectancyValue.textContent=signedMoney(expectancy);
+  expectancyValue.className='stats-analysis-value '+(expectancy>0?'pos':expectancy<0?'neg':'neutral');
+  expectancyCaption.textContent=Number.isFinite(avgTradeReturn)
+    ? formatReturnPct(avgTradeReturn)+' average trade return'
+    : 'Average trade return unavailable.';
+  avgLossNode.textContent=validTrades.some(trade=>Number(trade.pnl)<0)?signedMoney(avgLoss):signedMoney(0);
+  avgWinNode.textContent=validTrades.some(trade=>Number(trade.pnl)>0)?signedMoney(avgWin):signedMoney(0);
+  const largest=Math.max(Math.abs(avgLoss),Math.abs(avgWin),0);
+  const lossWidth=largest?Math.abs(avgLoss)/largest*50:0;
+  const winWidth=largest?Math.abs(avgWin)/largest*50:0;
+  lossFill.style.left=(50-lossWidth)+'%';lossFill.style.width=lossWidth+'%';
+  winFill.style.left='50%';winFill.style.width=winWidth+'%';
+  expectancyBar.setAttribute('aria-label',`Average loss ${signedMoney(avgLoss)} extends left of zero; average win ${signedMoney(avgWin)} extends right of zero. Mean net expectancy is ${signedMoney(expectancy)} per trade.`);
+}
 function renderStatisticsIndicators(returnPct,winRate,source,profitFactorStats){
   renderProfitFactorIndicator(profitFactorStats);
   const gauge=$('#statWinRateGauge'),progress=$('#statWinRateGaugeProgress');
@@ -14348,6 +14549,7 @@ function renderStatistics(){
     recoveryFactor===Infinity ? '∞' : recoveryFactor.toFixed(2);
 
   renderStatisticsIndicators(returnPct,winRate,source,profitFactorStats);
+  renderDrawdownExpectancyDiagram(drawdown,series,expectancy,avgTradeReturn,winRate,source,avgWin,avgLoss);
   renderEquityChart(series);
   renderInstrumentStats(source);
 }
