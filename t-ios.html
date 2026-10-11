@@ -6513,9 +6513,10 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
                 <th>Instrument</th>
                 <th>Direction</th>
                 <th>Setup / Edge</th>
+                <th>Rules</th>
+                <th>Psychology</th>
                 <th>P&amp;L</th>
                 <th>Execution</th>
-                <th>Psychology</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -10240,15 +10241,15 @@ function journalDayHeaderHtml(group){
        <span class="journal-day-stat"><b>B</b> ${formatGradeShare(distribution.percentages['B'])}</span>`
     : '<span class="journal-day-stat muted">No reviewed trades yet</span>';
 
-  return `<tr class="journal-day-divider"><td colspan="8"><div class="journal-day-divider-inner"><div class="journal-day-title"><strong>${escapeHtml(dateLabel)}</strong><span>${total} trade${total===1?'':'s'}</span></div><div class="journal-day-execution">${executionSummary}<span class="journal-day-stat coverage">Reviewed ${reviewed}/${total} · ${coverage.toFixed(0)}%</span></div></div></td></tr>`;
+  return `<tr class="journal-day-divider"><td colspan="9"><div class="journal-day-divider-inner"><div class="journal-day-title"><strong>${escapeHtml(dateLabel)}</strong><span>${total} trade${total===1?'':'s'}</span></div><div class="journal-day-execution">${executionSummary}<span class="journal-day-stat coverage">Reviewed ${reviewed}/${total} · ${coverage.toFixed(0)}%</span></div></div></td></tr>`;
 }
 
-function journalSavedFormReflectionEntries(row){
+function journalSavedFormReflectionEntries(row,kind='psych'){
   let saved,definition,documentKey;
   try{saved=JSON.parse(row.comment);definition=JSON.parse(saved.definition);documentKey=encodeURIComponent(saved.documentId)}catch(error){return []}
-  if(saved.schema!=='tios.execution-form.v1'||saved.kind!=='psych'||typeof saved.documentId!=='string'||row.criterion_key!=='text__ti_state__psych__'+documentKey||!Array.isArray(definition)||!Array.isArray(saved.controls)||definition.length!==saved.controls.length)return [];
+  if(saved.schema!=='tios.execution-form.v1'||saved.kind!==kind||typeof saved.documentId!=='string'||row.criterion_key!=='text__ti_state__'+kind+'__'+documentKey||!Array.isArray(definition)||!Array.isArray(saved.controls)||definition.length!==saved.controls.length)return [];
   if(definition.some((field,index)=>!field||!['checkbox','radio','text','textarea'].includes(field.type)||!saved.controls[index]||(['checkbox','radio'].includes(field.type)?typeof saved.controls[index].checked!=='boolean':typeof saved.controls[index].value!=='string')))return [];
-  const seenChoices=new Set(),group='psych:'+documentKey;
+  const seenChoices=new Set(),group=kind+':'+documentKey;
   return definition.flatMap((field,index)=>{
     const control=saved.controls[index];let label=field.label||'Reflection',answer='';
     if(field.type==='checkbox')answer=control.checked?'Selected':'Not selected';
@@ -10261,7 +10262,7 @@ function journalSavedFormReflectionEntries(row){
   });
 }
 
-function journalReflectionEntries(tradeId){
+function journalReflectionEntries(tradeId,kind='psych'){
   const owner=currentUser?.id;
   if(!owner||!trades.some(trade=>trade.id===tradeId))return [];
   const reviews=executionReviews.filter(review=>review.trade_id===tradeId&&review.user_id===owner);
@@ -10271,38 +10272,46 @@ function journalReflectionEntries(tradeId){
     .sort((a,b)=>Number(a.sort_order||0)-Number(b.sort_order||0))
     .flatMap(row=>{
       const key=String(row.criterion_key||'');
-      if(key.startsWith('text__ti_state__'))return journalSavedFormReflectionEntries(row);
-      if(!key.startsWith('text__ti__'))return [{group:'execution',label:row.criterion_label||'Reflection',answer:String(row.comment)}];
+      if(key.startsWith('text__ti_state__'))return journalSavedFormReflectionEntries(row,kind);
+      if(!key.startsWith('text__ti__'))return kind==='psych'?[{group:'execution',label:row.criterion_label||'Reflection',answer:String(row.comment)}]:[];
       const parts=key.split('__');
-      if(parts.length<5||parts[2]!=='psych')return [];
+      if(parts.length<5||parts[2]!==kind)return [];
       const score=executionIsScoreResponseKey(key)?executionScoreResponseFromComment(row.comment):null;
       if(executionIsScoreResponseKey(key)&&!score)return [];
       try{return [{group:'psych:'+parts[3],documentId:decodeURIComponent(parts[3]),label:row.criterion_label||'Reflection',answer:score?score.value+' / '+score.max:String(row.comment)}]}
       catch(error){return []}
     });
-  reviews.forEach(review=>{
+  if(kind==='psych')reviews.forEach(review=>{
     if(String(review.notes||'').trim())entries.push({group:'execution',label:'Reflection notes',answer:String(review.notes)});
   });
   return entries;
 }
 
 function journalPsychologyCellHtml(trade,number){
-  const count=journalReflectionEntries(trade.id).length;
+  const count=journalReflectionEntries(trade.id,'psych').length;
   const label=`View psychological reflection for Trade ${number}, ${trade.instrument||'Unknown instrument'}, ${formatDate(trade.trade_date)}`;
   return `<div class="journal-psychology-cell"><button class="btn small journal-reflection-button${count?' has-reflections':''}" type="button" data-journal-reflection="${escapeHtml(trade.id)}" aria-label="${escapeHtml(label)}" title="${count?count+' saved response'+(count===1?'':'s'):'No saved reflection yet'}">View reflection</button>${trade.psychology?'<small>'+escapeHtml(trade.psychology)+'</small>':''}</div>`;
 }
 
-function openJournalReflection(tradeId,trigger){
+function journalRulesCellHtml(trade,number){
+  const count=journalReflectionEntries(trade.id,'checklist').length;
+  const label=`View Rules review for Trade ${number}, ${trade.instrument||'Unknown instrument'}, ${formatDate(trade.trade_date)}`;
+  return `<button class="btn small journal-reflection-button${count?' has-reflections':''}" type="button" data-journal-rules="${escapeHtml(trade.id)}" aria-label="${escapeHtml(label)}" title="${count?count+' saved rule response'+(count===1?'':'s'):'No saved Rules review yet'}">View rules</button>`;
+}
+
+function openJournalReflection(tradeId,trigger,kind='psych'){
   const trade=trades.find(item=>item.id===tradeId);
   if(!trade||!currentUser?.id)return;
   const modal=$('#journalReflectionModal');
-  const entries=journalReflectionEntries(tradeId),groups=new Map();
-  loadSecondaryDocuments('psych');
+  const entries=journalReflectionEntries(tradeId,kind),groups=new Map();
+  loadSecondaryDocuments(kind);
   entries.forEach(entry=>{
-    if(!groups.has(entry.group))groups.set(entry.group,{title:entry.documentId?(secondaryState('psych').docs.find(doc=>doc.id===entry.documentId)?.name||'Psychological Reflection'):'Execution Reflection',entries:[]});
+    if(!groups.has(entry.group))groups.set(entry.group,{title:entry.documentId?(secondaryState(kind).docs.find(doc=>doc.id===entry.documentId)?.name||(kind==='checklist'?'Rules':'Psychological Reflection')):'Execution Reflection',entries:[]});
     groups.get(entry.group).entries.push(entry);
   });
   const number=trigger?.closest('tr')?.querySelector('.journal-trade-number')?.textContent;
+  $('#journalReflectionTitle').textContent=kind==='checklist'?'Trade Rules':'Psychological Reflection';
+  $('#journalReflectionClose').setAttribute('aria-label',kind==='checklist'?'Close rules':'Close reflection');
   $('#journalReflectionTrade').textContent=[number,trade.instrument,formatDate(trade.trade_date),trade.direction,signedMoney(Number(trade.pnl)||0)].filter(Boolean).join(' · ');
   $('#journalReflectionBody').innerHTML=groups.size
     ? [...groups.values()].map(group=>`<section class="journal-reflection-group"><h3>${escapeHtml(group.title)}</h3>${group.entries.map(entry=>`<dl class="journal-reflection-answer"><dt>${escapeHtml(entry.label)}</dt><dd>${escapeHtml(entry.answer)}</dd></dl>`).join('')}</section>`).join('')
@@ -10323,8 +10332,10 @@ function closeJournalReflection({restoreFocus=true}={}){
 }
 
 $('#journalBody').addEventListener('click',event=>{
-  const button=event.target.closest('[data-journal-reflection]');
-  if(button)openJournalReflection(button.dataset.journalReflection,button);
+  const button=event.target.closest('[data-journal-reflection],[data-journal-rules]');
+  if(!button)return;
+  if(button.dataset.journalRules)openJournalReflection(button.dataset.journalRules,button,'checklist');
+  else openJournalReflection(button.dataset.journalReflection,button,'psych');
 });
 $('#journalReflectionClose').addEventListener('click',()=>closeJournalReflection());
 $('#journalReflectionModal').addEventListener('click',event=>{
@@ -10382,7 +10393,7 @@ function renderJournal(){
   if(!pageItems.length){
     body.innerHTML=`
       <tr>
-        <td colspan="8">
+        <td colspan="9">
           <div class="empty-state" style="padding:18px">
             No trades match the current filters.
           </div>
@@ -10408,9 +10419,10 @@ function renderJournal(){
             </span>
           </td>
           <td>${escapeHtml(t.setup||'—')}</td>
+          <td>${journalRulesCellHtml(t,number)}</td>
+          <td>${journalPsychologyCellHtml(t,number)}</td>
           <td class="${pnlClass(pnl)}"><strong>${signedMoney(pnl)}</strong></td>
           <td>${journalExecutionBadge(t.id,t.execution_score)}</td>
-          <td>${journalPsychologyCellHtml(t,number)}</td>
           <td>
             <div class="table-actions">
               <button class="btn small" type="button" data-trade-evidence-open="${escapeHtml(t.id)}">Setup pictures</button><button class="btn small" type="button" data-trade-captures-open="${escapeHtml(t.id)}">Captures</button>
@@ -11088,7 +11100,114 @@ function executionReviewsForStructure(structure,reviews=activeExecutionReviews()
   });
 }
 
+
+function executionMappedValuesForKind(reviewRows,kind){
+  const values=[];
+  let hasMappedData=false;
+  reviewRows.forEach(row=>{
+    const key=String(row.criterion_key||'');
+    if(key.startsWith('text__ti_state__'+kind+'__')){
+      hasMappedData=true;
+      let saved,definition,docKey;
+      try{saved=JSON.parse(row.comment);definition=JSON.parse(saved.definition);docKey=encodeURIComponent(saved.documentId)}catch(error){return}
+      if(saved.schema!=='tios.execution-form.v1'||saved.kind!==kind||typeof saved.documentId!=='string'||
+        key!=='text__ti_state__'+kind+'__'+docKey||!Array.isArray(definition)||!Array.isArray(saved.controls)||
+        definition.length!==saved.controls.length)return;
+      const conditionState=new Map(),handled=new Set(),logicGroups=new Map(),choiceGroups=new Map();
+      definition.forEach((field,index)=>{
+        if(!field||!['checkbox','radio'].includes(field.type))return;
+        if(field.logic){
+          const groupKey=field.name||('logic-'+(field.condition||index));
+          if(!logicGroups.has(groupKey))logicGroups.set(groupKey,[]);
+          logicGroups.get(groupKey).push(index);
+        }
+      });
+      logicGroups.forEach((members,groupKey)=>{
+        members.forEach(index=>handled.add(index));
+        const fields=members.map(index=>definition[index]),first=fields[0];
+        const groupApplies=!first.groupDependsOn||conditionState.get(first.groupDependsOn)===true;
+        const active=members.filter(index=>!definition[index].dependsOn||conditionState.get(definition[index].dependsOn)===true);
+        if(groupApplies&&active.length){
+          const met=active.map(index=>saved.controls[index]?.checked===true);
+          const logic=first.logic||'all';
+          values.push(logic==='any'?Number(met.some(Boolean)):logic==='exclusive'?Number(met.filter(Boolean).length===1):Number(met.every(Boolean)));
+        }
+        members.forEach(index=>{
+          const field=definition[index],control=saved.controls[index];
+          if(field.condition)conditionState.set(field.condition,groupApplies&&(!field.dependsOn||conditionState.get(field.dependsOn)===true)&&control?.checked===true);
+        });
+      });
+      definition.forEach((field,index)=>{
+        if(handled.has(index)||!field||!['checkbox','radio'].includes(field.type))return;
+        const control=saved.controls[index];
+        if(!control||typeof control.checked!=='boolean')return;
+        const applies=(!field.dependsOn||conditionState.get(field.dependsOn)===true)&&
+          (!field.groupDependsOn||conditionState.get(field.groupDependsOn)===true);
+        if(field.type==='checkbox'){
+          if(applies)values.push(control.checked?1:0);
+          if(field.condition)conditionState.set(field.condition,applies&&control.checked);
+          return;
+        }
+        const groupKey=docKey+'::'+(field.name||String(index));
+        if(!choiceGroups.has(groupKey)){
+          choiceGroups.set(groupKey,[]);
+        }
+        choiceGroups.get(groupKey).push(index);
+        if(field.condition)conditionState.set(field.condition,applies&&control.checked);
+      });
+      choiceGroups.forEach(members=>{
+        const active=members.filter(index=>{
+          const field=definition[index];
+          return (!field.dependsOn||conditionState.get(field.dependsOn)===true)&&
+            (!field.groupDependsOn||conditionState.get(field.groupDependsOn)===true);
+        });
+        if(active.length)values.push(active.some(index=>saved.controls[index]?.checked===true)?1:0);
+      });
+      return;
+    }
+    if(executionIsScoreResponseKey(key)&&key.split('__')[2]===kind){
+      hasMappedData=true;
+      const score=executionScoreResponseFromComment(row.comment);
+      values.push(score?score.value/score.max:0);
+    }
+  });
+  return {hasMappedData,values};
+}
+
+function executionMappedCompositeForTrade(tradeId){
+  const review=executionReviewForTrade(tradeId);
+  if(!review)return {hasMappedData:false,score:null,categories:{}};
+  const rows=executionChecksForReview(review.id),kinds=['psych','playbook','checklist'];
+  const categories=Object.fromEntries(kinds.map(kind=>[kind,executionMappedValuesForKind(rows,kind)]));
+  const hasMappedData=kinds.some(kind=>categories[kind].hasMappedData);
+  if(!hasMappedData)return {hasMappedData:false,score:null,categories};
+  const scores=kinds.map(kind=>{
+    const values=categories[kind].values;
+    return values.length?values.reduce((sum,value)=>sum+value,0)/values.length:null;
+  });
+  if(scores.some(score=>score===null))return {hasMappedData:true,score:null,categories};
+  return {hasMappedData:true,score:Number(((scores.reduce((sum,value)=>sum+value,0)/3)*10).toFixed(4)),categories};
+}
+
+async function updateTradeExecutionCompositeScore(tradeId,userId=currentUser?.id){
+  if(!tradeId||!userId||userId!==currentUser?.id||!trades.some(trade=>trade.id===tradeId))return;
+  const composite=executionMappedCompositeForTrade(tradeId);
+  if(!composite.hasMappedData)return;
+  const score=composite.score===null?null:Number(composite.score.toFixed(2));
+  const result=await db.from('trades').update({execution_score:score,updated_at:new Date().toISOString()})
+    .eq('id',tradeId).eq('user_id',userId).select('id,execution_score').maybeSingle();
+  if(result.error)throw result.error;
+  if(!result.data||result.data.id!==tradeId||result.data.execution_score!==score)throw new Error('The combined trade score could not be verified.');
+  const trade=trades.find(item=>item.id===tradeId);
+  if(trade)trade.execution_score=score;
+  renderJournal();
+  renderDashboard();
+  renderStatistics();
+}
+
 function executionScoreForTrade(tradeId){
+  const composite=executionMappedCompositeForTrade(tradeId);
+  if(composite.hasMappedData)return composite.score===null?null:composite.score*10;
   const review=executionReviewForTrade(tradeId);
   if(!review)return null;
   const rows=executionChecklistRowsForReview(review.id);
@@ -11098,6 +11217,15 @@ function executionScoreForTrade(tradeId){
 }
 
 function executionRatingForTrade(tradeId){
+  const composite=executionMappedCompositeForTrade(tradeId);
+  if(composite.hasMappedData){
+    if(composite.score===null)return null;
+    const values=Object.values(composite.categories).flatMap(category=>category.values);
+    const missed=values.filter(value=>value<1).length;
+    if(missed===0)return 'A+';
+    if(missed===1)return 'A';
+    return 'B';
+  }
   const review=executionReviewForTrade(tradeId);
   if(!review)return null;
   const rows=executionChecklistRowsForReview(review.id);
@@ -11109,6 +11237,11 @@ function executionRatingForTrade(tradeId){
 }
 
 function journalExecutionBadge(tradeId,fallbackScore){
+  const composite=executionMappedCompositeForTrade(tradeId);
+  if(composite.hasMappedData){
+    if(composite.score===null)return '<span class="grade-badge grade-none" title="Complete measurable Psychology, Playbook / Edge, and Rules reviews to calculate the equal-thirds trade score.">Pending</span>';
+    return '<span class="grade-badge grade-a" title="Combined score: Psychology ⅓ + Playbook / Edge ⅓ + Rules ⅓">'+composite.score.toFixed(1)+'/10</span>';
+  }
   const review=executionReviewForTrade(tradeId);
   const rating=executionRatingForTrade(tradeId);
   const score=executionScoreForTrade(tradeId);
@@ -12384,7 +12517,9 @@ async function saveExecutionMappingReflections(){
     const draft=executionMappingReflectionDrafts.get(scope.key);
     answers.forEach(answer=>{if(draft?.get(answer.key)?.trim()===answer.value)draft.delete(answer.key)});
     if(draft&&!draft.size)executionMappingReflectionDrafts.delete(scope.key);
-    if(executionMappingReflectionContext?.key===scope.key)showStatus(noun+' saved for this trade');
+    try{await updateTradeExecutionCompositeScore(scope.tradeId,scope.userId)}
+     catch(scoreError){executionMappingReflectionError={key:scope.key,message:'Responses were saved, but the combined execution score was not updated. '+(scoreError.message||'Please retry.')}}
+     if(executionMappingReflectionContext?.key===scope.key&&!executionMappingReflectionError?.key)showStatus(noun+' saved for this trade');
   }catch(error){
     executionMappingReflectionError={key:scope.key,message:noun+' were not saved. '+(error.message||'Please retry.')};
   }finally{
@@ -12770,7 +12905,10 @@ async function saveExecutionReview(){
     }
   }
 
-  const scorePct=currentExecutionScore();
+  const mappedComposite=executionMappedCompositeForTrade(trade.id);
+  const scorePct=mappedComposite.hasMappedData
+    ? (mappedComposite.score===null?null:mappedComposite.score*10)
+    : currentExecutionScore();
   const tradeUpdateResult=await db
     .from('trades')
     .update({
