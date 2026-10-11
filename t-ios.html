@@ -1765,6 +1765,53 @@ body.playbook-workspace .main{
   background:#8391a2;
 }
 .stats-autozoom-state{font-size:8px;letter-spacing:.55px;min-width:14px}
+.stats-autozoom-controls{
+  display:flex;
+  flex:0 1 auto;
+  align-items:center;
+  justify-content:flex-end;
+  flex-wrap:wrap;
+  gap:7px;
+}
+.stats-autozoom-zoom{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  min-height:30px;
+  padding:4px 8px;
+  border:1px solid #28374a;
+  border-radius:999px;
+  background:#0d141d;
+  color:#aebbd0;
+  font-size:9px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.stats-autozoom-zoom input[type="range"]{
+  width:78px;
+  min-width:58px;
+  height:14px;
+  margin:0;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  transform:none;
+  accent-color:#69a8ff;
+  cursor:pointer;
+}
+.stats-autozoom-zoom input[type="range"]:focus-visible{
+  outline:2px solid #69a8ff;
+  outline-offset:3px;
+}
+.stats-autozoom-zoom output{
+  min-width:34px;
+  color:#e1e9f5;
+  font-size:9px;
+  text-align:right;
+  font-variant-numeric:tabular-nums;
+}
 .stats-visuals-layout{
   display:grid;
   grid-template-columns:minmax(0,1.8fr) minmax(250px,.95fr);
@@ -1773,6 +1820,7 @@ body.playbook-workspace .main{
 }
 .stats-equity-column{min-width:0}
 .stats-indicator-stack{
+  --stats-autozoom-scale:1.5;
   position:relative;
   isolation:isolate;
   display:grid;
@@ -1798,19 +1846,21 @@ body.playbook-workspace .main{
   transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
 }
 .stats-indicator-stack.stats-autozoom .stats-indicator-card.stats-card-zoomed{
-  transform:scale(1.5);
-  transform-origin:top right;
+  transform:scale(var(--stats-autozoom-scale));
+  transform-origin:center bottom;
   z-index:5;
   border-color:#38577b;
   box-shadow:0 18px 38px rgba(0,0,0,.48),0 0 0 1px rgba(105,168,255,.22);
 }
 @media(max-width:900px){
-  .stats-indicator-stack.stats-autozoom .stats-indicator-card.stats-card-zoomed{transform:scale(1.22)}
+  .stats-indicator-stack{--stats-autozoom-scale:1.22}
+  .stats-indicator-stack.stats-autozoom .stats-indicator-card.stats-card-zoomed{transform:scale(var(--stats-autozoom-scale))}
 }
 @media(max-width:520px){
+  .stats-indicator-stack{--stats-autozoom-scale:1.06}
   .stats-indicator-stack.stats-autozoom .stats-indicator-card.stats-card-zoomed{
-    transform:scale(1.06);
-    transform-origin:top center;
+    transform:scale(var(--stats-autozoom-scale));
+    transform-origin:center bottom;
   }
 }
 @media(prefers-reduced-motion:reduce){
@@ -6877,11 +6927,18 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               </div>
             </div>
           </div>
-          <button class="stats-autozoom-toggle" id="statsAutoZoomBtn" type="button" aria-pressed="true" aria-controls="statsIndicatorStack" title="Automatically zoom an analytics section when hovered or focused">
-            <span>Auto Zoom</span>
-            <span class="stats-autozoom-track" aria-hidden="true"><span class="stats-autozoom-thumb"></span></span>
-            <strong class="stats-autozoom-state" id="statsAutoZoomState">ON</strong>
-          </button>
+          <div class="stats-autozoom-controls" role="group" aria-label="Analytics sidebar zoom controls">
+            <button class="stats-autozoom-toggle" id="statsAutoZoomBtn" type="button" aria-pressed="true" aria-controls="statsIndicatorStack" title="Automatically zoom an analytics section when hovered or focused">
+              <span>Auto Zoom</span>
+              <span class="stats-autozoom-track" aria-hidden="true"><span class="stats-autozoom-thumb"></span></span>
+              <strong class="stats-autozoom-state" id="statsAutoZoomState">ON</strong>
+            </button>
+            <label class="stats-autozoom-zoom" for="statsAutoZoomRange">
+              <span>Zoom</span>
+              <input id="statsAutoZoomRange" type="range" min="100" max="150" step="1" value="150" aria-label="Auto Zoom magnification" aria-controls="statsIndicatorStack" aria-valuetext="150%" title="Adjust how far Auto Zoom enlarges a section; the maximum follows the current zoom limit">
+              <output id="statsAutoZoomValue" for="statsAutoZoomRange" aria-live="polite">150%</output>
+            </label>
+          </div>
         </div>
 
         <div class="stats-visuals-layout">
@@ -8321,6 +8378,7 @@ function syncStatsRangeButtons(){
 
 let statsRange = loadStatsRangePreference();
 let statsAutoZoom = true;
+let statsAutoZoomPercent = 150;
 let statsAnchorDate = new Date();
 let equityChartInstance = null;
 
@@ -14617,6 +14675,42 @@ function moveStatsPeriod(direction){
 }
 
 /* STATISTICS ANALYTICS AUTO-ZOOM */
+function statsAutoZoomMaxPercent(){
+  const width=window.innerWidth||document.documentElement.clientWidth||1440;
+  if(width<=520)return 106;
+  if(width<=900)return 122;
+  return 150;
+}
+
+function setStatsAutoZoomPercent(value){
+  const range=$('#statsAutoZoomRange');
+  if(!range)return;
+  const max=statsAutoZoomMaxPercent();
+  const numeric=Number(value);
+  const percent=Number.isFinite(numeric)
+    ? Math.max(100,Math.min(max,Math.round(numeric)))
+    : max;
+  range.min='100';
+  range.max=String(max);
+  range.value=String(percent);
+  range.setAttribute('aria-valuetext',percent+'%');
+  const output=$('#statsAutoZoomValue');
+  if(output)output.textContent=percent+'%';
+  const stack=$('#statsIndicatorStack');
+  if(stack)stack.style.setProperty('--stats-autozoom-scale',(percent/100).toFixed(2));
+  statsAutoZoomPercent=percent;
+}
+
+function syncStatsAutoZoomViewportLimit(){
+  const range=$('#statsAutoZoomRange');
+  if(!range)return;
+  const oldMax=Number(range.max)||statsAutoZoomMaxPercent();
+  const current=Number(range.value);
+  const wasAtMaximum=Number.isFinite(current)&&Math.abs(current-oldMax)<0.01;
+  const nextMax=statsAutoZoomMaxPercent();
+  setStatsAutoZoomPercent(wasAtMaximum?nextMax:current);
+}
+
 function setStatsAutoZoom(enabled){
   statsAutoZoom=Boolean(enabled);
   const stack=$('#statsIndicatorStack');
@@ -14639,6 +14733,13 @@ function setZoomedStatsCard(card){
 }
 
 $('#statsAutoZoomBtn').addEventListener('click',()=>setStatsAutoZoom(!statsAutoZoom));
+
+const statsAutoZoomRange=$('#statsAutoZoomRange');
+if(statsAutoZoomRange){
+  statsAutoZoomRange.addEventListener('input',()=>setStatsAutoZoomPercent(statsAutoZoomRange.value));
+  window.addEventListener('resize',syncStatsAutoZoomViewportLimit);
+  syncStatsAutoZoomViewportLimit();
+}
 
 const statsIndicatorStack=$('#statsIndicatorStack');
 if(statsIndicatorStack){
