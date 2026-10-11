@@ -6149,12 +6149,13 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 .journal-session-head,.journal-period-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .journal-session-head strong{font-size:15px}
 .journal-session-meta{font-size:12px;margin-top:4px}
-.journal-session-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}
+.journal-session-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
 .journal-session-stat,.journal-review-stat{padding:12px;border:1px solid var(--border,#263446);border-radius:10px;background:rgba(20,30,43,.65)}
 .journal-session-stat span,.journal-review-stat span{display:block;color:var(--muted,#9aa7b8);font-size:11px;margin-bottom:5px}
 .journal-session-stat strong,.journal-review-stat strong{font-size:15px}
 .journal-session-note{font-size:13px;line-height:1.5;margin:8px 0 14px}
 .journal-review-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:16px 0}
+.journal-session-summary-stats{grid-template-columns:repeat(4,minmax(0,1fr))}
 .journal-period-controls input{max-width:180px}
 .journal-review-note{padding:14px;border:1px solid var(--border,#263446);border-radius:12px;background:rgba(12,19,29,.6);color:var(--muted,#9aa7b8);line-height:1.6}
 .journal-view-help{font-size:12px;margin:10px 0 0}
@@ -6546,14 +6547,13 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
       <section class="journal-level-view panel" id="journalSessionsView" hidden>
         <div class="journal-scope-head">
-          <div><h2>Trading sessions</h2><p>Session plans, rule checks and reflections saved in Psychology, with same-date trade context.</p></div>
+          <div><h2>Session scoreboards</h2><p>Review identity, affirmations and reflections for each session. Trading Day Rules are tracked separately by date.</p></div>
           <button class="btn small" type="button" id="journalOpenPsychology">Open Psychology</button>
         </div>
-        <div class="journal-review-stats">
+        <div class="journal-review-stats journal-session-summary-stats">
           <div class="journal-review-stat"><span>Saved sessions</span><strong id="journalSessionCount">0</strong></div>
-          <div class="journal-review-stat"><span>Average session rule compliance</span><strong id="journalSessionRules">—</strong></div>
           <div class="journal-review-stat"><span>Average identity score</span><strong id="journalSessionIdentity">—</strong></div>
-          <div class="journal-review-stat"><span>Trades across sessions</span><strong id="journalSessionTrades">0</strong></div>
+          <div class="journal-review-stat"><span>Trades on session dates</span><strong id="journalSessionTrades">0</strong></div>
           <div class="journal-review-stat"><span>P&amp;L on session dates</span><strong id="journalSessionPnl">—</strong></div>
         </div>
         <div class="journal-session-list" id="journalSessionsList"></div>
@@ -6566,6 +6566,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <button class="btn small" type="button" id="journalReviewPrev">← Previous</button>
             <input type="date" id="journalReviewAnchor" aria-label="Choose review date">
             <button class="btn small" type="button" id="journalReviewNext">Next →</button>
+            <button class="btn small" type="button" id="journalOpenDayRules">Open Trading Day Rules</button>
           </div>
         </div>
         <div class="range-tabs" role="group" aria-label="Review period">
@@ -6578,10 +6579,10 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           <div class="journal-review-stat"><span>Net P&amp;L</span><strong id="journalPeriodPnl">—</strong></div>
           <div class="journal-review-stat"><span>Average execution quality</span><strong id="journalPeriodExecution">—</strong></div>
           <div class="journal-review-stat"><span>Trading sessions</span><strong id="journalPeriodSessionCount">0</strong></div>
-          <div class="journal-review-stat"><span>Session rule compliance</span><strong id="journalPeriodRules">—</strong></div>
+          <div class="journal-review-stat"><span>Trading Day Rules reviewed</span><strong id="journalPeriodRuleDays">0 days</strong></div>
         </div>
         <div class="journal-review-note" id="journalPeriodSummary">Period totals are calculated from the trades and session reviews saved for the selected dates.</div>
-        <p class="journal-view-help">Trade execution quality stays trade-specific. This view summarizes activity and session-level rule checks. Trades are grouped by date because the current data does not assign a trade to one session.</p>
+        <p class="journal-view-help">Trade execution quality stays trade-specific. Trading Day Rules come from daily-scope Rules reviews saved on this device and are counted once per date. Sessions remain separate scoreboards; same-date trade figures are date context.</p>
       </section>
     </section>
 
@@ -10429,6 +10430,28 @@ function journalPeriodBounds(anchor,period){
   }
   return {start:journalLocalDateKey(start),end:journalLocalDateKey(end)};
 }
+function journalTradingDayRuleDates(records,startDate='',endDate=''){
+  const start=String(startDate||'0000-01-01').slice(0,10);
+  const end=String(endDate||'9999-12-31').slice(0,10);
+  const dates=(Array.isArray(records)?records:[])
+    .filter(record=>{
+      const date=String(record?.period?.startDate||'').slice(0,10);
+      const parsed=new Date(date+'T00:00:00Z');
+      return record?.ruleScope==='daily'&&/^\d{4}-\d{2}-\d{2}$/.test(date)&&Number.isFinite(parsed.getTime())&&parsed.toISOString().slice(0,10)===date&&date>=start&&date<=end;
+    })
+    .map(record=>String(record.period.startDate).slice(0,10));
+  return [...new Set(dates)].sort();
+}
+function journalStoredTradingDayRuleReviews(){
+  if(!currentUser?.id||!tradingAccount?.id||!window.TIOSPeriodRules?.read)return [];
+  try{
+    return window.TIOSPeriodRules.read(localStorage,currentUser.id,tradingAccount.id)
+      .filter(record=>record.ruleScope==='daily');
+  }catch(error){
+    console.warn('Trading Day Rules reviews could not be read:',error);
+    return [];
+  }
+}
 function journalScopePercent(value){
   return value===null||!Number.isFinite(value)?'—':value.toFixed(1)+'%';
 }
@@ -10439,17 +10462,15 @@ function renderJournalSessions(){
   );
   const sessionDates=new Set(sessions.map(session=>session.session_date));
   const allTrades=trades.filter(trade=>sessionDates.has(trade.trade_date));
-  const ruleScores=sessions.map(session=>rulePercentForSession(session.id)).filter(Number.isFinite);
   const identityValues=sessions.map(session=>identityPercentForSession(session.id)).filter(Number.isFinite);
   const totalPnl=allTrades.reduce((sum,trade)=>sum+(Number(trade.pnl)||0),0);
   $('#journalSessionCount').textContent=String(sessions.length);
-  $('#journalSessionRules').textContent=journalScopePercent(averageFinite(ruleScores));
   $('#journalSessionIdentity').textContent=journalScopePercent(averageFinite(identityValues));
   $('#journalSessionTrades').textContent=String(allTrades.length);
   const pnlEl=$('#journalSessionPnl');pnlEl.textContent=signedMoney(totalPnl);pnlEl.className=pnlClass(totalPnl);
   const list=$('#journalSessionsList');
   if(!sessions.length){
-    list.innerHTML='<div class="empty-state">No saved sessions yet. Create a session in Psychology to track its plan, rules and reflection here.</div>';
+    list.innerHTML='<div class="empty-state">No saved sessions yet. Create a session in Psychology to record identity, affirmations and reflection as a session scoreboard.</div>';
     return;
   }
   list.innerHTML='';
@@ -10467,7 +10488,6 @@ function renderJournalSessions(){
     head.append(title,pnlStrong);
     const stats=document.createElement('div');stats.className='journal-session-stats';
     [
-      ['Session rules',journalScopePercent(rulePercentForSession(session.id))],
       ['Identity',journalScopePercent(identityPercentForSession(session.id))],
       ['Affirmations',session.affirmation_before&&session.affirmation_after?'Complete':session.affirmation_before||session.affirmation_after?'Partial':'Not done'],
       ['Same-date trades',String(relatedTrades.length)]
@@ -10506,13 +10526,13 @@ function renderJournalPeriodReview(){
   const periodSessions=psychologySessions.filter(session=>session.session_date>=bounds.start&&session.session_date<=bounds.end);
   const pnl=periodTrades.reduce((sum,trade)=>sum+(Number(trade.pnl)||0),0);
   const execution=averageFinite(periodTrades.map(trade=>executionScoreForTrade(trade.id)).filter(Number.isFinite));
-  const rules=averageFinite(periodSessions.map(session=>rulePercentForSession(session.id)).filter(Number.isFinite));
+  const tradingDayRuleDates=journalTradingDayRuleDates(journalStoredTradingDayRuleReviews(),bounds.start,bounds.end);
   $('#journalPeriodTradeCount').textContent=String(periodTrades.length);
   const pnlEl=$('#journalPeriodPnl');pnlEl.textContent=signedMoney(pnl);pnlEl.className=pnlClass(pnl);
   $('#journalPeriodExecution').textContent=journalScopePercent(execution);
   $('#journalPeriodSessionCount').textContent=String(periodSessions.length);
-  $('#journalPeriodRules').textContent=journalScopePercent(rules);
-  $('#journalPeriodSummary').textContent=periodTrades.length+' trades across '+periodSessions.length+' saved sessions. Session rule compliance averages sessions with saved rule checks; execution quality averages trades with a measurable score.';
+  $('#journalPeriodRuleDays').textContent=tradingDayRuleDates.length+' day'+(tradingDayRuleDates.length===1?'':'s');
+  $('#journalPeriodSummary').textContent=periodTrades.length+' trades across '+periodSessions.length+' saved sessions. Trading Day Rules were reviewed on '+tradingDayRuleDates.length+' distinct date'+(tradingDayRuleDates.length===1?'':'s')+'.';
 }
 function renderJournalScopeViews(){
   $$('[data-journal-view]').forEach(button=>{
@@ -10544,6 +10564,7 @@ $('#journalReviewNext').addEventListener('click',()=>{
   else journalReviewAnchor.setDate(journalReviewAnchor.getDate()+(journalReviewPeriod==='week'?7:1));
   $('#journalReviewAnchor').value=journalLocalDateKey(journalReviewAnchor);renderJournalPeriodReview();
 });
+$('#journalOpenDayRules')?.addEventListener('click',()=>navigate('checklists'));
 $('#journalOpenPsychology').addEventListener('click',()=>{
   document.querySelector('.nav-btn[data-page="psychology"]')?.click();
 });
