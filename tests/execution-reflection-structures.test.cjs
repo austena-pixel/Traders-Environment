@@ -36,7 +36,7 @@ test('Historical review metadata remains available to canonical execution intell
 test('Journal groups Setup / Edge, Rules, and Psychology on each trade row', () => {
   const table = source.slice(source.indexOf('<table class="trade-table">'), source.indexOf('</table>', source.indexOf('<table class="trade-table">')));
   const headers = [...table.matchAll(/<th>(.*?)<\/th>/g)].map(match => match[1].replace(/&amp;/g, '&'));
-  assert.deepEqual(headers, ['Trade','Instrument','Direction','Setup / Edge','Rules','Psychology','P&L','Execution','Actions']);
+  assert.deepEqual(headers, ['Trade','Instrument','Direction','Setup / Edge','Rules','Psychology','P&L','Execution Quality (%)','Actions']);
   assert.ok(source.includes('journalRulesCellHtml(t,number)'));
   assert.ok(source.includes('journalPsychologyCellHtml(t,number)'));
   assert.ok(source.includes('data-journal-rules='));
@@ -143,4 +143,40 @@ test('Combined score keeps conditional criteria inactive and scores a condition 
   vm.runInNewContext(source.slice(start,end)+'\nthis.result=executionMappedCompositeForTrade("trade-1");',context);
   assert.deepEqual(Array.from(context.result.categories.playbook.values),[1,0]);
   assert.ok(Math.abs(context.result.score-(25/3))<0.0001);
+});
+
+test('Journal opens saved Playbook reflections from the Setup / Edge trade row', () => {
+  assert.ok(source.includes("function journalPlaybookCellHtml(trade,number)"));
+  assert.ok(source.includes("journalReflectionEntries(trade.id,'playbook')"));
+  assert.ok(source.includes('journalPlaybookCellHtml(t,number)'));
+  assert.ok(source.includes("openJournalReflection(button.dataset.journalPlaybook,button,'playbook')"));
+  assert.ok(source.includes("kind==='playbook')loadPlaybookDocuments()"));
+  assert.ok(source.includes("group:kind+':'+parts[3]"));
+});
+
+test('Journal displays Execution Quality as a percentage for combined and legacy scores', () => {
+  assert.ok(source.includes('<th>Execution Quality (%)</th>'));
+  const start=source.indexOf('function journalExecutionBadge(');
+  const end=source.indexOf('\nfunction currentExecutionScore',start);
+  assert.ok(start>=0&&end>start);
+  const badgeSource=source.slice(start,end);
+  const base={
+    executionMappedCompositeForTrade:()=>({hasMappedData:true,score:7.5}),
+    executionScoreForTrade:()=>75,
+    executionReviewForTrade:()=>null,
+    executionRatingForTrade:()=>null,
+    edgeGradeClass:()=> 'grade-a'
+  };
+  vm.runInNewContext(badgeSource+'\nthis.result=journalExecutionBadge("trade-1",null);',base);
+  assert.match(base.result,/75\.0%/);
+  assert.doesNotMatch(base.result,/\/10/);
+
+  const legacy={...base,executionMappedCompositeForTrade:()=>({hasMappedData:false,score:null})};
+  vm.runInNewContext(badgeSource+'\nthis.result=journalExecutionBadge("trade-1",7.5);',legacy);
+  assert.match(legacy.result,/75\.0%/);
+  assert.doesNotMatch(legacy.result,/\/10/);
+
+  const graded={...legacy,executionReviewForTrade:()=>({}),executionRatingForTrade:()=>'A',executionScoreForTrade:()=>86.3};
+  vm.runInNewContext(badgeSource+'\nthis.result=journalExecutionBadge("trade-1",null);',graded);
+  assert.match(graded.result,/86\.3%/);
 });
