@@ -10983,6 +10983,15 @@ function executionScoreForTrade(tradeId){
 }
 
 function executionRatingForTrade(tradeId){
+  const composite=executionMappedCompositeForTrade(tradeId);
+  if(composite.hasMappedData){
+    if(composite.score===null)return null;
+    const values=Object.values(composite.categories).flatMap(category=>category.values);
+    const missed=values.filter(value=>value<1).length;
+    if(missed===0)return 'A+';
+    if(missed===1)return 'A';
+    return 'B';
+  }
   const review=executionReviewForTrade(tradeId);
   if(!review)return null;
   const rows=executionChecklistRowsForReview(review.id);
