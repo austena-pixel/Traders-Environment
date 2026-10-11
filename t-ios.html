@@ -1920,7 +1920,31 @@ body.playbook-workspace .main{
 .stats-analysis-value.pos{color:#45d69a}
 .stats-analysis-value.neg{color:#ff727c}
 .stats-analysis-value.neutral{color:#d9e1ec}
-.stats-drawdown-spark{display:block;width:100%;height:53px;margin:4px 0 0;overflow:visible}
+.stats-drawdown-plot{position:relative;width:100%;margin:4px 0 0}
+.stats-drawdown-spark{display:block;width:100%;height:53px;margin:0;overflow:visible}
+.stats-drawdown-max-win{
+  position:absolute;top:2px;right:2px;z-index:2;
+  max-width:calc(100% - 10px);
+  padding:2px 5px;
+  overflow:hidden;
+  border:1px solid rgba(37,208,125,.3);
+  border-radius:999px;
+  background:rgba(7,15,12,.95);
+  color:#45d69a;
+  font-size:8px;
+  line-height:1.2;
+  font-weight:800;
+  font-variant-numeric:tabular-nums;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  pointer-events:none;
+}
+.stats-drawdown-max-win.neutral{
+  color:#aeb9c7;
+  border-color:rgba(174,185,199,.2);
+  background:rgba(10,15,21,.95);
+}
+.stats-drawdown-max-win[hidden]{display:none}
 .stats-drawdown-baseline{fill:none;stroke:#334457;stroke-width:1;stroke-dasharray:2 4}
 .stats-drawdown-equity-line{fill:none;stroke:#f3c85b;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
 .stats-drawdown-profit-peak{fill:none;stroke:#25d07d;stroke-width:1.35;stroke-dasharray:3 3}
@@ -7015,17 +7039,20 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
                     <span class="stats-analysis-kicker">MAX</span>
                   </div>
                   <strong class="stats-analysis-value neutral" id="statDrawdownValue">—</strong>
-                  <svg class="stats-drawdown-spark" viewBox="0 0 220 72" preserveAspectRatio="none" role="img" aria-labelledby="statDrawdownSparkTitle statDrawdownSparkDesc">
-                     <title id="statDrawdownSparkTitle">Profit peak and maximum loss profile</title>
-                     <desc id="statDrawdownSparkDesc">Drawdown profile unavailable.</desc>
-                     <path class="stats-drawdown-baseline" id="statDrawdownBaseline" d=""></path>
-                     <path class="stats-drawdown-profit-peak" id="statDrawdownProfitPeakPath" d=""></path>
-                     <path class="stats-drawdown-equity-line" id="statDrawdownEquityPath" d=""></path>
-                     <path class="stats-drawdown-line" id="statDrawdownPath" d=""></path>
-                     <path class="stats-drawdown-loss-drop" id="statDrawdownDropPath" d=""></path>
-                     <circle class="stats-drawdown-marker stats-drawdown-peak-marker" id="statDrawdownPeakMarker" cx="0" cy="0" r="0"></circle>
-                     <circle class="stats-drawdown-marker stats-drawdown-trough-marker" id="statDrawdownTroughMarker" cx="0" cy="0" r="0"></circle>
-                   </svg>
+                  <div class="stats-drawdown-plot">
+                    <svg class="stats-drawdown-spark" viewBox="0 0 220 72" preserveAspectRatio="none" role="img" aria-labelledby="statDrawdownSparkTitle statDrawdownSparkDesc">
+                      <title id="statDrawdownSparkTitle">Profit peak, maximum loss, and largest winning trade profile</title>
+                      <desc id="statDrawdownSparkDesc">Drawdown profile unavailable.</desc>
+                      <path class="stats-drawdown-baseline" id="statDrawdownBaseline" d=""></path>
+                      <path class="stats-drawdown-profit-peak" id="statDrawdownProfitPeakPath" d=""></path>
+                      <path class="stats-drawdown-equity-line" id="statDrawdownEquityPath" d=""></path>
+                      <path class="stats-drawdown-line" id="statDrawdownPath" d=""></path>
+                      <path class="stats-drawdown-loss-drop" id="statDrawdownDropPath" d=""></path>
+                      <circle class="stats-drawdown-marker stats-drawdown-peak-marker" id="statDrawdownPeakMarker" cx="0" cy="0" r="0"></circle>
+                      <circle class="stats-drawdown-marker stats-drawdown-trough-marker" id="statDrawdownTroughMarker" cx="0" cy="0" r="0"></circle>
+                    </svg>
+                    <span class="stats-drawdown-max-win pos" id="statDrawdownMaxWin" hidden aria-live="polite"></span>
+                  </div>
                    <div class="stats-drawdown-legend" aria-hidden="true">
                      <span><i class="peak"></i>Profit peak</span>
                      <span><i class="equity"></i>Equity path</span>
@@ -14408,6 +14435,19 @@ function renderProfitFactorIndicator(stats){
   else explanation.textContent=`For every ${formatProfitFactorCurrency(1)} lost, ${formatProfitFactorCurrency(factor)} was earned on winning trades.`;
 }
 
+function maxWinningTradeStats(source){
+  const trades=Array.isArray(source)?source:[];
+  if(!trades.length)return {status:'empty',value:null};
+  const complete=trades.every(trade=>
+    trade&&trade.pnl!==null&&trade.pnl!==undefined&&
+    String(trade.pnl).trim()!==''&&Number.isFinite(Number(trade.pnl))
+  );
+  if(!complete)return {status:'incomplete',value:null};
+  const winningPnls=trades.map(trade=>Number(trade.pnl)).filter(pnl=>pnl>0);
+  if(!winningPnls.length)return {status:'no-winners',value:null};
+  return {status:'available',value:Math.max(...winningPnls)};
+}
+
 function buildDrawdownProfileDiagram(series,drawdown){
   const empty={baselinePath:'',equityPath:'',peakGuidePath:'',maxLossPath:'',lossDropPath:'',peakPoint:null,troughPoint:null};
   const points=Array.isArray(series?.points)?series.points:[];
@@ -14465,6 +14505,7 @@ function renderDrawdownExpectancyDiagram(drawdown,series,expectancy,avgTradeRetu
   const drawdownPeakMarker=$('#statDrawdownPeakMarker');
   const drawdownTroughMarker=$('#statDrawdownTroughMarker');
   const drawdownDescription=$('#statDrawdownSparkDesc');
+  const maxWinNode=$('#statDrawdownMaxWin');
   const expectancyValue=$('#statExpectancyValue');
   const expectancyCaption=$('#statExpectancyCaption');
   const expectancyBar=$('#statExpectancyBar');
@@ -14477,10 +14518,14 @@ function renderDrawdownExpectancyDiagram(drawdown,series,expectancy,avgTradeRetu
   const complete=validTrades.length===trades.length;
   const hasTrades=trades.length>0;
   const winners=validTrades.filter(trade=>Number(trade.pnl)>0).length;
+  const maxWinStats=maxWinningTradeStats(trades);
   winRateNode.textContent=hasTrades&&complete&&Number.isFinite(winRate)?winRate.toFixed(1)+'% win rate':'— win rate';
   const clearDrawdownProfile=()=>{
     [drawdownBaseline,drawdownEquityPath,drawdownPeakPath,drawdownPath,drawdownDropPath].forEach(node=>node.setAttribute('d',''));
     [drawdownPeakMarker,drawdownTroughMarker].forEach(node=>node.setAttribute('r','0'));
+    maxWinNode.hidden=true;
+    maxWinNode.textContent='';
+    maxWinNode.setAttribute('aria-label','Largest winning trade unavailable.');
   };
 
   if(!hasTrades){
@@ -14509,6 +14554,20 @@ function renderDrawdownExpectancyDiagram(drawdown,series,expectancy,avgTradeRetu
     drawdownPeakPath.setAttribute('d',profile.peakGuidePath);
     drawdownPath.setAttribute('d',profile.maxLossPath);
     drawdownDropPath.setAttribute('d',profile.lossDropPath);
+    if(maxWinStats.status==='available'){
+      const label='Max win '+signedMoney(maxWinStats.value);
+      maxWinNode.textContent=label;
+      maxWinNode.className='stats-drawdown-max-win pos';
+      maxWinNode.setAttribute('aria-label','Largest winning trade: '+signedMoney(maxWinStats.value)+'.');
+      maxWinNode.hidden=false;
+    }else if(maxWinStats.status==='no-winners'){
+      maxWinNode.textContent='Max win —';
+      maxWinNode.className='stats-drawdown-max-win neutral';
+      maxWinNode.setAttribute('aria-label','No winning trades recorded in this period.');
+      maxWinNode.hidden=false;
+    }else{
+      maxWinNode.hidden=true;
+    }
     if(profile.peakPoint){
       drawdownPeakMarker.setAttribute('cx',profile.peakPoint.x.toFixed(1));
       drawdownPeakMarker.setAttribute('cy',profile.peakPoint.y.toFixed(1));
@@ -14520,9 +14579,14 @@ function renderDrawdownExpectancyDiagram(drawdown,series,expectancy,avgTradeRetu
       drawdownPeakMarker.setAttribute('r','0');
       drawdownTroughMarker.setAttribute('r','0');
     }
+    const maxWinDescription=maxWinStats.status==='available'
+      ? ' The largest winning trade was '+signedMoney(maxWinStats.value)+'.'
+      : maxWinStats.status==='no-winners'
+        ? ' No winning trades were recorded.'
+        : '';
     drawdownDescription.textContent=drawdown.amount>0
-      ? 'Gold traces selected-period equity from the opening balance. Green marks the '+(drawdown.profitPeak>0?'profit peak':'break-even reference')+'; red highlights the maximum drop to the trough, '+signedMoney(-drawdown.amount)+(Number.isFinite(drawdown.pct)?', equal to '+formatReturnPct(-drawdown.pct)+' of the '+formatProfitFactorCurrency(drawdown.profitPeak)+' profit peak.':'; no positive profit peak was recorded, so a percentage is unavailable.')
-      : 'Gold traces selected-period equity from the opening balance. No drawdown was recorded across '+trades.length+' selected closed trades.';
+      ? 'Gold traces selected-period equity from the opening balance. Green marks the '+(drawdown.profitPeak>0?'profit peak':'break-even reference')+'; red highlights the maximum drop to the trough, '+signedMoney(-drawdown.amount)+(Number.isFinite(drawdown.pct)?', equal to '+formatReturnPct(-drawdown.pct)+' of the '+formatProfitFactorCurrency(drawdown.profitPeak)+' profit peak.':'; no positive profit peak was recorded, so a percentage is unavailable.')+maxWinDescription
+      : 'Gold traces selected-period equity from the opening balance. No drawdown was recorded across '+trades.length+' selected closed trades.'+maxWinDescription;
   }
 
   if(!hasTrades||!complete||!Number.isFinite(expectancy)){
