@@ -7174,7 +7174,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               </select>
             </div>
             <div class="stats-fear-axis-guide" id="statsFearAxes">
-              <span><strong>X-axis:</strong> weekly observation periods (W1–W5)</span>
+              <span><strong>X-axis:</strong> Start = zero baseline, followed by weekly observation periods (W1–W5)</span>
               <span><strong>Y-axis:</strong> number of detections within each week's selected trade sample</span>
             </div>
             <div class="stats-fear-canvas-wrap"><canvas id="statsFearTrendChart" role="img" aria-label="Illustrative five-week trends for being wrong, losing money, FOMO and leaving money. These are hypothetical values, not detected emotions."></canvas></div>
@@ -7184,7 +7184,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               <span><i style="background:#ff8754"></i>FOMO</span>
               <span><i style="background:#f3cb54"></i>Leaving money</span>
             </div>
-            <div class="stats-fear-demo-note" id="statsFearTrendNote" aria-live="polite">Illustrative example only — shows how many times each fear/behavior could be detected within 20 trades during each weekly observation period. Not measured from your actual records yet.</div>
+            <div class="stats-fear-demo-note" id="statsFearTrendNote" aria-live="polite">Illustrative example only — shows how many times each fear/behavior could be detected within 20 trades during each weekly observation period. Start marks the zero baseline before observation begins. Not measured from your actual records yet.</div>
           </article>
           <article class="stats-fear-panel" aria-labelledby="statsFearRadarTitle">
             <h4 id="statsFearRadarTitle">Four-Fear Profile</h4>
@@ -14963,7 +14963,7 @@ function renderStatisticsFearDemonstration(){
   const selected=Number(selector?.value);
   const sample=[10,20,30,40,50].includes(selected)?selected:20;
   if(selector)selector.value=String(sample);
-  const makeSeries=(label,base,color)=>({label,data:base.map(value=>Math.round(value*sample/20)),borderColor:color,backgroundColor:color,pointRadius:3,borderWidth:2,tension:0,fill:false});
+  const makeSeries=(label,base,color)=>({label,data:[0,...base.map(value=>Math.round(value*sample/20))],borderColor:color,backgroundColor:color,pointRadius:3,borderWidth:2,tension:0,fill:false});
   const datasets=[
     makeSeries('Being wrong',[7,6,5,3,2],'#4d95ff'),
     makeSeries('Losing money',[10,8,7,5,4],'#63c77d'),
@@ -14973,8 +14973,8 @@ function renderStatisticsFearDemonstration(){
   const options={
     responsive:true,maintainAspectRatio:false,animation:false,
     plugins:{legend:{display:false},tooltip:{callbacks:{
-      title:items=>'Illustrative '+(items[0]?.label||''),
-      label:context=>`${context.dataset.label}: ${context.parsed.y} detections within ${sample} trades`
+      title:items=>items[0]?.dataIndex===0?'Illustrative starting baseline':'Illustrative '+(items[0]?.label||''),
+      label:context=>context.dataIndex===0?`${context.dataset.label}: 0 detections before observation`:`${context.dataset.label}: ${context.parsed.y} detections within ${sample} trades`
     }}},
     scales:{
       x:{title:{display:true,text:'Weekly observation period',color:'#aebcd0'},ticks:{color:'#a1adc0'},grid:{display:false}},
@@ -14982,10 +14982,10 @@ function renderStatisticsFearDemonstration(){
     }
   };
   const note=document.getElementById('statsFearTrendNote');
-  if(note)note.textContent=`Illustrative example only — shows how many times each fear/behavior could be detected within ${sample} trades during each weekly observation period. Not measured from your actual records yet.`;
-  trend.setAttribute('aria-label',`Illustrative detection counts within ${sample} trades per weekly observation period, W1 to W5. Y-axis starts at zero. `+datasets.map(item=>item.label+': '+item.data.join(', ')).join('; ')+'. Not actual trading records.');
+  if(note)note.textContent=`Illustrative example only — shows how many times each fear/behavior could be detected within ${sample} trades during each weekly observation period. Start marks the zero baseline before observation begins. Not measured from your actual records yet.`;
+  trend.setAttribute('aria-label',`Illustrative detection counts within ${sample} trades per weekly observation period. Start is a zero baseline before W1, followed by W1 to W5. Y-axis starts at zero. `+datasets.map(item=>item.label+': '+item.data.join(', ')).join('; ')+'. Not actual trading records.');
   if(!statsFearTrendInstance){
-    statsFearTrendInstance=new Chart(trend,{type:'line',data:{labels:['W1','W2','W3','W4','W5'],datasets},options});
+    statsFearTrendInstance=new Chart(trend,{type:'line',data:{labels:['Start','W1','W2','W3','W4','W5'],datasets},options});
   }else{
     statsFearTrendInstance.data.datasets=datasets;
     statsFearTrendInstance.options=options;
