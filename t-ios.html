@@ -6363,8 +6363,6 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
                 <th>P&amp;L</th>
                 <th>Execution</th>
                 <th>Psychology</th>
-                <th>Edge</th>
-                <th>Notes</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -10044,7 +10042,7 @@ function journalDayHeaderHtml(group){
        <span class="journal-day-stat"><b>B</b> ${formatGradeShare(distribution.percentages['B'])}</span>`
     : '<span class="journal-day-stat muted">No reviewed trades yet</span>';
 
-  return `<tr class="journal-day-divider"><td colspan="10"><div class="journal-day-divider-inner"><div class="journal-day-title"><strong>${escapeHtml(dateLabel)}</strong><span>${total} trade${total===1?'':'s'}</span></div><div class="journal-day-execution">${executionSummary}<span class="journal-day-stat coverage">Reviewed ${reviewed}/${total} · ${coverage.toFixed(0)}%</span></div></div></td></tr>`;
+  return `<tr class="journal-day-divider"><td colspan="8"><div class="journal-day-divider-inner"><div class="journal-day-title"><strong>${escapeHtml(dateLabel)}</strong><span>${total} trade${total===1?'':'s'}</span></div><div class="journal-day-execution">${executionSummary}<span class="journal-day-stat coverage">Reviewed ${reviewed}/${total} · ${coverage.toFixed(0)}%</span></div></div></td></tr>`;
 }
 
 function journalSavedFormReflectionEntries(row){
@@ -10186,7 +10184,7 @@ function renderJournal(){
   if(!pageItems.length){
     body.innerHTML=`
       <tr>
-        <td colspan="10">
+        <td colspan="8">
           <div class="empty-state" style="padding:18px">
             No trades match the current filters.
           </div>
@@ -10215,8 +10213,6 @@ function renderJournal(){
           <td class="${pnlClass(pnl)}"><strong>${signedMoney(pnl)}</strong></td>
           <td>${journalExecutionBadge(t.id,t.execution_score)}</td>
           <td>${journalPsychologyCellHtml(t,number)}</td>
-          <td>${journalEdgeBadge(t.id)}</td>
-          <td title="${escapeHtml(t.notes||'')}">${escapeHtml((t.notes||'—').slice(0,55))}${(t.notes||'').length>55?'…':''}</td>
           <td>
             <div class="table-actions">
               <button class="btn small" type="button" data-trade-evidence-open="${escapeHtml(t.id)}">Setup pictures</button><button class="btn small" type="button" data-trade-captures-open="${escapeHtml(t.id)}">Captures</button>
