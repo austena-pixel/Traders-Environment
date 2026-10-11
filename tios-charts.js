@@ -149,6 +149,8 @@
     function renderMarketList(){
       const list=host.querySelector('[data-charts-market-list]');
       if(!list)return;
+      const count=host.querySelector('[data-market-count]');
+      if(count)count.textContent=String(markets.length);
       const charts=activeCharts();
       if(!charts.some(chart=>chart.id===marketTargetChartId))marketTargetChartId=charts[0]?.id||'';
       const target=charts.find(chart=>chart.id===marketTargetChartId)||charts[0]||null;
@@ -234,6 +236,8 @@
       if(invalid){status(invalid,true);return;}
       if(!persistMarketList(next)){status('Your market list could not be saved in this browser.',true);return;}
       marketTargetChartId=chart.id;
+      const marketDisclosure=host.querySelector('[data-charts-market-disclosure]');
+      if(marketDisclosure)marketDisclosure.open=true;
       updateMarketSelects();
       status(market.name+' added to your market list.');
     }
@@ -785,11 +789,13 @@
             <button class="btn small" type="button" data-charts-action="manage-deriv-account">Manage Deriv MT5 inside T-IOS</button>
             <p class="charts-account-note">Your linked MT5 account is selected in T-IOS Settings &amp; Connections. The embedded TradingView chart is a separate market-data widget; it does not inherit Deriv or MT5 authentication. Direct Deriv sign-in requires a registered Deriv OAuth application.</p>
           </div>
-          <div class="charts-section-title">My markets</div>
-          <div class="charts-market-manager">
-            <label class="charts-market-target" data-market-target-wrap hidden>Apply to chart<select data-market-target aria-label="Select chart for saved market"></select></label>
-            <div class="charts-market-list" data-charts-market-list role="list" aria-label="Saved markets"></div>
-          </div>
+          <details class="charts-market-section" data-charts-market-disclosure>
+            <summary class="charts-section-title charts-market-summary"><span>My markets</span><span class="charts-market-summary-count" data-market-count>${markets.length}</span></summary>
+            <div class="charts-market-manager">
+              <label class="charts-market-target" data-market-target-wrap hidden>Apply to chart<select data-market-target aria-label="Select chart for saved market"></select></label>
+              <div class="charts-market-list" data-charts-market-list role="list" aria-label="Saved markets"></div>
+            </div>
+          </details>
           <div class="charts-section-title">Layout</div>
           <div class="charts-layout" role="group" aria-label="Chart layout">
             <button type="button" data-charts-layout="single" aria-pressed="${prefs.layout==='single'}">Single Chart</button>
