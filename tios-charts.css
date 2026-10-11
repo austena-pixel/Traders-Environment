@@ -145,7 +145,11 @@ body.charts-workspace .main{padding:8px 10px}
 }
 
 /* Optional Deriv MT5-to-TradingView symbol catalogue (Charts only). */
-#chartsWorkspace .charts-market-picker{grid-column:1/-1}
+#chartsWorkspace .charts-market-field{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:6px;min-width:0}
+#chartsWorkspace .charts-market-picker{min-width:0}
+#chartsWorkspace .charts-market-picker select{width:100%}
+#chartsWorkspace .charts-market-remove{min-height:32px;padding-inline:8px;white-space:nowrap}
+#chartsWorkspace .charts-market-remove:disabled{opacity:.55;cursor:not-allowed}
 #chartsWorkspace .charts-deriv-mapping{grid-column:1/-1;font-size:10px;line-height:1.4;color:var(--muted);overflow-wrap:anywhere}
 #chartsWorkspace .charts-deriv-default{width:100%;white-space:normal;text-align:center;line-height:1.35;min-height:36px}
 #chartsWorkspace .charts-deriv-note{font-size:10px;line-height:1.45;color:var(--muted);margin:0}
@@ -450,30 +454,6 @@ body.charts-workspace .main{padding:8px 10px}
 #chartsWorkspace .charts-welcome-card .charts-welcome-error{color:#ffbcb5}
 @media(max-width:520px){#chartsWorkspace .charts-welcome-setup{padding:10px}#chartsWorkspace .charts-welcome-card{padding:17px}#chartsWorkspace .charts-welcome-layouts,#chartsWorkspace .charts-welcome-actions{grid-template-columns:1fr}#chartsWorkspace .charts-welcome-layout-icon{height:32px}}
 
-/* Personal trading-market list and the per-chart saved-market selector. */
-#chartsWorkspace .charts-market-dialog{width:min(540px,calc(100vw - 24px));max-width:540px;max-height:88dvh;margin:auto;padding:18px;border:1px solid var(--line2);border-radius:14px;background:var(--panel);color:var(--text);box-shadow:0 22px 70px #000c;overflow:auto}
-#chartsWorkspace .charts-market-dialog::backdrop{background:#000b;backdrop-filter:blur(3px)}
-#chartsWorkspace .charts-market-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
-#chartsWorkspace .charts-market-dialog-head h2{margin:4px 0 0;font-size:18px}
-#chartsWorkspace .charts-market-kicker{font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--blue)}
-#chartsWorkspace .charts-market-dialog-note{font-size:11px;line-height:1.5;color:var(--muted);margin:10px 0 14px}
-#chartsWorkspace .charts-market-list{display:flex;flex-direction:column;gap:7px;max-height:42dvh;overflow:auto}
-#chartsWorkspace .charts-market-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--panel3);min-width:0}
-#chartsWorkspace .charts-market-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
-#chartsWorkspace .charts-market-copy strong{font-size:12px;overflow-wrap:anywhere}
-#chartsWorkspace .charts-market-copy code{font-size:10px;color:var(--muted);overflow-wrap:anywhere}
-#chartsWorkspace .charts-market-actions{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:5px;flex:none}
-#chartsWorkspace .charts-market-empty{font-size:11px;color:var(--muted);padding:9px;margin:0}
-#chartsWorkspace .charts-market-form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:end;gap:9px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
-#chartsWorkspace .charts-market-form label{font-size:10px}
-#chartsWorkspace .charts-market-form input{font-size:11px}
-#chartsWorkspace .charts-market-form button{grid-column:1/-1;min-height:34px}
-#chartsWorkspace .charts-market-status{min-height:16px;font-size:10px;line-height:1.4;color:var(--muted);margin:8px 0 0}
-#chartsWorkspace .charts-market-status.charts-status-error{color:var(--amber)}
-@media(max-width:520px){
-  #chartsWorkspace .charts-market-dialog{padding:13px}
-  #chartsWorkspace .charts-market-row{align-items:flex-start;flex-direction:column}
-  #chartsWorkspace .charts-market-actions{width:100%;justify-content:flex-start}
-  #chartsWorkspace .charts-market-form{grid-template-columns:minmax(0,1fr)}
-  #chartsWorkspace .charts-market-form button{grid-column:auto}
-}
+/* Saved markets use the same compact selector pattern as the chart timeframe. */
+#chartsWorkspace .charts-card-actions [data-charts-action="add-market"]{border-color:var(--line2);color:var(--text)}
+#chartsWorkspace .charts-card-actions [data-charts-action="add-market"]:disabled{opacity:.55;cursor:default}

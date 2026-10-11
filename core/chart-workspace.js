@@ -18,6 +18,13 @@
   const preferredDerivSymbol=derivSymbols[0].symbol;
   const derivBySymbol=value=>derivSymbols.find(item=>item.symbol===String(value||'').trim().toUpperCase())||null;
   const derivByMt5Symbol=value=>derivSymbols.find(item=>item.mt5Symbol.toLowerCase()===String(value||'').trim().toLowerCase())||null;
+  function marketFromSymbol(value){
+    const raw=String(value||'').trim();
+    if(/^[a-z][a-z0-9+.-]*:\/\//i.test(raw))return null;
+    const symbol=raw.toUpperCase();
+    if(!symbolPattern.test(symbol))return null;
+    return {name:derivBySymbol(symbol)?.label||symbol,symbol};
+  }
   const symbolPattern=/^[A-Z0-9_]{1,20}:[A-Z0-9_./!^\-]{1,60}$/;
   const clone=value=>JSON.parse(JSON.stringify(value));
   const object=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
@@ -85,5 +92,5 @@
       withdateranges:true,hide_volume:true,studies:[],save_image:false,show_popup_button:true,popup_width:'1200',popup_height:'800',
       support_host:'https://www.tradingview.com'};
   }
-  return {defaults,clone,validate,intervals,timezones,symbolPattern,widgetSettings,derivSymbols,preferredDerivSymbol,derivBySymbol,derivByMt5Symbol,defaultMarkets,validateMarkets,loadMarkets,saveMarkets};
+  return {defaults,clone,validate,intervals,timezones,symbolPattern,widgetSettings,derivSymbols,preferredDerivSymbol,derivBySymbol,derivByMt5Symbol,marketFromSymbol,defaultMarkets,validateMarkets,loadMarkets,saveMarkets};
 });

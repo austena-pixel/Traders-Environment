@@ -116,9 +116,9 @@
     }
     function populateMarketSelect(select,symbol=''){
       if(!select)return;
-      const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Select a saved market';
+      const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Choose a saved market';
       select.replaceChildren(placeholder);
-      markets.forEach(market=>{const option=document.createElement('option');option.value=market.symbol;option.textContent=market.name+' · '+market.symbol;select.appendChild(option)});
+      markets.forEach(market=>{const option=document.createElement('option');option.value=market.symbol;option.textContent=market.name;option.title=market.symbol;select.appendChild(option)});
       select.value=markets.some(market=>market.symbol===symbol)?symbol:'';
     }
     function updateMarketSelects(){
@@ -127,48 +127,47 @@
         const symbol=panel?.querySelector('[data-chart-field="symbol"]')?.value.trim().toUpperCase()||'';
         populateMarketSelect(select,symbol);
       });
-    }
-    function renderMarketDialog(message='',error=false){
-      const dialog=host.querySelector('[data-charts-markets-dialog]'),list=dialog?.querySelector('[data-charts-market-list]');
-      if(!dialog||!list)return;
-      list.replaceChildren();
-      if(!markets.length){const empty=document.createElement('p');empty.className='charts-market-empty';empty.textContent='Your list is empty. Add a market below to use it in chart setup.';list.appendChild(empty)}
-      markets.forEach((market,index)=>{
-        const row=document.createElement('div');row.className='charts-market-row';
-        const details=document.createElement('div');details.className='charts-market-copy';
-        const name=document.createElement('strong');name.textContent=market.name;
-        const symbol=document.createElement('code');symbol.textContent=market.symbol;
-        details.append(name,symbol);
-        const actions=document.createElement('div');actions.className='charts-market-actions';
-        const apply=document.createElement('button');apply.type='button';apply.className='btn small';apply.dataset.chartsAction='apply-market-both';apply.dataset.marketIndex=String(index);apply.textContent='Use in both layouts';
-        const remove=document.createElement('button');remove.type='button';remove.className='btn small';remove.dataset.chartsAction='remove-market';remove.dataset.marketIndex=String(index);remove.textContent='Remove';
-        actions.append(apply,remove);row.append(details,actions);list.appendChild(row);
+      host.querySelectorAll('[data-charts-action="remove-saved-market"]').forEach(button=>{
+        const panel=button.closest('[data-charts-setup-id]');
+        button.disabled=!panel?.querySelector('[data-saved-market]')?.value;
       });
-      const statusNode=dialog.querySelector('[data-charts-market-status]');
-      if(statusNode){statusNode.textContent=message;statusNode.classList.toggle('charts-status-error',error)}
+      updateMarketActionButtons();
     }
-    function openMarketDialog(){
-      const dialog=host.querySelector('[data-charts-markets-dialog]');if(!dialog)return;
-      renderMarketDialog();
-      if(typeof dialog.showModal==='function'){if(!dialog.open)dialog.showModal()}else dialog.setAttribute('open','');
+    function updateMarketActionButtons(){
+      host.querySelectorAll('.charts-card[data-chart-id]').forEach(card=>{
+        const chart=activeCharts().find(item=>item.id===card.dataset.chartId);
+        const symbol=chart?.symbol?.trim().toUpperCase()||'';
+        const button=card.querySelector('[data-charts-action="add-market"]');
+        if(!button)return;
+        const market=P.marketFromSymbol(symbol);
+        const exists=Boolean(market&&markets.some(item=>item.symbol===market.symbol));
+        button.disabled=!market||exists;
+        button.title=exists?'Already saved in your market list':'Add this chart market to your list';
+      });
     }
-    function closeMarketDialog(){
-      const dialog=host.querySelector('[data-charts-markets-dialog]');if(!dialog)return;
-      if(typeof dialog.close==='function'&&dialog.open)dialog.close();else dialog.removeAttribute('open');
+    function addCurrentMarket(card){
+      if(!loaded||!prefs||!card)return;
+      capture();
+      const chart=activeCharts().find(item=>item.id===card.dataset.chartId);
+      const market=P.marketFromSymbol(chart?.symbol);
+      if(!market){status('Enter a valid EXCHANGE:SYMBOL instrument first.',true);return;}
+      if(markets.some(item=>item.symbol===market.symbol)){status(market.name+' is already in your market list.');return;}
+      const next=[...markets,market],invalid=P.validateMarkets(next);
+      if(invalid){status(invalid,true);return;}
+      if(!persistMarketList(next)){status('Your market list could not be saved in this browser.',true);return;}
+      updateMarketSelects();
+      status(market.name+' added to your market list.');
     }
-    function addMarketFromForm(form){
-      const name=form.elements.namedItem('marketName')?.value.trim()||'';
-      const symbol=(form.elements.namedItem('marketSymbol')?.value||'').trim().toUpperCase();
-      const next=[...markets,{name,symbol}],invalid=P.validateMarkets(next);
-      if(invalid){renderMarketDialog(invalid,true);return}
-      if(!persistMarketList(next)){renderMarketDialog('Your market list could not be saved in this browser. Your current list is unchanged.',true);return}
-      form.reset();updateMarketSelects();renderMarketDialog('Market added and saved on this device.');
-    }
-    function removeMarketAt(index){
-      if(!Number.isInteger(index)||index<0||index>=markets.length)return;
-      const next=markets.filter((_,itemIndex)=>itemIndex!==index);
-      if(!persistMarketList(next)){renderMarketDialog('Your market list could not be saved in this browser. Your current list is unchanged.',true);return}
-      updateMarketSelects();renderMarketDialog('Market removed from this device.');
+    function removeSelectedMarket(button){
+      const panel=button.closest('[data-charts-setup-id]');
+      const select=panel?.querySelector('[data-saved-market]');
+      const symbol=select?.value;
+      if(!symbol)return;
+      const market=markets.find(item=>item.symbol===symbol);
+      if(!market)return;
+      if(!persistMarketList(markets.filter(item=>item.symbol!==symbol))){status('Your market list could not be saved in this browser.',true);return;}
+      updateMarketSelects();
+      status(market.name+' removed from your market list.');
     }
     function status(message,error=false){
       const node=host.querySelector('[data-charts-status]');
@@ -233,15 +232,18 @@
       description.textContent=chart?.responsibility||'Configure chart';
       title.append(label,description);
       const instrument=form.querySelector('.charts-symbol');
+      const marketField=document.createElement('div');marketField.className='charts-market-field';
       const preset=document.createElement('label');
       preset.className='charts-market-picker';
-      preset.textContent='My markets';
+      preset.textContent='Market';
       const select=document.createElement('select');
       select.dataset.savedMarket='';
-      select.setAttribute('aria-label','Chart '+(index+1)+' saved market');
+      select.setAttribute('aria-label','Chart '+(index+1)+' market');
       preset.appendChild(select);
       populateMarketSelect(select,chart?.symbol||'');
-      instrument.before(preset);
+      const remove=document.createElement('button');remove.type='button';remove.className='btn small charts-market-remove';remove.dataset.chartsAction='remove-saved-market';remove.textContent='Remove';remove.title='Remove the selected market from your saved list';remove.setAttribute('aria-label','Remove selected market from your saved list');remove.disabled=true;
+      marketField.append(preset,remove);
+      instrument.before(marketField);
       const hint=document.createElement('div');
       hint.className='charts-deriv-mapping';
       hint.dataset.derivMapping='';
@@ -440,13 +442,13 @@
       if(stored){chart.symbol=stored.symbol;chart.interval=stored.interval;}
       const panel=[...host.querySelectorAll('[data-charts-setup-id]')].find(p=>p.dataset.chartsSetupId===chart.id);
       if(panel){panel.querySelector('[data-chart-field="symbol"]').value=chart.symbol;panel.querySelector('[data-chart-field="interval"]').value=chart.interval;syncDerivHint(panel);}
-      mountChart(card,true);changed();
+      updateMarketSelects();mountChart(card,true);changed();
     }
     function refreshWidgets(){host.querySelectorAll('[data-chart-id]').forEach(card=>mountChart(card))}
     function cardMarkup(chart,index){return `<section class="charts-card" data-chart-id="${escape(chart.id)}" aria-label="Chart ${index+1}">
             <div class="charts-card-top"><strong>Chart ${index+1}</strong><div class="charts-card-actions">
               ${index===0?`<button class="btn small charts-reveal-controls" type="button" data-charts-action="toggle-panel" aria-controls="chartsPanel" aria-expanded="${!controlsCollapsed}" ${controlsCollapsed?'':'hidden'}>Show controls</button><button class="btn small charts-account-link" type="button" data-charts-action="manage-deriv-account" title="Manage the selected Deriv MT5 account inside T-IOS">Deriv account</button><a class="btn small charts-tv-link" href="https://www.tradingview.com/chart/?symbol=${escape(encodeURIComponent(chart.symbol))}" target="_blank" rel="noopener noreferrer" data-charts-tv-chart title="Open the T-IOS configured symbol on TradingView in a new tab; widget toolbar changes are not tracked">Open TradingView ↗</a>`:''}
-              <button class="btn small" type="button" data-charts-action="capture" title="Capture this chart as evidence for a trade">Capture</button><button class="btn small" type="button" data-charts-action="reset-chart" title="Reload this chart to its saved instrument, or the configured instrument if no saved chart exists">Reset instrument</button><button class="btn small" type="button" data-charts-action="expand" aria-expanded="false">Expand</button></div></div>
+              <button class="btn small" type="button" data-charts-action="capture" title="Capture this chart as evidence for a trade">Capture</button><button class="btn small" type="button" data-charts-action="add-market" title="Add this chart market to your saved list">Add market</button><button class="btn small" type="button" data-charts-action="reset-chart" title="Reload this chart to its saved instrument, or the configured instrument if no saved chart exists">Reset instrument</button><button class="btn small" type="button" data-charts-action="expand" aria-expanded="false">Expand</button></div></div>
             <form class="charts-controls">
               <label class="charts-symbol">Instrument<input data-chart-field="symbol" aria-label="Chart ${index+1} instrument" value="${escape(chart.symbol)}" maxlength="81" placeholder="FX:EURUSD" list="charts-symbols" required spellcheck="false" autocomplete="off"></label>
               <label>Timeframe<select data-chart-field="interval" aria-label="Chart ${index+1} timeframe">${P.intervals.map(([value,label])=>`<option value="${value}" ${chart.interval===value?'selected':''}>${label}</option>`).join('')}</select></label>
@@ -711,9 +713,7 @@
           <div class="charts-section-title">Appearance</div>
           <label class="charts-setting">Chart theme<select data-charts-setting="theme"><option value="dark" ${prefs.theme==='dark'?'selected':''}>Dark</option><option value="light" ${prefs.theme==='light'?'selected':''}>Light</option></select></label>
           <label class="charts-setting">Timezone<select data-charts-setting="timezone">${P.timezones.map(([value,label])=>`<option value="${value}" ${prefs.timezone===value?'selected':''}>${label}</option>`).join('')}</select></label>
-          <div class="charts-section-title">Deriv preferences</div>
-          <button class="btn small charts-deriv-default" type="button" data-charts-action="manage-markets">My trading markets</button>
-          <p class="charts-deriv-note">Add the markets you trade, then choose one from each chart’s My markets selector. This list is saved in this browser for your T-IOS account.</p>
+          <div class="charts-section-title">Deriv data tools</div>
           <a class="btn small charts-deriv-default" href="deriv-feed-check.html" target="_blank" rel="noopener noreferrer" data-charts-feed-test aria-describedby="charts-feed-test-note">Open Deriv feed test ↗</a>
           <p id="charts-feed-test-note" class="charts-deriv-note">Read-only connection test. On the test page, press Connect public feed. Public prices remain unverified against MT5.</p>
           <button class="btn small charts-deriv-default" type="button" data-charts-action="start-public-quote">Start live Deriv quote</button>
@@ -741,20 +741,10 @@
         </div>
           </div>
         </div>
-        <dialog class="charts-market-dialog" data-charts-markets-dialog aria-labelledby="chartsMarketsTitle">
-          <div class="charts-market-dialog-head"><div><span class="charts-market-kicker">T·IOS Charts</span><h2 id="chartsMarketsTitle">My trading markets</h2></div><button class="btn small" type="button" data-charts-action="close-markets" aria-label="Close market list">Close</button></div>
-          <p class="charts-market-dialog-note">Add a name and TradingView EXCHANGE:SYMBOL. Select a market in each chart setup, or apply one to both layouts here. Your list is saved on this device for your T-IOS account.</p>
-          <div class="charts-market-list" data-charts-market-list></div>
-          <form class="charts-market-form" data-charts-market-form>
-            <label>Market name<input name="marketName" maxlength="60" autocomplete="off" placeholder="e.g. Volatility 75 (1s) Index" required></label>
-            <label>TradingView symbol<input name="marketSymbol" maxlength="81" autocomplete="off" placeholder="e.g. DERIV:VOLATILITY_75_1S_INDEX" required spellcheck="false"></label>
-            <button class="btn primary" type="submit">Add market</button>
-          </form>
-          <p class="charts-market-status" data-charts-market-status role="status" aria-live="polite"></p>
-        </dialog>
         <datalist id="charts-symbols"><option value="FX:EURUSD"><option value="FX:GBPUSD"><option value="OANDA:XAUUSD"><option value="NASDAQ:AAPL"><option value="BINANCE:BTCUSDT"></datalist>`;
       initializeChartsPanelResize();
       host.querySelectorAll('.charts-grid [data-chart-id]').forEach((card,index)=>relocateControls(card,index));
+      updateMarketSelects();
       host.querySelector('.charts-panel').inert=controlsCollapsed;
       changed();refreshWidgets();
       renderPublicQuote();
@@ -813,14 +803,13 @@
       }
     }
     host.addEventListener('submit',event=>{
-      if(event.target.matches('[data-charts-market-form]')){event.preventDefault();addMarketFromForm(event.target);return;}
       if(!event.target.matches('.charts-controls'))return;
-      event.preventDefault();capture();mountChart(cardForControl(event.target));changed();
+      event.preventDefault();capture();updateMarketSelects();mountChart(cardForControl(event.target));changed();
     });
     host.addEventListener('input',event=>{
       if(!event.target.matches('[data-chart-field]'))return;
       capture();changed();
-      if(event.target.dataset.chartField==='symbol')syncDerivHint(event.target.closest('[data-charts-setup-id]'));
+      if(event.target.dataset.chartField==='symbol'){const panel=event.target.closest('[data-charts-setup-id]');syncDerivHint(panel);updateMarketSelects();}
       const card=cardForControl(event.target);
       if(event.target.dataset.chartField==='responsibility'){
         const summary=event.target.closest('[data-charts-setup-id]')?.querySelector('.charts-setup-caption');
@@ -837,7 +826,7 @@
         if(!event.target.value)return;
         const panel=event.target.closest('[data-charts-setup-id]');
         panel.querySelector('[data-chart-field="symbol"]').value=event.target.value;
-        capture();syncDerivHint(panel);changed();
+        capture();syncDerivHint(panel);changed();updateMarketSelects();
         mountChart(cardForControl(event.target));
         return;
       }
@@ -870,10 +859,8 @@
       if(action==='instruments')setSidebarMode(sidebarMode==='settings'?'instruments':'settings');
       if(action==='manage-deriv-account')document.querySelector('.nav-btn[data-page="settings"]')?.click();
       if(action==='retry-instruments')mountInstruments();
-      if(action==='manage-markets'){openMarketDialog();return;}
-      if(action==='close-markets'){closeMarketDialog();return;}
-      if(action==='apply-market-both'){applyMarketToBothLayouts(markets[Number(button.dataset.marketIndex)]);return;}
-      if(action==='remove-market'){removeMarketAt(Number(button.dataset.marketIndex));return;}
+      if(action==='add-market'){addCurrentMarket(button.closest('[data-chart-id]'));return;}
+      if(action==='remove-saved-market'){removeSelectedMarket(button);return;}
       if(action==='start-public-quote')startPublicQuote();
       if(action==='stop-public-quote')stopPublicQuote();
       if(action==='hide-public-quote'){quoteShown=false;stopPublicQuote();}
