@@ -1912,16 +1912,7 @@ body.playbook-workspace .main{
 @media(prefers-reduced-motion:reduce){
   .stats-indicator-card,.stats-autozoom-thumb{transition:none}
 }
-.stats-analysis-pair{
-  display:block;
-  grid-column:1 / -1;
-  min-width:0;
-  min-height:140px;
-  padding:10px 12px 11px;
-  border:1px solid #1c2a39;
-  border-radius:14px;
-  background:linear-gradient(145deg,#101a26,#0b1119);
-}
+.stats-analysis-module{min-width:0;justify-content:flex-start}
 .stats-analysis-pair-head{
   display:flex;
   align-items:center;
@@ -1935,19 +1926,12 @@ body.playbook-workspace .main{
   text-transform:uppercase;
 }
 .stats-analysis-pair-head strong{
+  margin-left:auto;
   color:#cbd6e4;
   font-size:9px;
   font-variant-numeric:tabular-nums;
   letter-spacing:0;
 }
-.stats-analysis-pair-grid{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  min-width:0;
-}
-.stats-analysis-module{min-width:0;padding:0 10px}
-.stats-analysis-module:first-child{padding-left:0;padding-right:12px}
-.stats-analysis-module+ .stats-analysis-module{border-left:1px solid #263446;padding-right:0;padding-left:12px}
 .stats-analysis-title-row{display:flex;align-items:center;justify-content:space-between;gap:6px}
 .stats-analysis-title-row h4{margin:0;color:#dce5f0;font-size:9px;font-weight:750}
 .stats-analysis-kicker{color:#738298;font-size:6px;font-weight:800;letter-spacing:.55px;white-space:nowrap}
@@ -2024,9 +2008,6 @@ body.playbook-workspace .main{
 .stats-expectancy-labels small{display:block;color:#9ba8bb;font-size:8px;font-weight:700}
 .stats-expectancy-labels strong{display:block;margin-top:4px;font-size:13px;line-height:1.2;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 @media(max-width:520px){
-  .stats-analysis-pair{padding:9px}
-  .stats-analysis-module:first-child{padding-right:8px}
-  .stats-analysis-module+ .stats-analysis-module{padding-left:8px}
   .stats-analysis-title-row h4{font-size:8px}
   .stats-analysis-value{font-size:14px}
 }
@@ -7033,13 +7014,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               </div>
             </section>
 
-            <section class="stats-analysis-pair stats-indicator-card stats-autozoom-bottom-anchor" aria-label="Maximum drawdown and average P&amp;L per trade analytics">
-              <header class="stats-analysis-pair-head">
-                <span>Risk &amp; expectancy</span>
-                <strong id="statAnalysisWinRate">—</strong>
-              </header>
-              <div class="stats-analysis-pair-grid">
-                <section class="stats-analysis-module" aria-labelledby="statDrawdownTitle">
+            <section class="stats-analysis-module stats-indicator-card stats-autozoom-bottom-anchor" tabindex="0" aria-labelledby="statDrawdownTitle">
+              <header class="stats-analysis-pair-head"><span>Risk &amp; expectancy</span></header>
                   <div class="stats-analysis-title-row">
                     <h4 id="statDrawdownTitle">Maximum drawdown vs profit peak</h4>
                     <span class="stats-analysis-kicker">MAX</span>
@@ -7066,7 +7042,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
                    </div>
                   <span class="stats-analysis-caption" id="statDrawdownCaption">Maximum drawdown unavailable.</span>
                 </section>
-                <section class="stats-analysis-module" aria-labelledby="statExpectancyTitle">
+                <section class="stats-analysis-module stats-indicator-card stats-autozoom-bottom-anchor" tabindex="0" aria-labelledby="statExpectancyTitle">
+                  <header class="stats-analysis-pair-head"><strong id="statAnalysisWinRate">—</strong></header>
                   <div class="stats-analysis-title-row">
                     <h4 id="statExpectancyTitle">Average P&amp;L per trade</h4>
                     <span class="stats-analysis-kicker">PER TRADE</span>
@@ -7083,8 +7060,6 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
                   </div>
                   <span class="stats-analysis-caption" id="statExpectancyCaption">Average trade return unavailable.</span>
                 </section>
-              </div>
-            </section>
           </aside>
         </div>
       </section>
