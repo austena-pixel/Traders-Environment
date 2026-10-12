@@ -1913,6 +1913,14 @@ body.playbook-workspace .main{
   .stats-indicator-card,.stats-autozoom-thumb{transition:none}
 }
 .stats-analysis-module{min-width:0;justify-content:flex-start}
+.stats-execution-axis{color:#a8b5c6;font-size:8px;line-height:1.3;margin-top:7px}
+.stats-execution-x{text-align:center;margin-top:0}
+.stats-execution-chart{display:block;width:100%;height:96px;overflow:visible}
+.stats-execution-groups{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:6px;text-align:center;font-size:8px;line-height:1.35}
+.stats-execution-groups>div{min-width:0;overflow-wrap:anywhere}
+.stats-execution-groups strong,.stats-execution-groups span{display:block}
+.stats-execution-groups span{color:#9ba8bb}
+.stats-execution-insight{margin:7px 0 0;color:#aebbc9;font-size:8px;line-height:1.4;overflow-wrap:anywhere}
 .stats-analysis-pair-head{
   display:flex;
   align-items:center;
@@ -7014,34 +7022,14 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               </div>
             </section>
 
-            <section class="stats-analysis-module stats-indicator-card stats-autozoom-bottom-anchor" tabindex="0" aria-labelledby="statDrawdownTitle">
-              <header class="stats-analysis-pair-head"><span>Risk &amp; expectancy</span></header>
-                  <div class="stats-analysis-title-row">
-                    <h4 id="statDrawdownTitle">Maximum drawdown vs profit peak</h4>
-                    <span class="stats-analysis-kicker">MAX</span>
-                  </div>
-                  <strong class="stats-analysis-value neutral" id="statDrawdownValue">—</strong>
-                  <div class="stats-drawdown-plot">
-                    <svg class="stats-drawdown-spark" viewBox="0 0 220 72" preserveAspectRatio="none" role="img" aria-labelledby="statDrawdownSparkTitle statDrawdownSparkDesc">
-                      <title id="statDrawdownSparkTitle">Profit peak, maximum loss, and largest winning trade profile</title>
-                      <desc id="statDrawdownSparkDesc">Drawdown profile unavailable.</desc>
-                      <path class="stats-drawdown-baseline" id="statDrawdownBaseline" d=""></path>
-                      <path class="stats-drawdown-profit-peak" id="statDrawdownProfitPeakPath" d=""></path>
-                      <path class="stats-drawdown-equity-line" id="statDrawdownEquityPath" d=""></path>
-                      <path class="stats-drawdown-line" id="statDrawdownPath" d=""></path>
-                      <path class="stats-drawdown-loss-drop" id="statDrawdownDropPath" d=""></path>
-                      <circle class="stats-drawdown-marker stats-drawdown-peak-marker" id="statDrawdownPeakMarker" cx="0" cy="0" r="0"></circle>
-                      <circle class="stats-drawdown-marker stats-drawdown-trough-marker" id="statDrawdownTroughMarker" cx="0" cy="0" r="0"></circle>
-                    </svg>
-                    <span class="stats-drawdown-max-win pos" id="statDrawdownMaxWin" hidden aria-live="polite"></span>
-                  </div>
-                   <div class="stats-drawdown-legend" aria-hidden="true">
-                     <span><i class="peak"></i>Profit peak</span>
-                     <span><i class="equity"></i>Equity path</span>
-                     <span><i class="loss"></i>Max loss</span>
-                   </div>
-                  <span class="stats-analysis-caption" id="statDrawdownCaption">Maximum drawdown unavailable.</span>
-                </section>
+            <section class="stats-analysis-module stats-indicator-card stats-autozoom-bottom-anchor" tabindex="0" aria-labelledby="statExecutionProfitTitle">
+              <div class="stats-analysis-title-row"><h4 id="statExecutionProfitTitle">Execution Quality vs Profitability</h4></div>
+              <div class="stats-execution-axis">Y · Average P&amp;L per trade ($)</div>
+              <svg id="statExecutionProfitChart" class="stats-execution-chart" viewBox="0 0 260 112" role="img" aria-label="Execution quality comparison awaiting records"></svg>
+              <div class="stats-execution-axis stats-execution-x">X · Execution Quality (%)</div>
+              <div id="statExecutionProfitGroups" class="stats-execution-groups" aria-label="Group averages and trade counts"></div>
+              <p id="statExecutionProfitInsight" class="stats-execution-insight" aria-live="polite">No eligible trades in this period.</p>
+            </section>
                 <section class="stats-analysis-module stats-indicator-card stats-autozoom-bottom-anchor" tabindex="0" aria-labelledby="statExpectancyTitle">
                   <header class="stats-analysis-pair-head"><strong id="statAnalysisWinRate">—</strong></header>
                   <div class="stats-analysis-title-row">
@@ -14537,19 +14525,64 @@ function buildDrawdownProfileDiagram(series,drawdown){
   };
 }
 
+// Scores are Journal percentages, not the legacy persisted 0–10 field.
+// Boundaries are [0,50), [50,80), [80,100], including fractional scores.
+function executionProfitabilityStats(source,scoreForTrade=executionScoreForTrade){
+  const groups=['0–49%','50–79%','80–100%'].map(label=>({label,count:0,total:0,average:null}));
+  let excluded=0;
+  (Array.isArray(source)?source:[]).forEach(trade=>{
+    const score=trade?scoreForTrade(trade.id):null;
+    const pnl=trade?.pnl;
+    if(!Number.isFinite(score)||score<0||score>100||
+      !['number','string'].includes(typeof pnl)||String(pnl).trim()===''||!Number.isFinite(Number(pnl))){
+      excluded++;return;
+    }
+    const group=groups[score<50?0:score<80?1:2];
+    group.count++;group.total+=Number(pnl);
+  });
+  groups.forEach(group=>{if(group.count)group.average=group.total/group.count;});
+  return {groups,excluded,eligible:groups.reduce((sum,group)=>sum+group.count,0)};
+}
+function executionProfitabilityInsight(stats){
+  if(!stats.eligible)return 'No eligible trades in this period. Add Journal execution reviews and net P&L.';
+  if(stats.groups.some(group=>group.count<5))return 'Insufficient evidence: need at least 5 eligible trades in each group to compare outcomes.';
+  const [low,mid,high]=stats.groups.map(group=>group.average);
+  let finding='No consistent association between higher execution quality and better average P&L in this sample.';
+  if(high>low&&mid>=low&&high>=mid)finding='Higher execution quality is associated with better average P&L in this sample.';
+  else if(high<low&&mid<=low&&high<=mid)finding='Higher execution quality is associated with lower average P&L in this sample.';
+  return finding+' Descriptive only; not causation or statistical proof.';
+}
+function renderExecutionProfitability(source){
+  const chart=document.getElementById('statExecutionProfitChart');
+  if(!chart)return;
+  const stats=executionProfitabilityStats(source);
+  const limit=Math.max(1,...stats.groups.map(group=>Math.abs(group.average||0)));
+  const compact=value=>new Intl.NumberFormat('en-US',{notation:'compact',maximumFractionDigits:1}).format(value);
+  // A symmetric dollar scale keeps positive/negative bars comparable and zero visible.
+  let svg='<title>Execution Quality vs Profitability</title>';
+  [limit,0,-limit].forEach(value=>{
+    const y=52-value/limit*40;
+    svg+='<line x1="48" y1="'+y+'" x2="258" y2="'+y+'" stroke="'+(value===0?'#9eacbe':'#293748')+'" stroke-width="'+(value===0?'1.5':'0.7')+'"/>';
+    svg+='<text x="43" y="'+(y+3)+'" text-anchor="end" fill="#a8b5c6" font-size="10">'+compact(value)+'</text>';
+  });
+  stats.groups.forEach((group,index)=>{
+    const x=83+index*70;
+    const color=group.average>0?'#25d07d':group.average<0?'#ff5d68':'#a8b5c6';
+    const height=group.count?Math.abs(group.average)/limit*40:0;
+    const label=group.label+': '+(group.count?signedMoney(group.average)+' average net P&L':'no eligible trades')+', '+group.count+' trades';
+    if(group.count&&height>0)svg+='<rect x="'+(x-17)+'" y="'+(group.average>0?52-height:52)+'" width="34" height="'+height+'" rx="2" fill="'+color+'"><title>'+label+'</title></rect>';
+    else svg+='<text x="'+x+'" y="46" text-anchor="middle" fill="#a8b5c6" font-size="10">'+(group.count?'$0':'—')+'</text>';
+    svg+='<text x="'+x+'" y="108" text-anchor="middle" fill="#c8d3e1" font-size="10">'+group.label+'</text>';
+  });
+  chart.innerHTML=svg;
+  chart.setAttribute('aria-label',stats.groups.map(group=>group.label+': '+group.count+' trades, '+(group.count?signedMoney(group.average)+' average net P&L':'no data')).join('; '));
+  document.getElementById('statExecutionProfitGroups').innerHTML=stats.groups.map(group=>
+    '<div><span>'+group.label+'</span><strong style="color:'+(group.average>0?'#25d07d':group.average<0?'#ff5d68':'#a8b5c6')+'">'+(group.count?signedMoney(group.average):'—')+'</strong><span>'+group.count+' trade'+(group.count===1?'':'s')+'</span></div>').join('');
+  document.getElementById('statExecutionProfitInsight').textContent=executionProfitabilityInsight(stats)+(stats.excluded?' '+stats.excluded+' excluded: missing/invalid score or P&L.':'');
+}
+
 function renderDrawdownExpectancyDiagram(drawdown,series,expectancy,avgTradeReturn,winRate,source,avgWin,avgLoss){
   const winRateNode=$('#statAnalysisWinRate');
-  const drawdownValue=$('#statDrawdownValue');
-  const drawdownCaption=$('#statDrawdownCaption');
-  const drawdownPath=$('#statDrawdownPath');
-  const drawdownBaseline=$('#statDrawdownBaseline');
-  const drawdownEquityPath=$('#statDrawdownEquityPath');
-  const drawdownPeakPath=$('#statDrawdownProfitPeakPath');
-  const drawdownDropPath=$('#statDrawdownDropPath');
-  const drawdownPeakMarker=$('#statDrawdownPeakMarker');
-  const drawdownTroughMarker=$('#statDrawdownTroughMarker');
-  const drawdownDescription=$('#statDrawdownSparkDesc');
-  const maxWinNode=$('#statDrawdownMaxWin');
   const expectancyValue=$('#statExpectancyValue');
   const expectancyCaption=$('#statExpectancyCaption');
   const expectancyBar=$('#statExpectancyBar');
@@ -14562,77 +14595,7 @@ function renderDrawdownExpectancyDiagram(drawdown,series,expectancy,avgTradeRetu
   const complete=validTrades.length===trades.length;
   const hasTrades=trades.length>0;
   const winners=validTrades.filter(trade=>Number(trade.pnl)>0).length;
-  const maxWinStats=maxWinningTradeStats(trades);
   winRateNode.textContent=hasTrades&&complete&&Number.isFinite(winRate)?winRate.toFixed(1)+'% win rate':'— win rate';
-  const clearDrawdownProfile=()=>{
-    [drawdownBaseline,drawdownEquityPath,drawdownPeakPath,drawdownPath,drawdownDropPath].forEach(node=>node.setAttribute('d',''));
-    [drawdownPeakMarker,drawdownTroughMarker].forEach(node=>node.setAttribute('r','0'));
-    maxWinNode.hidden=true;
-    maxWinNode.textContent='';
-    maxWinNode.setAttribute('aria-label','Largest winning trade unavailable.');
-  };
-
-  if(!hasTrades){
-    drawdownValue.textContent='—';
-    drawdownValue.className='stats-analysis-value neutral';
-    drawdownCaption.textContent='No closed trades in this period.';
-    clearDrawdownProfile();
-    drawdownDescription.textContent='No closed trades are available to show a drawdown profile.';
-  }else if(!complete||!Number.isFinite(drawdown?.amount)){
-    drawdownValue.textContent='—';
-    drawdownValue.className='stats-analysis-value neutral';
-    drawdownCaption.textContent='Unavailable: recorded P&L is incomplete.';
-    clearDrawdownProfile();
-    drawdownDescription.textContent='Drawdown profile unavailable because one or more selected trades have missing P&L.';
-  }else{
-    drawdownValue.textContent=drawdown.amount>0?signedMoney(-drawdown.amount):signedMoney(0);
-    drawdownValue.className='stats-analysis-value '+(drawdown.amount>0?'neg':'neutral');
-    drawdownCaption.textContent=drawdown.amount>0
-      ? Number.isFinite(drawdown.pct)
-        ? formatReturnPct(-drawdown.pct)+' vs '+formatProfitFactorCurrency(drawdown.profitPeak)+' profit peak'
-        : 'From profit peak · percentage unavailable'
-      : 'No drawdown recorded from a profit peak.';
-    const profile=buildDrawdownProfileDiagram(series,drawdown);
-    drawdownBaseline.setAttribute('d',profile.baselinePath);
-    drawdownEquityPath.setAttribute('d',profile.equityPath);
-    drawdownPeakPath.setAttribute('d',profile.peakGuidePath);
-    drawdownPath.setAttribute('d',profile.maxLossPath);
-    drawdownDropPath.setAttribute('d',profile.lossDropPath);
-    if(maxWinStats.status==='available'){
-      const label='Max win '+signedMoney(maxWinStats.value);
-      maxWinNode.textContent=label;
-      maxWinNode.className='stats-drawdown-max-win pos';
-      maxWinNode.setAttribute('aria-label','Largest winning trade: '+signedMoney(maxWinStats.value)+'.');
-      maxWinNode.hidden=false;
-    }else if(maxWinStats.status==='no-winners'){
-      maxWinNode.textContent='Max win —';
-      maxWinNode.className='stats-drawdown-max-win neutral';
-      maxWinNode.setAttribute('aria-label','No winning trades recorded in this period.');
-      maxWinNode.hidden=false;
-    }else{
-      maxWinNode.hidden=true;
-    }
-    if(profile.peakPoint){
-      drawdownPeakMarker.setAttribute('cx',profile.peakPoint.x.toFixed(1));
-      drawdownPeakMarker.setAttribute('cy',profile.peakPoint.y.toFixed(1));
-      drawdownPeakMarker.setAttribute('r','3');
-      drawdownTroughMarker.setAttribute('cx',profile.troughPoint.x.toFixed(1));
-      drawdownTroughMarker.setAttribute('cy',profile.troughPoint.y.toFixed(1));
-      drawdownTroughMarker.setAttribute('r','3');
-    }else{
-      drawdownPeakMarker.setAttribute('r','0');
-      drawdownTroughMarker.setAttribute('r','0');
-    }
-    const maxWinDescription=maxWinStats.status==='available'
-      ? ' The largest winning trade was '+signedMoney(maxWinStats.value)+'.'
-      : maxWinStats.status==='no-winners'
-        ? ' No winning trades were recorded.'
-        : '';
-    drawdownDescription.textContent=drawdown.amount>0
-      ? 'Gold traces selected-period equity from the opening balance. Green marks the '+(drawdown.profitPeak>0?'profit peak':'break-even reference')+'; red highlights the maximum drop to the trough, '+signedMoney(-drawdown.amount)+(Number.isFinite(drawdown.pct)?', equal to '+formatReturnPct(-drawdown.pct)+' of the '+formatProfitFactorCurrency(drawdown.profitPeak)+' profit peak.':'; no positive profit peak was recorded, so a percentage is unavailable.')+maxWinDescription
-      : 'Gold traces selected-period equity from the opening balance. No drawdown was recorded across '+trades.length+' selected closed trades.'+maxWinDescription;
-  }
-
   if(!hasTrades||!complete||!Number.isFinite(expectancy)){
     expectancyValue.textContent='—';
     expectancyValue.className='stats-analysis-value neutral';
@@ -14825,6 +14788,7 @@ function renderStatistics(){
   $('#statRecoveryFactor').textContent=
     recoveryFactor===Infinity ? '∞' : recoveryFactor.toFixed(2);
 
+  renderExecutionProfitability(source);
   renderStatisticsIndicators(returnPct,winRate,source,profitFactorStats);
   renderDrawdownExpectancyDiagram(profitPeakDrawdown,series,expectancy,avgTradeReturn,winRate,source,avgWin,avgLoss);
   renderEquityChart(series);
