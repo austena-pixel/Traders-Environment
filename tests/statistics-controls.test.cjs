@@ -144,7 +144,7 @@ assert.ok(!html.includes('X-axis = trade number (T0, T1, T2, T3...).'),'highligh
 assert.match(html,/id="statsAutoZoomBtn"[^>]*aria-pressed="true"[^>]*aria-controls="statsIndicatorStack"/,'Auto Zoom starts enabled and controls the sidebar');
 assert.match(html,/<aside class="stats-indicator-stack stats-autozoom" id="statsIndicatorStack"/,'zoom scope is the right analytics sidebar');
 assert.match(html,/\.stats-indicator-stack\.stats-autozoom \.stats-indicator-card\.stats-card-zoomed\{\s*transform:scale\(/,'sidebar analytics cards receive the zoom transform');
-assert.ok(html.includes('class="stats-analysis-pair stats-indicator-card stats-autozoom-bottom-anchor"'),'Risk & Expectancy keeps its bottom-up zoom anchor');
+assert.equal((html.match(/class="stats-analysis-module stats-indicator-card stats-autozoom-bottom-anchor"/g)||[]).length,2,'Both separate analysis cards keep their bottom-up zoom anchors');
 assert.match(html,/\.stats-indicator-stack\.stats-autozoom \.stats-indicator-card\.stats-autozoom-bottom-anchor\.stats-card-zoomed\{\s*transform-origin:right bottom;/,'Risk & Expectancy expands upward from its bottom-right edge');
 assert.match(html,/transform-origin:right top;/,'top analytics cards keep their right edge inside the page while zooming');
 assert.ok(html.includes('id="equityChart"'),'Equity Curve remains present');
