@@ -7031,7 +7031,6 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               <p id="statExecutionProfitInsight" class="stats-execution-insight" aria-live="polite">No eligible trades in this period.</p>
             </section>
                 <section class="stats-analysis-module stats-indicator-card stats-autozoom-bottom-anchor" tabindex="0" aria-labelledby="statExpectancyTitle">
-                  <header class="stats-analysis-pair-head"><strong id="statAnalysisWinRate">—</strong></header>
                   <div class="stats-analysis-title-row">
                     <h4 id="statExpectancyTitle">Average P&amp;L per trade</h4>
                     <span class="stats-analysis-kicker">PER TRADE</span>
@@ -14582,7 +14581,6 @@ function renderExecutionProfitability(source){
 }
 
 function renderDrawdownExpectancyDiagram(drawdown,series,expectancy,avgTradeReturn,winRate,source,avgWin,avgLoss){
-  const winRateNode=$('#statAnalysisWinRate');
   const expectancyValue=$('#statExpectancyValue');
   const expectancyCaption=$('#statExpectancyCaption');
   const expectancyBar=$('#statExpectancyBar');
@@ -14595,7 +14593,6 @@ function renderDrawdownExpectancyDiagram(drawdown,series,expectancy,avgTradeRetu
   const complete=validTrades.length===trades.length;
   const hasTrades=trades.length>0;
   const winners=validTrades.filter(trade=>Number(trade.pnl)>0).length;
-  winRateNode.textContent=hasTrades&&complete&&Number.isFinite(winRate)?winRate.toFixed(1)+'% win rate':'— win rate';
   if(!hasTrades||!complete||!Number.isFinite(expectancy)){
     expectancyValue.textContent='—';
     expectancyValue.className='stats-analysis-value neutral';
