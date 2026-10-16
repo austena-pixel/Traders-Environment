@@ -21,10 +21,17 @@
     condition:nullable(condition),maximum:nullable({type:'number',enum:[10]})
   });
   const textColor=nullable({anyOf:[enumeration(['red','orange','yellow','green','blue','purple','pink','black','white','gray','default']),{type:'string',pattern:'^#[0-9a-fA-F]{6}$'}]});
+  const formatting=nullable(obj({
+    align:nullable(enumeration(['left','center','right'])),spacing:nullable(enumeration(['compact','normal','relaxed'])),
+    border:nullable(enumeration(['default','none','thin','strong'])),preset:nullable(enumeration(['plain','card','highlight','minimal'])),
+    layout:nullable(enumeration(['vertical','row','columns-2','columns-3','squares'])),
+    fontSize:nullable({type:'integer',minimum:8,maximum:72}),
+    bold:nullable({type:'boolean'}),italic:nullable({type:'boolean'}),underline:nullable({type:'boolean'})
+  }));
   const operation=obj({
-    action:enumeration(['insert','update','remove','remove_section','move','group','style']),
+    action:enumeration(['insert','update','rename','remove','remove_section','move','group','style']),
     targetId:nullable(id),afterId:nullable(id),beforeId:nullable(id),node:nullable(node),
-    members:list(id,20),logic:nullable(enumeration(['all','any','exclusive'])),dependsOn:nullable(id),color:textColor
+    members:list(id,20),logic:nullable(enumeration(['all','any','exclusive'])),dependsOn:nullable(id),color:textColor,formatting
   });
   const proposal=obj({
     intent:enumeration(['create','edit']),kind:enumeration(['playbook','checklist','psych']),
@@ -47,6 +54,8 @@
       if(typeof value!=='string')return [path+' must be text.'];
       if(value.length>(schema.maxLength||10000))errors.push(path+' is too long.');
       if(schema.pattern&&!new RegExp(schema.pattern).test(value))errors.push(path+' has an invalid identifier.');
+    }else if(type==='boolean'){
+      if(typeof value!=='boolean')return [path+' must be true or false.'];
     }else if(type==='number'||type==='integer'){
       if(typeof value!=='number'||!Number.isFinite(value)||(type==='integer'&&!Number.isInteger(value)))return [path+' must be a finite number.'];
       if(schema.minimum!=null&&value<schema.minimum||schema.maximum!=null&&value>schema.maximum)errors.push(path+' is out of range.');
@@ -63,11 +72,13 @@
     if(!p.operations.length&&!p.name&&!p.description)errors.push('The proposal contains no changes.');
     for(const op of p.operations){
       if(op.beforeId&&op.afterId)errors.push('Choose either a before or after position.');
-      if(['update','remove','remove_section','move','style'].includes(op.action)&&!op.targetId)errors.push('The change needs a target.');
-      if(['insert','update'].includes(op.action)&&!op.node)errors.push('The change needs a structured node.');
+      if(['update','rename','remove','remove_section','move','style'].includes(op.action)&&!op.targetId)errors.push('The change needs a target.');
+      if(['insert','update','rename'].includes(op.action)&&!op.node)errors.push('The change needs a structured node.');
       if(op.action==='group'&&(op.members.length<2||!op.logic||!op.node))errors.push('A logic group needs a node, logic and at least two conditions.');
-      if(op.action==='style'&&(!op.color||op.node||op.beforeId||op.afterId||op.members.length))errors.push('A heading text-color change needs an existing target and a color, with no replacement node.');
+      if(op.action==='style'&&(!(op.color||op.formatting&&Object.values(op.formatting).some(v=>v!==null))||op.node||op.beforeId||op.afterId||op.members.length||op.logic||op.dependsOn))errors.push('A style change needs an existing target and supported formatting, with no replacement node or logic changes.');
       if(op.action!=='style'&&op.color!==null)errors.push('Only a style operation may change text color.');
+      if(op.action!=='style'&&op.formatting!==null)errors.push('Only a style operation may change formatting.');
+      if(op.action==='rename'&&(op.node?.id!==op.targetId||op.beforeId||op.afterId||op.members.length||op.logic||op.dependsOn||op.node?.condition||op.node?.dependsOn||op.node?.options.length||op.node?.logic!=='all'))errors.push('A rename changes only the label, keeping the existing block ID, position and conditions.');
       if(op.node){
         if(!op.node.label.trim())errors.push('Every new block needs a label.');
         if(op.node.type==='choice'&&op.node.options.length<2)errors.push('A choice needs at least two options.');

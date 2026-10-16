@@ -15,6 +15,16 @@
 .ti-ai-types{display:flex;gap:6px;flex-wrap:wrap;padding:0 22px 12px;flex:0 0 auto}
 .ti-ai-types button[aria-pressed="true"]{border-color:#689bd0;background:#23466c;color:#fff}
 .ti-ai-status{padding:0 22px 12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:5px;color:#9db4cc;font-size:11px;flex:0 0 auto;border-bottom:1px solid #22364d}.ti-ai-status small{font-size:10px;color:#7e9ab6}
+.ti-ai-status [data-ai-engine="local"],.ti-ai-status [data-ai-engine="clarify"],.ti-ai-status [data-ai-engine="undo"]{color:#99d8b3}
+.ti-ai-status [data-ai-engine="ai"]{color:#b3cffa}
+[data-ti-text-block][data-playbook-font-size]{font-size:var(--pb-font-size)!important}
+[data-ti-text-block][data-playbook-font-size] :is(p,.ti-logic-option,.ti-logic-heading b){font-size:inherit}
+[data-ti-text-block][data-playbook-bold="true"],[data-ti-text-block][data-playbook-bold="true"] :is(p,.ti-logic-option){font-weight:700}
+[data-ti-text-block][data-playbook-bold="false"],[data-ti-text-block][data-playbook-bold="false"] :is(b,strong){font-weight:400}
+[data-ti-text-block][data-playbook-italic="true"]{font-style:italic}
+[data-ti-text-block][data-playbook-italic="false"],[data-ti-text-block][data-playbook-italic="false"] :is(i,em){font-style:normal}
+[data-ti-text-block][data-playbook-underline="true"]{text-decoration:underline}
+[data-ti-text-block][data-playbook-underline="false"],[data-ti-text-block][data-playbook-underline="false"] u{text-decoration:none}
 .ti-ai-messages{flex:1 1 0;min-height:40px;overflow-y:auto;overscroll-behavior:contain;padding:20px max(22px,calc((100% - 900px)/2));scrollbar-gutter:stable}
 .ti-ai-welcome{max-width:620px;margin:clamp(18px,8vh,90px) auto 18px;font-size:15px;line-height:1.8;color:#9bb1c7;text-align:center}
 .ti-ai-message{max-width:90%;padding:13px 16px;margin:0 0 16px;border-radius:13px;background:#152233;border:1px solid #263a51;overflow-wrap:anywhere}
@@ -95,3 +105,4 @@
 .ti-ai-builder.ti-ai-chat-expanded .ti-ai-composer-actions small{font-size:9px}
 .ti-ai-builder [data-ai-expand][aria-pressed="true"]{border-color:#79bafa;background:#24466a;color:#fff}
 @media(max-width:860px){.ti-ai-builder .ti-ai-messages{max-height:none;min-height:220px}.ti-ai-builder .ti-ai-form{padding:9px 12px}.ti-ai-builder .ti-ai-head{padding:10px 12px 6px}.ti-ai-builder .ti-ai-types{padding:0 12px 7px}.ti-ai-builder .ti-ai-status{padding:0 12px 7px}}
+@media(max-height:700px) and (min-width:861px){.ti-ai-builder .ti-ai-messages{min-height:40px}}

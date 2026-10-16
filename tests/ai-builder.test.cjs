@@ -5,7 +5,7 @@ const contract=require('../technical-instruments/ai-builder-schema.js');
 const service=require('../server/ai-builder-service.cjs');
 const handler=require('../api/tios-ai-builder.js');
 const node=(id,label,type='rule')=>({id,label,type,level:null,options:[],logic:'all',dependsOn:null,condition:null,maximum:type==='score'?10:null});
-const operation=node=>({action:'insert',targetId:null,beforeId:null,afterId:null,node,members:[],logic:null,dependsOn:null,color:null});
+const operation=node=>({action:'insert',targetId:null,beforeId:null,afterId:null,node,members:[],logic:null,dependsOn:null,color:null,formatting:null});
 const answer={message:'A rule is ready for review.',questions:[],proposal:{intent:'create',kind:'checklist',name:'Risk',description:null,operations:[operation(node('risk','Risk no more than 1%.'))]}};
 const request={message:'Create a 1% risk rule.',history:[],context:{kind:'checklist',name:'',description:'',blocks:[]}};
 const config={url:'https://example.supabase.co',key:'qa-public',model:'openai/gpt-4.1-mini',token:'qa-secret'};
@@ -28,7 +28,7 @@ test('unnamed numbered rules request names instead of a fabricated proposal or e
     assert.deepEqual(contract.validateResponse(result),[]);
   }
   assert.equal(service.clarifyUnderspecifiedRules({...request,message:'Create 2 rules: Maximum risk 1%, Trade only the London session'}),null);
-  assert.equal(service.clarifyUnderspecifiedRules({...request,message:'Create 5 rules: Rule 1 to Rule 5',context:{...request.context,kind:'psych'}}),null);
+  assert.equal(service.clarifyUnderspecifiedRules({...request,message:'Create 5 rules: Rule 1 to Rule 5',context:{...request.context,kind:'psych'}}).proposal,null);
 });
 test('unnamed rule clarification happens without reserving or calling the AI provider',async()=>{
   const original=global.fetch;let reservations=0,modelCalls=0;
@@ -122,5 +122,21 @@ test('API accepts image bodies above the old text-only bound and rejects oversiz
 test('quota response supplies the real retry delay and reset time without calling the paid model',async()=>{
   const original=global.fetch;let generated=0;global.fetch=async url=>{if(url.endsWith('/auth/v1/user'))return response({id:'qa-user'});if(url.includes('/rpc/'))return response([{allowed:false,retry_after:7200}]);generated++;throw Error('A blocked request must not reach the model')};
   try{const before=Date.now(),result=res();await handler({method:'POST',headers:{host:'app.example','content-type':'application/json',authorization:'Bearer qa-user'},body:{...request,images:[picture()]}},result);assert.equal(result.statusCode,429);assert.equal(result.headers['Retry-After'],'7200');assert.equal(result.body.error.code,'usage_limit');assert.match(result.body.error.message,/daily/);assert.equal(result.body.error.retryAfter,7200);const reset=Date.parse(result.body.error.resetAt);assert.ok(reset>=before+7200000&&reset<=Date.now()+7200000);assert.equal(generated,0)}finally{global.fetch=original}
+});
+test('a forged local engine or account identity cannot bypass server validation and quota',async()=>{
+  const original=global.fetch;let modelCalls=0,reservations=0;const authenticatedTokens=[];
+  global.fetch=async(url,options)=>{
+    if(url.endsWith('/auth/v1/user')){authenticatedTokens.push(options.headers.Authorization);return response({id:'token-owner'})}
+    if(url.includes('/rpc/')){reservations++;assert.equal(options.headers.Authorization,'Bearer token-owner');return response([{allowed:false,retry_after:86400}])}
+    modelCalls++;throw Error('A quota denial must stop paid generation');
+  };
+  try{
+    for(const extra of [{engine:'local'},{userId:'someone-else'},{accountId:'other-account'}]){
+      const result=res();await handler({method:'POST',headers:{host:'app.example','content-type':'application/json',authorization:'Bearer token-owner'},body:{...request,...extra}},result);assert.equal(result.statusCode,400);
+    }
+    assert.equal(reservations,0);assert.equal(modelCalls,0);
+    const limited=res();await handler({method:'POST',headers:{host:'app.example','content-type':'application/json',authorization:'Bearer token-owner'},body:request},limited);
+    assert.equal(limited.statusCode,429);assert.deepEqual(authenticatedTokens,['Bearer token-owner']);assert.equal(reservations,1);assert.equal(modelCalls,0);
+  }finally{global.fetch=original}
 });
 module.exports={node,operation};

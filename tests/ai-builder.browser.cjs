@@ -8,7 +8,7 @@ const root=path.resolve(__dirname,'..');
 const output=process.env.TIOS_QA_OUTPUT||path.resolve(root,'../qa/ai-builder');
 const userId='00000000-0000-4000-a000-000000000001';
 const node=(id,label,type='rule',extra={})=>({id,label,type,level:type==='heading'?2:null,options:[],logic:'all',dependsOn:null,condition:null,maximum:type==='score'?10:null,...extra});
-const op=(data,extra={})=>({action:'insert',targetId:null,beforeId:null,afterId:null,node:data,members:[],logic:null,dependsOn:null,color:null,...extra});
+const op=(data,extra={})=>({action:'insert',targetId:null,beforeId:null,afterId:null,node:data,members:[],logic:null,dependsOn:null,color:null,formatting:null,...extra});
 const proposal=(kind,name,operations,intent='create')=>({message:'Prepared a structured instrument for review.',questions:[],proposal:{kind,name,description:null,operations,intent}});
 const choice=(id,label,logic,labels)=>node(id,label,'choice',{logic,options:labels.map((label,i)=>({id:id+'_option_'+i,label,condition:null}))});
 const risk={type:'risk_limit',verification:'objective',field:'account_risk',operator:'lte',value:1,unit:'percent',timeframe:null,parameters:[]};
@@ -17,13 +17,13 @@ const playbook=()=>proposal('playbook','Imbalance Method',[
   op(node('entry_heading','Entry Requirements','heading')),op(node('entry','Price reaches my area of interest.','rule',{dependsOn:'market',condition:{type:'observation',verification:'subjective',field:null,operator:null,value:null,unit:null,timeframe:null,parameters:[]}})),
   op(node('risk_heading','Risk Management','heading')),op(node('risk','Risk no more than 1% of equity.','rule',{condition:risk}))
 ]);
-let queue=[],calls=[],checks=0,quota=true,quotaRetryAfter=60,requests=0;
+let queue=[],calls=[],checks=0,quota=true,quotaRetryAfter=60,requests=0,reservations=0;
 const pass=message=>{checks++;console.log('PASS '+message)};
 const originalFetch=global.fetch;
 const json=(data,status=200)=>({ok:status>=200&&status<300,status,json:async()=>data});
 global.fetch=async(url,options)=>{
   if(String(url).endsWith('/auth/v1/user'))return json({id:userId,is_anonymous:false});
-  if(String(url).includes('/rpc/tios_ai_reserve_request'))return json([{allowed:quota,retry_after:quotaRetryAfter}]);
+  if(String(url).includes('/rpc/tios_ai_reserve_request')){reservations++;return json([{allowed:quota,retry_after:quotaRetryAfter}])}
   if(String(url)==='https://ai-gateway.vercel.sh/v1/chat/completions'){
     calls.push(JSON.parse(options.body));const next=queue.shift();if(!next)throw Error('No test model response queued.');
     if(next.delay)await new Promise(r=>setTimeout(r,next.delay));
@@ -36,7 +36,15 @@ process.env.SUPABASE_URL='https://fixture.supabase.co';process.env.SUPABASE_PUBL
 let page,browser;
 const config={playbook:{page:'#page-playbook',editor:'#playbookDocumentEditor',title:'#playbookDraftTitle',model:'#playbookExecutionPreviewBody'},checklist:{page:'#page-checklists',editor:'[data-ti-editor]',title:'[data-ti-title]',model:'[data-ti-preview-body]'},psych:{page:'#page-reflections',editor:'[data-ti-editor]',title:'[data-ti-title]',model:'[data-ti-preview-body]'}};
 const active=kind=>page.locator(config[kind].page),panel=kind=>page.locator('#tiAiBuilder_'+kind),editor=kind=>active(kind).locator(config[kind].editor),model=kind=>active(kind).locator(config[kind].model);
-async function send(kind,message,answer,extra={}){queue.push({answer,...extra});await panel(kind).locator('textarea').fill(message);await panel(kind).locator('[data-ai-send]').click();await page.waitForFunction(kind=>!document.querySelector('#tiAiBuilder_'+kind+' textarea').disabled,kind);}
+// These existing regression cases explicitly exercise the paid reasoning path.
+async function send(kind,message,answer,extra={}){message='Analyze this request and prepare one coherent proposal: '+message;queue.push({answer,...extra});await panel(kind).locator('textarea').fill(message);await panel(kind).locator('[data-ai-send]').click();await page.waitForFunction(kind=>!document.querySelector('#tiAiBuilder_'+kind+' textarea').disabled,kind);}
+async function sendLocal(kind,message){
+  const before={requests,reservations,calls:calls.length};
+  await panel(kind).locator('textarea').fill(message);assert.equal(await panel(kind).locator('[data-ai-send]').isEnabled(),true);
+  await panel(kind).locator('[data-ai-send]').click();await page.waitForFunction(kind=>!document.querySelector('#tiAiBuilder_'+kind+' textarea').disabled,kind);
+  assert.deepEqual({requests,reservations,calls:calls.length},before,'Local edits/clarifications never reach the API, quota RPC or provider');
+}
+async function conditions(kind){return editor(kind).evaluate(el=>[...el.querySelectorAll('[data-ti-ai-condition],[data-playbook-node="condition-group"],[data-ti-condition-member],[data-playbook-node="psych-prompt"]')].map(n=>({id:n.dataset.tiAiNodeId,logic:n.dataset.tiLogic,dependsOn:n.dataset.tiDependsOn,condition:n.dataset.tiCondition,conditionLabel:n.dataset.tiConditionLabel,reflectionId:n.dataset.tiReflectionId,responseType:n.dataset.tiResponseType})));}
 async function switchTo(kind){await page.evaluate(kind=>switchTechnicalInstrumentBuilder(kind),kind);if(!await panel(kind).isVisible())await active(kind).locator('[data-ai-toggle]').click();}
 async function snapshot(kind){return page.evaluate(kind=>{const w=window.TIOSAIWorkspace,s=w.capture(kind);return {html:s.doc.documentHtml,name:s.doc.name,id:s.id,store:localStorage.getItem(s.storageKey),key:s.storageKey}},kind)}
 async function attach(kind,extensions=['png']){await panel(kind).locator('[data-ai-file]').setInputFiles(extensions.map(extension=>path.join(__dirname,'fixtures/edge-reference.'+extension)));await page.waitForFunction(kind=>!document.querySelector('#tiAiBuilder_'+kind+' [data-ai-attachments]').textContent.includes('Preparing pictures'),kind)}
@@ -94,14 +102,14 @@ async function run(){
     pass('instrument buttons stay available in AI mode and restore each conversation draft');
     // The progress label reflects the requested operation, never claims an applied save.
     queue.push({answer:proposal('playbook',null,[], 'edit'),delay:6500});
-    await panel('playbook').locator('textarea').fill('Remove the old section and insert rules and a heading.');
+    await panel('playbook').locator('textarea').fill('Analyze which blocks to remove and insert rules and a heading.');
     await panel('playbook').locator('[data-ai-send]').click();
     await page.waitForFunction(()=>document.querySelector('#tiAiBuilder_playbook [data-ai-working]')?.hidden===false);
     const stages=[];
     for(let i=0;i<5;i++){stages.push(await panel('playbook').locator('[data-ai-working-message]').textContent());await page.waitForTimeout(1150)}
-    assert.ok(stages.some(s=>/Reading your request/i.test(s)));
+    assert.ok(stages.some(s=>/Reviewing your methodology/i.test(s)));
     assert.ok(stages.some(s=>/Locating blocks to remove/i.test(s)));
-    assert.ok(stages.some(s=>/Preparing requested removal/i.test(s)));
+    assert.ok(stages.some(s=>/Analyzing conditions/i.test(s)));
     assert.match(await panel('playbook').locator('[data-ai-working]').textContent(),/nothing saved until you approve/i);
     await panel('playbook').locator('[data-ai-cancel]').click();
     assert.equal(await panel('playbook').locator('[data-ai-working]').isVisible(),false);
@@ -145,7 +153,7 @@ async function run(){
     await send('playbook','Remove the risk requirement.',proposal('playbook',null,[{...op(null),action:'remove',targetId:'risk'}],'edit'));await panel('playbook').locator('[data-ai-apply]').click();
     assert.match(await editor('playbook').innerHTML(),/<b>Keep this manual note.<\/b>/);assert.doesNotMatch(await editor('playbook').textContent(),/Risk no more/);await panel('playbook').locator('[data-ai-undo]').click();assert.equal((await snapshot('playbook')).html,manual.html);
     pass('targeted deletion preserves manual content and formatting, then Undo restores the rule');
-    queue.push({answer:proposal('playbook','Outdated Name',[],'edit'),delay:500});await panel('playbook').locator('textarea').fill('Rename this playbook.');await panel('playbook').locator('[data-ai-send]').click();
+    queue.push({answer:proposal('playbook','Outdated Name',[],'edit'),delay:500});await panel('playbook').locator('textarea').fill('Analyze how to rename this playbook.');await panel('playbook').locator('[data-ai-send]').click();
     await page.waitForFunction(()=>document.querySelector('#tiAiBuilder_playbook textarea').disabled);
     await editor('playbook').evaluate(el=>{el.insertAdjacentHTML('beforeend','<p>A newer manual edit.</p>');el.dispatchEvent(new Event('input',{bubbles:true}))});
     await page.waitForFunction(()=>!document.querySelector('#tiAiBuilder_playbook textarea').disabled);assert.match(await panel('playbook').locator('[data-ai-error]').textContent(),/changed while AI/);assert.match(await editor('playbook').textContent(),/newer manual edit/);assert.equal(await panel('playbook').locator('[data-ai-proposal]').isVisible(),false);
@@ -175,6 +183,44 @@ async function run(){
     assert.match((await snapshot('playbook')).html,/data-playbook-color-text="\#ff0000"/);
     await panel('playbook').locator('[data-ai-undo]').click();
     pass('heading color proposal affects Live Model, preserves heading identity, and is undoable');
+    const localBaseline=await snapshot('playbook'),originalConditions=await conditions('playbook');
+    await sendLocal('playbook','Change only the Market Context heading to red.');
+    assert.equal(await editor('playbook').locator('[data-ti-ai-node-id="market_heading"]').getAttribute('data-playbook-color-text'),'#ff0000');
+    assert.equal(await model('playbook').locator('[data-playbook-color-text="#ff0000"]').first().evaluate(el=>getComputedStyle(el).color),'rgb(255, 0, 0)');
+    assert.deepEqual(await conditions('playbook'),originalConditions);assert.equal((await snapshot('playbook')).store,localBaseline.store);
+    await panel('playbook').locator('[data-ai-apply]').click();assert.match((await snapshot('playbook')).html,/data-playbook-color-text="#ff0000"/);
+    await sendLocal('playbook','Undo the last approved change');assert.equal((await snapshot('playbook')).store===localBaseline.store,false);assert.equal(await model('playbook').locator('[data-playbook-color-text="#ff0000"]').count(),0);
+    await panel('playbook').locator('[data-ai-discard]').click();assert.equal(await model('playbook').locator('[data-playbook-color-text="#ff0000"]').count(),1);
+    await sendLocal('playbook','Undo the last approved change');await panel('playbook').locator('[data-ai-apply]').click();assert.equal((await snapshot('playbook')).html,localBaseline.html);
+    pass('local heading color and typed Undo use real preview/Apply/Discard without any API, quota or provider request');
+    const formattingBaseline=await snapshot('playbook');
+    await sendLocal('playbook','Align heading Market Context to the center');
+    await sendLocal('playbook','Set font size of heading Market Context to 24 px');
+    await sendLocal('playbook','Make heading Market Context bold');
+    const formatModel=model('playbook').locator('[data-playbook-font-size="24"]');
+    assert.equal(await formatModel.evaluate(el=>getComputedStyle(el).textAlign),'center');assert.equal(await formatModel.evaluate(el=>getComputedStyle(el).fontSize),'24px');assert.equal(await formatModel.evaluate(el=>getComputedStyle(el).fontWeight),'700');
+    assert.deepEqual(await conditions('playbook'),originalConditions);assert.equal((await snapshot('playbook')).store,formattingBaseline.store);await panel('playbook').locator('[data-ai-discard]').click();
+    await sendLocal('playbook','Change block risk to green');
+    assert.equal(await model('playbook').locator('[data-ti-ai-group="risk"]').evaluate(el=>getComputedStyle(el).color),'rgb(0, 128, 0)');assert.deepEqual(await conditions('playbook'),originalConditions);await panel('playbook').locator('[data-ai-discard]').click();
+    await sendLocal('playbook','Change paragraph “Keep this manual note.” to blue');
+    assert.equal(await model('playbook').locator('[data-playbook-color-text="#0000ff"]').first().evaluate(el=>getComputedStyle(el).color),'rgb(0, 0, 255)');await panel('playbook').locator('[data-ai-discard]').click();
+    pass('local alignment, font size, emphasis, rule and paragraph color render accurately while execution IDs and parameters remain intact');
+    for(const instruction of ['Change heading to red','Remove missing heading','Change heading Market Context to red and analyze my methodology']){
+      await sendLocal('playbook',instruction);assert.equal(await panel('playbook').locator('[data-ai-proposal]').isVisible(),false);assert.equal((await snapshot('playbook')).store,formattingBaseline.store);assert.equal((await snapshot('playbook')).html,formattingBaseline.html);
+    }
+    pass('ambiguous targets and mixed edit/analysis instructions ask locally and leave both document and storage unchanged');
+    await sendLocal('playbook','Remove Market Context section');assert.match(await panel('playbook').locator('[data-ai-error]').textContent(),/earlier valid prerequisite/);assert.equal(await panel('playbook').locator('[data-ai-proposal]').isVisible(),false);assert.equal((await snapshot('playbook')).store,formattingBaseline.store);
+    pass('a local compile failure protects linked prerequisites without saving or falling through to paid AI');
+    await sendLocal('playbook','Create five rules');assert.match(await panel('playbook').locator('.ti-ai-message.assistant').last().textContent(),/What should I name the five rules/);
+    await sendLocal('playbook','Risk, Entry, Exit, Context, Discipline');assert.equal(await panel('playbook').locator('[data-ai-proposal]').isVisible(),false);assert.match(await panel('playbook').locator('.ti-ai-message.assistant').last().textContent(),/each rule check/);
+    await sendLocal('playbook','Risk: Maximum risk is 1%\nEntry: Wait for my signal\nExit: Close at my target\nContext: Use my named context\nDiscipline: Follow my plan');
+    assert.equal(await editor('playbook').locator('[data-ti-ai-node-id^="local_"][data-playbook-node="rule"]').count(),5);assert.equal((await snapshot('playbook')).store,formattingBaseline.store);await panel('playbook').locator('[data-ai-discard]').click();
+    await sendLocal('playbook','Add a heading called “Risk Summary” before heading “Risk Management”');assert.match(await model('playbook').textContent(),/Risk Summary/);await panel('playbook').locator('[data-ai-discard]').click();
+    await sendLocal('playbook','Rename block risk to “Risk Limit”');assert.equal(await editor('playbook').locator('[data-ti-ai-node-id="risk"]').getAttribute('data-ti-condition-status'),'needs-review');assert.equal((await conditions('playbook')).find(n=>n.id==='risk').condition,originalConditions.find(n=>n.id==='risk').condition);await panel('playbook').locator('[data-ai-discard]').click();
+    await sendLocal('playbook','Move heading Risk Management before heading Market Context');assert.equal(await editor('playbook').locator('h2').first().textContent(),'Risk Management');await panel('playbook').locator('[data-ai-discard]').click();
+    await sendLocal('playbook','Remove Risk Management section');assert.doesNotMatch(await model('playbook').textContent(),/Risk no more/);await panel('playbook').locator('[data-ai-discard]').click();
+    assert.equal((await snapshot('playbook')).html,formattingBaseline.html);
+    pass('local names/conditions follow-up, positioned insert, rename, move and section removal are approval-only and never invent conditions');
     const beforeInvalid=await snapshot('playbook');await send('playbook','Add an invalid dependency.',proposal('playbook',null,[op(node('invalid','Dependent condition','rule',{dependsOn:'missing_condition'}))],'edit'));
     assert.match(await panel('playbook').locator('[data-ai-error]').textContent(),/valid prerequisite/);assert.equal((await snapshot('playbook')).store,beforeInvalid.store);
     pass('missing or forward dependency references fail validation before preview or persistence');
@@ -270,14 +316,24 @@ async function run(){
     await page.goto(url,{waitUntil:'load'});await initialize();await switchTo('playbook');assert.equal((await snapshot('playbook')).id,imageSaved.id);assert.match(await model('playbook').textContent(),/0.73%/);assert.equal(await panel('playbook').locator('img').count(),0);
     pass('approved image-derived rules survive reload while private reference pictures remain session-only');
     quota=false;quotaRetryAfter=7200;await attach('playbook');const limitedSnapshot=await snapshot('playbook'),beforeLimit=requests;await send('playbook','Add a condition.',playbook());
-    assert.match(await panel('playbook').locator('[data-ai-error]').textContent(),/daily usage limit.*Try again at/);assert.equal(await panel('playbook').locator('[data-ai-send]').isDisabled(),true);assert.match(await panel('playbook').locator('[data-ai-send]').textContent(),/Retry in 2h/);assert.equal(await panel('playbook').locator('textarea').inputValue(),'Add a condition.');assert.equal(await panel('playbook').locator('.ti-ai-message.user img').count(),1);assert.equal((await snapshot('playbook')).store,limitedSnapshot.store);
-    await panel('playbook').locator('textarea').press('Enter');await switchTo('checklist');await panel('checklist').locator('textarea').fill('Try from another instrument.');assert.equal(await panel('checklist').locator('[data-ai-send]').isDisabled(),true);await switchTo('playbook');assert.equal(requests,beforeLimit+1);
+    assert.match(await panel('playbook').locator('[data-ai-error]').textContent(),/daily usage limit.*Try again at/);assert.equal(await panel('playbook').locator('[data-ai-send]').isDisabled(),true);assert.match(await panel('playbook').locator('[data-ai-send]').textContent(),/Retry in 2h/);assert.equal(await panel('playbook').locator('textarea').inputValue(),'Analyze this request and prepare one coherent proposal: Add a condition.');assert.equal(await panel('playbook').locator('.ti-ai-message.user img').count(),1);assert.equal((await snapshot('playbook')).store,limitedSnapshot.store);
+    await panel('playbook').locator('textarea').press('Enter');await switchTo('checklist');await panel('checklist').locator('textarea').fill('Analyze from another instrument.');assert.equal(await panel('checklist').locator('[data-ai-send]').isDisabled(),true);await switchTo('playbook');assert.equal(requests,beforeLimit+1);
+    const limitedLocalBaseline=await snapshot('playbook');await sendLocal('playbook','Add a heading called “Local Limit Check”');
+    assert.match(await model('playbook').textContent(),/Local Limit Check/);assert.equal((await snapshot('playbook')).store,limitedLocalBaseline.store);await panel('playbook').locator('[data-ai-apply]').click();
+    await sendLocal('playbook','Undo the last approved change');await panel('playbook').locator('[data-ai-apply]').click();
+    await attach('playbook',['jpg']);await sendLocal('playbook','Add a heading called “Unsent Image Edit”');assert.equal(await panel('playbook').locator('[data-ai-attachments] img').count(),1);await panel('playbook').locator('[data-ai-discard]').click();await panel('playbook').locator('[data-ai-remove-image]').click();
+    await sendLocal('playbook','Create five rules');assert.match(await panel('playbook').locator('.ti-ai-message.assistant').last().textContent(),/What should I name/);
+    await switchTo('checklist');const limitedRules=await snapshot('checklist');await sendLocal('checklist','Add a heading called “Local Rules Check”');assert.match(await model('checklist').textContent(),/Local Rules Check/);await panel('checklist').locator('[data-ai-discard]').click();assert.equal((await snapshot('checklist')).store,limitedRules.store);
+    await switchTo('psych');const limitedPsych=await snapshot('psych'),reflectionConditions=await conditions('psych');await sendLocal('psych','Add a heading called “Local Reflection Check”');await panel('psych').locator('[data-ai-discard]').click();assert.equal((await snapshot('psych')).store,limitedPsych.store);
+    await sendLocal('psych','Make block score_0 bold');assert.deepEqual(await conditions('psych'),reflectionConditions);await panel('psych').locator('[data-ai-apply]').click();await panel('psych').locator('[data-ai-undo]').click();assert.deepEqual(await conditions('psych'),reflectionConditions);
+    await switchTo('playbook');await panel('playbook').locator('textarea').fill('Analyze my current risk');assert.equal(await panel('playbook').locator('[data-ai-send]').isDisabled(),true);assert.equal(requests,beforeLimit+1);
+    pass('exhausted daily allowance still permits local preview, Apply, Undo and free clarification across Playbook, Rules and Reflection while AI remains blocked');
     quota=true;queue.length=0;await page.evaluate(()=>{window.qaOriginalNow=Date.now;Date.now=()=>qaOriginalNow()+7201000});await page.waitForFunction(()=>!document.querySelector('#tiAiBuilder_playbook [data-ai-send]').disabled);await page.evaluate(()=>{Date.now=qaOriginalNow});assert.equal(requests,beforeLimit+1);assert.equal(await panel('playbook').locator('[data-ai-error]').isVisible(),false);
     // Existing instrument navigation saves its timestamp. Compare the retry against that saved version.
     const retryBaseline=await snapshot('playbook');assert.equal(retryBaseline.html,limitedSnapshot.html);assert.equal(retryBaseline.name,limitedSnapshot.name);
     await send('playbook','Build the risk rule from my retained picture.',imageRule());assert.equal(calls.at(-1).messages.at(-1).content.filter(part=>part.type==='image_url').length,1);await panel('playbook').locator('[data-ai-discard]').click();assert.equal((await snapshot('playbook')).store,retryBaseline.store);
     pass('daily limit shows a local reset time and countdown, keeps the picture and draft, blocks repeated sends across instruments, and permits a manual retry after expiry');
-    quota=false;quotaRetryAfter=60;await send('playbook','Try another small change.',playbook());quota=true;queue.length=0;await panel('playbook').locator('[data-ai-new]').click();await panel('playbook').locator('textarea').fill('New chat still respects the allowance.');assert.equal(await panel('playbook').locator('[data-ai-send]').isDisabled(),true);await page.evaluate(()=>{window.qaOriginalNow=Date.now;Date.now=()=>qaOriginalNow()+61000});await page.waitForFunction(()=>!document.querySelector('#tiAiBuilder_playbook [data-ai-send]').disabled);await page.evaluate(()=>{Date.now=qaOriginalNow});
+    quota=false;quotaRetryAfter=60;await send('playbook','Try another small change.',playbook());quota=true;queue.length=0;await panel('playbook').locator('[data-ai-new]').click();await panel('playbook').locator('textarea').fill('Analyze why the new chat still respects the allowance.');assert.equal(await panel('playbook').locator('[data-ai-send]').isDisabled(),true);await page.evaluate(()=>{window.qaOriginalNow=Date.now;Date.now=()=>qaOriginalNow()+61000});await page.waitForFunction(()=>!document.querySelector('#tiAiBuilder_playbook [data-ai-send]').disabled);await page.evaluate(()=>{Date.now=qaOriginalNow});
     pass('New chat cannot bypass the short-term request limit and expiry makes no automatic model request');
     for(const [status,type,expected]of [[402,null,/add AI Gateway Credits/],[403,'customer_verification_required',/valid payment method/],[402,'quota_for_entity_exceeded',/spend budget/]]){
       await send('playbook','Create a new method.',null,{status,type});const message=await panel('playbook').locator('[data-ai-error]').textContent();assert.match(message,expected);assert.doesNotMatch(message,/Private provider diagnostic/);assert.equal(await panel('playbook').locator('[data-ai-proposal]').isVisible(),false);
@@ -297,6 +353,10 @@ async function run(){
     await active('playbook').locator('[data-ai-toggle]').click();assert.equal(await panel('playbook').locator('textarea').inputValue(),'');assert.doesNotMatch(await panel('playbook').locator('[data-ai-messages]').textContent(),/Private account draft|Imbalance Method/);assert.notEqual((await snapshot('playbook')).key,accountStore.key);assert.equal(await page.evaluate(key=>localStorage.getItem(key),accountStore.key),accountStore.store);
     assert.equal(await panel('playbook').locator('img').count(),0);await send('playbook','Capture this new account method.',{message:'Please describe your method.',questions:['What is the method?'],proposal:null});assert.equal(typeof calls.at(-1).messages.at(-1).content,'string');
     pass('changing accounts clears text and images, loads an independent library and sends no earlier-account pictures');
+    const isolated=await snapshot('playbook');await sendLocal('playbook','Add a heading called “Account Two Only”');await panel('playbook').locator('[data-ai-apply]').click();assert.match((await snapshot('playbook')).html,/Account Two Only/);assert.equal(await page.evaluate(key=>localStorage.getItem(key),accountStore.key),accountStore.store);
+    await page.evaluate(()=>{window.qaSession=db.auth.getSession;db.auth.getSession=async()=>({data:{session:{access_token:'another-session',user:{id:'another-user'}}}})});
+    const isolatedSaved=await snapshot('playbook');await sendLocal('playbook','Add a heading called “Wrong Session”');assert.match(await panel('playbook').locator('[data-ai-error]').textContent(),/session expired/);assert.equal((await snapshot('playbook')).store,isolatedSaved.store);assert.doesNotMatch(await model('playbook').textContent(),/Wrong Session/);await page.evaluate(()=>{db.auth.getSession=qaSession});
+    pass('local proposals save only to the active account and a mismatched authenticated session cannot prepare an edit');
     await panel('playbook').locator('textarea').fill('Private draft');await attach('playbook');await page.evaluate(()=>{currentUser=null;setLoggedInUI(false)});assert.equal(await panel('playbook').locator('textarea').inputValue(),'');assert.equal(await panel('playbook').locator('[data-ai-messages]').textContent().then(t=>t.includes('Private draft')),false);assert.equal(await panel('playbook').locator('img').count(),0);
     pass('closing restores manual editing; signing out clears drafts, histories, proposals and undo context');
     assert.deepEqual(errors,[]);console.log('All '+checks+' AI Builder browser checks passed.');

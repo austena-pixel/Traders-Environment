@@ -3,11 +3,11 @@
   const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const makeId=prefix=>prefix+'_'+crypto.randomUUID().replaceAll('-','');
   const clean=node=>{const n=node.cloneNode(true);n.querySelectorAll('.pb-doc-label,.pb-doc-remove-btn,[data-instrument-remove-reflection]').forEach(x=>x.remove());return (n.textContent||'').replace(/\s+/g,' ').trim()};
-  const meaningful='h1,h2,h3,p,blockquote,ul,ol,li,[data-playbook-node]';
-  function documentHost(html){const host=document.createElement('div');host.innerHTML=html||'';let index=0;
+  const meaningful='h1,h2,h3,p,blockquote,ul,ol,li,[data-playbook-node],[data-ti-function-heading]';
+  function documentHost(html){const host=document.createElement('div');host.innerHTML=html||'';let index=0;const used=new Set([...host.querySelectorAll('[data-ti-ai-node-id]')].map(n=>n.dataset.tiAiNodeId));
     [...host.querySelectorAll(meaningful)].filter(el=>!el.closest('.pb-doc-choice-options')&&!el.closest('.pb-doc-label')&&!el.closest('[data-playbook-node="image"]')&&!el.closest('[data-playbook-node="image-field"]')).forEach(el=>{
       if(el.closest('.pb-doc-remove-btn'))return;
-      if(!el.dataset.tiAiNodeId)el.dataset.tiAiNodeId='b_'+index;index++;
+      if(!el.dataset.tiAiNodeId){while(used.has('b_'+index))index++;el.dataset.tiAiNodeId='b_'+index;used.add('b_'+index)}index++;
     });return host;
   }
   function type(node){
@@ -15,7 +15,7 @@
     if(node.dataset.playbookNode==='psych-prompt')return node.dataset.tiResponseType==='score'?'score':'prompt';
     if(node.dataset.playbookNode==='choice')return 'choice';
     if(node.dataset.playbookNode==='rule'||node.tagName==='LI')return 'rule';
-    if(/^H[123]$/.test(node.tagName))return 'heading';
+    if(/^H[123]$/.test(node.tagName)||node.dataset.tiFunctionHeading)return 'heading';
     if(node.dataset.playbookNode==='note'||node.tagName==='BLOCKQUOTE')return 'note';
     if(node.tagName==='P'&&!node.closest('[data-playbook-node]'))return 'text';
     return 'preserved';
@@ -23,7 +23,10 @@
   function summarize(html){
     const host=documentHost(html);
     return [...host.querySelectorAll('[data-ti-ai-node-id]')].filter(n=>!n.parentElement.closest('[data-playbook-node="rule"],[data-playbook-node="choice"],[data-playbook-node="psych-prompt"],[data-playbook-node="note"]')).map(n=>({
-      id:n.dataset.tiAiNodeId,type:type(n),label:clean(n).slice(0,1200),parentId:n.parentElement?.closest('[data-ti-ai-node-id]')?.dataset.tiAiNodeId||null,
+      id:n.dataset.tiAiNodeId,type:type(n),label:(type(n)==='group'?n.dataset.tiGroupLabel||clean(n):clean(n)).slice(0,1200),parentId:n.parentElement?.closest('[data-ti-ai-node-id]')?.dataset.tiAiNodeId||null,
+      level:type(n)==='heading'?Number((n.dataset.tiFunctionHeading||n.tagName).slice(1)):null,
+      layoutSupported:n.matches('ul,ol,[data-playbook-node="choice"],[data-playbook-node="reflection-group"]'),
+      sectionSafe:(()=>{if(type(n)!=='heading'||n.parentElement!==host||!/^H[123]$/.test(n.tagName))return false;const level=Number(n.tagName.slice(1));for(let next=n.nextElementSibling;next;next=next.nextElementSibling){if(/^H[123]$/.test(next.tagName)&&Number(next.tagName.slice(1))<=level)break;if([...next.querySelectorAll('h1,h2,h3')].some(h=>Number(h.tagName.slice(1))<=level))return false}return true})(),
       logic:n.dataset.tiLogic||(type(n)==='choice'?'exclusive':'all'),dependsOn:n.dataset.tiDependsOn||null,
       options:[...n.querySelectorAll(':scope > .pb-doc-choice-options [data-choice-option]')].map((x,i)=>({id:x.dataset.tiChoiceOptionId||n.dataset.tiAiNodeId+'_option_'+i,label:clean(x)})),
       condition:(()=>{try{return JSON.parse(n.dataset.tiCondition||'null')}catch{return null}})(),metadataStatus:n.dataset.tiConditionStatus||null,maximum:type(n)==='score'?10:null,locked:type(n)==='preserved'||clean(n).length>1200||Boolean(n.querySelector('[data-playbook-node="image"],[data-playbook-node="image-field"],table'))
@@ -52,6 +55,7 @@
     return node;
   }
   function compile(base,proposal){
+    const errors=root.TIOSAIContract.validateResponse({message:'',questions:[],proposal});if(errors.length)throw Error(errors[0]);
     const host=documentHost(proposal.intent==='create'?'':base.documentHtml);
     const find=id=>[...host.querySelectorAll('[data-ti-ai-node-id]')].find(n=>n.dataset.tiAiNodeId===id);
     // Keep a read-only index of original block labels for precise error messages.
@@ -121,9 +125,22 @@
           }
         }
         previous.replaceWith(nodeElement({...op.node,id:op.targetId},previous));
+      }else if(op.action==='rename'){
+        const previous=needed(op.targetId);
+        if(type(previous)!==op.node.type||!['heading','text','rule','note','prompt','score'].includes(type(previous))||previous.querySelector('[data-playbook-node],table,img'))throw Error('Rename an individual text block without replacing its conditions or nested content.');
+        if(type(previous)==='heading'&&op.node.level!==null&&Number((previous.dataset.tiFunctionHeading||previous.tagName).slice(1))!==op.node.level)throw Error('A rename cannot change the heading hierarchy.');
+        const texts=[],walker=document.createTreeWalker(previous,NodeFilter.SHOW_TEXT);
+        while(walker.nextNode()){const n=walker.currentNode;if(!n.parentElement.closest('.pb-doc-label,.pb-doc-remove-btn,[data-instrument-remove-reflection]'))texts.push(n)}
+        if(!texts.length)previous.append(document.createTextNode(op.node.label));
+        else {texts[0].textContent=op.node.label;for(const n of texts.slice(1))n.textContent=''}
+        // Renaming never changes machine condition parameters. Text that no
+        // longer matches them remains explicitly marked for review.
+        refreshMetadata(previous.parentElement);
       }else if(op.action==='style'){
         const node=needed(op.targetId);
-        if(type(node)!=='heading')throw Error('Text color changes currently support heading blocks only. No changes were made.');
+        const formatting=op.formatting||{},layoutTarget=node.matches('[data-playbook-node="choice"]')?node.querySelector('.pb-doc-choice-options'):node;
+        if(formatting.layout&&!layoutTarget?.matches('ul,ol,.pb-doc-choice-options,[data-playbook-node="reflection-group"]'))throw Error('This block does not support list layouts. No changes were made.');
+        if((op.color||Object.entries(formatting).some(([key,value])=>key!=='layout'&&value!==null))&&!['heading','text','rule','note','prompt','score','group'].includes(type(node)))throw Error('Format an individual supported text block. No changes were made.');
         const normalized=String(op.color||'').toLowerCase();
         const color=colorMap[normalized]||(/^#[0-9a-f]{6}$/.test(normalized)?normalized:null);
         if(normalized==='default'){
@@ -132,7 +149,11 @@
         }else if(color){
           node.dataset.tiTextBlock='1';node.dataset.playbookColorText=color;
           node.style.setProperty('--pb-style-text',color);
-        }else throw Error('Unsupported heading color. No changes were made.');
+        }else if(op.color)throw Error('Unsupported text color. No changes were made.');
+        for(const key of ['align','spacing','border','preset'])if(formatting[key]!==null&&formatting[key]!==undefined)root.setPlaybookVisualStyleOnTarget(node,key,formatting[key]);
+        if(formatting.layout){if(formatting.layout==='vertical')delete layoutTarget.dataset.playbookListLayout;else layoutTarget.dataset.playbookListLayout=formatting.layout}
+        if(formatting.fontSize!=null){node.dataset.tiTextBlock='1';node.dataset.playbookFontSize=String(formatting.fontSize);node.style.setProperty('--pb-font-size',formatting.fontSize+'px')}
+        for(const key of ['bold','italic','underline'])if(formatting[key]!=null){node.dataset.tiTextBlock='1';node.dataset['playbook'+key[0].toUpperCase()+key.slice(1)]=String(formatting[key])}
       }else if(op.action==='remove'){
         // The model may list a parent group and its children separately.
         // A later deletion of an already-deleted child is redundant, not a bad reference.

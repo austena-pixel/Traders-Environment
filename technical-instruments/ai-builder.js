@@ -1,12 +1,16 @@
 (function(root){
   'use strict';
-  const workspace=root.TIOSAIWorkspace,documents=root.TIOSAIDocument,contract=root.TIOSAIContract,images=root.TIOSAIImages;
+  const workspace=root.TIOSAIWorkspace,documents=root.TIOSAIDocument,contract=root.TIOSAIContract,images=root.TIOSAIImages,local=root.TIOSAILocal;
   const cache=new Map(),panels=new Map(),undoEntries=[];
   let preview=null,request=null,user=null,quota=null,retryTimer=null;
   const label={playbook:'Playbook',checklist:'Rules',psych:'Psychological Reflection'};
   const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const text=(el,value)=>{if(el&&el.textContent!==value)el.textContent=value};
-  function session(kind){const id=workspace.identity(kind);if(!cache.has(id))cache.set(id,{history:[],draft:'',attachments:[],references:[],preparing:0,epoch:0});return cache.get(id)}
+  function session(kind){const id=workspace.identity(kind);if(!cache.has(id))cache.set(id,{history:[],draft:'',attachments:[],references:[],pending:null,lastEngine:null,preparing:0,epoch:0});return cache.get(id)}
+  function classify(kind,message){
+    const state=session(kind);
+    return local.route(message,{kind,blocks:documents.summarize(workspace.editor(kind)?.innerHTML||''),pending:state.pending,hasImages:state.attachments.length>0});
+  }
   function isPreview(kind){return Boolean(preview?.snapshot.kind===kind&&workspace.sameContext(preview.snapshot))}
   function setMode(kind,mode){
     const page=workspace.page(kind),main=page?.querySelector('.playbook-word-main'),panel=panels.get(kind),button=page?.querySelector('[data-ai-toggle]');
@@ -31,7 +35,7 @@
   // or changes already applied to a saved instrument.
   function activitySteps(message,kind){
     const input=String(message||'').toLowerCase();
-    const stages=['Reading your request…','Reviewing the current '+label[kind]+'…'];
+    const stages=['Reviewing your methodology…','Analyzing conditions…'];
     const removing=/\b(remove|removing|delete|deleting|clear|strip)\b/.test(input);
     const adding=/\b(add|adding|insert|inserting|create|creating|build|building|write|writing)\b/.test(input);
     if(removing)stages.push('Locating blocks to remove…','Preparing requested removal…');
@@ -41,11 +45,12 @@
       if(!/\b(headings?|sections?|titles?|rules?|conditions?|checks?)\b/.test(input))stages.push('Planning new content…');
     }
     if(/\b(edit|editing|update|updating|change|changing|rename|renaming|replace|replacing|move|moving)\b/.test(input))stages.push('Planning edits to existing blocks…');
-    stages.push('Preparing an approval-ready proposal…','Waiting for the AI response…');
+    stages.push('Preparing proposed changes…','Waiting for the AI response…');
     return stages;
   }
   function stopActivity(run){if(run?.activityTimer){clearInterval(run.activityTimer);run.activityTimer=null}}
   function startActivity(run,message){
+    if(run.engine!=='ai'){run.activity=run.engine==='local'?'Finding the requested block…':'Preparing clarification…';return}
     run.activitySteps=activitySteps(message,run.kind);
     run.activityIndex=0;
     run.activity=run.activitySteps[0];
@@ -84,7 +89,7 @@
   function renderHistory(kind){
     const panel=panels.get(kind);if(!panel)return;const log=panel.querySelector('[data-ai-messages]'),state=session(kind);
     log.replaceChildren();
-    if(!state.history.length){const welcome=document.createElement('p');welcome.className='ti-ai-welcome';welcome.textContent='Describe your edge or attach a chart, diagram or handwritten notes. I will ask about unclear details and turn your method into proposed changes for you to review.';log.append(welcome)}
+    if(!state.history.length){const welcome=document.createElement('p');welcome.className='ti-ai-welcome';welcome.textContent='Describe your edge or attach a chart, diagram or handwritten notes. Exact text and formatting edits are prepared locally without AI usage. Methodology and chart analysis use AI. Every document change needs your approval.';log.append(welcome)}
     for(const message of state.history){const el=document.createElement('div');el.className='ti-ai-message '+message.role;const who=document.createElement('small');who.textContent=message.role==='user'?'You':'AI Builder';const content=document.createElement('p');content.textContent=message.content;el.append(who,content);if(message.images?.length){const gallery=document.createElement('div');gallery.className='ti-ai-message-images';message.images.forEach(attachment=>gallery.append(imageCard(attachment)));el.append(gallery)}log.append(el)}
     log.scrollTop=log.scrollHeight;
   }
@@ -102,18 +107,22 @@
     panel.querySelector('[data-ai-messages]').setAttribute('aria-busy',String(Boolean(busy)));
     if(!panel.hidden)resizeInput(panel);
     const remaining=quotaRemaining();
-    panel.querySelector('[data-ai-send]').disabled=Boolean(busy||state.preparing||remaining||(!panel.querySelector('textarea').value.trim()&&!state.attachments.length));
-    text(panel.querySelector('[data-ai-send]'),remaining?'Retry in '+retryLabel(remaining):'Send');
+    const message=panel.querySelector('textarea').value.trim(),decision=classify(kind,message),limited=remaining&&decision.engine==='ai';
+    panel.querySelector('[data-ai-send]').disabled=Boolean(busy||state.preparing||limited||(!message&&!state.attachments.length));
+    text(panel.querySelector('[data-ai-send]'),limited?'Retry in '+retryLabel(remaining):'Send');
+    const engine=busy?request.engine:message||state.attachments.length?decision.engine:proposed?preview.engine:state.lastEngine;
+    const service=panel.querySelector('[data-ai-service]');service.dataset.aiEngine=engine||'hybrid';
+    text(service,engine==='ai'?'AI reasoning · usage allowance applies':engine?'Local processing · no AI usage':'Hybrid Builder · local editing + AI reasoning');
     panel.querySelector('[data-ai-attach]').disabled=Boolean(busy||state.preparing||state.references.length+state.attachments.length>=images.limits.count);
     panel.querySelector('[data-ai-file]').disabled=Boolean(busy||state.preparing);
     panel.querySelector('textarea').disabled=Boolean(busy);
     panel.querySelector('[data-ai-cancel]').hidden=!busy;
     panel.querySelector('[data-ai-proposal]').hidden=!proposed;
-    panel.querySelector('[data-ai-undo]').disabled=!entry||entry.scope!==workspace.scope()||entry.after.id!==workspace.current(kind)?.id||Boolean(preview)||Boolean(request);
+    panel.querySelector('[data-ai-undo]').disabled=!entry||entry.kind!==kind||entry.scope!==workspace.scope()||entry.after.id!==workspace.current(kind)?.id||Boolean(preview)||Boolean(request);
     const working=panel.querySelector('[data-ai-working]');
     if(working)working.hidden=!busy;
     text(panel.querySelector('[data-ai-working-message]'),busy?request.activity:'');
-    text(panel.querySelector('[data-ai-state]'),busy?'AI Builder · preparing your proposal…':state.preparing?'Preparing pictures…':remaining?'Request limit · you can retry in '+retryLabel(remaining):proposed?'Unsaved proposal · review the Live Model or document':'Changes need your approval');
+    text(panel.querySelector('[data-ai-state]'),busy?(request.engine==='ai'?'AI reasoning':'Local editing')+' · preparing your proposal…':state.preparing?'Preparing pictures…':proposed?'Ready for approval · unsaved proposal':remaining?'AI retry in '+retryLabel(remaining)+' · local editing available':'Changes need your approval');
     if(proposed)text(panel.querySelector('[data-ai-summary]'),(preview.isNew?'Create':'Edit')+' '+label[kind]+': '+preview.draft.name+' · '+preview.operations+' proposed change'+(preview.operations===1?'':'s'));
     text(panel.querySelector('[data-ai-context]'),label[kind]+' · '+(workspace.current(kind)?.name||'New instrument'));
   }
@@ -128,24 +137,42 @@
   function error(kind,message,code=''){const panel=panels.get(kind);if(panel){const target=panel.querySelector('[data-ai-error]');text(target,message);target.dataset.errorCode=code;target.hidden=false}}
   function clearError(kind){const panel=panels.get(kind);if(panel){const target=panel.querySelector('[data-ai-error]');target.hidden=true;delete target.dataset.errorCode}}
   async function send(kind){
-    if(request||quotaRemaining())return;const panel=panels.get(kind),input=panel.querySelector('textarea'),message=input.value.trim(),state=session(kind),added=state.attachments.slice();if(state.preparing||(!message&&!added.length))return;
+    if(request)return;const panel=panels.get(kind),input=panel.querySelector('textarea'),message=input.value.trim(),state=session(kind),added=state.attachments.slice();if(state.preparing||(!message&&!added.length))return;
+    const decision=classify(kind,message);if(decision.engine==='ai'&&quotaRemaining())return;
     clearError(kind);
-    const identity=workspace.identity(kind),scope=workspace.scope(),epoch=state.epoch,controller=new AbortController(),run={kind,identity,controller};request=run;startActivity(run,message);update(kind);
+    const identity=workspace.identity(kind),scope=workspace.scope(),epoch=state.epoch,controller=new AbortController(),run={kind,identity,controller,engine:decision.engine};request=run;startActivity(run,message);update(kind);
     let errorKind=kind,moved=false;
     try{
-      const auth=await workspace.token();if(request!==run||identity!==workspace.identity(kind)||workspace.activeKind()!==kind||state.epoch!==epoch)return;
-      const history=state.history.slice(-10).map(({role,content})=>({role,content})),snapshot=isPreview(kind)?preview.snapshot:workspace.capture(kind,{save:true});
+      const routed=workspace.capture(kind),auth=await workspace.token();if(request!==run||identity!==workspace.identity(kind)||workspace.activeKind()!==kind||state.epoch!==epoch)return;
+      if(!workspace.unchanged(routed))throw Error('Your instrument changed while preparing this request. Send it again using the current version.');
+      const history=state.history.slice(-10).map(({role,content})=>({role,content}));
+      state.lastEngine=decision.engine;
+      if(decision.engine==='clarify'){
+        state.pending=decision.pending;append(kind,'user',message);input.value='';state.draft='';append(kind,'assistant',decision.answer.message+'\n\n'+decision.answer.questions.join('\n'));return;
+      }
+      const snapshot=isPreview(kind)?preview.snapshot:workspace.capture(kind,{save:true});
       const working=isPreview(kind)?preview.draft:snapshot.doc,inheritedCreate=isPreview(kind)&&preview.isNew;
-      const references=images.validate([...state.references,...added].map(({name,dataUrl})=>({name,dataUrl})));
-      state.references=[...state.references,...added];state.attachments=[];
-      append(kind,'user',message||'Build my instrument from these reference images.',added);input.value='';state.draft='';update(kind);
-      const response=await fetch('/api/tios-ai-builder',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+auth},body:JSON.stringify({message,history,...(references.length?{images:references}:{}),context:{kind,name:working.name,description:working.description||'',blocks:documents.summarize(working.documentHtml),unapprovedNewInstrument:Boolean(inheritedCreate)}}),signal:controller.signal});
-      let result;try{result=await response.json()}catch{throw Error('The AI service is unavailable. Try again later; your instrument was not changed.')}
-      if(request!==run||identity!==workspace.identity(kind))return;
-      if(!response.ok){const failure=Error(result.error?.message||'The AI service could not prepare the instrument.');failure.code=result.error?.code;const retryAfter=Number(result.error?.retryAfter||response.headers.get('Retry-After'));if(failure.code==='usage_limit'&&Number.isFinite(retryAfter)&&retryAfter>0)failure.message+=' Try again at '+holdQuota(retryAfter)+'. Your pictures and draft are kept.';throw failure}
-      run.activity='Validating the AI response…';update(kind);
+      const references=decision.engine==='ai'?images.validate([...state.references,...added].map(({name,dataUrl})=>({name,dataUrl}))):[];
+      if(decision.engine==='ai'){state.references=[...state.references,...added];state.attachments=[]}
+      append(kind,'user',message||'Build my instrument from these reference images.',decision.engine==='ai'?added:[]);input.value='';state.draft='';update(kind);
+      if(decision.engine==='undo'){
+        const entry=undoEntries.at(-1);
+        if(preview||!entry||entry.kind!==kind||entry.scope!==scope||entry.storageKey!==snapshot.storageKey||workspace.semantic(working)!==workspace.semantic(entry.after)){
+          append(kind,'assistant','There is no unchanged approved Builder change to undo in this instrument. Discard a pending proposal first; newer manual edits are protected.');return;
+        }
+        preview={snapshot,draft:entry.before,isNew:false,operations:1,engine:'undo',undoEntry:entry};workspace.display(kind,entry.before,true);append(kind,'assistant','Undo prepared for review (not saved). Approve to restore the version before the last Builder change.');return;
+      }
+      let result=decision.answer;
+      if(decision.engine==='ai'){
+        // This is the only paid-request path. Local failures never reach it.
+        const response=await fetch('/api/tios-ai-builder',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+auth},body:JSON.stringify({message,history,...(references.length?{images:references}:{}),context:{kind,name:working.name,description:working.description||'',blocks:documents.summarize(working.documentHtml),unapprovedNewInstrument:Boolean(inheritedCreate)}}),signal:controller.signal});
+        try{result=await response.json()}catch{throw Error('The AI service is unavailable. Try again later; your instrument was not changed.')}
+        if(request!==run||identity!==workspace.identity(kind))return;
+        if(!response.ok){const failure=Error(result.error?.message||'The AI service could not prepare the instrument.');failure.code=result.error?.code;const retryAfter=Number(result.error?.retryAfter||response.headers.get('Retry-After'));if(failure.code==='usage_limit'&&Number.isFinite(retryAfter)&&retryAfter>0)failure.message+=' Try again at '+holdQuota(retryAfter)+'. Local editing remains available. Your pictures and draft are kept.';throw failure}
+      }
+      run.activity='Validating the proposal…';update(kind);
       const answer={message:result.message,questions:result.questions,proposal:result.proposal};
-      if(contract.validateResponse(answer).length)throw Error('The AI response failed validation. No changes were saved.');
+      if(contract.validateResponse(answer).length)throw Error('The proposal failed validation. No changes were saved.');
       if(!workspace.unchanged(snapshot,{preview:isPreview(kind)}))throw Error('Your instrument changed while AI was responding. Ask again using the current version.');
       if(answer.proposal){
         const proposal=answer.proposal;
@@ -156,13 +183,14 @@
           const savedHistory=state.history.slice(),savedReferences=state.references.slice();request=null;restorePreview();cache.delete(identity);workspace.navigate(proposal.kind);targetKind=proposal.kind;errorKind=targetKind;moved=true;ensure(targetKind);open(targetKind);Object.assign(session(targetKind),{history:savedHistory,references:savedReferences});
           targetSnapshot=workspace.capture(targetKind,{save:true});targetWorking=targetSnapshot.doc;
         }
-        run.activity='Building the Live Model preview (not saved)…';if(request===run)update(kind);
+        run.activity=decision.engine==='local'?decision.activity:'Preparing proposed changes…';if(request===run)update(kind);
         const draft=documents.compile(targetWorking,proposal);
-        preview={snapshot:targetSnapshot,draft,isNew:proposal.intent==='create'||Boolean(inheritedCreate&&targetKind===kind),operations:proposal.operations.length};
+        run.activity='Preparing preview…';if(request===run)update(kind);
+        preview={snapshot:targetSnapshot,draft,isNew:proposal.intent==='create'||Boolean(inheritedCreate&&targetKind===kind),operations:proposal.operations.length,engine:decision.engine};
         workspace.display(targetKind,draft,true);
         append(targetKind,'assistant','Proposed changes prepared for review (not saved). '+answer.message+(answer.questions.length?'\n\n'+answer.questions.join('\n'):''));renderHistory(targetKind);update(targetKind);
       }else append(kind,'assistant',answer.message+(answer.questions.length?'\n\n'+answer.questions.join('\n'):''));
-      text(panel.querySelector('[data-ai-service]'),'AI connected');
+      state.pending=null;
     }catch(failure){if(failure.name!=='AbortError'&&scope===workspace.scope()&&(request===run||moved)){error(errorKind,failure.message,failure.code);append(errorKind,'assistant','The requested change was not applied. '+failure.message);const current=session(errorKind);current.draft=message||(current.references.length?'Build from these reference images.':'');panels.get(errorKind).querySelector('textarea').value=current.draft}}
     finally{stopActivity(run);if(request===run)request=null;update(kind)}
   }
@@ -174,14 +202,19 @@
       if(!workspace.unchanged(proposed.snapshot,{preview:true}))throw Error('A newer edit was found. Discard this proposal and prepare it again.');
       preview=null;
       const state=session(kind),identity=workspace.identity(kind),history=state.history.slice(),references=state.references.slice();
+      if(proposed.undoEntry){
+        workspace.display(kind,proposed.undoEntry.after,true);workspace.undo(proposed.undoEntry);workspace.release(kind);undoEntries.pop();
+        if(identity!==workspace.identity(kind))cache.delete(identity);Object.assign(session(kind),{history,references,pending:null,lastEngine:'undo'});
+        append(kind,'assistant','The previous approved Builder change was undone and saved.');update(kind);return;
+      }
       const entry=workspace.apply(proposed.snapshot,proposed.draft,proposed.isNew);
       if(proposed.isNew&&identity!==workspace.identity(kind))cache.delete(identity);
-      undoEntries.push(entry);if(undoEntries.length>10)undoEntries.shift();Object.assign(session(kind),{history,references});
+      undoEntries.push(entry);if(undoEntries.length>10)undoEntries.shift();Object.assign(session(kind),{history,references,pending:null,lastEngine:proposed.engine});
       append(kind,'assistant','Applied and saved. The Workspace, Live Model and Execution Quality use this instrument. You can continue editing manually or ask for another change.');
     }catch(failure){preview=proposed;error(kind,failure.message)}
     update(kind);
   }
-  function undo(kind){clearError(kind);const entry=undoEntries.at(-1);if(!entry)return;
+  function undo(kind){if(preview||request)return;clearError(kind);const entry=undoEntries.at(-1);if(!entry||entry.kind!==kind)return;
     try{workspace.undo(entry);undoEntries.pop();append(kind,'assistant','The previous applied AI change was undone and saved.')}catch(failure){error(kind,failure.message)}update(kind);
   }
   function open(kind){ensure(kind);const panel=panels.get(kind);setMode(kind,'chat');panel.querySelector('textarea').value=session(kind).draft;resizeInput(panel);renderHistory(kind);update(kind);panel.querySelector('textarea').focus({preventScroll:true})}
@@ -222,7 +255,7 @@
     panel.querySelector('[data-ai-apply]').addEventListener('click',()=>apply(kind));
     panel.querySelector('[data-ai-discard]').addEventListener('click',discard);
     panel.querySelector('[data-ai-undo]').addEventListener('click',()=>undo(kind));
-    panel.querySelector('[data-ai-new]').addEventListener('click',()=>{abort();restorePreview();const state=session(kind);state.epoch++;Object.assign(state,{history:[],draft:'',attachments:[],references:[],preparing:0});panel.querySelector('textarea').value='';clearError(kind);renderHistory(kind);update(kind)});
+    panel.querySelector('[data-ai-new]').addEventListener('click',()=>{abort();restorePreview();const state=session(kind);state.epoch++;Object.assign(state,{history:[],draft:'',attachments:[],references:[],pending:null,lastEngine:null,preparing:0});panel.querySelector('textarea').value='';clearError(kind);renderHistory(kind);update(kind)});
     panel.querySelector('[data-ai-attach]').addEventListener('click',()=>panel.querySelector('[data-ai-file]').click());
     panel.querySelector('[data-ai-file]').addEventListener('change',event=>{const files=Array.from(event.target.files||[]);event.target.value='';attach(kind,files)});
     panel.querySelector('textarea').addEventListener('paste',event=>{const files=Array.from(event.clipboardData?.files||[]);if(files.length){event.preventDefault();attach(kind,files)}});

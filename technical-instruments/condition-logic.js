@@ -3,21 +3,23 @@
   const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const label={all:'All requirements · AND',any:'At least one requirement · OR',exclusive:'Exactly one option'};
   function clean(node){const clone=node.cloneNode(true);clone.querySelectorAll('.pb-doc-label,.pb-doc-remove-btn,[data-instrument-remove-reflection]').forEach(x=>x.remove());return (clone.textContent||'').replace(/\s+/g,' ').trim()}
+  const presentation=node=>({colors:root.playbookStyleColorsFromTarget(node),style:root.playbookVisualStyleFromTarget(node)});
+  const attributes=value=>' data-ti-text-block="1"'+root.playbookStyleRenderAttributes(value.colors,value.style);
   function item(node){
     if(node.dataset.playbookNode!=='condition-group'&&node.dataset.tiAiCondition!=='1')return null;
     const grouped=node.dataset.playbookNode==='condition-group';
     const members=grouped?[...node.querySelectorAll(':scope > [data-ti-condition-member],:scope > .ti-condition-members > [data-ti-condition-member]')]:[node];
-    return {type:'condition-group',id:node.dataset.tiAiNodeId,dependsOn:node.dataset.tiDependsOn||null,logic:grouped?(node.dataset.tiLogic||'all'):'all',
+    return {type:'condition-group',...presentation(node),id:node.dataset.tiAiNodeId,dependsOn:node.dataset.tiDependsOn||null,logic:grouped?(node.dataset.tiLogic||'all'):'all',
       label:grouped?(node.dataset.tiGroupLabel||'Conditions'):'',
-      members:members.map(x=>({id:grouped?x.dataset.tiAiNodeId:x.dataset.tiAiNodeId+'_value',label:clean(x),dependsOn:grouped?(x.dataset.tiDependsOn||null):null,condition:x.dataset.tiCondition||null,metadataChanged:Boolean(x.dataset.tiConditionLabel&&clean(x)!==x.dataset.tiConditionLabel.replace(/\s+/g,' ').trim())})),single:!grouped};
+      members:members.map(x=>({id:grouped?x.dataset.tiAiNodeId:x.dataset.tiAiNodeId+'_value',...presentation(x),label:clean(x),dependsOn:grouped?(x.dataset.tiDependsOn||null):null,condition:x.dataset.tiCondition||null,metadataChanged:Boolean(x.dataset.tiConditionLabel&&clean(x)!==x.dataset.tiConditionLabel.replace(/\s+/g,' ').trim())})),single:!grouped};
   }
   function render(value,area,kind='playbook'){
     const execution=area==='execution',prefix=kind==='playbook'?'map':kind;
     const mode=['all','any','exclusive'].includes(value.logic)?value.logic:'all';
     const group=value.id||'condition';
-    return '<div class="ti-logic-model" data-ti-ai-group="'+escape(group)+'" data-ti-logic="'+mode+'" data-ti-condition-id="'+escape(group)+'"'+(value.dependsOn?' data-ti-depends-on="'+escape(value.dependsOn)+'"':'')+'>'+
+    return '<div class="ti-logic-model"'+attributes(value)+' data-ti-ai-group="'+escape(group)+'" data-ti-logic="'+mode+'" data-ti-condition-id="'+escape(group)+'"'+(value.dependsOn?' data-ti-depends-on="'+escape(value.dependsOn)+'"':'')+'>'+
       (!value.single?'<div class="ti-logic-heading"><b>'+escape(value.label)+'</b><small>'+label[mode]+'</small></div>':'')+
-      value.members.map((m,i)=>'<label class="ti-logic-option" data-ti-condition-id="'+escape(m.id)+'"'+(m.dependsOn?' data-ti-depends-on="'+escape(m.dependsOn)+'"':'')+'><input type="'+(mode==='exclusive'?'radio':'checkbox')+'" name="'+escape(prefix+'_logic_'+group)+'" value="'+escape(m.id)+'" '+(execution?'data-execution-'+prefix+'-check="'+escape('logic_'+group+'_'+i)+'"':'disabled')+'><span>'+escape(m.label)+(m.metadataChanged?'<small class="ti-logic-dependency">Definition changed: review the stored technical parameters.</small>':'')+'</span></label>').join('')+
+      value.members.map((m,i)=>'<label class="ti-logic-option"'+(value.single?'':attributes(m))+' data-ti-condition-id="'+escape(m.id)+'"'+(m.dependsOn?' data-ti-depends-on="'+escape(m.dependsOn)+'"':'')+'><input type="'+(mode==='exclusive'?'radio':'checkbox')+'" name="'+escape(prefix+'_logic_'+group)+'" value="'+escape(m.id)+'" '+(execution?'data-execution-'+prefix+'-check="'+escape('logic_'+group+'_'+i)+'"':'disabled')+'><span>'+escape(m.label)+(m.metadataChanged?'<small class="ti-logic-dependency">Definition changed: review the stored technical parameters.</small>':'')+'</span></label>').join('')+
       (value.dependsOn?'<small class="ti-logic-dependency">Applies when the linked prerequisite is met.</small>':'')+
       (execution?'<small class="ti-logic-status" aria-live="polite"></small>':'')+'</div>';
   }

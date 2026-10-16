@@ -16833,7 +16833,11 @@ function playbookVisualStyleFromTarget(target){
     align:['center','right'].includes(align)?align:'left',
     spacing:['compact','relaxed'].includes(data.playbookSpacing)?data.playbookSpacing:'normal',
     border:['none','thin','strong'].includes(data.playbookBorder)?data.playbookBorder:'default',
-    preset:['card','highlight','minimal'].includes(data.playbookPreset)?data.playbookPreset:'plain'
+    preset:['card','highlight','minimal'].includes(data.playbookPreset)?data.playbookPreset:'plain',
+    fontSize:/^\d+$/.test(data.playbookFontSize||'')&&Number(data.playbookFontSize)>=8&&Number(data.playbookFontSize)<=72?Number(data.playbookFontSize):null,
+    bold:['true','false'].includes(data.playbookBold)?data.playbookBold:null,
+    italic:['true','false'].includes(data.playbookItalic)?data.playbookItalic:null,
+    underline:['true','false'].includes(data.playbookUnderline)?data.playbookUnderline:null
   };
 }
 
@@ -16860,8 +16864,10 @@ function resetPlaybookTargetStyle(target){
   target.style.removeProperty('text-align');
   [
     'playbookAlign','playbookSpacing','playbookBorder','playbookPreset',
+    'playbookFontSize','playbookBold','playbookItalic','playbookUnderline',
     'playbookColorBackground','playbookColorBorder','playbookColorText','playbookColorAccent'
   ].forEach(key=>delete target.dataset[key]);
+  target.style.removeProperty('--pb-font-size');
   syncPlaybookStyleTargetVars(target);
 }
 
@@ -16897,6 +16903,8 @@ function playbookStyleRenderAttributes(colors,visualStyle=null){
   if(visual.preset&&visual.preset!=='plain')attrs.push(`data-playbook-preset="${visual.preset}"`);
 
   const vars=[];
+  if(Number.isInteger(visual.fontSize)&&visual.fontSize>=8&&visual.fontSize<=72){attrs.push(`data-playbook-font-size="${visual.fontSize}"`);vars.push(`--pb-font-size:${visual.fontSize}px`)}
+  for(const key of ['bold','italic','underline'])if(['true','false'].includes(visual[key]))attrs.push(`data-playbook-${key}="${visual[key]}"`);
   Object.entries({background:'--pb-style-bg',border:'--pb-style-border',text:'--pb-style-text',accent:'--pb-style-accent'}).forEach(([key,variable])=>{
     const color=normalizePlaybookStyleColor(colors?.[key]);
     if(!color)return;
@@ -21648,6 +21656,7 @@ window.getTiosConversationContext=function(){
 <script src="tios-dashboard.js"></script>
 <script src="technical-instruments/ai-builder-workspace.js"></script>
 <script src="technical-instruments/ai-builder-images.js"></script>
+<script src="technical-instruments/ai-builder-local.js"></script>
 <script src="technical-instruments/ai-builder.js"></script>
 </body>
 </html>
