@@ -104,6 +104,7 @@ async function run(){
     assert.match(await panel('playbook').textContent(),/Which candle/);assert.equal((await snapshot('playbook')).store,baseline.store);assert.equal(await panel('playbook').locator('[data-ai-proposal]').isVisible(),false);
     pass('unclear requirements produce a targeted question without changing saved data');
     await send('playbook','Use my imbalance context and maximum risk of 1%.',playbook());
+    assert.equal(await panel('playbook').locator('.ti-ai-types > [data-ai-proposal]').count(),1);assert.equal(await panel('playbook').locator('[data-ai-proposal] [data-ai-apply]').isVisible(),true);assert.equal(await panel('playbook').locator('.ti-ai-messages + [data-ai-working] + [data-ai-proposal]').count(),0);
     assert.equal(await panel('playbook').locator('[data-ai-proposal]').isVisible(),true);assert.match(await editor('playbook').textContent(),/Risk no more than 1%/);assert.match(await model('playbook').textContent(),/Exactly one option/);assert.equal(await editor('playbook').getAttribute('contenteditable'),'false');
     await page.waitForTimeout(800);assert.equal((await snapshot('playbook')).store,baseline.store);
     assert.equal(calls.at(-1).response_format.json_schema.strict,true);assert.equal(calls.at(-1).messages[1].role,'user');
