@@ -199,6 +199,10 @@
     const types=document.createElement('nav');types.className='ti-ai-types';types.setAttribute('aria-label','Instrument type');
     for(const type of Object.keys(label)){const choice=document.createElement('button');choice.type='button';choice.textContent=label[type];choice.setAttribute('aria-pressed',String(type===kind));choice.addEventListener('click',()=>{if(type!==kind){workspace.navigate(type);open(type)}});types.append(choice)}
     panel.querySelector('.ti-ai-head').after(types);
+    // Keep the proposal actions beside the instrument tabs (area A).
+    // Relocating the existing element preserves its approval handlers and
+    // removes the former full-width bottom proposal row (area C).
+    types.append(panel.querySelector('[data-ai-proposal]'));
     const reviewButton=document.createElement('button');reviewButton.type='button';reviewButton.dataset.aiReview='';reviewButton.textContent='Review document';
     panel.querySelector('[data-ai-proposal]>div').prepend(reviewButton);
     const reviewHead=document.createElement('div');reviewHead.className='ti-ai-review-head';
