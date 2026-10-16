@@ -102,6 +102,7 @@
       }
       if(op.beforeId)anchor.before(node);else anchor.after(node);
     }
+    const colorMap={red:'#ff0000',orange:'#ff8800',yellow:'#ffff00',green:'#008000',blue:'#0000ff',purple:'#800080',pink:'#ff69b4',black:'#000000',white:'#ffffff',gray:'#808080'};
     for(const op of proposal.operations){
       if(op.action==='insert'){
         if(find(op.node.id))throw Error('The proposal repeats a block identifier.');
@@ -120,6 +121,18 @@
           }
         }
         previous.replaceWith(nodeElement({...op.node,id:op.targetId},previous));
+      }else if(op.action==='style'){
+        const node=needed(op.targetId);
+        if(type(node)!=='heading')throw Error('Text color changes currently support heading blocks only. No changes were made.');
+        const normalized=String(op.color||'').toLowerCase();
+        const color=colorMap[normalized]||(/^#[0-9a-f]{6}$/.test(normalized)?normalized:null);
+        if(normalized==='default'){
+          delete node.dataset.playbookColorText;
+          node.style.removeProperty('--pb-style-text');
+        }else if(color){
+          node.dataset.tiTextBlock='1';node.dataset.playbookColorText=color;
+          node.style.setProperty('--pb-style-text',color);
+        }else throw Error('Unsupported heading color. No changes were made.');
       }else if(op.action==='remove'){
         // The model may list a parent group and its children separately.
         // A later deletion of an already-deleted child is redundant, not a bad reference.
