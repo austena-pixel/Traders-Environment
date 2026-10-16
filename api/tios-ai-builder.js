@@ -19,6 +19,8 @@ module.exports=async function handler(req,res){
     const authorization=String(req.headers.authorization||'');
     const token=/^Bearer ([^\s]+)$/.exec(authorization)?.[1];
     await service.authenticate(token,config);
+    const clarification=service.clarifyUnderspecifiedRules(input);
+    if(clarification){res.status(200).json(clarification);return}
     if(!config.model||!config.token)throw new service.ServiceError(503,'ai_not_configured','AI Builder is not configured yet. Manual editing is available.');
     await service.reserve(token,config);
     res.status(200).json(await service.generate(input,config));
