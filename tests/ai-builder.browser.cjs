@@ -142,6 +142,36 @@ async function run(){
     const beforeInvalid=await snapshot('playbook');await send('playbook','Add an invalid dependency.',proposal('playbook',null,[op(node('invalid','Dependent condition','rule',{dependsOn:'missing_condition'}))],'edit'));
     assert.match(await panel('playbook').locator('[data-ai-error]').textContent(),/valid prerequisite/);assert.equal((await snapshot('playbook')).store,beforeInvalid.store);
     pass('missing or forward dependency references fail validation before preview or persistence');
+    // Regression: a whole section can be safely removed without guessing child IDs.
+    const sectionBefore=await snapshot('playbook');
+    await send('playbook','Remove the whole Risk Management section.',proposal('playbook',null,[
+      {...op(null),action:'remove_section',targetId:'risk_heading'}
+    ],'edit'));
+    assert.equal(await panel('playbook').locator('[data-ai-proposal]').isVisible(),true);
+    assert.doesNotMatch(await editor('playbook').textContent(),/Risk Management/);
+    assert.match(await panel('playbook').locator('.ti-ai-message.assistant').last().textContent(),/not saved/i);
+    assert.equal((await snapshot('playbook')).store,sectionBefore.store);
+    await panel('playbook').locator('[data-ai-discard]').click();
+    assert.match(await editor('playbook').textContent(),/Risk Management/);
+    assert.equal((await snapshot('playbook')).store,sectionBefore.store);
+    pass('whole-section removal previews the section without changing the saved instrument until approval');
+
+    // The model may redundantly remove descendants of a previously removed parent.
+    await send('playbook','Remove the Risk Management section and its contained conditions.',proposal('playbook',null,[
+      {...op(null),action:'remove_section',targetId:'risk_heading'},
+      {...op(null),action:'remove',targetId:'risk'}
+    ],'edit'));
+    assert.equal(await panel('playbook').locator('[data-ai-proposal]').isVisible(),true);
+    await panel('playbook').locator('[data-ai-discard]').click();
+    pass('redundant removal after section deletion is safe, rather than a missing-block error');
+
+    const staleBefore=await snapshot('playbook');
+    await send('playbook','Remove a missing condition.',proposal('playbook',null,[{...op(null),action:'remove',targetId:'invented_missing_id'}],'edit'));
+    assert.match(await panel('playbook').locator('[data-ai-error]').textContent(),/missing or outdated block.*invented_missing_id/i);
+    assert.match(await panel('playbook').locator('.ti-ai-message.assistant').last().textContent(),/not applied/i);
+    assert.equal((await snapshot('playbook')).store,staleBefore.store);
+    pass('invalid block IDs show a specific error and never claim a successful edit');
+
     await switchTo('checklist');
     const logicProposal=proposal('checklist','Conditional Rules',[
       op(choice('all_group','All entry checks','all',['Condition A','Condition B'])),op(choice('or_group','Alternative triggers','any',['Trigger C','Trigger D'])),op(choice('exclusive_group','Market context','exclusive',['Balance','Imbalance'])),
