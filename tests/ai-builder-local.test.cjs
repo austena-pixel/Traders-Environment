@@ -20,6 +20,18 @@ test('alignment, font size, emphasis and supported styles share the strict contr
   for(const s of ['Align paragraph “My personal notes.” to the center','Set font size of heading “MARKET CONTEXT 4H” to 24 px','Make Rule 2 bold','Make Rule 2 not italic','Set spacing of heading “MARKET CONTEXT 4H” to compact','Set border of heading “MARKET CONTEXT 4H” to thin','Set preset of heading “MARKET CONTEXT 4H” to card','Set layout of block list to columns-2'])proposal(s);
   for(const s of ['Set font size of heading “MARKET CONTEXT 4H” to 999 px','Set layout of heading “MARKET CONTEXT 4H” to columns-2','Set border of heading “MARKET CONTEXT 4H” to executable'])assert.equal(route(s).engine,'clarify');
 });
+test('direct underline, bold and italic commands resolve only the named block',()=>{
+  const screenshot=proposal('underline the heading " MARKET CONTEXT "',{blocks:[{...blocks[0],label:'MARKET CONTEXT'}]}).operations[0];
+  assert.equal(screenshot.targetId,'context');assert.equal(screenshot.formatting.underline,true);assert.equal(screenshot.color,null);assert.equal(screenshot.node,null);
+  for(const [instruction,property,value]of [
+    ['Underline the heading " MARKET CONTEXT 4H "','underline',true],
+    ['Bold heading “MARKET CONTEXT 4H”','bold',true],
+    ['Italicize Rule 2','italic',true],['Italicise Rule 2','italic',true],
+    ['Remove underline from heading “MARKET CONTEXT 4H”','underline',false],
+    ['Remove the bold formatting from Rule 2','bold',false],['Remove italics from Rule 2','italic',false]
+  ]){const op=proposal(instruction).operations[0];assert.equal(op.formatting[property],value);assert.equal(op.action,'style');assert.equal(op.node,null)}
+  for(const instruction of ['Underline heading','Underline heading “missing”','Underline heading MARKET CONTEXT 4H and bold Rule 2','Rename Rule 2 to Risk and underline heading MARKET CONTEXT 4H','Italicise Rule 2 and analyze my edge'])assert.equal(route(instruction).engine,'clarify');
+});
 test('unique rule references prefer literal labels before document order',()=>{
   assert.equal(proposal('Rename Rule 2 to Risk Management').operations[0].targetId,'rule_b');
   const result=proposal('Rename Rule 2 to Risk Management',{blocks:[...blocks,{id:'named',label:'Rule 2',type:'rule',parentId:null}]});assert.equal(result.operations[0].targetId,'named');

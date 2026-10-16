@@ -11,8 +11,8 @@
   const question=(q,pending=null)=>({engine:'clarify',answer:{message:'I need one detail before preparing a preview. Your instrument has not been changed.',questions:[q.slice(0,500)],proposal:null},pending});
   const ai=()=>({engine:'ai',pending:null});
   const colors='red|orange|yellow|green|blue|purple|pink|black|white|gray|default|#[0-9a-f]{6}';
-  const command=/^(?:change|set|make|rename|delete|remove|move|align|format|color|colour|resize|bold|italicize|underline|add|insert|create|build|analy[sz]e|explain|help|develop|undo)\b/i;
-  const mixed=/(?:\band\b|\bthen\b|\balso\b|\bbut\b|,|;|\n)\s*(?:please\s+)?(?:change|set|make|rename|delete|remove|move|align|format|color|colour|resize|add|insert|create|build|analy[sz]e|explain|help|develop|identify|review|organize|improve)\b/i;
+  const command=/^(?:change|set|make|rename|delete|remove|move|align|format|color|colour|resize|bold|italicize|italicise|underline|add|insert|create|build|analy[sz]e|explain|help|develop|undo)\b/i;
+  const mixed=/(?:\band\b|\bthen\b|\balso\b|\bbut\b|,|;|\n)\s*(?:please\s+)?(?:change|set|make|rename|delete|remove|move|align|format|color|colour|resize|bold|italicize|italicise|underline|add|insert|create|build|analy[sz]e|explain|help|develop|identify|review|organize|improve)\b/i;
   const literal=value=>{
     const raw=String(value||'').trim(),quoted=isQuoted(raw);
     if(!raw||raw.length>1200||(!quoted&&mixed.test(raw)))return null;
@@ -86,6 +86,10 @@
       values={formatting:format({fontSize:size})};
     }else if((match=input.match(/^(?:make|set)\s+(.+?)\s+(bold|italic|underlined|not bold|not italic|not underlined)$/i))){
       reference=match[1];const key=match[2].toLowerCase(),property=key.replace('not ','').replace('underlined','underline');values={formatting:format({[property]:!key.startsWith('not ')})};
+    }else if((match=input.match(/^(underline|bold|italicize|italicise)\s+(.+)$/i))){
+      reference=match[2];const property=/^italic/i.test(match[1])?'italic':match[1].toLowerCase();values={formatting:format({[property]:true})};
+    }else if((match=input.match(/^remove\s+(?:the\s+)?(underline|underlining|bold(?: formatting)?|italic(?: formatting)?|italics)\s+from\s+(.+)$/i))){
+      reference=match[2];const property=/^underlin/i.test(match[1])?'underline':/^bold/i.test(match[1])?'bold':'italic';values={formatting:format({[property]:false})};
     }else if((match=input.match(/^(?:change|set)\s+(?:the\s+)?(spacing|border|preset|layout)\s+of\s+(.+?)\s+to\s+([a-z0-9-]+)$/i))){
       const key=match[1].toLowerCase(),value=match[3].toLowerCase(),allowed={spacing:['compact','normal','relaxed'],border:['default','none','thin','strong'],preset:['plain','card','highlight','minimal'],layout:['vertical','row','columns-2','columns-3','squares']}[key];
       if(!allowed.includes(value))return question('Choose a supported '+key+': '+allowed.join(', ')+'.');
@@ -133,7 +137,7 @@
     }
     // A local-looking instruction that did not match the complete grammar is a
     // clarification, not an invitation to run a paid model or guess a target.
-    if(/^(?:change|set|make|rename|delete|remove|move|align|format|color|colour|resize|bold|italicize|underline|undo)\b/i.test(input)||/^(?:add|insert|create)\s+(?:a\s+)?(?:heading|paragraph|rule|note|prompt)\b/i.test(input))return question('Specify one exact edit, for example: Change only the “Market Context” heading to red; Rename Rule 2 to “Risk Management”; or Create a rule: “your condition”. Use block IDs when labels repeat.');
+    if(/^(?:change|set|make|rename|delete|remove|move|align|format|color|colour|resize|bold|italicize|italicise|underline|undo)\b/i.test(input)||/^(?:add|insert|create)\s+(?:a\s+)?(?:heading|paragraph|rule|note|prompt)\b/i.test(input))return question('Specify one exact edit, for example: Change only the “Market Context” heading to red; Rename Rule 2 to “Risk Management”; or Create a rule: “your condition”. Use block IDs when labels repeat.');
     return ai();
   }
   const api=Object.freeze({route,clarifyRules,operation,format});

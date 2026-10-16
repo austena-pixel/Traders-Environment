@@ -187,7 +187,14 @@ async function run(){
     await sendLocal('playbook','Change only the Market Context heading to red.');
     assert.equal(await editor('playbook').locator('[data-ti-ai-node-id="market_heading"]').getAttribute('data-playbook-color-text'),'#ff0000');
     assert.equal(await model('playbook').locator('[data-playbook-color-text="#ff0000"]').first().evaluate(el=>getComputedStyle(el).color),'rgb(255, 0, 0)');
+    await sendLocal('playbook','underline the heading " Market Context "');
+    assert.equal(await editor('playbook').locator('[data-ti-ai-node-id="market_heading"]').getAttribute('data-playbook-underline'),'true');
+    const underlinedHeading=model('playbook').locator('[data-playbook-color-text="#ff0000"]');
+    assert.match(await underlinedHeading.evaluate(el=>getComputedStyle(el).textDecorationLine),/underline/);assert.equal(await underlinedHeading.evaluate(el=>getComputedStyle(el).color),'rgb(255, 0, 0)');
+    await sendLocal('playbook','Remove underline from heading "Market Context"');assert.equal(await underlinedHeading.evaluate(el=>getComputedStyle(el).textDecorationLine),'none');assert.equal(await underlinedHeading.evaluate(el=>getComputedStyle(el).color),'rgb(255, 0, 0)');
+    await sendLocal('playbook','Underline the heading "Market Context"');
     assert.deepEqual(await conditions('playbook'),originalConditions);assert.equal((await snapshot('playbook')).store,localBaseline.store);
+    pass('direct underline and removal preserve the pending red heading, condition identities and approval-only save with zero AI usage');
     await panel('playbook').locator('[data-ai-apply]').click();assert.match((await snapshot('playbook')).html,/data-playbook-color-text="#ff0000"/);
     await sendLocal('playbook','Undo the last approved change');assert.equal((await snapshot('playbook')).store===localBaseline.store,false);assert.equal(await model('playbook').locator('[data-playbook-color-text="#ff0000"]').count(),0);
     await panel('playbook').locator('[data-ai-discard]').click();assert.equal(await model('playbook').locator('[data-playbook-color-text="#ff0000"]').count(),1);

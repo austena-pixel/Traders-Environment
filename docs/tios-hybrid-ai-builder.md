@@ -13,6 +13,8 @@ Examples:
 - `Align heading "Entry Conditions" to the center`
 - `Set font size of heading "Entry Conditions" to 24 px`
 - `Make Rule 2 bold` / `Make Rule 2 not bold`
+- `Underline the heading "MARKET CONTEXT"` / `Remove underline from heading "MARKET CONTEXT"`
+- `Bold Rule 2` / `Italicize Rule 2` / `Italicise Rule 2`
 - `Set spacing of heading "Entry Conditions" to compact`
 - `Set border of heading "Entry Conditions" to thin`
 - `Set preset of heading "Entry Conditions" to card`
