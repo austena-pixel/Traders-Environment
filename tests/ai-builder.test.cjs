@@ -5,7 +5,7 @@ const contract=require('../technical-instruments/ai-builder-schema.js');
 const service=require('../server/ai-builder-service.cjs');
 const handler=require('../api/tios-ai-builder.js');
 const node=(id,label,type='rule')=>({id,label,type,level:null,options:[],logic:'all',dependsOn:null,condition:null,maximum:type==='score'?10:null});
-const operation=node=>({action:'insert',targetId:null,beforeId:null,afterId:null,node,members:[],logic:null,dependsOn:null});
+const operation=node=>({action:'insert',targetId:null,beforeId:null,afterId:null,node,members:[],logic:null,dependsOn:null,color:null});
 const answer={message:'A rule is ready for review.',questions:[],proposal:{intent:'create',kind:'checklist',name:'Risk',description:null,operations:[operation(node('risk','Risk no more than 1%.'))]}};
 const request={message:'Create a 1% risk rule.',history:[],context:{kind:'checklist',name:'',description:'',blocks:[]}};
 const config={url:'https://example.supabase.co',key:'qa-public',model:'openai/gpt-4.1-mini',token:'qa-secret'};
