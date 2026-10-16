@@ -20,10 +20,11 @@
     logic:enumeration(['all','any','exclusive']),dependsOn:nullable(id),
     condition:nullable(condition),maximum:nullable({type:'number',enum:[10]})
   });
+  const textColor=nullable({anyOf:[enumeration(['red','orange','yellow','green','blue','purple','pink','black','white','gray','default']),{type:'string',pattern:'^#[0-9a-fA-F]{6}$'}]});
   const operation=obj({
-    action:enumeration(['insert','update','remove','remove_section','move','group']),
+    action:enumeration(['insert','update','remove','remove_section','move','group','style']),
     targetId:nullable(id),afterId:nullable(id),beforeId:nullable(id),node:nullable(node),
-    members:list(id,20),logic:nullable(enumeration(['all','any','exclusive'])),dependsOn:nullable(id)
+    members:list(id,20),logic:nullable(enumeration(['all','any','exclusive'])),dependsOn:nullable(id),color:textColor
   });
   const proposal=obj({
     intent:enumeration(['create','edit']),kind:enumeration(['playbook','checklist','psych']),
@@ -62,9 +63,11 @@
     if(!p.operations.length&&!p.name&&!p.description)errors.push('The proposal contains no changes.');
     for(const op of p.operations){
       if(op.beforeId&&op.afterId)errors.push('Choose either a before or after position.');
-      if(['update','remove','remove_section','move'].includes(op.action)&&!op.targetId)errors.push('The change needs a target.');
+      if(['update','remove','remove_section','move','style'].includes(op.action)&&!op.targetId)errors.push('The change needs a target.');
       if(['insert','update'].includes(op.action)&&!op.node)errors.push('The change needs a structured node.');
       if(op.action==='group'&&(op.members.length<2||!op.logic||!op.node))errors.push('A logic group needs a node, logic and at least two conditions.');
+      if(op.action==='style'&&(!op.color||op.node||op.beforeId||op.afterId||op.members.length))errors.push('A heading text-color change needs an existing target and a color, with no replacement node.');
+      if(op.action!=='style'&&op.color!==null)errors.push('Only a style operation may change text color.');
       if(op.node){
         if(!op.node.label.trim())errors.push('Every new block needs a label.');
         if(op.node.type==='choice'&&op.node.options.length<2)errors.push('A choice needs at least two options.');
