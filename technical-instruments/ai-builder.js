@@ -27,7 +27,37 @@
     workspace.restore(previous.snapshot);
     update(previous.snapshot.kind);
   }
-  function abort(){if(request){request.controller.abort();request=null}for(const kind of panels.keys())update(kind)}
+  // These are task-aware preparation messages, not claims of model-internal progress
+  // or changes already applied to a saved instrument.
+  function activitySteps(message,kind){
+    const input=String(message||'').toLowerCase();
+    const stages=['Reading your request…','Reviewing the current '+label[kind]+'…'];
+    const removing=/\b(remove|removing|delete|deleting|clear|strip)\b/.test(input);
+    const adding=/\b(add|adding|insert|inserting|create|creating|build|building|write|writing)\b/.test(input);
+    if(removing)stages.push('Locating blocks to remove…','Preparing requested removal…');
+    if(adding){
+      if(/\b(headings?|sections?|titles?)\b/.test(input))stages.push('Planning heading insertion…');
+      if(/\b(rules?|conditions?|checks?)\b/.test(input))stages.push('Preparing rule insertion…');
+      if(!/\b(headings?|sections?|titles?|rules?|conditions?|checks?)\b/.test(input))stages.push('Planning new content…');
+    }
+    if(/\b(edit|editing|update|updating|change|changing|rename|renaming|replace|replacing|move|moving)\b/.test(input))stages.push('Planning edits to existing blocks…');
+    stages.push('Preparing an approval-ready proposal…','Waiting for the AI response…');
+    return stages;
+  }
+  function stopActivity(run){if(run?.activityTimer){clearInterval(run.activityTimer);run.activityTimer=null}}
+  function startActivity(run,message){
+    run.activitySteps=activitySteps(message,run.kind);
+    run.activityIndex=0;
+    run.activity=run.activitySteps[0];
+    run.activityTimer=setInterval(()=>{
+      if(request!==run){stopActivity(run);return}
+      if(run.activityIndex<run.activitySteps.length-1){
+        run.activity=run.activitySteps[++run.activityIndex];
+        update(run.kind);
+      }
+    },2200);
+  }
+  function abort(){if(request){stopActivity(request);request.controller.abort();request=null}for(const kind of panels.keys())update(kind)}
   function beforeNavigate(page){
     const target=page==='playbook'?'playbook':page==='checklists'?'checklist':page==='reflections'?'psych':null;
     if(request&&request.kind!==target)abort();
@@ -78,7 +108,10 @@
     panel.querySelector('[data-ai-cancel]').hidden=!busy;
     panel.querySelector('[data-ai-proposal]').hidden=!proposed;
     panel.querySelector('[data-ai-undo]').disabled=!entry||entry.scope!==workspace.scope()||entry.after.id!==workspace.current(kind)?.id||Boolean(preview)||Boolean(request);
-    text(panel.querySelector('[data-ai-state]'),busy?'Reading your request and preparing a proposal…':state.preparing?'Preparing pictures…':remaining?'Request limit · you can retry in '+retryLabel(remaining):proposed?'Unsaved proposal · review the Live Model or document':'Changes need your approval');
+    const working=panel.querySelector('[data-ai-working]');
+    if(working)working.hidden=!busy;
+    text(panel.querySelector('[data-ai-working-message]'),busy?request.activity:'');
+    text(panel.querySelector('[data-ai-state]'),busy?'AI Builder · preparing your proposal…':state.preparing?'Preparing pictures…':remaining?'Request limit · you can retry in '+retryLabel(remaining):proposed?'Unsaved proposal · review the Live Model or document':'Changes need your approval');
     if(proposed)text(panel.querySelector('[data-ai-summary]'),(preview.isNew?'Create':'Edit')+' '+label[kind]+': '+preview.draft.name+' · '+preview.operations+' proposed change'+(preview.operations===1?'':'s'));
     text(panel.querySelector('[data-ai-context]'),label[kind]+' · '+(workspace.current(kind)?.name||'New instrument'));
   }
@@ -95,7 +128,7 @@
   async function send(kind){
     if(request||quotaRemaining())return;const panel=panels.get(kind),input=panel.querySelector('textarea'),message=input.value.trim(),state=session(kind),added=state.attachments.slice();if(state.preparing||(!message&&!added.length))return;
     clearError(kind);
-    const identity=workspace.identity(kind),scope=workspace.scope(),epoch=state.epoch,controller=new AbortController(),run={kind,identity,controller};request=run;update(kind);
+    const identity=workspace.identity(kind),scope=workspace.scope(),epoch=state.epoch,controller=new AbortController(),run={kind,identity,controller};request=run;startActivity(run,message);update(kind);
     let errorKind=kind,moved=false;
     try{
       const auth=await workspace.token();if(request!==run||identity!==workspace.identity(kind)||workspace.activeKind()!==kind||state.epoch!==epoch)return;
@@ -108,6 +141,7 @@
       let result;try{result=await response.json()}catch{throw Error('The AI service is unavailable. Try again later; your instrument was not changed.')}
       if(request!==run||identity!==workspace.identity(kind))return;
       if(!response.ok){const failure=Error(result.error?.message||'The AI service could not prepare the instrument.');failure.code=result.error?.code;const retryAfter=Number(result.error?.retryAfter||response.headers.get('Retry-After'));if(failure.code==='usage_limit'&&Number.isFinite(retryAfter)&&retryAfter>0)failure.message+=' Try again at '+holdQuota(retryAfter)+'. Your pictures and draft are kept.';throw failure}
+      run.activity='Validating the AI response…';update(kind);
       const answer={message:result.message,questions:result.questions,proposal:result.proposal};
       if(contract.validateResponse(answer).length)throw Error('The AI response failed validation. No changes were saved.');
       if(!workspace.unchanged(snapshot,{preview:isPreview(kind)}))throw Error('Your instrument changed while AI was responding. Ask again using the current version.');
@@ -120,6 +154,7 @@
           const savedHistory=state.history.slice(),savedReferences=state.references.slice();request=null;restorePreview();cache.delete(identity);workspace.navigate(proposal.kind);targetKind=proposal.kind;errorKind=targetKind;moved=true;ensure(targetKind);open(targetKind);Object.assign(session(targetKind),{history:savedHistory,references:savedReferences});
           targetSnapshot=workspace.capture(targetKind,{save:true});targetWorking=targetSnapshot.doc;
         }
+        run.activity='Building the Live Model preview (not saved)…';if(request===run)update(kind);
         const draft=documents.compile(targetWorking,proposal);
         preview={snapshot:targetSnapshot,draft,isNew:proposal.intent==='create'||Boolean(inheritedCreate&&targetKind===kind),operations:proposal.operations.length};
         workspace.display(targetKind,draft,true);
@@ -127,7 +162,7 @@
       }else append(kind,'assistant',answer.message+(answer.questions.length?'\n\n'+answer.questions.join('\n'):''));
       text(panel.querySelector('[data-ai-service]'),'AI connected');
     }catch(failure){if(failure.name!=='AbortError'&&scope===workspace.scope()&&(request===run||moved)){error(errorKind,failure.message,failure.code);append(errorKind,'assistant','The requested change was not applied. '+failure.message);const current=session(errorKind);current.draft=message||(current.references.length?'Build from these reference images.':'');panels.get(errorKind).querySelector('textarea').value=current.draft}}
-    finally{if(request===run)request=null;update(kind)}
+    finally{stopActivity(run);if(request===run)request=null;update(kind)}
   }
   function apply(kind){
     if(!isPreview(kind)||request)return;clearError(kind);
@@ -154,7 +189,7 @@
     const button=document.createElement('button');button.type='button';button.className='btn ti-ai-toggle';button.dataset.aiToggle=kind;button.textContent='AI Builder Chat';button.setAttribute('aria-expanded','false');button.setAttribute('aria-controls','tiAiBuilder_'+kind);
     page.querySelector('.top-actions').prepend(button);
     const panel=document.createElement('section');panel.className='ti-ai-builder';panel.id='tiAiBuilder_'+kind;panel.hidden=true;panel.setAttribute('aria-label','AI Trading Edge Builder');
-    panel.innerHTML='<header class="ti-ai-head"><div><strong>AI Trading Edge Builder</strong><small data-ai-context></small></div><div><button type="button" data-ai-new title="Start a new conversation">New chat</button><button type="button" data-ai-undo disabled>Undo AI change</button><button type="button" data-ai-close aria-label="Close AI Builder">×</button></div></header><div class="ti-ai-status"><span data-ai-state></span><small data-ai-service>Server-side AI · approval required</small></div><div class="ti-ai-error" data-ai-error role="alert" hidden></div><div class="ti-ai-messages" data-ai-messages role="log" aria-live="polite" aria-relevant="additions text" tabindex="0"></div><div class="ti-ai-proposal" data-ai-proposal hidden><span data-ai-summary></span><div><button type="button" class="primary" data-ai-apply>Apply Changes</button><button type="button" data-ai-discard>Discard Changes</button></div></div><div class="ti-ai-attachments" data-ai-attachments aria-label="Images ready to send" hidden></div><form class="ti-ai-form"><label class="sr-only" for="tiAiInput_'+kind+'">Describe your instrument or changes</label><textarea id="tiAiInput_'+kind+'" rows="2" maxlength="4000" placeholder="Describe your edge, ask a question, or attach a picture…"></textarea><input type="file" data-ai-file accept="image/png,image/jpeg,image/webp" multiple hidden aria-label="Choose reference images"><div class="ti-ai-composer-actions"><button type="button" data-ai-attach>Attach images</button><small data-ai-image-hint></small><button type="button" data-ai-cancel hidden>Stop</button><button type="submit" data-ai-send disabled>Send</button></div></form><small class="ti-ai-foot">Enter to send · Shift+Enter for a new line · Conversation stays in this session · Strategy profitability requires separate validation.</small>';
+    panel.innerHTML='<header class="ti-ai-head"><div><strong>AI Trading Edge Builder</strong><small data-ai-context></small></div><div><button type="button" data-ai-new title="Start a new conversation">New chat</button><button type="button" data-ai-undo disabled>Undo AI change</button><button type="button" data-ai-close aria-label="Close AI Builder">×</button></div></header><div class="ti-ai-status"><span data-ai-state></span><small data-ai-service>Server-side AI · approval required</small></div><div class="ti-ai-error" data-ai-error role="alert" hidden></div><div class="ti-ai-messages" data-ai-messages role="log" aria-live="polite" aria-relevant="additions text" tabindex="0"></div><div class="ti-ai-working" data-ai-working role="status" aria-live="polite" aria-atomic="true" hidden><span class="ti-ai-working-spinner" aria-hidden="true"></span><span class="ti-ai-working-copy"><strong data-ai-working-message>Reviewing request…</strong><small>Preparing a preview · nothing saved until you approve</small></span></div><div class="ti-ai-proposal" data-ai-proposal hidden><span data-ai-summary></span><div><button type="button" class="primary" data-ai-apply>Apply Changes</button><button type="button" data-ai-discard>Discard Changes</button></div></div><div class="ti-ai-attachments" data-ai-attachments aria-label="Images ready to send" hidden></div><form class="ti-ai-form"><label class="sr-only" for="tiAiInput_'+kind+'">Describe your instrument or changes</label><textarea id="tiAiInput_'+kind+'" rows="2" maxlength="4000" placeholder="Describe your edge, ask a question, or attach a picture…"></textarea><input type="file" data-ai-file accept="image/png,image/jpeg,image/webp" multiple hidden aria-label="Choose reference images"><div class="ti-ai-composer-actions"><button type="button" data-ai-attach>Attach images</button><small data-ai-image-hint></small><button type="button" data-ai-cancel hidden>Stop</button><button type="submit" data-ai-send disabled>Send</button></div></form><small class="ti-ai-foot">Enter to send · Shift+Enter for a new line · Conversation stays in this session · Strategy profitability requires separate validation.</small>';
     main.insertBefore(panel,main.querySelector('.playbook-word-document-stage'));panels.set(kind,panel);
     // Document selection replaces the editor contents without changing the page's active class.
     // Observe that boundary so requests and image previews immediately follow the selected document.
