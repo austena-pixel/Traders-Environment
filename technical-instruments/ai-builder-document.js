@@ -54,7 +54,44 @@
   function compile(base,proposal){
     const host=documentHost(proposal.intent==='create'?'':base.documentHtml);
     const find=id=>[...host.querySelectorAll('[data-ti-ai-node-id]')].find(n=>n.dataset.tiAiNodeId===id);
-    const needed=id=>{const node=find(id);if(!node)throw Error('The proposal refers to a missing block. Ask the AI to prepare it again.');return node};
+    // Keep a read-only index of original block labels for precise error messages.
+    // A proposal is compiled against a detached DOM: failed operations never write a document.
+    const originals=new Map([...host.querySelectorAll('[data-ti-ai-node-id]')].map(node=>[node.dataset.tiAiNodeId,clean(node).slice(0,100)]));
+    const removedIds=new Set();
+    const markRemoved=node=>{
+      for(const item of [node,...node.querySelectorAll('[data-ti-ai-node-id]')]){
+        if(item.dataset.tiAiNodeId)removedIds.add(item.dataset.tiAiNodeId);
+      }
+    };
+    const needed=id=>{
+      const node=find(id);
+      if(!node){
+        const label=originals.get(id);
+        const detail=label?'“'+label+'” (ID '+id+')':'ID '+id;
+        throw Error('The AI targeted a missing or outdated block: '+detail+'. No changes were made. Ask AI to prepare a proposal using the current document.');
+      }
+      return node;
+    };
+    // Remove the heading and only the contiguous top-level blocks belonging to it.
+    // Stop at the next heading of the same or higher level, leaving other sections intact.
+    function removeSection(id){
+      if(removedIds.has(id)&&!find(id))return;
+      const heading=needed(id);
+      if(type(heading)!=='heading'||heading.parentElement!==host){
+        throw Error('A whole-section removal requires a top-level heading. No changes were made; use a specific block removal instead.');
+      }
+      const level=Number(heading.tagName.slice(1));
+      const blocks=[heading];
+      for(let next=heading.nextElementSibling;next;next=next.nextElementSibling){
+        if(/^H[123]$/.test(next.tagName)&&Number(next.tagName.slice(1))<=level)break;
+        // Refuse ambiguous wrappers that contain a separate same-level section.
+        if([...next.querySelectorAll('h1,h2,h3')].some(h=>Number(h.tagName.slice(1))<=level)){
+          throw Error('The section boundary is ambiguous. Nothing was saved; remove individual blocks or use the Manual editor.');
+        }
+        blocks.push(next);
+      }
+      for(const block of blocks){markRemoved(block);block.remove();}
+    }
     function place(node,op){
       const anchorId=op.beforeId||op.afterId;if(!anchorId){host.append(node);return}
       let anchor=needed(anchorId);
@@ -83,7 +120,12 @@
           }
         }
         previous.replaceWith(nodeElement({...op.node,id:op.targetId},previous));
-      }else if(op.action==='remove')needed(op.targetId).remove();
+      }else if(op.action==='remove'){
+        // The model may list a parent group and its children separately.
+        // A later deletion of an already-deleted child is redundant, not a bad reference.
+        if(removedIds.has(op.targetId)&&!find(op.targetId))continue;
+        const node=needed(op.targetId);markRemoved(node);node.remove();
+      }else if(op.action==='remove_section')removeSection(op.targetId);
       else if(op.action==='move')place(needed(op.targetId),op);
       else if(op.action==='group'){
         if(find(op.node.id))throw Error('The logic group needs a new identifier.');
