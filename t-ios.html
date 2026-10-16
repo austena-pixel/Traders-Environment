@@ -8391,6 +8391,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 <script src="technical-instruments/playbooks.js"></script>
 <script src="technical-instruments/checklists.js"></script>
 <script src="technical-instruments/period-rules.js"></script>
+<script src="technical-instruments/period-rule-cloud.js"></script>
 <script src="technical-instruments/reflections.js"></script>
 <script src="technical-instruments/ai-builder-schema.js"></script>
 <script src="technical-instruments/condition-logic.js"></script>
@@ -9242,6 +9243,7 @@ async function enterApp(user){
   await loadPsychologyData();
   await loadEdgeData();
   await loadExecutionData();
+  await refreshPeriodRuleCloud();
 
   /* H·IOS ecosystem connection checkpoint */
   setTiosConnectionStatus();
@@ -9592,6 +9594,9 @@ async function switchTradingAccount(accountId){
   await loadTrades();
   await loadEdgeData();
   await loadExecutionData();
+  periodRulesCloud?.invalidate();
+  executionMappingPeriodReviewCache.clear();
+  await refreshPeriodRuleCloud();
 
   if(trades.length){
     statsAnchorDate=latestTradeDateObj();
@@ -12646,6 +12651,24 @@ let executionMappingReflectionError=null;
 // Drafts only live in this tab; saved answers use the existing execution-review tables.
 const executionMappingReflectionDrafts=new Map();
 const executionMappingPeriodReviewCache=new Map();
+let periodRulesCloud=null;
+function initPeriodRulesCloud(){
+  if(!periodRulesCloud&&window.TIOSPeriodRuleCloud)periodRulesCloud=window.TIOSPeriodRuleCloud.create({getClient:()=>db,getUser:()=>currentUser,getAccount:()=>tradingAccount,storage:localStorage,rules:window.TIOSPeriodRules});
+  return periodRulesCloud;
+}
+async function refreshPeriodRuleCloud(){
+  const cloud=initPeriodRulesCloud();if(!cloud)return;
+  const result=await cloud.sync();
+  if(result.state==='synced'&&currentUser?.id&&tradingAccount?.id){
+    executionMappingPeriodReviewCache.clear();
+    renderJournal();
+    if(executionMappingIsPeriod())renderExecutionMappingForm();
+  }else if(result.state!=='scope-changed'&&result.state!=='unavailable'){
+    console.warn('Period Rules cloud synchronization not confirmed:',result.message||result.state);
+    showStatus('Period Rules available on this device; cloud sync not confirmed',4500);
+  }
+}
+
 const TIOS_EXECUTION_TOP_SECTION_KEY='tios_execution_top_section_collapsed_v1';
 
 function setExecutionTopSectionCollapsed(collapsed,{persist=true}={}){
@@ -13285,7 +13308,7 @@ function updateExecutionMappingReflectionState(){
   else if(executionMappingReflectionSaving)status.textContent='Saving '+noun+'…';
   else if(executionMappingReflectionError?.key===scope.key)status.textContent=executionMappingReflectionError.message;
   else status.textContent=(dirty?'Unsaved '+noun+'.':hasSaved?title+' saved for this '+subject+'.':scoreCount?'Enter your '+noun+', then Save.':'Complete your '+noun+', then Save.')+
-    (periodMode?' '+(hasSaved&&!dirty?'Saved on this device.':'Save records the whole '+subject+' on this device.'):(state!==null?' Save includes conditions, choices and comments for the selected trade.':''));
+    (periodMode?' '+(hasSaved&&!dirty?'Saved review is cached on this device; cloud synchronization is checked separately.':'Save records the whole '+subject+' locally and attempts cloud synchronization.'):(state!==null?' Save includes conditions, choices and comments for the selected trade.':''));
 }
 async function saveExecutionMappingReflections(){
   if(executionMappingReflectionSaving)return;
@@ -13349,7 +13372,7 @@ async function saveExecutionMappingReflections(){
   }
 }
 
-function saveExecutionMappingPeriodReview(scope,answers,noun){
+async function saveExecutionMappingPeriodReview(scope,answers,noun){
   executionMappingReflectionSaving=true;executionMappingReflectionError=null;updateExecutionMappingReflectionState();
   try{
     const previous=executionMappingPeriodSavedRecord(scope);
@@ -13358,12 +13381,16 @@ function saveExecutionMappingPeriodReview(scope,answers,noun){
       ruleScope:scope.ruleScope,documentId:scope.documentId,documentName:doc?.name||'Rules',period:scope.period,
       definition:scope.definition,answers:answers.map(answer=>({key:answer.key,label:answer.label,comment:answer.comment??''})),
       createdAt:previous?.createdAt||now,savedAt:now};
-    window.TIOSPeriodRules.save(localStorage,record);
+    const result=await initPeriodRulesCloud().save(record);
+    if(currentUser?.id!==scope.userId||tradingAccount?.id!==scope.accountId)return;
+    executionMappingPeriodReviewCache.clear();
     if(scope.ruleScope==='session')renderExecutionMappingPeriodContext();
     const draft=executionMappingReflectionDrafts.get(scope.key);
     answers.forEach(answer=>{if(draft?.get(answer.key)?.trim()===answer.value)draft.delete(answer.key);});
     if(draft&&[...draft.keys()].every(key=>key==='__period_definition__'))executionMappingReflectionDrafts.delete(scope.key);
-    showStatus(noun+' saved for the whole '+({session:'session',daily:'day',weekly:'week',monthly:'month'}[scope.ruleScope])+' on this device');
+    if(result.state==='synced')showStatus(noun+' saved and synced for this '+({session:'session',daily:'day',weekly:'week',monthly:'month'}[scope.ruleScope]));
+    else showStatus(noun+' saved on this device; cloud sync is pending',5500);
+    renderJournal();
   }catch(error){executionMappingReflectionError={key:scope.key,message:noun+' were not saved. '+(error.message||'Please retry.')};}
   finally{executionMappingReflectionSaving=false;updateExecutionMappingReflectionState();}
 }
