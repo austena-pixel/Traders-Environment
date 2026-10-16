@@ -21,7 +21,7 @@
     condition:nullable(condition),maximum:nullable({type:'number',enum:[10]})
   });
   const operation=obj({
-    action:enumeration(['insert','update','remove','move','group']),
+    action:enumeration(['insert','update','remove','remove_section','move','group']),
     targetId:nullable(id),afterId:nullable(id),beforeId:nullable(id),node:nullable(node),
     members:list(id,20),logic:nullable(enumeration(['all','any','exclusive'])),dependsOn:nullable(id)
   });
@@ -62,7 +62,7 @@
     if(!p.operations.length&&!p.name&&!p.description)errors.push('The proposal contains no changes.');
     for(const op of p.operations){
       if(op.beforeId&&op.afterId)errors.push('Choose either a before or after position.');
-      if(['update','remove','move'].includes(op.action)&&!op.targetId)errors.push('The change needs a target.');
+      if(['update','remove','remove_section','move'].includes(op.action)&&!op.targetId)errors.push('The change needs a target.');
       if(['insert','update'].includes(op.action)&&!op.node)errors.push('The change needs a structured node.');
       if(op.action==='group'&&(op.members.length<2||!op.logic||!op.node))errors.push('A logic group needs a node, logic and at least two conditions.');
       if(op.node){
