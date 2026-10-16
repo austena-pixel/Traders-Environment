@@ -74,6 +74,15 @@ async function run(){
     assert.equal(await active('playbook').locator('.playbook-word-statusbar').isVisible(),false);
     const fill=await panel('playbook').evaluate(el=>({chat:el.getBoundingClientRect().height,main:el.parentElement.getBoundingClientRect().height,log:el.querySelector('[data-ai-messages]').getBoundingClientRect().height}));
     assert.ok(Math.abs(fill.chat-fill.main)<4);assert.ok(fill.log>400);
+    const expandButton=panel('playbook').locator('[data-ai-expand]');
+    assert.equal(await expandButton.getAttribute('aria-pressed'),'false');
+    await expandButton.click();
+    assert.equal(await expandButton.getAttribute('aria-pressed'),'true');
+    assert.equal(await panel('playbook').evaluate(el=>el.classList.contains('ti-ai-chat-expanded')),true);
+    assert.equal(await active('playbook').locator(config.playbook.model).isVisible(),true);
+    await expandButton.click();
+    assert.equal(await expandButton.getAttribute('aria-pressed'),'false');
+    pass('chat expand control increases conversation space without hiding Live Model or changing instrument');
     pass('AI Builder fills the manual workspace beside Live Model, with the ribbon, document and status bar hidden');
     await panel('playbook').locator('textarea').fill('Keep this conversation draft');
     await panel('playbook').locator('.ti-ai-types button').filter({hasText:'Rules'}).click();
