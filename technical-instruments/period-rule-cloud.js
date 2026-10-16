@@ -39,7 +39,7 @@
       let uploaded=true;
       for(const x of push){
         const result=await client.from(table).upsert({user_id:scope.userId,account_id:scope.accountId,review_key:x.key,payload:x},{onConflict:'user_id,account_id,review_key'}).select('review_key,payload').single();
-        if(result.error||result.data?.review_key!==x.key||JSON.stringify(result.data?.payload)!==JSON.stringify(x)){uploaded=false;break;}
+        if(result.error||result.data?.review_key!==x.key||result.data?.payload?.key!==x.key || result.data?.payload?.savedAt!==x.savedAt){uploaded=false;break;}
         if(turn!==generation||identity()?.accountId!==scope.accountId||identity()?.userId!==scope.userId)return {state:'scope-changed'};
       }
       if(!uploaded)return {state:'cloud-error',message:'Local reviews remain available, but the cloud upload was not verified.'};
