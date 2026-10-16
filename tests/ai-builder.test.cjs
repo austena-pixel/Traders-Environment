@@ -19,6 +19,29 @@ test('strict schema rejects unsupported fields, executable operations, bad scori
   assert.ok(contract.validateResponse({...answer,questions:['What confirmation?']}).length);
   assert.ok(contract.validateResponse({message:'Please clarify.',proposal:null,questions:['Entry?','Stop?','Target?','Timeframe?']}).length);
 });
+test('unnamed numbered rules request names instead of a fabricated proposal or error',()=>{
+  const examples=['Create 5 rules: Rule 1 to Rule 5','Create five rules','Add 3 rules'];
+  for(const message of examples){
+    const result=service.clarifyUnderspecifiedRules({...request,message});
+    assert.equal(result.proposal,null);
+    assert.match(result.questions[0],/What should I name/i);
+    assert.deepEqual(contract.validateResponse(result),[]);
+  }
+  assert.equal(service.clarifyUnderspecifiedRules({...request,message:'Create 2 rules: Maximum risk 1%, Trade only the London session'}),null);
+  assert.equal(service.clarifyUnderspecifiedRules({...request,message:'Create 5 rules: Rule 1 to Rule 5',context:{...request.context,kind:'psych'}}),null);
+});
+test('unnamed rule clarification happens without reserving or calling the AI provider',async()=>{
+  const original=global.fetch;let reservations=0,modelCalls=0;
+  process.env.SUPABASE_URL=config.url;process.env.SUPABASE_PUBLISHABLE_KEY=config.key;process.env.AI_GATEWAY_MODEL=config.model;process.env.AI_GATEWAY_API_KEY=config.token;
+  global.fetch=async url=>{if(String(url).endsWith('/auth/v1/user'))return response({id:'qa-user'});if(String(url).includes('/rpc/')){reservations++;return response([{allowed:true}])}modelCalls++;throw Error('No model call expected')};
+  try{
+    const reply=res();
+    await handler({method:'POST',headers:{host:'app.example','content-type':'application/json',authorization:'Bearer qa-user'},body:{...request,message:'Create 5 rules: Rule 1 to Rule 5'}},reply);
+    assert.equal(reply.statusCode,200);assert.equal(reply.body.proposal,null);
+    assert.match(reply.body.questions[0],/What should I name/);
+    assert.equal(reservations,0);assert.equal(modelCalls,0);
+  }finally{global.fetch=original}
+});
 test('AND, OR and exclusive logic are distinct',()=>{
   assert.equal(contract.evaluate('all',[true,false]),false);assert.equal(contract.evaluate('any',[true,false]),true);assert.equal(contract.evaluate('exclusive',[true,true]),false);assert.equal(contract.evaluate('exclusive',[true,false]),true);
 });
