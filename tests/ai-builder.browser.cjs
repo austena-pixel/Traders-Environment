@@ -83,6 +83,22 @@ async function run(){
     await panel('psych').locator('.ti-ai-types button').filter({hasText:'Playbook'}).click();
     assert.equal(await panel('playbook').locator('textarea').inputValue(),'Keep this conversation draft');
     pass('instrument buttons stay available in AI mode and restore each conversation draft');
+    // The progress label reflects the requested operation, never claims an applied save.
+    queue.push({answer:proposal('playbook',null,[], 'edit'),delay:6500});
+    await panel('playbook').locator('textarea').fill('Remove the old section and insert rules and a heading.');
+    await panel('playbook').locator('[data-ai-send]').click();
+    await page.waitForFunction(()=>document.querySelector('#tiAiBuilder_playbook [data-ai-working]')?.hidden===false);
+    const stages=[];
+    for(let i=0;i<5;i++){stages.push(await panel('playbook').locator('[data-ai-working-message]').textContent());await page.waitForTimeout(1150)}
+    assert.ok(stages.some(s=>/Reading your request/i.test(s)));
+    assert.ok(stages.some(s=>/Locating blocks to remove/i.test(s)));
+    assert.ok(stages.some(s=>/Preparing requested removal/i.test(s)));
+    assert.match(await panel('playbook').locator('[data-ai-working]').textContent(),/nothing saved until you approve/i);
+    await panel('playbook').locator('[data-ai-cancel]').click();
+    assert.equal(await panel('playbook').locator('[data-ai-working]').isVisible(),false);
+    assert.equal(await panel('playbook').locator('textarea').isEnabled(),true);
+    pass('task-aware working messages progress and disappear immediately when cancelled');
+    queue.length=0;
     const baseline=await snapshot('playbook');
     await send('playbook','Create a breakout strategy with confirmation.',{message:'What exactly counts as confirmation?',questions:['Which candle or price condition confirms your entry?'],proposal:null});
     assert.match(await panel('playbook').textContent(),/Which candle/);assert.equal((await snapshot('playbook')).store,baseline.store);assert.equal(await panel('playbook').locator('[data-ai-proposal]').isVisible(),false);
