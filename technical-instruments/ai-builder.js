@@ -111,7 +111,6 @@
       const answer={message:result.message,questions:result.questions,proposal:result.proposal};
       if(contract.validateResponse(answer).length)throw Error('The AI response failed validation. No changes were saved.');
       if(!workspace.unchanged(snapshot,{preview:isPreview(kind)}))throw Error('Your instrument changed while AI was responding. Ask again using the current version.');
-      append(kind,'assistant',answer.message+(answer.questions.length?'\n\n'+answer.questions.join('\n'):''));
       if(answer.proposal){
         const proposal=answer.proposal;
         if(proposal.intent==='edit'&&proposal.kind!==kind)throw Error('The AI attempted to edit a different instrument. No changes were saved.');
@@ -123,10 +122,11 @@
         }
         const draft=documents.compile(targetWorking,proposal);
         preview={snapshot:targetSnapshot,draft,isNew:proposal.intent==='create'||Boolean(inheritedCreate&&targetKind===kind),operations:proposal.operations.length};
-        workspace.display(targetKind,draft,true);renderHistory(targetKind);update(targetKind);
-      }
+        workspace.display(targetKind,draft,true);
+        append(targetKind,'assistant','Proposed changes prepared for review (not saved). '+answer.message+(answer.questions.length?'\n\n'+answer.questions.join('\n'):''));renderHistory(targetKind);update(targetKind);
+      }else append(kind,'assistant',answer.message+(answer.questions.length?'\n\n'+answer.questions.join('\n'):''));
       text(panel.querySelector('[data-ai-service]'),'AI connected');
-    }catch(failure){if(failure.name!=='AbortError'&&scope===workspace.scope()&&(request===run||moved)){error(errorKind,failure.message,failure.code);const current=session(errorKind);current.draft=message||(current.references.length?'Build from these reference images.':'');panels.get(errorKind).querySelector('textarea').value=current.draft}}
+    }catch(failure){if(failure.name!=='AbortError'&&scope===workspace.scope()&&(request===run||moved)){error(errorKind,failure.message,failure.code);append(errorKind,'assistant','The requested change was not applied. '+failure.message);const current=session(errorKind);current.draft=message||(current.references.length?'Build from these reference images.':'');panels.get(errorKind).querySelector('textarea').value=current.draft}}
     finally{if(request===run)request=null;update(kind)}
   }
   function apply(kind){
