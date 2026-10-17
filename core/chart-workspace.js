@@ -59,7 +59,7 @@
   }
   function defaults(){
     return {version:1,layout:'single',theme:'dark',timezone:'Etc/UTC',charts:{
-      single:[{id:'single',symbol:'FX:EURUSD',interval:'60',responsibility:'Market analysis'}],
+      single:[{id:'single',symbol:'FX:EURUSD',interval:'5',responsibility:'Market analysis'}],
       multiple:[
         {id:'context',symbol:'FX:EURUSD',interval:'240',responsibility:'Market Context'},
         {id:'setup',symbol:'FX:EURUSD',interval:'60',responsibility:'Setup Development'},
@@ -88,7 +88,7 @@
   }
   function widgetSettings(chart,prefs){
     return {autosize:true,symbol:chart.symbol,interval:chart.interval,timezone:prefs.timezone,
-      theme:prefs.theme,style:'1',locale:'en',allow_symbol_change:true,hide_side_toolbar:false,
+      theme:prefs.theme,style:'1',locale:'en',allow_symbol_change:true,hide_side_toolbar:false,hide_top_toolbar:true,
       withdateranges:true,hide_volume:true,studies:[],save_image:false,show_popup_button:true,popup_width:'1200',popup_height:'800',
       support_host:'https://www.tradingview.com'};
   }
