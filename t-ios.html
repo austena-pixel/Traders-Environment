@@ -1960,18 +1960,45 @@ body.playbook-workspace .main{
 .stats-indicator-stack.stats-autozoom .stats-indicator-card.stats-autozoom-bottom-anchor.stats-card-zoomed{
   transform-origin:right bottom;
 }
-.stats-dashboard-section,.stats-combined-outcomes{margin-bottom:14px}
-.stats-dashboard-header,.stats-dashboard-toolbar,.stats-combined-header,.stats-outcome-heading{
+.stats-section-a{margin:0 0 14px;padding:16px}
+.stats-section-a-header,.stats-dashboard-header,.stats-outcome-heading{
   display:flex;align-items:flex-start;justify-content:space-between;gap:12px;min-width:0
 }
-.stats-dashboard-header{margin-bottom:8px}
-.stats-dashboard-title,.stats-combined-header>div:first-child{min-width:0}
-.stats-dashboard-title h2,.stats-combined-header h2{margin:0;font-size:16px;line-height:1.3}
-.stats-dashboard-title p,.stats-combined-header p{margin:4px 0 0;color:#95a4b8;font-size:10px;line-height:1.5}
-.stats-dashboard-actions,.stats-dashboard-toolbar .stats-autozoom-controls{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap}
-.stats-dashboard-toolbar{align-items:center;margin:0 0 10px}
-.stats-dashboard-save-status{margin:0;color:#8293a9;font-size:9px;line-height:1.4;text-align:right}
+.stats-section-a-header{align-items:center;margin-bottom:12px}
+.stats-section-a-header h2{margin:0;font-size:16px;line-height:1.3}
+.stats-section-a-header p{margin:4px 0 0;color:#95a4b8;font-size:10px;line-height:1.5}
+.stats-primary-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin:0 0 12px}
+.stats-primary-metric{min-width:0;min-height:112px;padding:11px 12px;border:1px solid #253449;border-radius:11px;background:linear-gradient(145deg,#101a26,#0c141e)}
+.stats-primary-metric>span:first-child,.stats-primary-metric-head>span{display:block;color:#9eacc0;font-size:9px;font-weight:750;letter-spacing:.2px}
+.stats-primary-metric>strong{display:block;margin-top:7px;color:#eef4fc;font-size:19px;font-weight:800;line-height:1.15;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.stats-primary-metric>strong.pos{color:#45d69a}.stats-primary-metric>strong.neg{color:#ff727c}.stats-primary-metric>strong.neutral{color:#eef4fc}
+.stats-primary-metric small{display:block;margin-top:6px;color:#8798ad;font-size:8px;line-height:1.35}
+.stats-primary-metric-head{display:flex;align-items:center;justify-content:space-between;gap:7px}
+.stats-win-return{flex:0 0 auto;font-size:8px;font-weight:800;font-variant-numeric:tabular-nums}
+.stats-win-return.pos{color:#45d69a}.stats-win-return.neg{color:#ff727c}.stats-win-return.neutral{color:#aebbd0}
+.stats-win-rate-gauge{display:block;width:100%;max-width:150px;height:58px;margin:0 auto -1px;overflow:visible}
+.stats-win-rate-track,.stats-win-rate-progress{fill:none;stroke-width:12;stroke-linecap:round}
+.stats-win-rate-track{stroke:#263448}.stats-win-rate-progress{stroke:#45d69a;transition:stroke-dasharray .2s ease}
+.stats-win-rate-gauge-value{fill:#eef4fc;font-size:21px;font-weight:850;text-anchor:middle;font-variant-numeric:tabular-nums}
+.stats-primary-metric .stats-indicator-value{display:block;margin-top:7px;font-size:19px}
+.stats-profit-factor-bar{display:flex;height:5px;margin:7px 0 6px;overflow:hidden;border-radius:999px;background:#263448}
+.stats-profit-factor-profit-fill{height:100%;background:#45d69a}.stats-profit-factor-loss-fill{height:100%;background:#ff727c}
+.stats-primary-pairs{display:flex;justify-content:space-between;gap:8px;margin-top:6px}
+.stats-primary-pairs>span{min-width:0;color:#8495aa;font-size:7px;line-height:1.25}
+.stats-primary-pairs strong{display:block;margin-top:3px;color:#d8e2ef;font-size:9px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.stats-primary-pairs .positive{color:#45d69a}.stats-primary-pairs .negative{color:#ff727c}
+.stats-section-a-workspace{display:grid;grid-template-columns:minmax(0,2.05fr) minmax(245px,.95fr);gap:12px;align-items:stretch}
+.stats-combined-outcomes{min-width:0;padding:12px;border:1px solid #253449;border-radius:12px;background:#0c141e}
+.stats-dashboard-section{min-width:0;min-height:430px;padding:12px;border:1px solid #253449;border-radius:12px;background:#0c141e}
+.stats-dashboard-header{align-items:center;margin-bottom:8px}
+.stats-dashboard-title{min-width:0}
+.stats-dashboard-title h3{margin:0;font-size:12px;line-height:1.3}
+.stats-dashboard-title p{margin:4px 0 0;color:#8798ad;font-size:8px;line-height:1.45}
+.stats-dashboard-actions{display:flex;align-items:center;justify-content:flex-end;gap:5px;flex-wrap:wrap}
+.stats-dashboard-actions .btn{min-height:25px;padding:4px 7px;font-size:8px}
 .stats-dashboard-actions .btn:disabled{opacity:.48;cursor:not-allowed}
+.stats-dashboard-toolbar{display:flex;justify-content:flex-end;min-height:16px;margin:0 0 6px}
+.stats-dashboard-save-status{margin:0;color:#8293a9;font-size:8px;line-height:1.4;text-align:right}
 .stats-indicator-grid{
   display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,185px),1fr));
   align-items:stretch;gap:9px;width:100%;height:auto;min-height:0
@@ -1995,12 +2022,6 @@ body.playbook-workspace .main{
   color:#a0afc2;background:#0c141e;font-size:11px;line-height:1.55;text-align:center
 }
 .stats-outcome-unavailable{border-style:solid;border-color:#39475a;text-align:left}
-.stats-dashboard-section{padding:15px}
-.stats-combined-outcomes{padding:16px}
-.stats-combined-header{align-items:flex-start;margin-bottom:12px}
-.stats-equity-summary{margin:0;gap:10px 20px}
-.stats-equity-summary-item{min-width:95px}
-.stats-equity-summary-item strong{font-size:15px}
 .stats-outcome-selectors{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px;padding:0 0 9px;border-bottom:1px solid #243247}
 .stats-outcome-selector{min-height:30px;padding:6px 10px;border:1px solid transparent;border-radius:8px;background:transparent;color:#97a8bd;font-size:9px;font-weight:750;cursor:pointer;white-space:nowrap}
 .stats-outcome-selector:hover{background:#121d2b;color:#d7e2f0}
@@ -2011,8 +2032,8 @@ body.playbook-workspace .main{
 .stats-outcome-heading h3{margin:0;color:#dce6f3;font-size:12px}
 .stats-outcome-heading p{margin:4px 0 0;color:#8f9fb4;font-size:9px;line-height:1.45}
 .stats-outcome-period{flex:0 0 auto;color:#8293a9;font-size:9px;text-align:right}
-.stats-outcome-canvas-wrap{position:relative;width:100%;height:380px}
-.stats-combined-outcomes .equity-canvas-wrap{height:380px;width:100%}
+.stats-outcome-canvas-wrap{position:relative;width:100%;height:400px}
+.stats-combined-outcomes .equity-canvas-wrap{height:400px;width:100%}
 .stats-indicator-dialog{width:min(620px,calc(100vw - 28px));max-height:min(80vh,760px);padding:0;border:1px solid #34445a;border-radius:14px;background:#101923;color:#e8eef7;box-shadow:0 24px 90px rgba(0,0,0,.65)}
 .stats-indicator-dialog::backdrop{background:rgba(2,6,12,.72);backdrop-filter:blur(3px)}
 .stats-indicator-dialog form{display:flex;max-height:min(80vh,760px);flex-direction:column}
@@ -2032,20 +2053,27 @@ body.playbook-workspace .main{
 .stats-indicator-option.is-disabled{opacity:.5;cursor:not-allowed}
 .stats-indicator-dialog-actions{display:flex;justify-content:flex-end;gap:7px;padding:12px 16px;border-top:1px solid #26364a}
 @media(max-width:760px){
-  .stats-dashboard-header,.stats-dashboard-toolbar,.stats-combined-header{flex-direction:column;align-items:stretch}
-  .stats-dashboard-actions,.stats-dashboard-toolbar .stats-autozoom-controls{justify-content:flex-start}
-  .stats-dashboard-save-status{text-align:left}
-  .stats-equity-summary{justify-content:flex-start}
-  .stats-combined-outcomes .equity-canvas-wrap,.stats-outcome-canvas-wrap{height:320px}
+  .stats-section-a-header{flex-direction:column;align-items:stretch}
+  .stats-section-a-header .stats-autozoom-controls{justify-content:flex-start}
+  .stats-primary-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .stats-section-a-workspace{grid-template-columns:minmax(0,1fr)}
+  .stats-dashboard-section{min-height:190px}
+  .stats-dashboard-header{align-items:flex-start}
+  .stats-combined-outcomes .equity-canvas-wrap,.stats-outcome-canvas-wrap{height:340px}
 }
 @media(max-width:480px){
-  .stats-indicator-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .stats-primary-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .stats-primary-metric{min-height:100px;padding:9px}
+  .stats-primary-metric>strong,.stats-primary-metric .stats-indicator-value{font-size:17px}
+  .stats-win-rate-gauge{height:52px}
+  .stats-indicator-grid{grid-template-columns:1fr;gap:7px}
   .stats-indicator-grid .stats-indicator-card{min-height:104px;padding:10px}
   .stats-indicator-card-value{font-size:18px}
   .stats-outcome-selector{flex:1 1 calc(50% - 6px);white-space:normal}
-  .stats-combined-outcomes{padding:12px}
+  .stats-section-a{padding:11px}
+  .stats-combined-outcomes,.stats-dashboard-section{padding:9px}
   .stats-outcome-workspace{padding:8px}
-  .stats-combined-outcomes .equity-canvas-wrap,.stats-outcome-canvas-wrap{height:270px}
+  .stats-combined-outcomes .equity-canvas-wrap,.stats-outcome-canvas-wrap{height:290px}
 }
 @media(max-width:900px){
   .stats-indicator-stack{--stats-autozoom-scale:1.22}
@@ -7100,79 +7128,117 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
       <div class="stats-view-panel" id="statsStatisticsView" role="tabpanel" aria-labelledby="statsStatisticsTab">
 
-      <section class="panel stats-dashboard-section" aria-labelledby="statsIndicatorsHeading">
-        <div class="stats-dashboard-header">
-          <div class="stats-dashboard-title">
-            <h2 id="statsIndicatorsHeading">My Indicators</h2>
-            <p>Choose a concise view of combined outcomes, methodology evidence and execution quality.</p>
+      <section class="panel stats-section-a" aria-labelledby="statsCombinedOutcomesHeading">
+        <div class="stats-section-a-header">
+          <div>
+            <h2 id="statsCombinedOutcomesHeading">Combined Outcomes</h2>
+            <p>Review realized results for the selected period. The main chart stays beside space for optional indicators.</p>
           </div>
-          <div class="stats-dashboard-actions">
-            <button class="btn small" id="statsAddIndicator" type="button">Add Indicator</button>
-            <button class="btn small" id="statsArrangeIndicators" type="button" aria-pressed="false">Arrange</button>
-            <button class="btn small" id="statsSaveIndicators" type="button" disabled>Save Layout</button>
-            <button class="btn small" id="statsResetIndicators" type="button">Reset Layout</button>
-          </div>
-        </div>
-        <div class="stats-dashboard-toolbar">
-          <div class="stats-autozoom-controls" role="group" aria-label="Indicator card zoom controls">
-            <button class="stats-autozoom-toggle" id="statsAutoZoomBtn" type="button" aria-pressed="true" aria-controls="statsIndicatorStack" title="Automatically zoom an indicator when hovered or focused">
+          <div class="stats-autozoom-controls" role="group" aria-label="Optional indicator card zoom controls">
+            <button class="stats-autozoom-toggle" id="statsAutoZoomBtn" type="button" aria-pressed="true" aria-controls="statsIndicatorStack" title="Automatically zoom an optional indicator when hovered or focused">
               <span>Auto Zoom</span>
               <span class="stats-autozoom-track" aria-hidden="true"><span class="stats-autozoom-thumb"></span></span>
               <strong class="stats-autozoom-state" id="statsAutoZoomState">ON</strong>
             </button>
             <label class="stats-autozoom-zoom" for="statsAutoZoomRange">
               <span>Zoom</span>
-              <input id="statsAutoZoomRange" type="range" min="100" max="150" step="1" value="125" aria-label="Auto Zoom magnification" aria-controls="statsIndicatorStack" aria-valuetext="125%" title="Adjust how far Auto Zoom enlarges a card; the maximum follows the current zoom limit">
+              <input id="statsAutoZoomRange" type="range" min="100" max="150" step="1" value="125" aria-label="Auto Zoom magnification" aria-controls="statsIndicatorStack" aria-valuetext="125%" title="Adjust the Auto Zoom magnification; the maximum follows the current zoom limit">
               <output id="statsAutoZoomValue" for="statsAutoZoomRange" aria-live="polite">125%</output>
             </label>
           </div>
-          <p class="stats-dashboard-save-status" id="statsIndicatorSaveStatus" role="status" aria-live="polite">Layout changes are saved to your account when you choose Save Layout.</p>
         </div>
-        <div class="stats-indicator-stack stats-indicator-grid stats-autozoom" id="statsIndicatorStack" aria-label="Selected-period indicators"></div>
-        <p class="stats-indicator-empty hidden" id="statsIndicatorEmpty">No indicators selected. Use Add Indicator to choose the measurements you want.</p>
-      </section>
 
-      <section class="panel chart-panel stats-combined-outcomes" aria-labelledby="statsCombinedOutcomesHeading">
-        <div class="stats-combined-header">
-          <div>
-            <h2 id="statsCombinedOutcomesHeading">Combined Outcomes</h2>
-            <p>Realized results reflect the combined effects of methodology, execution, market conditions and trading costs.</p>
-          </div>
-          <div class="stats-equity-summary" role="group" aria-label="Selected-period account outcomes">
-            <div class="stats-equity-summary-item">
-              <span>Ending Equity</span>
-              <strong id="statEquityHeaderEnding" aria-live="polite">—</strong>
+        <div class="stats-primary-summary" role="list" aria-label="Selected-period financial outcomes">
+          <article class="stats-primary-metric" role="listitem">
+            <span>Current Balance</span>
+            <strong id="statEquityHeaderEnding" aria-live="polite">—</strong>
+            <small id="statsPrimaryBalanceCaption">Latest verified account balance</small>
+          </article>
+          <article class="stats-primary-metric" role="listitem">
+            <span>Net P&amp;L</span>
+            <strong id="statEquityHeaderNetPnl" class="neutral" aria-live="polite">—</strong>
+            <small>Selected-period realized result</small>
+          </article>
+          <article class="stats-primary-metric stats-primary-win-rate" role="listitem">
+            <div class="stats-primary-metric-head"><span>Win Rate</span><strong class="stats-win-return neutral" id="statWinRateReturnLabel" aria-live="polite">— return</strong></div>
+            <svg class="stats-win-rate-gauge" id="statWinRateGauge" viewBox="0 0 200 120" role="img" aria-label="Win rate is unavailable.">
+              <path class="stats-win-rate-track" d="M20 100 A80 80 0 0 1 180 100" pathLength="100"></path>
+              <path class="stats-win-rate-progress" id="statWinRateGaugeProgress" d="M20 100 A80 80 0 0 1 180 100" pathLength="100" stroke-dasharray="0 100"></path>
+              <text class="stats-win-rate-gauge-value" id="statWinRateGaugeValue" x="100" y="96">—</text>
+            </svg>
+            <small id="statWinRateGaugeCount">No trades in this period.</small>
+          </article>
+          <article class="stats-primary-metric" role="listitem">
+            <span>Profit Factor</span>
+            <strong class="stats-indicator-value stats-profit-factor-value neutral" id="statProfitFactorDiagramValue">—</strong>
+            <div class="stats-profit-factor-bar" id="statProfitFactorBar" role="img" aria-label="No recorded gross profit or gross loss is available for comparison.">
+              <span class="stats-profit-factor-profit-fill" id="statProfitFactorProfitFill"></span>
+              <span class="stats-profit-factor-loss-fill" id="statProfitFactorLossFill"></span>
             </div>
-            <div class="stats-equity-summary-item">
-              <span>Net P&amp;L</span>
-              <strong id="statEquityHeaderNetPnl" class="neutral" aria-live="polite">—</strong>
+            <div class="stats-primary-pairs">
+              <span>Gross profit<strong id="statProfitFactorGrossProfit">—</strong></span>
+              <span>Gross loss<strong id="statProfitFactorGrossLoss">—</strong></span>
             </div>
-          </div>
+            <small id="statProfitFactorExplanation">No closed trades in this selected period.</small>
+          </article>
+          <article class="stats-primary-metric" role="listitem">
+            <span>Average P&amp;L per Trade</span>
+            <strong id="statsPrimaryAvgPnlValue" class="neutral" aria-live="polite">—</strong>
+            <small id="statsPrimaryAvgPnlCount">No trades in this period.</small>
+            <div class="stats-primary-pairs">
+              <span>Average profit<strong class="positive" id="statsPrimaryAvgProfit">—</strong></span>
+              <span>Average loss<strong class="negative" id="statsPrimaryAvgLoss">—</strong></span>
+            </div>
+          </article>
         </div>
-        <div class="stats-outcome-selectors" role="tablist" aria-label="Combined outcome diagrams">
-          <button class="stats-outcome-selector active" type="button" role="tab" id="statsOutcomeTabEquity" data-stats-outcome="equity" aria-selected="true" aria-controls="statsOutcomeWorkspace">Equity Curve</button>
-          <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabDrawdown" data-stats-outcome="drawdown" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Drawdown</button>
-          <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabCumulative" data-stats-outcome="cumulative" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Cumulative P&amp;L</button>
-          <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabDistribution" data-stats-outcome="distribution" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Trade Distribution</button>
-          <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabComparison" data-stats-outcome="comparison" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Profit/Loss Comparison</button>
-        </div>
-        <div class="stats-outcome-workspace" id="statsOutcomeWorkspace" role="tabpanel" aria-labelledby="statsOutcomeTabEquity">
-          <div class="stats-outcome-heading">
-            <div>
-              <h3 id="statsOutcomeTitle">Equity Curve</h3>
-              <p id="equityChartDescription">Account equity after every trade in the selected period.</p>
+
+        <div class="stats-section-a-workspace">
+          <section class="stats-combined-outcomes" aria-label="Combined outcome chart">
+            <div class="stats-outcome-selectors" role="tablist" aria-label="Combined outcome diagrams">
+              <button class="stats-outcome-selector active" type="button" role="tab" id="statsOutcomeTabEquity" data-stats-outcome="equity" aria-selected="true" aria-controls="statsOutcomeWorkspace">Equity Curve</button>
+              <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabDrawdown" data-stats-outcome="drawdown" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Drawdown</button>
+              <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabCumulative" data-stats-outcome="cumulative" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Cumulative P&amp;L</button>
+              <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabDistribution" data-stats-outcome="distribution" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Trade Distribution</button>
+              <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabComparison" data-stats-outcome="comparison" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Profit/Loss Comparison</button>
             </div>
-            <span class="stats-outcome-period" id="statsOutcomePeriod">—</span>
-          </div>
-          <div class="equity-canvas-wrap" id="equityCanvasWrap">
-            <canvas id="equityChart"></canvas>
-          </div>
-          <div class="stats-outcome-canvas-wrap hidden" id="statsOutcomeCanvasWrap">
-            <canvas id="statsOutcomeChart"></canvas>
-          </div>
-          <div class="stats-outcome-message hidden" id="equityEmptyState">No trades were recorded in this selected period.</div>
-          <div class="stats-outcome-message hidden" id="statsOutcomeEmpty"></div>
-          <div class="stats-outcome-unavailable hidden" id="statsOutcomeUnavailable" role="status" aria-live="polite"></div>
+            <div class="stats-outcome-workspace" id="statsOutcomeWorkspace" role="tabpanel" aria-labelledby="statsOutcomeTabEquity">
+              <div class="stats-outcome-heading">
+                <div>
+                  <h3 id="statsOutcomeTitle">Equity Curve</h3>
+                  <p id="equityChartDescription">Account equity after every trade in the selected period.</p>
+                </div>
+                <span class="stats-outcome-period" id="statsOutcomePeriod">—</span>
+              </div>
+              <div class="equity-canvas-wrap" id="equityCanvasWrap">
+                <canvas id="equityChart"></canvas>
+              </div>
+              <div class="stats-outcome-canvas-wrap hidden" id="statsOutcomeCanvasWrap">
+                <canvas id="statsOutcomeChart"></canvas>
+              </div>
+              <div class="stats-outcome-message hidden" id="equityEmptyState">No trades were recorded in this selected period.</div>
+              <div class="stats-outcome-message hidden" id="statsOutcomeEmpty"></div>
+              <div class="stats-outcome-unavailable hidden" id="statsOutcomeUnavailable" role="status" aria-live="polite"></div>
+            </div>
+          </section>
+
+          <aside class="stats-dashboard-section" aria-labelledby="statsIndicatorsHeading">
+            <div class="stats-dashboard-header">
+              <div class="stats-dashboard-title">
+                <h3 id="statsIndicatorsHeading">Optional Indicators</h3>
+                <p>Add selected measures from Edge Performance or Execution Quality.</p>
+              </div>
+              <div class="stats-dashboard-actions">
+                <button class="btn small" id="statsAddIndicator" type="button">Add Indicator</button>
+                <button class="btn small" id="statsArrangeIndicators" type="button" aria-pressed="false">Arrange</button>
+                <button class="btn small" id="statsSaveIndicators" type="button" disabled>Save</button>
+                <button class="btn small" id="statsResetIndicators" type="button">Reset</button>
+              </div>
+            </div>
+            <div class="stats-dashboard-toolbar">
+              <p class="stats-dashboard-save-status" id="statsIndicatorSaveStatus" role="status" aria-live="polite">Layout changes are saved to your account when you choose Save.</p>
+            </div>
+            <div class="stats-indicator-stack stats-indicator-grid stats-autozoom" id="statsIndicatorStack" aria-label="Selected-period optional indicators"></div>
+          </aside>
         </div>
       </section>
 
@@ -7262,7 +7328,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
       <dialog class="stats-indicator-dialog" id="statsIndicatorDialog" aria-labelledby="statsIndicatorDialogTitle">
         <form method="dialog" id="statsIndicatorDialogForm">
           <header class="stats-indicator-dialog-head">
-            <div><h2 id="statsIndicatorDialogTitle">Add Indicators</h2><p>Select measurements to add to My Indicators.</p></div>
+            <div><h2 id="statsIndicatorDialogTitle">Add Indicators</h2><p>Select optional measures from Edge Performance or Execution Quality.</p></div>
             <button class="btn small" type="button" id="statsIndicatorDialogClose" aria-label="Close indicator selection">Close</button>
           </header>
           <div class="stats-indicator-options" id="statsIndicatorOptions"></div>
@@ -15146,7 +15212,7 @@ function updateStatisticsIndicatorDraft(ids){
 function renderStatisticsIndicatorDialogOptions(){
   const container=$('#statsIndicatorOptions');
   if(!container)return;
-  const groups=['Combined Outcomes','Edge Performance','Execution Quality'];
+  const groups=['Edge Performance','Execution Quality'];
   container.innerHTML=groups.map(group=>{
     const cards=STATISTICS_INDICATOR_CATALOG.filter(item=>item.group===group);
     return `<fieldset class="stats-indicator-group"><legend>${escapeHtml(group)}</legend>${cards.map(item=>{
@@ -15222,6 +15288,19 @@ function statisticsRLabel(value){
 function statisticsIndicatorMeasurement(value,detail,tone='neutral'){
   return {value:String(value??'—'),detail:String(detail||''),tone};
 }
+function verifiedCurrentAccountBalance(){
+  const raw=tradingAccount?.current_balance;
+  const liveBalance=Number(raw);
+  if(raw!==null&&raw!==undefined&&String(raw).trim()!==''&&Number.isFinite(liveBalance)&&liveBalance>=0){
+    return{value:liveBalance,detail:'Latest balance reported by the selected account.'};
+  }
+  const startingBalance=Number(tradingAccount?.starting_balance);
+  const allPnl=statsAnalytics()?.summarizePnl(trades)||{complete:false,netPnl:null};
+  if(Number.isFinite(startingBalance)&&startingBalance>0&&(!trades.length||allPnl.complete)){
+    return{value:startingBalance+(trades.length?allPnl.netPnl:0),detail:'Starting balance plus complete recorded trade P&L.'};
+  }
+  return{value:null,detail:'Current balance is unavailable without a verified account balance.'};
+}
 function buildStatisticsIndicatorSnapshot(source,options={}){
   const analytics=statsAnalytics();
   const selected=Array.isArray(source)?source:[];
@@ -15231,10 +15310,7 @@ function buildStatisticsIndicatorSnapshot(source,options={}){
   const expectancy=analytics?.summarizeExpectancy(selected)||{preferredValue:null,preferredUnit:'money',rComplete:false,rExpectancy:null,rCount:0,validPnlCount:0};
   const profitLoss=analytics?.summarizeProfitLoss(selected)||{complete:false,missingPnlCount:selected.length,wins:0,losses:0,averageWin:null,averageLoss:null};
   const profitFactor=calculateProfitFactorStats(selected);
-  const allPnl=analytics?.summarizePnl(trades)||{complete:false,missingPnlCount:trades.length,netPnl:null};
-  const actualStart=Number(tradingAccount?.starting_balance);
-  const accountEquityAvailable=Number.isFinite(actualStart)&&actualStart>0&&(!trades.length||allPnl.complete);
-  const currentBalance=accountEquityAvailable?actualStart+(trades.length?allPnl.netPnl:0):null;
+  const currentBalance=verifiedCurrentAccountBalance();
   const setupStats=analytics?.groupOutcomesByLabel(selected,trade=>trade.setup)||{groups:[]};
   const eligibleSetups=setupStats.groups.filter(group=>group.complete&&Number.isFinite(group.averagePnl));
   const topSetup=[...eligibleSetups].sort((a,b)=>b.averagePnl-a.averagePnl||b.count-a.count)[0]||null;
@@ -15264,9 +15340,9 @@ function buildStatisticsIndicatorSnapshot(source,options={}){
   result['avg-pnl-trade']=pnl.complete&&selected.length
     ? statisticsIndicatorMeasurement(signedMoney(pnl.expectancy),`Mean realized net P&L across ${selected.length} trades.`,pnlClass(pnl.expectancy))
     : statisticsIndicatorMeasurement('—',missingPnlDetail);
-  result['current-balance']=accountEquityAvailable
-    ? statisticsIndicatorMeasurement(money(currentBalance),'Verified starting balance plus complete recorded trade P&L.','neutral')
-    : statisticsIndicatorMeasurement('—','A verified starting balance and complete P&L history are required.');
+  result['current-balance']=Number.isFinite(currentBalance.value)
+    ? statisticsIndicatorMeasurement(money(currentBalance.value),currentBalance.detail,'neutral')
+    : statisticsIndicatorMeasurement('—',currentBalance.detail);
   result['avg-profit']=profitLoss.complete&&profitLoss.wins
     ? statisticsIndicatorMeasurement(signedMoney(profitLoss.averageWin),`Mean outcome across ${profitLoss.wins} winning trades.`,'pos')
     : statisticsIndicatorMeasurement('—',profitLoss.complete?'No winning trades recorded.':missingPnlDetail);
@@ -15584,20 +15660,19 @@ function renderDrawdownExpectancyDiagram(drawdown,series,expectancy,avgTradeRetu
   winFill.style.left='50%';winFill.style.width=winWidth+'%';
   expectancyBar.setAttribute('aria-label',`Average loss ${signedMoney(avgLoss)} extends left of zero; average win ${signedMoney(avgWin)} extends right of zero. Mean net expectancy is ${signedMoney(expectancy)} per trade.`);
 }
-function renderStatisticsIndicators(returnPct,winRate,source,profitFactorStats){
+function renderStatisticsIndicators(returnPct,winRate,source,profitFactorStats,pnlSummary){
   renderProfitFactorIndicator(profitFactorStats);
   const gauge=$('#statWinRateGauge'),progress=$('#statWinRateGaugeProgress');
-  const needle=$('#statWinRateGaugeNeedle'),winValue=$('#statWinRateGaugeValue');
+  const winValue=$('#statWinRateGaugeValue');
   const count=$('#statWinRateGaugeCount'),returnLabel=$('#statWinRateReturnLabel');
   const wins=source.filter(trade=>Number(trade.pnl)>0).length;
   returnLabel.textContent=Number.isFinite(returnPct)?`${formatReturnPct(returnPct)} return`:'— return';
   returnLabel.className='stats-win-return '+(Number.isFinite(returnPct)?pnlClass(returnPct):'neutral');
   const hasTrades=source.length>0;
-  const completePnl=hasTrades&&source.every(trade=>trade&&trade.pnl!==null&&trade.pnl!==undefined&&String(trade.pnl).trim()!==''&&Number.isFinite(Number(trade.pnl)));
+  const completePnl=hasTrades&&Boolean(pnlSummary?.complete);
   const hasWinRate=completePnl&&Number.isFinite(winRate);
   const boundedWinRate=hasWinRate?Math.max(0,Math.min(100,winRate)):0;
   progress.setAttribute('stroke-dasharray',`${boundedWinRate} 100`);
-  needle.setAttribute('transform',`rotate(${boundedWinRate*1.8-90} 100 100)`);
   const returnAccessibility=Number.isFinite(returnPct)?` Period return ${formatReturnPct(returnPct)}.`:'';
   gauge.setAttribute('aria-label',hasWinRate
     ? `Win rate ${boundedWinRate.toFixed(1)} percent, ${wins} winning trades out of ${source.length}.${returnAccessibility}`
@@ -15605,6 +15680,14 @@ function renderStatisticsIndicators(returnPct,winRate,source,profitFactorStats){
   winValue.textContent=hasWinRate?boundedWinRate.toFixed(1)+'%':'—';
   winValue.className='stats-indicator-value '+(hasWinRate?'pos':'neutral');
   count.textContent=hasWinRate?`${wins} win${wins===1?'':'s'} of ${source.length} trade${source.length===1?'':'s'} in this period.`:hasTrades?'Incomplete P&L; win rate not measured.':'No trades in this period.';
+  const averagePnl=completePnl&&Number.isFinite(Number(pnlSummary?.expectancy))?Number(pnlSummary.expectancy):null;
+  setStatisticsText('statsPrimaryAvgPnlValue',averagePnl===null?'—':signedMoney(averagePnl),averagePnl===null?'neutral':pnlClass(averagePnl));
+  setStatisticsText('statsPrimaryAvgPnlCount',averagePnl!==null?`${source.length} trades in this period.`:hasTrades?`${pnlSummary?.missingPnlCount||source.length} trade${(pnlSummary?.missingPnlCount||source.length)===1?' is':'s are'} missing recorded P&L.`:'No trades in this period.');
+  const profitLoss=statsAnalytics()?.summarizeProfitLoss(source);
+  const averageProfit=profitLoss?.complete&&profitLoss.wins?profitLoss.averageWin:null;
+  const averageLoss=profitLoss?.complete&&profitLoss.losses?profitLoss.averageLoss:null;
+  setStatisticsText('statsPrimaryAvgProfit',Number.isFinite(averageProfit)?signedMoney(averageProfit):'—');
+  setStatisticsText('statsPrimaryAvgLoss',Number.isFinite(averageLoss)?signedMoney(averageLoss):'—');
 }
 function renderStatistics(){
   if(!tradingAccount){
@@ -15612,6 +15695,10 @@ function renderStatistics(){
     setStatisticsText('statNavExpectancy','—');
     setStatisticsText('statNavExecution','—');
     lastStatisticsIndicatorSnapshot=null;
+    setStatisticsText('statEquityHeaderEnding','—');
+    setStatisticsText('statEquityHeaderNetPnl','—','neutral');
+    setStatisticsText('statsPrimaryBalanceCaption','Account balance unavailable.');
+    renderStatisticsIndicators(null,null,[],calculateProfitFactorStats([]),null);
     renderStatisticsIndicatorCards({});
     return;
   }
@@ -15644,9 +15731,7 @@ function renderStatistics(){
   const selectedPnlStats=analytics?analytics.summarizePnl(source):{complete:false,tradeCount:source.length,missingPnlCount:0,netPnl:null};
   const pnlComplete=selectedPnlStats.complete;
   const netPnl=pnlComplete?selectedPnlStats.netPnl:null;
-  const endingEquity=series.equityAvailable
-    ? series.points[series.points.length-1]?.equity??series.openingEquity
-    : null;
+  const currentBalance=verifiedCurrentAccountBalance();
   const returnPct=pnlComplete&&source.length&&series.equityAvailable&&series.openingEquity>0
     ? netPnl/series.openingEquity*100
     : null;
@@ -15701,12 +15786,14 @@ function renderStatistics(){
       ? formatDate(localDateString(start))
       : `${formatDate(localDateString(start))} → ${formatDate(localDateString(end))}`;
 
-  setStatisticsText('statEquityHeaderEnding',endingEquity===null?'—':money(endingEquity));
+  setStatisticsText('statEquityHeaderEnding',Number.isFinite(currentBalance.value)?money(currentBalance.value):'—');
+  setStatisticsText('statsPrimaryBalanceCaption',currentBalance.detail);
   setStatisticsText('statEquityHeaderNetPnl',pnlComplete&&source.length?signedMoney(netPnl):'—',pnlComplete&&source.length?pnlClass(netPnl):'neutral');
 
   const winRate=pnlComplete&&source.length
     ? wins.length/source.length*100
     : null;
+  renderStatisticsIndicators(returnPct,winRate,source,calculateProfitFactorStats(source),selectedPnlStats);
 
   $('#statTrades').textContent=source.length;
   $('#statTradingDays').textContent=tradingDayCount;

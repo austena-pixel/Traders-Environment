@@ -7,7 +7,8 @@ const stats=require('../core/statistics-environments.js');
 const html=fs.readFileSync(path.resolve(__dirname,'../t-ios.html'),'utf8');
 
 const defaults=[...stats.DEFAULT_STATISTICS_INDICATORS];
-assert.deepEqual(stats.normalizeStatisticsIndicatorIds(undefined),defaults,'new users receive the recommended layout');
+assert.deepEqual(defaults,[],'the optional indicator area starts empty, as shown in the Section A draft');
+assert.deepEqual(stats.normalizeStatisticsIndicatorIds(undefined),defaults,'new users start with no optional indicators');
 assert.deepEqual(stats.normalizeStatisticsIndicatorIds(['win-rate','net-pnl','win-rate','untrusted-id']),['win-rate','net-pnl'],'saved layouts keep valid unique IDs in user order');
 assert.deepEqual(stats.normalizeStatisticsIndicatorIds([]),[],'an intentionally empty dashboard remains empty');
 assert.deepEqual(stats.addStatisticsIndicatorIds(['net-pnl'],['win-rate','net-pnl','bad-id']),['net-pnl','win-rate']);
@@ -135,7 +136,7 @@ assert.deepEqual(Array.from(vm.runInContext('statsIndicatorDraft',preferenceCont
 }
 runPreferencePersistenceChecks().catch(error=>{console.error(error);process.exitCode=1;});
 
-for(const section of ['My Indicators','Combined Outcomes'])assert.ok(html.includes(section),'missing '+section+' section');
+for(const section of ['Optional Indicators','Combined Outcomes'])assert.ok(html.includes(section),'missing '+section+' section');
 for(const id of ['statsAddIndicator','statsArrangeIndicators','statsSaveIndicators','statsResetIndicators','statsIndicatorDialog','statsIndicatorStack'])assert.ok(html.includes('id="'+id+'"'),'missing indicator control '+id);
 for(const outcome of ['equity','drawdown','cumulative','distribution','comparison'])assert.ok(html.includes('data-stats-outcome="'+outcome+'"'),'missing outcome selector '+outcome);
 assert.ok(html.includes('tios_statistics_indicators_v1'),'per-user layout metadata uses a versioned preference key');
