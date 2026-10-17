@@ -11,6 +11,16 @@
     playbook: 'playbook',
     rules: 'checklist'
   });
+  const STATISTICS_INDICATOR_IDS = Object.freeze([
+    'net-pnl', 'period-return', 'win-rate', 'profit-factor', 'avg-pnl-trade',
+    'current-balance', 'avg-profit', 'avg-loss', 'max-drawdown', 'expectancy',
+    'r-expectancy', 'qualifying-trades', 'setup-performance', 'edge-evidence-coverage',
+    'execution-quality', 'rules-adherence', 'playbook-adherence', 'psychological-reflection'
+  ]);
+  const DEFAULT_STATISTICS_INDICATORS = Object.freeze([
+    'net-pnl', 'period-return', 'win-rate', 'profit-factor', 'expectancy',
+    'execution-quality', 'max-drawdown'
+  ]);
 
   function list(value) {
     return Array.isArray(value) ? value.filter(item => item !== null && item !== undefined) : [];
@@ -39,6 +49,144 @@
       netPnl: complete ? total : null,
       expectancy: complete ? total / trades.length : null
     };
+  }
+
+  function normalizeStatisticsIndicatorIds(value, fallback = DEFAULT_STATISTICS_INDICATORS) {
+    const allowed = new Set(STATISTICS_INDICATOR_IDS);
+    const input = Array.isArray(value) ? value : fallback;
+    const result = [];
+    input.forEach(id => {
+      if (typeof id !== 'string' || !allowed.has(id) || result.includes(id)) return;
+      result.push(id);
+    });
+    return result;
+  }
+
+  function addStatisticsIndicatorIds(current, additions) {
+    return normalizeStatisticsIndicatorIds([
+      ...normalizeStatisticsIndicatorIds(current),
+      ...(Array.isArray(additions) ? additions : [additions])
+    ], []);
+  }
+
+  function removeStatisticsIndicatorId(current, id) {
+    return normalizeStatisticsIndicatorIds(current).filter(item => item !== id);
+  }
+
+  function moveStatisticsIndicatorId(current, id, direction) {
+    const result = normalizeStatisticsIndicatorIds(current);
+    const index = result.indexOf(id);
+    const offset = Number(direction);
+    const nextIndex = index + (offset < 0 ? -1 : offset > 0 ? 1 : 0);
+    if (index < 0 || nextIndex < 0 || nextIndex >= result.length) return result;
+    [result[index], result[nextIndex]] = [result[nextIndex], result[index]];
+    return result;
+  }
+
+  function buildCumulativePnlSeries(source) {
+    const trades = list(source);
+    const pnl = summarizePnl(trades);
+    if (!pnl.complete) return {
+      complete: false,
+      tradeCount: trades.length,
+      missingPnlCount: pnl.missingPnlCount,
+      points: []
+    };
+    let total = 0;
+    const points = [{ label: 'Start', date: null, cumulativePnl: 0, trade: null }];
+    trades.forEach((trade, index) => {
+      total += recordedPnl(trade);
+      points.push({
+        label: 'T' + (index + 1),
+        date: String(trade.trade_date || ''),
+        cumulativePnl: total,
+        trade
+      });
+    });
+    return { complete: true, tradeCount: trades.length, missingPnlCount: 0, netPnl: total, points };
+  }
+
+  function buildDrawdownSeries(points) {
+    const source = list(points);
+    if (!source.length || source.some(point => !finiteRecordedNumber(point?.equity))) {
+      return { complete: false, points: [], maxDrawdown: null, maxDrawdownPct: null };
+    }
+    let peak = Number(source[0].equity);
+    let maxDrawdown = 0;
+    let maxDrawdownPct = 0;
+    const result = source.map(point => {
+      const equity = Number(point.equity);
+      if (equity > peak) peak = equity;
+      const drawdown = Math.max(0, peak - equity);
+      const pct = peak > 0 ? drawdown / peak * 100 : null;
+      if (drawdown > maxDrawdown) {
+        maxDrawdown = drawdown;
+        maxDrawdownPct = pct;
+      }
+      return { ...point, peakEquity: peak, drawdown, drawdownPct: pct };
+    });
+    return { complete: true, points: result, maxDrawdown, maxDrawdownPct };
+  }
+
+  function summarizeProfitLoss(source) {
+    const trades = list(source);
+    const summary = summarizePnl(trades);
+    if (!summary.complete) return {
+      complete: false,
+      tradeCount: trades.length,
+      missingPnlCount: summary.missingPnlCount,
+      wins: 0,
+      losses: 0,
+      averageWin: null,
+      averageLoss: null
+    };
+    const values = trades.map(recordedPnl);
+    const winners = values.filter(value => value > 0);
+    const losers = values.filter(value => value < 0);
+    return {
+      complete: true,
+      tradeCount: trades.length,
+      missingPnlCount: 0,
+      wins: winners.length,
+      losses: losers.length,
+      averageWin: winners.length ? winners.reduce((sum, value) => sum + value, 0) / winners.length : null,
+      averageLoss: losers.length ? losers.reduce((sum, value) => sum + value, 0) / losers.length : null,
+      grossProfit: winners.reduce((sum, value) => sum + value, 0),
+      grossLoss: Math.abs(losers.reduce((sum, value) => sum + value, 0))
+    };
+  }
+
+  function buildTradeOutcomeDistribution(source, binCount = 8) {
+    const trades = list(source);
+    const summary = summarizePnl(trades);
+    if (!summary.complete) return {
+      complete: false,
+      tradeCount: trades.length,
+      missingPnlCount: summary.missingPnlCount,
+      bins: []
+    };
+    const values = trades.map(recordedPnl);
+    if (!values.length) return { complete: true, tradeCount: 0, missingPnlCount: 0, bins: [] };
+    const minimum = Math.min(...values);
+    const maximum = Math.max(...values);
+    if (minimum === maximum) return {
+      complete: true,
+      tradeCount: values.length,
+      missingPnlCount: 0,
+      bins: [{ min: minimum, max: maximum, count: values.length }]
+    };
+    const count = Math.max(2, Math.min(20, Math.floor(Number(binCount) || 8)));
+    const width = (maximum - minimum) / count;
+    const bins = Array.from({ length: count }, (_, index) => ({
+      min: minimum + width * index,
+      max: index === count - 1 ? maximum : minimum + width * (index + 1),
+      count: 0
+    }));
+    values.forEach(value => {
+      const index = Math.min(count - 1, Math.floor((value - minimum) / width));
+      bins[index].count++;
+    });
+    return { complete: true, tradeCount: values.length, missingPnlCount: 0, bins };
   }
 
   function reliableRMultiple(trade) {
@@ -285,9 +433,19 @@
   }
 
   return Object.freeze({
+    STATISTICS_INDICATOR_IDS,
+    DEFAULT_STATISTICS_INDICATORS,
+    normalizeStatisticsIndicatorIds,
+    addStatisticsIndicatorIds,
+    removeStatisticsIndicatorId,
+    moveStatisticsIndicatorId,
     finiteRecordedNumber,
     recordedPnl,
     summarizePnl,
+    buildCumulativePnlSeries,
+    buildDrawdownSeries,
+    summarizeProfitLoss,
+    buildTradeOutcomeDistribution,
     reliableRMultiple,
     summarizeExpectancy,
     profitFactor,

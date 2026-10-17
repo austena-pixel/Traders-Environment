@@ -1,88 +1,33 @@
-// Regression coverage for the Statistics drawdown illustration and maximum winning trade value.
+// Regression coverage for the combined-outcome Drawdown diagram.
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
-const vm=require('node:vm');
+const stats=require('../core/statistics-environments.js');
 const html=fs.readFileSync(path.resolve(__dirname,'../t-ios.html'),'utf8');
 
-function extractFunction(name){
-  const start=html.indexOf('function '+name+'(');
-  assert.ok(start>=0,'Missing '+name);
-  const signatureEnd=html.indexOf('){',start);
-  assert.ok(signatureEnd>=0,'Missing body for '+name);
-  let depth=0;
-  for(let index=signatureEnd+1;index<html.length;index++){
-    if(html[index]==='{')depth++;
-    else if(html[index]==='}'&&--depth===0)return html.slice(start,index+1);
-  }
-  throw new Error('Unclosed '+name);
-}
+const points=[100,120,110,130,105,125].map((equity,index)=>({
+  label:'T'+index,
+  date:index?'2026-10-0'+(index+1):'2026-10-01',
+  equity
+}));
+const drawdown=stats.buildDrawdownSeries(points);
+assert.equal(drawdown.complete,true);
+assert.deepEqual(drawdown.points.map(point=>point.drawdown),[0,0,10,0,25,5]);
+assert.equal(drawdown.maxDrawdown,25,'maximum deterioration is measured from the $130 peak to the $105 trough');
+assert.equal(drawdown.points[4].peakEquity,130);
+assert.equal(drawdown.points[4].drawdownPct,25/130*100,'equity drawdown percentage uses the actual account equity peak');
+assert.equal(stats.buildDrawdownSeries([{equity:100},{equity:null}]).complete,false,'missing equity is not plotted as a verified zero');
+assert.equal(stats.buildDrawdownSeries([]).complete,false,'drawdown is unavailable without account-equity observations');
 
-const context=vm.createContext({});
-vm.runInContext(
-  extractFunction('maxDrawdownFromProfitPeak')+'\n'+
-  extractFunction('maxWinningTradeStats')+'\n'+
-  extractFunction('buildDrawdownProfileDiagram'),
-  context
-);
+assert.ok(html.includes('id="statsOutcomeTabDrawdown"'),'Drawdown is available in the combined-outcome selector');
+assert.match(html,/if\(kind==='drawdown'\)\{[\s\S]*?buildDrawdownSeries\(series\.points\)/,'Drawdown plots the verified account equity sequence');
+assert.match(html,/Peak-to-trough drawdown/,'the chart names the measured series');
+assert.match(html,/Peak equity: \$\{money\(point\.peakEquity\)\}/,'tooltip reports the actual equity peak');
+assert.match(html,/Peak-to-trough: \$\{point\.drawdownPct\.toFixed\(2\)\}%/,'tooltip reports the account-equity drawdown percentage');
+assert.match(html,/if\(statsSelectedOutcome==='drawdown'&&!series\.equityAvailable\)/,'the diagram is withheld when account equity is unverified');
+assert.match(html,/const equityAvailable=actualOpeningBalance&&historyComplete&&priorPnl!==null&&selectedComplete/,'drawdown input requires a verified nonzero opening balance and complete P&L history');
+assert.match(html,/id="statsOutcomeTabEquity"[^>]*aria-selected="true"/,'Equity Curve is the default diagram');
+assert.match(html,/let statsSelectedOutcome\s*=\s*'equity'/,'the first view is initialized to Equity Curve');
 
-const points=[100,120,110,130,105,125].map(equity=>({equity}));
-const drawdown=context.maxDrawdownFromProfitPeak(points,100);
-assert.equal(drawdown.amount,25,'maximum loss is measured from the $130 profit peak to the $105 trough');
-assert.equal(drawdown.pct,25/30*100);
-assert.equal(drawdown.profitPeak,30);
-assert.equal(drawdown.peakIndex,3);
-assert.equal(drawdown.troughIndex,4);
-
-const maxWin=context.maxWinningTradeStats([
-  {pnl:12},{pnl:-3},{pnl:28},{pnl:5}
-]);
-assert.equal(maxWin.status,'available');
-assert.equal(maxWin.value,28,'the highlighted value is the largest positive closed-trade P&L');
-
-const noWins=context.maxWinningTradeStats([{pnl:-8},{pnl:0}]);
-assert.deepEqual(JSON.parse(JSON.stringify(noWins)),{status:'no-winners',value:null});
-const missingPnlStats=context.maxWinningTradeStats([{pnl:28},{pnl:null}]);
-assert.deepEqual(JSON.parse(JSON.stringify(missingPnlStats)),{status:'incomplete',value:null});
-const noTradesStats=context.maxWinningTradeStats([]);
-assert.deepEqual(JSON.parse(JSON.stringify(noTradesStats)),{status:'empty',value:null});
-
-assert.match(html,/id="statDrawdownMaxWin" hidden aria-live="polite"/);
-assert.match(html,/const label='Max win '\+signedMoney\(maxWinStats.value\)/);
-assert.match(html,/Largest winning trade: '\+signedMoney\(maxWinStats.value\)/);
-
-const profile=context.buildDrawdownProfileDiagram({points,openingEquity:100},drawdown);
-assert.ok(profile.equityPath.startsWith('M7.0 '),'gold equity path begins at opening equity');
-assert.ok(profile.peakGuidePath.startsWith('M130.6 '),'green reference starts at the actual profit peak');
-assert.ok(profile.maxLossPath.startsWith('M130.6 '),'red segment starts at the peak');
-assert.ok(profile.lossDropPath,'red connector marks the peak-to-trough loss');
-assert.ok(profile.peakPoint&&profile.troughPoint,'profit peak and maximum-loss trough are marked');
-assert.match(html,/class="stats-drawdown-legend"[^>]*aria-hidden="true"/);
-assert.match(html,/<span><i class="peak"><\/i>Profit peak<\/span>/);
-assert.match(html,/<span><i class="equity"><\/i>Equity path<\/span>/);
-assert.match(html,/<span><i class="loss"><\/i>Max loss<\/span>/);
-
-const losingPoints=[100,95,90].map(equity=>({equity}));
-const noPositivePeak=context.maxDrawdownFromProfitPeak(losingPoints,100);
-assert.equal(noPositivePeak.amount,10);
-assert.equal(noPositivePeak.pct,null,'percentage is unavailable without a positive profit peak');
-assert.equal(noPositivePeak.peakIndex,0);
-assert.equal(noPositivePeak.troughIndex,2);
-assert.ok(context.buildDrawdownProfileDiagram({points:losingPoints,openingEquity:100},noPositivePeak).maxLossPath);
-
-const winningPoints=[100,110,120].map(equity=>({equity}));
-const noLoss=context.maxDrawdownFromProfitPeak(winningPoints,100);
-const noLossProfile=context.buildDrawdownProfileDiagram({points:winningPoints,openingEquity:100},noLoss);
-assert.equal(noLoss.amount,0);
-assert.ok(noLossProfile.equityPath);
-assert.equal(noLossProfile.maxLossPath,'','no red loss segment is drawn when there is no drawdown');
-
-const missingPnl=context.buildDrawdownProfileDiagram({
-  openingEquity:100,
-  points:[{equity:100},{equity:null}]
-},drawdown);
-assert.equal(missingPnl.equityPath,'','missing equity is not plotted as a verified zero');
-
-console.log('PASS maximum drawdown endpoints, percentage, and illustration paths match known equity data');
-console.log('PASS maximum winning trade uses the largest positive recorded P&L and hides incomplete values');
-console.log('PASS no-positive-peak, no-loss, and missing-equity states are handled');
+console.log('PASS Drawdown peak, trough, amount and percentage match verified equity values');
+console.log('PASS Drawdown tooltips expose actual peak equity and incomplete equity data stays unavailable');
