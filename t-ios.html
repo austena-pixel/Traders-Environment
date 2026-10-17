@@ -1894,6 +1894,7 @@ body.playbook-workspace .main{
   font-weight:800;
   white-space:nowrap;
 }
+.stats-autozoom-controls:not(.is-enabled) .stats-autozoom-zoom{display:none}
 .stats-autozoom-zoom input[type="range"]{
   width:78px;
   min-width:58px;
@@ -1966,14 +1967,16 @@ body.playbook-workspace .main{
 .stats-section-a-header,.stats-dashboard-header{
   display:flex;align-items:flex-start;justify-content:space-between;gap:12px;min-width:0
 }
-.stats-section-a-header{align-items:center;gap:8px;margin:0;padding:8px 10px;border:1px solid #253449;border-bottom:0;border-radius:12px 12px 0 0;background:#0c141e;flex-wrap:wrap}
+.stats-section-a-header{align-items:center;gap:10px;margin:0;padding:8px 10px;border:1px solid #253449;border-bottom:0;border-radius:12px 12px 0 0;background:#0c141e;flex-wrap:wrap}
 #statsStatisticsView:not([hidden])>.stats-section-a{border-top:0;border-radius:0 0 12px 12px}
 #page-statistics:has(#statsStatisticsView[hidden])>.stats-section-a-header{margin-bottom:14px;border-bottom:1px solid #253449;border-radius:12px}
+.stats-section-a-header>.range-tabs,.stats-section-a-header>.stats-view-tabs,.stats-section-a-header>.stats-autozoom-controls{min-width:0;padding:5px;border:1px solid #2b3b50;border-radius:11px;background:linear-gradient(145deg,#111a26,#0b1119);box-shadow:inset 0 1px rgba(255,255,255,.025)}
 .stats-section-a-header>.range-tabs{flex:0 0 auto;gap:5px}
 .stats-section-a-header>.stats-view-tabs{flex:1 1 460px;min-width:min(100%,360px);width:min(100%,660px);margin-left:auto}
+.stats-section-a-header>.stats-view-tabs .range-btn{border-radius:8px}
 .stats-section-a-header .stats-view-tabs .range-btn{min-height:32px;padding:6px 8px;gap:6px}
 .stats-section-a-header .stats-view-tab-label,.stats-section-a-header .stats-view-tab-value{font-size:9px}
-.stats-section-a-header>.stats-autozoom-controls{flex:0 0 auto;gap:6px}
+.stats-section-a-header>.stats-autozoom-controls{flex:0 0 auto;gap:6px;min-height:42px}
 .stats-section-a-header .stats-autozoom-zoom input[type="range"]{width:68px;min-width:50px}
 #page-statistics:has(#statsEdgeView:not([hidden])) .stats-section-a-header>.stats-autozoom-controls,
 #page-statistics:has(#statsExecutionView:not([hidden])) .stats-section-a-header>.stats-autozoom-controls{display:none}
@@ -7107,10 +7110,10 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           </button>
         </div>
         <div class="stats-autozoom-controls" role="group" aria-label="Optional indicator card zoom controls">
-          <button class="stats-autozoom-toggle" id="statsAutoZoomBtn" type="button" aria-pressed="true" aria-controls="statsIndicatorStack" title="Automatically zoom an optional indicator when hovered or focused">
+          <button class="stats-autozoom-toggle" id="statsAutoZoomBtn" type="button" aria-pressed="false" aria-controls="statsIndicatorStack" title="Automatically zoom an optional indicator when hovered or focused">
             <span>Auto Zoom</span>
             <span class="stats-autozoom-track" aria-hidden="true"><span class="stats-autozoom-thumb"></span></span>
-            <strong class="stats-autozoom-state" id="statsAutoZoomState">ON</strong>
+            <strong class="stats-autozoom-state" id="statsAutoZoomState">OFF</strong>
           </button>
           <label class="stats-autozoom-zoom" for="statsAutoZoomRange">
             <span>Zoom</span>
@@ -7206,7 +7209,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <div class="stats-dashboard-toolbar">
               <p class="stats-dashboard-save-status" id="statsIndicatorSaveStatus" role="status" aria-live="polite">Layout changes are saved to your account when you choose Save.</p>
             </div>
-            <div class="stats-indicator-stack stats-indicator-grid stats-autozoom" id="statsIndicatorStack" aria-label="Selected-period optional indicators"></div>
+            <div class="stats-indicator-stack stats-indicator-grid" id="statsIndicatorStack" aria-label="Selected-period optional indicators"></div>
           </aside>
         </div>
       </section>
@@ -8692,6 +8695,7 @@ let selectedEdgeTradeId = null;
 
 const STATS_RANGE_PREFERENCE_KEY = 'tios_statistics_selected_range_v1';
 const STATS_AUTOZOOM_PREFERENCE_KEY = 'tios_statistics_autozoom_percent_v1';
+const STATS_AUTOZOOM_ENABLED_KEY = 'tios_statistics_autozoom_enabled_v1';
 const STATS_INDICATOR_PREFERENCE_KEY = 'tios_statistics_indicators_v1';
 const STATS_RANGE_OPTIONS = Object.freeze(['1d', '1w', '1m', '6m', '1y', 'all']);
 const STATISTICS_INDICATOR_CATALOG = Object.freeze([
@@ -8722,6 +8726,16 @@ function loadStatsAutoZoomPreference(){
   }catch(error){
     return 125;
   }
+}
+
+function loadStatsAutoZoomEnabled(){
+  try{return localStorage.getItem(STATS_AUTOZOOM_ENABLED_KEY)==='true'}
+  catch(error){return false}
+}
+
+function persistStatsAutoZoomEnabled(enabled){
+  try{localStorage.setItem(STATS_AUTOZOOM_ENABLED_KEY,enabled?'true':'false')}
+  catch(error){}
 }
 
 function persistStatsAutoZoomPreference(percent){
@@ -8755,7 +8769,7 @@ function syncStatsRangeButtons(){
 }
 
 let statsRange = loadStatsRangePreference();
-let statsAutoZoom = true;
+let statsAutoZoom = loadStatsAutoZoomEnabled();
 let statsAutoZoomPercent = loadStatsAutoZoomPreference();
 let statsAnchorDate = new Date();
 let statsIndicatorIds = [...(window.TIOSStatisticsEnvironments?.DEFAULT_STATISTICS_INDICATORS||[])];
@@ -15651,9 +15665,11 @@ function setStatsAutoZoom(enabled){
   const stack=$('#statsIndicatorStack');
   const toggle=$('#statsAutoZoomBtn');
   const state=$('#statsAutoZoomState');
+  const controls=toggle?.closest('.stats-autozoom-controls');
   if(stack)stack.classList.toggle('stats-autozoom',statsAutoZoom);
   if(toggle)toggle.setAttribute('aria-pressed',String(statsAutoZoom));
   if(state)state.textContent=statsAutoZoom?'ON':'OFF';
+  if(controls)controls.classList.toggle('is-enabled',statsAutoZoom);
   if(!statsAutoZoom)setZoomedStatsCard(null);
 }
 
@@ -15667,7 +15683,11 @@ function setZoomedStatsCard(card){
   if(zoomed)zoomed.classList.add('stats-card-zoomed');
 }
 
-$('#statsAutoZoomBtn').addEventListener('click',()=>setStatsAutoZoom(!statsAutoZoom));
+$('#statsAutoZoomBtn').addEventListener('click',()=>{
+  const enabled=!statsAutoZoom;
+  persistStatsAutoZoomEnabled(enabled);
+  setStatsAutoZoom(enabled);
+});
 
 const statsAutoZoomRange=$('#statsAutoZoomRange');
 if(statsAutoZoomRange){
