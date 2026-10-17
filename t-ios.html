@@ -1636,13 +1636,74 @@ body.playbook-workspace .main{
 /* STATISTICS */
 
 #page-statistics>.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.stats-view-tabs{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-left:auto}
-.stats-view-tabs .range-btn{white-space:nowrap}
+.stats-page-intro{flex:1 1 280px;min-width:0}
+.stats-view-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;gap:6px;width:min(100%,660px);margin-left:auto}
+.stats-view-tabs .range-btn{display:flex;align-items:center;justify-content:space-between;gap:9px;min-width:0;white-space:normal;text-align:left;padding:8px 10px}
+.stats-view-tab-label{display:block;min-width:0;font-size:10px;line-height:1.2;overflow-wrap:anywhere}
+.stats-view-tab-value{flex:0 0 auto;color:#dce8f8;font-size:10px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .stats-view-tabs .range-btn:focus-visible{outline:2px solid var(--accent,#69a8ff);outline-offset:3px}
 .stats-view-panel[hidden]{display:none!important}
 .stats-psychology-view{padding:20px;min-height:280px}
 .stats-psychology-view h3{margin:0 0 8px;font-size:18px}
 .stats-psychology-view p{color:#93a2b6;font-size:12px;line-height:1.6}
+.stats-edge-view,.stats-execution-view{padding:16px;min-width:0}
+.stats-environment-heading{margin:0 0 14px}
+.stats-environment-heading h2{margin:0 0 5px;font-size:17px}
+.stats-environment-heading p{margin:0;color:#95a4b8;font-size:11px;line-height:1.5}
+.stats-environment-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:0 0 10px}
+.stats-environment-kpi{display:grid;align-content:start;gap:5px;min-width:0;padding:12px;border:1px solid #253449;border-radius:12px;background:linear-gradient(145deg,rgba(21,34,50,.82),rgba(11,17,25,.94))}
+.stats-environment-kpi>span{color:#9aabc0;font-size:9px;line-height:1.3}
+.stats-environment-kpi>strong{font-size:20px;line-height:1.15;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.stats-environment-kpi>small{color:#8293a9;font-size:8px;line-height:1.4}
+.stats-execution-overall-kpi{border-color:rgba(130,93,199,.45);background:linear-gradient(145deg,rgba(80,50,124,.2),rgba(11,17,25,.94))}
+.stats-evidence-caveat,.stats-research-note{margin:8px 0 0;color:#8293a9;font-size:9px;line-height:1.5}
+.stats-edge-layout,.stats-execution-analysis-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+.stats-research-panel{min-width:0;padding:13px}
+.stats-research-panel h3{margin:0 0 5px;font-size:12px;color:#e1eaf5}
+.stats-research-panel>p{margin:0;color:#8fa0b5;font-size:9px;line-height:1.45}
+.stats-research-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:7px}
+.stats-research-chart-wrap{position:relative;height:230px;margin-top:6px;min-width:0}
+.stats-research-chart-wrap canvas{display:block;width:100%!important;height:100%!important}
+.stats-research-empty{position:absolute;inset:0;display:grid;place-items:center;padding:20px;text-align:center;color:#8191a6;font-size:10px;line-height:1.5;border:1px dashed #2b3b50;border-radius:10px;background:rgba(8,13,20,.75)}
+.stats-research-empty[hidden]{display:none}
+.stats-evidence-coverage-list{display:grid;gap:0;margin-top:9px}
+.stats-evidence-coverage-list>div{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid rgba(46,62,81,.58)}
+.stats-evidence-coverage-list>div:last-child{border-bottom:0}
+.stats-evidence-coverage-list span{color:#97a9bf;font-size:9px;line-height:1.35}
+.stats-evidence-coverage-list strong{color:#e1eaf5;font-size:9px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.stats-edge-tables{margin-top:10px}
+.stats-research-table{width:100%;border-collapse:collapse;min-width:460px;color:#c9d5e4;font-size:9px}
+.stats-research-table th,.stats-research-table td{padding:8px 7px;border-bottom:1px solid #202d3e;text-align:left;vertical-align:top}
+.stats-research-table th{color:#8fa2ba;font-size:8px;font-weight:750;white-space:nowrap}
+.stats-research-table td:first-child{font-weight:650;color:#e1eaf5}
+.stats-execution-analysis-grid{margin-bottom:10px}
+.stats-execution-profit-panel .stats-execution-chart{height:140px;margin:3px 0}
+.stats-psychology-state-panel{margin-top:10px}
+.stats-behavior-demo{margin-top:12px;padding:14px;border:1px solid #29384d;border-radius:13px;background:rgba(8,13,20,.72)}
+.stats-behavior-demo>h3{margin:0 0 6px;font-size:14px}
+.stats-behavior-demo>p{margin:0;color:#8fa0b5;font-size:9px;line-height:1.45}
+.stats-behavior-demo .stats-fear-layout{margin-top:12px}
+.stats-behavior-demo .stats-behavior-secondary{margin-top:10px}
+@media(max-width:900px){
+  .stats-view-tabs{width:100%;max-width:660px;margin-left:0}
+  .stats-environment-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stats-edge-layout,.stats-execution-analysis-grid{grid-template-columns:1fr}
+}
+@media(max-width:700px){
+  .stats-view-tabs{width:100%;max-width:none;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .stats-view-tabs .range-btn{min-height:54px;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;padding:7px 8px}
+  .stats-view-tab-label{font-size:9px;line-height:1.15}
+  .stats-view-tab-value{font-size:9px}
+  .stats-research-chart-wrap{height:210px}
+}
+@media(max-width:430px){
+  .stats-edge-view,.stats-execution-view{padding:11px}
+  .stats-environment-kpi{padding:9px}
+  .stats-environment-kpi>strong{font-size:17px}
+  .stats-environment-kpi>span{font-size:8px}
+  .stats-research-panel{padding:10px}
+  .stats-research-chart-wrap{height:190px}
+}
 .stats-fear-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,.9fr) minmax(0,.85fr);gap:12px;margin-top:16px;align-items:stretch}
 .stats-behavior-secondary{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:12px;margin-top:12px}
 .stats-behavior-sequence-canvas{position:relative;height:200px}
@@ -6913,18 +6974,24 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
     <section class="page" id="page-statistics">
       <header class="page-head">
-        <div>
+        <div class="stats-page-intro">
           <h1>Statistics</h1>
-          <p>Account growth, drawdown and performance quality across selectable timeframes.</p>
+          <p>Measure financial outcomes, methodology evidence and execution quality for one shared reporting period.</p>
         </div>
-        <div class="stats-view-tabs" role="tablist" aria-label="Statistics view">
-          <button class="range-btn active" type="button" role="tab" id="statsTechnicalTab" data-stats-view="technical" aria-selected="true" aria-controls="statsTechnicalView">Technical Stats</button>
-          <button class="range-btn" type="button" role="tab" id="statsPsychologyTab" data-stats-view="psychology" aria-selected="false" aria-controls="statsPsychologyView" tabindex="-1">Psychology &amp; Behavior</button>
+        <div class="stats-view-tabs" role="tablist" aria-label="Performance environments">
+          <button class="range-btn active stats-view-tab" type="button" role="tab" id="statsStatisticsTab" data-stats-view="statistics" aria-selected="true" aria-controls="statsStatisticsView">
+            <span class="stats-view-tab-label">Statistics</span><strong class="stats-view-tab-value" id="statNavReturn" aria-live="polite">—</strong>
+          </button>
+          <button class="range-btn stats-view-tab" type="button" role="tab" id="statsEdgeTab" data-stats-view="edge" aria-selected="false" aria-controls="statsEdgeView" tabindex="-1">
+            <span class="stats-view-tab-label">Edge Performance</span><strong class="stats-view-tab-value" id="statNavExpectancy" aria-live="polite">—</strong>
+          </button>
+          <button class="range-btn stats-view-tab" type="button" role="tab" id="statsExecutionTab" data-stats-view="execution" aria-selected="false" aria-controls="statsExecutionView" tabindex="-1">
+            <span class="stats-view-tab-label">Execution Quality</span><strong class="stats-view-tab-value" id="statNavExecution" aria-live="polite">—</strong>
+          </button>
         </div>
       </header>
 
-      <div class="stats-view-panel" id="statsTechnicalView" role="tabpanel" aria-labelledby="statsTechnicalTab">
-      <div class="stats-toolbar">
+      <div class="stats-toolbar" id="statsPeriodToolbar" aria-label="Shared reporting period controls">
         <div class="range-tabs">
           <button class="range-btn active" data-stats-range="1d">Day</button>
           <button class="range-btn" data-stats-range="1w">Week</button>
@@ -6943,6 +7010,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           <div class="stats-date-range" id="statsDateRange">—</div>
         </div>
       </div>
+
+      <div class="stats-view-panel" id="statsStatisticsView" role="tabpanel" aria-labelledby="statsStatisticsTab">
 
       <section class="panel chart-panel">
         <div class="chart-panel-head">
@@ -7022,16 +7091,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               </div>
             </section>
 
-            <section class="stats-analysis-module stats-indicator-card stats-autozoom-bottom-anchor" tabindex="0" aria-labelledby="statExecutionProfitTitle">
-              <div class="stats-analysis-title-row"><h4 id="statExecutionProfitTitle">Execution Quality vs Profitability</h4></div>
-              <div class="stats-execution-axis">Y · Average P&amp;L per trade ($)</div>
-              <svg id="statExecutionProfitChart" class="stats-execution-chart" viewBox="0 0 260 112" role="img" aria-label="Execution quality comparison awaiting records"></svg>
-              <div class="stats-execution-axis stats-execution-x">X · Execution Quality (%)</div>
-              <div id="statExecutionProfitGroups" class="stats-execution-groups" aria-label="Group averages and trade counts"></div>
-              <p id="statExecutionProfitInsight" class="stats-execution-insight" aria-live="polite">No eligible trades in this period.</p>
-            </section>
                 <section class="stats-analysis-module stats-indicator-card stats-autozoom-bottom-anchor" tabindex="0" aria-labelledby="statExpectancyTitle">
-                  <header class="stats-analysis-pair-head"><strong id="statAnalysisWinRate">—</strong></header>
                   <div class="stats-analysis-title-row">
                     <h4 id="statExpectancyTitle">Average P&amp;L per trade</h4>
                     <span class="stats-analysis-kicker">PER TRADE</span>
@@ -7134,9 +7194,171 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
         </section>
       </div>
       </div>
-      <section class="stats-view-panel panel stats-psychology-view" id="statsPsychologyView" role="tabpanel" aria-labelledby="statsPsychologyTab" hidden>
-        <h3>Psychology &amp; Behavior</h3>
-        <p>Understand the patterns behind your trading decisions.</p>
+
+      <section class="stats-view-panel panel stats-edge-view" id="statsEdgeView" role="tabpanel" aria-labelledby="statsEdgeTab" hidden>
+        <div class="stats-environment-heading">
+          <h2>Edge Performance</h2>
+          <p>Test recorded methodology results by setup and context. These are descriptive measurements, not proof that a strategy will remain profitable.</p>
+        </div>
+        <div class="stats-environment-kpis stats-edge-kpis">
+          <article class="stats-environment-kpi">
+            <span>Expectancy per trade</span>
+            <strong id="statsEdgeExpectancyValue">—</strong>
+            <small id="statsEdgeExpectancyCaption">No closed trades in this period.</small>
+          </article>
+          <article class="stats-environment-kpi">
+            <span>Profit factor</span>
+            <strong id="statsEdgeProfitFactorValue">—</strong>
+            <small id="statsEdgeProfitFactorCaption">Requires complete recorded P&amp;L.</small>
+          </article>
+          <article class="stats-environment-kpi">
+            <span>Qualifying trades</span>
+            <strong id="statsEdgeSampleCount">0</strong>
+            <small id="statsEdgeSampleReliability">Not measured</small>
+          </article>
+          <article class="stats-environment-kpi">
+            <span>Validated 1R coverage</span>
+            <strong id="statsEdgeRiskCoverage">—</strong>
+            <small id="statsEdgeRiskCoverageNote">Uses recorded risk basis, risk amount and R multiple.</small>
+          </article>
+        </div>
+        <p class="stats-evidence-caveat" id="statsEdgeReliabilityNote">Sample size describes the records available; it does not establish statistical significance or guarantee a future edge.</p>
+
+        <div class="stats-edge-layout">
+          <section class="panel stats-research-panel">
+            <div class="stats-research-panel-head">
+              <div>
+                <h3>Expectancy over time</h3>
+                <p id="statsEdgeTimelineSummary">Grouped by the selected period's calendar intervals.</p>
+              </div>
+            </div>
+            <div class="stats-research-chart-wrap">
+              <canvas id="statsEdgeTimelineChart" role="img" aria-label="Expectancy by chronological period"></canvas>
+              <div class="stats-research-empty" id="statsEdgeTimelineEmpty" hidden>No complete P&amp;L samples are available for this period.</div>
+            </div>
+            <p class="stats-research-note" id="statsEdgeTimelineNote">Each point uses only trades closed within that interval. Incomplete intervals are omitted from the line.</p>
+          </section>
+          <section class="panel stats-research-panel">
+            <h3>Evidence coverage</h3>
+            <p>Counts show what is recorded for the selected period. Missing classifications are left unmeasured.</p>
+            <div class="stats-evidence-coverage-list">
+              <div><span>Trades with a saved setup label</span><strong id="statsEdgeSetupCoverage">0 / 0</strong></div>
+              <div><span>Trades with a Playbook review</span><strong id="statsEdgePlaybookCoverage">0 / 0</strong></div>
+              <div><span>Trades with market-state labels</span><strong id="statsEdgeMarketCoverage">0 / 0</strong></div>
+              <div><span>Trades with entry-pattern labels</span><strong id="statsEdgeEntryCoverage">0 / 0</strong></div>
+              <div><span>Trades with timeframe evidence</span><strong id="statsEdgeTimeframeCoverage">0 / 0</strong></div>
+            </div>
+            <p class="stats-research-note">Attached chart images are counted by saved timeframe and responsibility. T·IOS does not interpret their image content here.</p>
+          </section>
+        </div>
+
+        <div class="stats-edge-layout stats-edge-tables">
+          <section class="panel stats-research-panel">
+            <h3>Recorded setup outcomes</h3>
+            <p>Setup names are grouped exactly as saved in the trade journal. Playbook adherence uses the existing saved review score.</p>
+            <div class="table-wrap">
+              <table class="stats-research-table">
+                <thead><tr><th>Recorded setup</th><th>Trades</th><th>Average net P&amp;L</th><th>Profit factor</th><th>Playbook adherence</th></tr></thead>
+                <tbody id="statsEdgeSetupBody"><tr><td colspan="5" class="muted">No setup labels recorded in this period.</td></tr></tbody>
+              </table>
+            </div>
+          </section>
+          <section class="panel stats-research-panel">
+            <h3>Market-state outcomes</h3>
+            <p>Uses exact market-state labels saved with the trade's Playbook review.</p>
+            <div class="table-wrap">
+              <table class="stats-research-table">
+                <thead><tr><th>Recorded market state</th><th>Trades</th><th>Average net P&amp;L</th><th>Profit factor</th></tr></thead>
+                <tbody id="statsEdgeMarketBody"><tr><td colspan="4" class="muted">Not measured — no market-state labels are recorded in this period.</td></tr></tbody>
+              </table>
+            </div>
+          </section>
+          <section class="panel stats-research-panel">
+            <h3>Entry-pattern outcomes</h3>
+            <p>Uses exact entry-pattern labels saved with the trade's Playbook review.</p>
+            <div class="table-wrap">
+              <table class="stats-research-table">
+                <thead><tr><th>Recorded entry pattern</th><th>Trades</th><th>Average net P&amp;L</th><th>Profit factor</th></tr></thead>
+                <tbody id="statsEdgeEntryBody"><tr><td colspan="4" class="muted">Not measured — no entry-pattern labels are recorded in this period.</td></tr></tbody>
+              </table>
+            </div>
+          </section>
+          <section class="panel stats-research-panel">
+            <h3>Timeframe evidence outcomes</h3>
+            <p>Shows outcomes for trades with saved H4, H1 or M5 evidence attached. A trade can appear in more than one row.</p>
+            <div class="table-wrap">
+              <table class="stats-research-table">
+                <thead><tr><th>Timeframe · responsibility</th><th>Trades</th><th>Average net P&amp;L</th><th>Profit factor</th></tr></thead>
+                <tbody id="statsEdgeTimeframeBody"><tr><td colspan="4" class="muted">No timeframe evidence is recorded in this period.</td></tr></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="stats-view-panel panel stats-execution-view" id="statsExecutionView" role="tabpanel" aria-labelledby="statsExecutionTab" hidden>
+        <div class="stats-environment-heading">
+          <h2>Execution Quality</h2>
+          <p>Measures recorded adherence and trader-reported state alongside financial outcomes. Associations are descriptive and do not establish causation.</p>
+        </div>
+        <div class="stats-environment-kpis stats-execution-kpis">
+          <article class="stats-environment-kpi stats-execution-overall-kpi">
+            <span>Overall execution quality</span>
+            <strong id="statsExecutionOverallValue">—</strong>
+            <small id="statsExecutionCoverageNote">No eligible execution assessments in this period.</small>
+          </article>
+          <article class="stats-environment-kpi">
+            <span>Rules adherence</span>
+            <strong id="statsExecutionRulesValue">—</strong>
+            <small id="statsExecutionRulesCount">Not measured</small>
+          </article>
+          <article class="stats-environment-kpi">
+            <span>Playbook adherence</span>
+            <strong id="statsExecutionPlaybookValue">—</strong>
+            <small id="statsExecutionPlaybookCount">Not measured</small>
+          </article>
+          <article class="stats-environment-kpi">
+            <span>Psychological reflection</span>
+            <strong id="statsExecutionPsychologyValue">—</strong>
+            <small id="statsExecutionPsychologyCount">Not measured</small>
+          </article>
+        </div>
+
+        <div class="stats-execution-analysis-grid">
+          <section class="panel stats-research-panel">
+            <h3>Execution quality over time</h3>
+            <p id="statsExecutionTrendSummary">Averages use only trades with measured execution assessments.</p>
+            <div class="stats-research-chart-wrap">
+              <canvas id="statsExecutionTrendChart" role="img" aria-label="Measured execution quality by chronological period"></canvas>
+              <div class="stats-research-empty" id="statsExecutionTrendEmpty" hidden>No execution assessments are recorded in this period.</div>
+            </div>
+            <p class="stats-research-note">Each point is the mean of eligible execution scores in the interval; tooltips show the trade count.</p>
+          </section>
+          <section class="panel stats-research-panel stats-execution-profit-panel">
+            <h3 id="statExecutionProfitTitle">Execution Quality vs Profitability</h3>
+            <p>Average net P&amp;L by recorded execution-quality range. This comparison is descriptive only.</p>
+            <div class="stats-execution-axis">Y · Average net P&amp;L</div>
+            <svg id="statExecutionProfitChart" class="stats-execution-chart" viewBox="0 0 260 112" role="img" aria-label="Execution quality comparison awaiting records"></svg>
+            <div class="stats-execution-axis stats-execution-x">X · Execution Quality (%)</div>
+            <div id="statExecutionProfitGroups" class="stats-execution-groups" aria-label="Group averages and trade counts"></div>
+            <p id="statExecutionProfitInsight" class="stats-execution-insight" aria-live="polite">No eligible trades in this period.</p>
+          </section>
+        </div>
+
+        <section class="panel stats-research-panel stats-psychology-state-panel">
+          <h3>Trader-reported psychology</h3>
+          <p>These are the states selected in the trade journal. They are self-reported labels, not detected mental states.</p>
+          <div class="table-wrap">
+            <table class="stats-research-table">
+              <thead><tr><th>Reported state</th><th>Trades</th><th>Average execution quality</th><th>Average net P&amp;L</th></tr></thead>
+              <tbody id="statsPsychologyStatesBody"><tr><td colspan="4" class="muted">No self-reported states are recorded in this period.</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="stats-psychology-view stats-behavior-demo" id="statsPsychologyView" aria-label="Illustrative Four-Fear and behavior demonstrations">
+        <h3>Four-Fear and Behavior Demonstrations</h3>
+        <p>These existing diagrams remain illustrative examples. They do not represent measurements from your trading records or psychological diagnoses.</p>
         <div class="stats-fear-layout">
           <article class="stats-fear-panel" aria-labelledby="statsFearTrendTitle">
             <h4 id="statsFearTrendTitle">Psychological Behaviour Trend</h4>
@@ -7195,6 +7417,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <div class="stats-fear-demo-note">Hypothetical counts only — not correlations established from your records. More data and context are needed before drawing conclusions.</div>
           </article>
         </div>
+      </section>
       </section>
     </section>
 
@@ -8395,6 +8618,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 <script src="technical-instruments/ai-builder-schema.js"></script>
 <script src="technical-instruments/condition-logic.js"></script>
 <script src="technical-instruments/ai-builder-document.js"></script>
+<script src="core/statistics-environments.js?v=20261017-three-environments"></script>
 <script>
 /* =========================================================
    SUPABASE CONFIGURATION
@@ -8482,6 +8706,9 @@ let statsAutoZoom = true;
 let statsAutoZoomPercent = loadStatsAutoZoomPreference();
 let statsAnchorDate = new Date();
 let equityChartInstance = null;
+let statsEdgeTimelineInstance = null;
+let statsExecutionTrendInstance = null;
+let tradeSetupEvidenceMetadata = [];
 
 let executionReviews = [];
 let executionChecks = [];
@@ -9447,7 +9674,7 @@ async function loadPsychologyData(){
 }
 
 async function loadEdgeData(){
-  const [reviewsRes, checksRes] = await Promise.all([
+  const [reviewsRes, checksRes, evidenceRes] = await Promise.all([
     db
       .from('trade_plan_reviews')
       .select('*')
@@ -9458,8 +9685,16 @@ async function loadEdgeData(){
       .from('trade_plan_checks')
       .select('*')
       .eq('user_id', currentUser.id)
-      .order('sort_order', {ascending:true})
+      .order('sort_order', {ascending:true}),
+
+    db
+      .from('trade_setup_evidence')
+      .select('trade_id,timeframe,responsibility')
+      .eq('user_id', currentUser.id)
   ]);
+
+  tradeSetupEvidenceMetadata=evidenceRes.error?[]:(evidenceRes.data||[]);
+  if(evidenceRes.error)console.warn('Trade timeframe evidence could not be loaded:',evidenceRes.error);
 
   if(reviewsRes.error || checksRes.error){
     console.error(reviewsRes.error || checksRes.error);
@@ -14581,8 +14816,263 @@ function renderExecutionProfitability(source){
   document.getElementById('statExecutionProfitInsight').textContent=executionProfitabilityInsight(stats)+(stats.excluded?' '+stats.excluded+' excluded: missing/invalid score or P&L.':'');
 }
 
+function statsAnalytics(){
+  return window.TIOSStatisticsEnvironments||null;
+}
+function setStatisticsText(id,value,className){
+  const node=document.getElementById(id);
+  if(!node)return;
+  node.textContent=String(value??'—');
+  if(className)node.className=className;
+}
+function statisticsProfitFactorLabel(value){
+  if(value===Infinity)return '∞';
+  return Number.isFinite(value)?value.toFixed(2)+'×':'—';
+}
+function statisticsRLabel(value){
+  return Number.isFinite(value)?`${value>=0?'+':''}${value.toFixed(2)}R`:'—';
+}
+function renderStatisticsTableBody(id,rows,columns,emptyMessage){
+  const body=document.getElementById(id);
+  if(!body)return;
+  body.replaceChildren();
+  if(!rows.length){
+    const row=document.createElement('tr'),cell=document.createElement('td');
+    cell.colSpan=columns.length;cell.className='muted';cell.textContent=emptyMessage;
+    row.appendChild(cell);body.appendChild(row);return;
+  }
+  rows.forEach(item=>{
+    const row=document.createElement('tr');
+    columns.forEach(column=>{
+      const cell=document.createElement('td');
+      const value=column.value(item);
+      cell.textContent=value==null?'—':String(value);
+      if(column.className)cell.className=typeof column.className==='function'?column.className(item):column.className;
+      row.appendChild(cell);
+    });
+    body.appendChild(row);
+  });
+}
+function renderStatisticsTimelineChart(instance,canvasId,emptyId,points,config){
+  const canvas=document.getElementById(canvasId),empty=document.getElementById(emptyId);
+  if(!canvas||!empty)return instance;
+  const measured=(Array.isArray(points)?points:[]).filter(point=>Number.isFinite(point?.[config.valueKey]));
+  if(!measured.length||typeof Chart==='undefined'){
+    if(instance){instance.destroy();instance=null;}
+    empty.hidden=false;
+    empty.textContent=typeof Chart==='undefined'?'Charts are unavailable in this browser.':config.emptyText;
+    canvas.setAttribute('aria-label',config.emptyText);
+    return null;
+  }
+  empty.hidden=true;
+  const data={
+    labels:measured.map(point=>point.label),
+    datasets:[{
+      label:config.datasetLabel,
+      data:measured.map(point=>point[config.valueKey]),
+      borderColor:config.color,
+      backgroundColor:config.fill,
+      pointBackgroundColor:config.color,
+      pointBorderColor:config.color,
+      pointRadius:measured.length>40?1.5:3,
+      pointHoverRadius:5,
+      borderWidth:2,
+      tension:0.18,
+      fill:false,
+      spanGaps:false
+    }]
+  };
+  const yScale=config.percent
+    ? {min:0,max:100,ticks:{color:'#8495aa',callback:value=>value+'%'},grid:{color:'rgba(118,136,160,.1)'}}
+    : {beginAtZero:true,ticks:{color:'#8495aa',callback:value=>money(Number(value))},grid:{color:'rgba(118,136,160,.1)'}};
+  const options={
+    responsive:true,maintainAspectRatio:false,animation:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{legend:{display:false},tooltip:{callbacks:{
+      title:items=>measured[items[0]?.dataIndex]?.label||'',
+      label:context=>{
+        const point=measured[context.dataIndex];
+        const value=config.formatValue(context.parsed.y);
+        return `${config.datasetLabel}: ${value} · ${point[config.countKey]} trade${point[config.countKey]===1?'':'s'}`;
+      }
+    }}},
+    scales:{
+      x:{grid:{display:false},ticks:{color:'#8495aa',autoSkip:true,maxTicksLimit:8,maxRotation:0}},
+      y:yScale
+    }
+  };
+  canvas.setAttribute('aria-label',measured.map(point=>
+    `${point.label}: ${config.formatValue(point[config.valueKey])}, ${point[config.countKey]} eligible trades`
+  ).join('; '));
+  if(instance){
+    instance.data=data;instance.options=options;instance.update('none');instance.resize();
+    return instance;
+  }
+  return new Chart(canvas,{type:'line',data,options});
+}
+function renderStatisticsNavigationIndicators(source,returnPct,expectancyStats,executionStats){
+  const analytics=statsAnalytics();
+  const pnlStats=analytics?analytics.summarizePnl(source):{tradeCount:0,complete:false};
+  const returnValue=pnlStats.tradeCount&&pnlStats.complete?formatReturnPct(returnPct):'—';
+  setStatisticsText('statNavReturn',returnValue);
+  let edgeValue='—';
+  if(expectancyStats&&Number.isFinite(expectancyStats.preferredValue)){
+    edgeValue=expectancyStats.preferredUnit==='R'
+      ? 'Exp '+statisticsRLabel(expectancyStats.preferredValue)
+      : 'Exp '+signedMoney(expectancyStats.preferredValue)+'/trade';
+  }
+  setStatisticsText('statNavExpectancy',edgeValue);
+  setStatisticsText('statNavExecution',Number.isFinite(executionStats?.averageScorePct)
+    ? executionStats.averageScorePct.toFixed(0)+'%'
+    : '—');
+}
+function renderEdgeTimeline(source){
+  const analytics=statsAnalytics();
+  if(!analytics)return;
+  const timeline=analytics.buildExpectancyTimeline(source,statsRange);
+  const points=timeline.points||[];
+  const unit=points[0]?.unit||(['1d','1w','1m'].includes(statsRange)?'day':statsRange==='6m'?'week':'month');
+  const unitLabel=unit==='day'?'day':unit==='week'?'week':'month';
+  setStatisticsText('statsEdgeTimelineSummary',`${points.length} calendar ${unitLabel}${points.length===1?'':'s'} · ${timeline.measuredPeriods} complete P&L interval${timeline.measuredPeriods===1?'':'s'}.`);
+  statsEdgeTimelineInstance=renderStatisticsTimelineChart(statsEdgeTimelineInstance,'statsEdgeTimelineChart','statsEdgeTimelineEmpty',points,{
+    valueKey:'expectancy',countKey:'tradeCount',datasetLabel:'Average net P&L per trade',color:'#d58cff',fill:'rgba(213,140,255,.12)',
+    formatValue:value=>signedMoney(value),emptyText:source.length?'No complete P&L samples are available for this period.':'No closed trades in this selected period.'
+  });
+  const measured=points.filter(point=>Number.isFinite(point.expectancy));
+  setStatisticsText('statsEdgeTimelineNote',measured.length
+    ? `${timeline.positivePeriods} of ${measured.length} complete intervals had positive expectancy. Calendar intervals use only trades recorded through each interval; this is descriptive, not a forecast.`
+    : 'Incomplete or missing P&L values are not treated as zero expectancy.');
+}
+function renderExecutionTimeline(source){
+  const analytics=statsAnalytics();
+  if(!analytics)return;
+  const timeline=analytics.buildExecutionQualityTimeline(source,statsRange,trade=>executionScoreForTrade(trade.id));
+  const points=timeline.points||[];
+  const unit=points[0]?.unit||(['1d','1w','1m'].includes(statsRange)?'day':statsRange==='6m'?'week':'month');
+  const unitLabel=unit==='day'?'day':unit==='week'?'week':'month';
+  setStatisticsText('statsExecutionTrendSummary',`${points.length} calendar ${unitLabel}${points.length===1?'':'s'} · ${timeline.measuredPeriods} interval${timeline.measuredPeriods===1?'':'s'} with execution assessments.`);
+  statsExecutionTrendInstance=renderStatisticsTimelineChart(statsExecutionTrendInstance,'statsExecutionTrendChart','statsExecutionTrendEmpty',points,{
+    valueKey:'averageScorePct',countKey:'reviewedTradeCount',datasetLabel:'Average execution quality',color:'#c084fc',fill:'rgba(192,132,252,.12)',percent:true,
+    formatValue:value=>Number(value).toFixed(1)+'%',emptyText:'No execution assessments are recorded in this period.'
+  });
+}
+function renderEdgePerformanceEnvironment(source){
+  const analytics=statsAnalytics();
+  if(!analytics)return;
+  const expectancy=analytics.summarizeExpectancy(source);
+  const profitFactorValue=analytics.profitFactor(source);
+  const execution=analytics.summarizeExecutionQuality(source,
+    trade=>executionScoreForTrade(trade.id),
+    trade=>executionMappedCompositeForTrade(trade.id).categories
+  );
+  const edgeValue=document.getElementById('statsEdgeExpectancyValue');
+  if(edgeValue){
+    edgeValue.textContent=Number.isFinite(expectancy.preferredValue)
+      ? expectancy.preferredUnit==='R'?statisticsRLabel(expectancy.preferredValue):signedMoney(expectancy.preferredValue)
+      : '—';
+    edgeValue.className=Number.isFinite(expectancy.preferredValue)
+      ? expectancy.preferredValue>0?'pos':expectancy.preferredValue<0?'neg':'neutral'
+      : 'neutral';
+  }
+  const eligible=Number.isFinite(expectancy.preferredValue)
+    ? expectancy.preferredUnit==='R'?expectancy.rCount:expectancy.validPnlCount
+    : 0;
+  setStatisticsText('statsEdgeExpectancyCaption',!source.length
+    ? 'No closed trades in this period.'
+    : !Number.isFinite(expectancy.preferredValue)
+      ? expectancy.missingPnlCount?'Unavailable: selected trades have incomplete P&L.':'No validated expectancy is available.'
+      : expectancy.preferredUnit==='R'
+        ? `Mean recorded R multiple · ${eligible} of ${source.length} trades have validated risk data.`
+        : `Mean realized net P&L per trade · ${eligible} trade${eligible===1?'':'s'} with complete P&L.`
+  );
+  setStatisticsText('statsEdgeProfitFactorValue',statisticsProfitFactorLabel(profitFactorValue));
+  setStatisticsText('statsEdgeProfitFactorCaption',!source.length
+    ? 'No closed trades in this period.'
+    : expectancy.missingPnlCount
+      ? `Unavailable: ${expectancy.missingPnlCount} selected trade${expectancy.missingPnlCount===1?' is':'s are'} missing P&L.`
+      : profitFactorValue===Infinity?'No losses recorded in this sample.'
+        : profitFactorValue===null?'No positive or negative P&L outcomes recorded.':'Gross profit divided by gross loss.'
+  );
+  setStatisticsText('statsEdgeSampleCount',String(eligible));
+  setStatisticsText('statsEdgeSampleReliability',analytics.sampleReliability(eligible).label);
+  setStatisticsText('statsEdgeRiskCoverage',source.length?`${expectancy.rCount} / ${source.length}`:'—');
+  setStatisticsText('statsEdgeRiskCoverageNote',source.length
+    ? expectancy.rComplete?'Validated initial-risk data covers every selected trade.':'R expectancy is used only when every selected trade has a valid risk basis, risk amount and R multiple.'
+    : 'No selected trades to assess.');
+
+  const activeReviews=activePlanReviews().filter(review=>source.some(trade=>trade.id===review.trade_id));
+  const reviewByTrade=analytics.indexReviewsByTrade(activeReviews);
+  const playbookScores=new Map(source.map(trade=>[trade.id,edgeScoreForTrade(trade.id)]));
+  const setups=analytics.groupOutcomesByLabel(source,trade=>trade.setup,trade=>playbookScores.get(trade.id));
+  const marketStates=analytics.groupOutcomesByLabel(source,trade=>reviewByTrade.get(trade.id)?.market_state);
+  const entryPatterns=analytics.groupOutcomesByLabel(source,trade=>reviewByTrade.get(trade.id)?.entry_pattern);
+  const timeframeGroups=analytics.groupExecutionEvidenceByRole(source,tradeSetupEvidenceMetadata);
+  const baseColumns=[
+    {value:row=>row.label},
+    {value:row=>row.count},
+    {value:row=>row.complete?signedMoney(row.averagePnl):'—'},
+    {value:row=>statisticsProfitFactorLabel(row.profitFactor)}
+  ];
+  renderStatisticsTableBody('statsEdgeSetupBody',setups.groups,[
+    ...baseColumns,
+    {value:row=>Number.isFinite(row.averageQualityPct)?row.averageQualityPct.toFixed(1)+'% ('+row.qualityCount+' reviewed)':'—'}
+  ],'No setup labels recorded in this period.');
+  renderStatisticsTableBody('statsEdgeMarketBody',marketStates.groups,baseColumns,'Not measured — no market-state labels are recorded in this period.');
+  renderStatisticsTableBody('statsEdgeEntryBody',entryPatterns.groups,baseColumns,'Not measured — no entry-pattern labels are recorded in this period.');
+  renderStatisticsTableBody('statsEdgeTimeframeBody',timeframeGroups,baseColumns,'No timeframe evidence is recorded in this period.');
+
+  const setupCount=source.filter(trade=>String(trade.setup||'').trim()).length;
+  const reviewedCount=source.filter(trade=>playbookScores.get(trade.id)!==null&&Number.isFinite(playbookScores.get(trade.id))).length;
+  const marketCount=source.filter(trade=>String(reviewByTrade.get(trade.id)?.market_state||'').trim()).length;
+  const entryCount=source.filter(trade=>String(reviewByTrade.get(trade.id)?.entry_pattern||'').trim()).length;
+  const timeframeIds=new Set(tradeSetupEvidenceMetadata.filter(row=>
+    source.some(trade=>trade.id===row.trade_id)&&String(row.timeframe||row.responsibility||'').trim()
+  ).map(row=>row.trade_id));
+  setStatisticsText('statsEdgeSetupCoverage',`${setupCount} / ${source.length}`);
+  setStatisticsText('statsEdgePlaybookCoverage',`${reviewedCount} / ${source.length}`);
+  setStatisticsText('statsEdgeMarketCoverage',`${marketCount} / ${source.length}`);
+  setStatisticsText('statsEdgeEntryCoverage',`${entryCount} / ${source.length}`);
+  setStatisticsText('statsEdgeTimeframeCoverage',`${timeframeIds.size} / ${source.length}`);
+  setStatisticsText('statsEdgeReliabilityNote',eligible
+    ? `Sample size is ${eligible} ${analytics.sampleReliability(eligible).label.toLowerCase()}. A larger sample alone does not establish statistical significance or guarantee a future edge.`
+    : 'No qualifying trades are available. Measurements remain blank until complete P&L or validated risk data is recorded.');
+  renderEdgeTimeline(source);
+  return execution;
+}
+function renderExecutionQualityEnvironment(source){
+  const analytics=statsAnalytics();
+  if(!analytics)return;
+  const quality=analytics.summarizeExecutionQuality(source,
+    trade=>executionScoreForTrade(trade.id),
+    trade=>executionMappedCompositeForTrade(trade.id).categories
+  );
+  setStatisticsText('statsExecutionOverallValue',Number.isFinite(quality.averageScorePct)
+    ? quality.averageScorePct.toFixed(1)+'%':'—');
+  setStatisticsText('statsExecutionCoverageNote',quality.reviewedTradeCount
+    ? `${quality.reviewedTradeCount} of ${quality.selectedTradeCount} selected trades had an eligible execution assessment; unreviewed trades are excluded, not scored as zero.`
+    : 'No eligible execution assessments in this period.');
+  const categoryIds={rules:['statsExecutionRulesValue','statsExecutionRulesCount'],playbook:['statsExecutionPlaybookValue','statsExecutionPlaybookCount'],psychology:['statsExecutionPsychologyValue','statsExecutionPsychologyCount']};
+  Object.entries(categoryIds).forEach(([name,[valueId,countId]])=>{
+    const category=quality.categories[name];
+    setStatisticsText(valueId,Number.isFinite(category?.averagePct)?category.averagePct.toFixed(1)+'%':'—');
+    setStatisticsText(countId,category?.tradeCount
+      ? `${category.tradeCount} trade${category.tradeCount===1?'':'s'} with mapped ${name==='psychology'?'reflection':name==='rules'?'Rules':'Playbook'} evidence`
+      : 'Not measured');
+  });
+  renderExecutionProfitability(source);
+  renderExecutionTimeline(source);
+  const executionScores=new Map(source.map(trade=>[trade.id,executionScoreForTrade(trade.id)]));
+  const states=analytics.groupOutcomesByLabel(source,trade=>trade.psychology,trade=>executionScores.get(trade.id));
+  renderStatisticsTableBody('statsPsychologyStatesBody',states.groups,[
+    {value:row=>row.label},
+    {value:row=>row.count},
+    {value:row=>Number.isFinite(row.averageQualityPct)?row.averageQualityPct.toFixed(1)+'% ('+row.qualityCount+' reviewed)':'—'},
+    {value:row=>row.complete?signedMoney(row.averagePnl):'—'}
+  ],'No self-reported states are recorded in this period.');
+  return quality;
+}
+
 function renderDrawdownExpectancyDiagram(drawdown,series,expectancy,avgTradeReturn,winRate,source,avgWin,avgLoss){
-  const winRateNode=$('#statAnalysisWinRate');
   const expectancyValue=$('#statExpectancyValue');
   const expectancyCaption=$('#statExpectancyCaption');
   const expectancyBar=$('#statExpectancyBar');
@@ -14595,7 +15085,6 @@ function renderDrawdownExpectancyDiagram(drawdown,series,expectancy,avgTradeRetu
   const complete=validTrades.length===trades.length;
   const hasTrades=trades.length>0;
   const winners=validTrades.filter(trade=>Number(trade.pnl)>0).length;
-  winRateNode.textContent=hasTrades&&complete&&Number.isFinite(winRate)?winRate.toFixed(1)+'% win rate':'— win rate';
   if(!hasTrades||!complete||!Number.isFinite(expectancy)){
     expectancyValue.textContent='—';
     expectancyValue.className='stats-analysis-value neutral';
@@ -14631,19 +15120,24 @@ function renderStatisticsIndicators(returnPct,winRate,source,profitFactorStats){
   returnLabel.textContent=Number.isFinite(returnPct)?`${formatReturnPct(returnPct)} return`:'— return';
   returnLabel.className='stats-win-return '+(Number.isFinite(returnPct)?pnlClass(returnPct):'neutral');
   const hasTrades=source.length>0;
-  const boundedWinRate=hasTrades&&Number.isFinite(winRate)?Math.max(0,Math.min(100,winRate)):0;
+  const completePnl=hasTrades&&source.every(trade=>trade&&trade.pnl!==null&&trade.pnl!==undefined&&String(trade.pnl).trim()!==''&&Number.isFinite(Number(trade.pnl)));
+  const hasWinRate=completePnl&&Number.isFinite(winRate);
+  const boundedWinRate=hasWinRate?Math.max(0,Math.min(100,winRate)):0;
   progress.setAttribute('stroke-dasharray',`${boundedWinRate} 100`);
   needle.setAttribute('transform',`rotate(${boundedWinRate*1.8-90} 100 100)`);
   const returnAccessibility=Number.isFinite(returnPct)?` Period return ${formatReturnPct(returnPct)}.`:'';
-  gauge.setAttribute('aria-label',hasTrades
+  gauge.setAttribute('aria-label',hasWinRate
     ? `Win rate ${boundedWinRate.toFixed(1)} percent, ${wins} winning trades out of ${source.length}.${returnAccessibility}`
-    : 'Win rate unavailable because there are no trades in this period.'+returnAccessibility);
-  winValue.textContent=hasTrades?boundedWinRate.toFixed(1)+'%':'—';
-  winValue.className='stats-indicator-value '+(hasTrades?'pos':'neutral');
-  count.textContent=hasTrades?`${wins} win${wins===1?'':'s'} of ${source.length} trade${source.length===1?'':'s'} in this period.`:'No trades in this period.';
+    : (hasTrades?'Win rate unavailable because one or more trades have missing or invalid P&L.':'Win rate unavailable because there are no trades in this period.')+returnAccessibility);
+  winValue.textContent=hasWinRate?boundedWinRate.toFixed(1)+'%':'—';
+  winValue.className='stats-indicator-value '+(hasWinRate?'pos':'neutral');
+  count.textContent=hasWinRate?`${wins} win${wins===1?'':'s'} of ${source.length} trade${source.length===1?'':'s'} in this period.`:hasTrades?'Incomplete P&L; win rate not measured.':'No trades in this period.';
 }
 function renderStatistics(){
   if(!tradingAccount){
+    setStatisticsText('statNavReturn','—');
+    setStatisticsText('statNavExpectancy','—');
+    setStatisticsText('statNavExecution','—');
     return;
   }
 
@@ -14671,13 +15165,17 @@ function renderStatistics(){
     `${statsAnchorDate.getFullYear()}-${String(statsAnchorDate.getMonth()+1).padStart(2,'0')}`;
 
   const source=series.selectedTrades;
+  const analytics=statsAnalytics();
+  const selectedPnlStats=analytics?analytics.summarizePnl(source):{complete:false,tradeCount:source.length,missingPnlCount:0,netPnl:null};
 
   const netPnl=source.reduce((s,t)=>s+(Number(t.pnl)||0),0);
 
   const endingEquity=
     series.points[series.points.length-1]?.equity ?? series.openingEquity;
 
-  const returnPct=returnPctFromPnl(netPnl);
+  const returnPct=selectedPnlStats.complete&&source.length
+    ? returnPctFromPnl(selectedPnlStats.netPnl)
+    : null;
 
   const wins=source.filter(t=>Number(t.pnl)>0);
   const losses=source.filter(t=>Number(t.pnl)<0);
@@ -14694,11 +15192,13 @@ function renderStatistics(){
 
   const profitFactorStats=calculateProfitFactorStats(source);
 
-  const avgTradeReturn=averageTradeReturnPct(source);
+  const avgTradeReturn=selectedPnlStats.complete&&source.length
+    ? averageTradeReturnPct(source)
+    : null;
 
-  const expectancy=source.length
-    ? netPnl/source.length
-    : 0;
+  const expectancy=selectedPnlStats.complete&&source.length
+    ? selectedPnlStats.netPnl/source.length
+    : null;
 
   const drawdown=maxDrawdownFromEquity(
     series.points,
@@ -14742,7 +15242,7 @@ function renderStatistics(){
     ? dayRows.reduce((s,x)=>s+x.pnl,0)/dayRows.length
     : 0;
 
-  const recoveryFactor=drawdown.amount>0
+  const recoveryFactor=!selectedPnlStats.complete||!source.length?null:drawdown.amount>0
     ? netPnl/drawdown.amount
     : netPnl>0 ? Infinity : 0;
 
@@ -14758,22 +15258,22 @@ function renderStatistics(){
 
   // Display the selected-period values beside the Equity Curve.
   $('#statEquityHeaderEnding').textContent=money(endingEquity);
-  $('#statEquityHeaderNetPnl').textContent=signedMoney(netPnl);
-  $('#statEquityHeaderNetPnl').className=pnlClass(netPnl);
+  $('#statEquityHeaderNetPnl').textContent=selectedPnlStats.complete&&source.length?signedMoney(netPnl):'—';
+  $('#statEquityHeaderNetPnl').className=selectedPnlStats.complete&&source.length?pnlClass(netPnl):'neutral';
 
-  const winRate=source.length
+  const winRate=selectedPnlStats.complete&&source.length
     ? wins.length/source.length*100
-    : 0;
+    : null;
 
   $('#statTrades').textContent=source.length;
   $('#statTradingDays').textContent=dayRows.length;
   $('#statWinningDays').textContent=winningDays;
   $('#statLosingDays').textContent=losingDays;
 
-  $('#statAvgWin').textContent=money(avgWin);
-  $('#statAvgLoss').textContent=money(avgLoss);
-  $('#statLargestWin').textContent=signedMoney(largestWin);
-  $('#statLargestLoss').textContent=signedMoney(largestLoss);
+  $('#statAvgWin').textContent=wins.length?money(avgWin):'—';
+  $('#statAvgLoss').textContent=losses.length?money(avgLoss):'—';
+  $('#statLargestWin').textContent=wins.length?signedMoney(largestWin):'—';
+  $('#statLargestLoss').textContent=losses.length?signedMoney(largestLoss):'—';
 
   $('#statBestDay').textContent=bestDay
     ? `${formatDate(bestDay.date)} • ${signedMoney(bestDay.pnl)}`
@@ -14783,16 +15283,18 @@ function renderStatistics(){
     ? `${formatDate(worstDay.date)} • ${signedMoney(worstDay.pnl)}`
     : '—';
 
-  $('#statAvgDay').textContent=signedMoney(avgDay);
+  $('#statAvgDay').textContent=dayRows.length?signedMoney(avgDay):'—';
 
   $('#statRecoveryFactor').textContent=
-    recoveryFactor===Infinity ? '∞' : recoveryFactor.toFixed(2);
+    recoveryFactor===Infinity ? '∞' : Number.isFinite(recoveryFactor)?recoveryFactor.toFixed(2):'—';
 
-  renderExecutionProfitability(source);
   renderStatisticsIndicators(returnPct,winRate,source,profitFactorStats);
   renderDrawdownExpectancyDiagram(profitPeakDrawdown,series,expectancy,avgTradeReturn,winRate,source,avgWin,avgLoss);
   renderEquityChart(series);
   renderInstrumentStats(source);
+  renderEdgePerformanceEnvironment(source);
+  const executionStats=renderExecutionQualityEnvironment(source);
+  renderStatisticsNavigationIndicators(source,returnPct,analytics?.summarizeExpectancy(source),executionStats);
 }
 
 function moveStatsPeriod(direction){
@@ -14911,20 +15413,25 @@ if(statsIndicatorStack){
 setStatsAutoZoom(statsAutoZoom);
 
 function setStatisticsView(view){
-  const selected=view==='psychology'?'psychology':'technical';
+  const selected=['statistics','edge','execution'].includes(view)?view:'statistics';
   $$('[data-stats-view]').forEach(button=>{
     const active=button.dataset.statsView===selected;
     button.classList.toggle('active',active);
     button.setAttribute('aria-selected',String(active));
     button.tabIndex=active?0:-1;
   });
-  $('#statsTechnicalView').hidden=selected!=='technical';
-  $('#statsPsychologyView').hidden=selected!=='psychology';
+  $('#statsStatisticsView').hidden=selected!=='statistics';
+  $('#statsEdgeView').hidden=selected!=='edge';
+  $('#statsExecutionView').hidden=selected!=='execution';
   setZoomedStatsCard(null);
-  if(selected==='technical')requestAnimationFrame(()=>{if(equityChartInstance)equityChartInstance.resize();});
-  else requestAnimationFrame(()=>{
-    renderStatisticsFearDemonstration();
-    renderStatsBehaviorExtras();
+  requestAnimationFrame(()=>{
+    if(selected==='statistics'&&equityChartInstance)equityChartInstance.resize();
+    if(selected==='edge'&&statsEdgeTimelineInstance)statsEdgeTimelineInstance.resize();
+    if(selected==='execution'){
+      if(statsExecutionTrendInstance)statsExecutionTrendInstance.resize();
+      renderStatisticsFearDemonstration();
+      renderStatsBehaviorExtras();
+    }
   });
 }
 let statsFearTrendInstance=null;

@@ -1,0 +1,302 @@
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  if (root) root.TIOSStatisticsEnvironments = api;
+})(typeof window !== 'undefined' ? window : globalThis, function () {
+  'use strict';
+
+  const VALID_R_BASES = new Set(['planned_cash', 'account_percent', 'stop_based', 'fixed_unit']);
+  const EXECUTION_CATEGORIES = Object.freeze({
+    psychology: 'psych',
+    playbook: 'playbook',
+    rules: 'checklist'
+  });
+
+  function list(value) {
+    return Array.isArray(value) ? value.filter(item => item !== null && item !== undefined) : [];
+  }
+
+  function finiteRecordedNumber(value) {
+    return (typeof value === 'number' || typeof value === 'string') &&
+      String(value).trim() !== '' && Number.isFinite(Number(value));
+  }
+
+  function recordedPnl(trade) {
+    return trade && finiteRecordedNumber(trade.pnl) ? Number(trade.pnl) : null;
+  }
+
+  function summarizePnl(source) {
+    const trades = list(source);
+    const values = trades.map(recordedPnl);
+    const valid = values.filter(value => value !== null);
+    const complete = trades.length > 0 && valid.length === trades.length;
+    const total = valid.reduce((sum, value) => sum + value, 0);
+    return {
+      tradeCount: trades.length,
+      validPnlCount: valid.length,
+      missingPnlCount: trades.length - valid.length,
+      complete,
+      netPnl: complete ? total : null,
+      expectancy: complete ? total / trades.length : null
+    };
+  }
+
+  function reliableRMultiple(trade) {
+    if (!trade || !finiteRecordedNumber(trade.r_multiple) ||
+        !finiteRecordedNumber(trade.risk_amount) || Number(trade.risk_amount) <= 0) return null;
+    const basis = String(trade.r_basis || '').trim().toLowerCase();
+    if (!VALID_R_BASES.has(basis)) return null;
+    return Number(trade.r_multiple);
+  }
+
+  function summarizeExpectancy(source) {
+    const trades = list(source);
+    const pnl = summarizePnl(trades);
+    const rValues = trades.map(reliableRMultiple).filter(value => value !== null);
+    const rComplete = trades.length > 0 && rValues.length === trades.length;
+    const rExpectancy = rValues.length
+      ? rValues.reduce((sum, value) => sum + value, 0) / rValues.length
+      : null;
+    const useR = rComplete;
+    return {
+      ...pnl,
+      rCount: rValues.length,
+      rCoveragePct: trades.length ? rValues.length / trades.length * 100 : null,
+      rExpectancy,
+      rComplete,
+      preferredValue: useR ? rExpectancy : pnl.expectancy,
+      preferredUnit: useR ? 'R' : 'money'
+    };
+  }
+
+  function profitFactorFromTotals(grossProfit, grossLoss) {
+    if (grossLoss > 0) return grossProfit / grossLoss;
+    if (grossProfit > 0) return Infinity;
+    return null;
+  }
+
+  function profitFactor(source) {
+    const trades = list(source);
+    const pnl = summarizePnl(trades);
+    if (!pnl.complete) return null;
+    const values = trades.map(recordedPnl);
+    const grossProfit = values.filter(value => value > 0).reduce((sum, value) => sum + value, 0);
+    const grossLoss = Math.abs(values.filter(value => value < 0).reduce((sum, value) => sum + value, 0));
+    return profitFactorFromTotals(grossProfit, grossLoss);
+  }
+
+  function groupOutcomesByLabel(source, labelForTrade, qualityForTrade) {
+    const groups = new Map();
+    let unclassified = 0;
+    list(source).forEach(trade => {
+      const rawLabel = typeof labelForTrade === 'function' ? labelForTrade(trade) : '';
+      const label = rawLabel == null ? '' : String(rawLabel).trim();
+      if (!label) {
+        unclassified++;
+        return;
+      }
+      if (!groups.has(label)) {
+        groups.set(label, {
+          label, count: 0, validPnlCount: 0, netPnl: 0,
+          grossProfit: 0, grossLoss: 0, qualityCount: 0, qualityTotal: 0
+        });
+      }
+      const group = groups.get(label);
+      group.count++;
+      const pnl = recordedPnl(trade);
+      if (pnl !== null) {
+        group.validPnlCount++;
+        group.netPnl += pnl;
+        if (pnl > 0) group.grossProfit += pnl;
+        if (pnl < 0) group.grossLoss += Math.abs(pnl);
+      }
+      if (typeof qualityForTrade === 'function') {
+        const rawQuality = qualityForTrade(trade);
+        const quality = finiteRecordedNumber(rawQuality) ? Number(rawQuality) : NaN;
+        if (Number.isFinite(quality) && quality >= 0 && quality <= 100) {
+          group.qualityCount++;
+          group.qualityTotal += quality;
+        }
+      }
+    });
+
+    const results = [...groups.values()].map(group => {
+      const complete = group.count > 0 && group.validPnlCount === group.count;
+      return {
+        ...group,
+        complete,
+        averagePnl: complete ? group.netPnl / group.count : null,
+        profitFactor: complete ? profitFactorFromTotals(group.grossProfit, group.grossLoss) : null,
+        averageQualityPct: group.qualityCount ? group.qualityTotal / group.qualityCount : null
+      };
+    }).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+
+    return { groups: results, unclassified };
+  }
+
+  function indexReviewsByTrade(reviews) {
+    const index = new Map();
+    list(reviews).forEach(review => {
+      if (!review?.trade_id) return;
+      const current = index.get(review.trade_id);
+      const currentTime = String(current?.updated_at || current?.created_at || '');
+      const nextTime = String(review.updated_at || review.created_at || '');
+      if (!current || nextTime >= currentTime) index.set(review.trade_id, review);
+    });
+    return index;
+  }
+
+  function timelineBucket(dateValue, range) {
+    const date = String(dateValue || '').slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+    if (range === '1d' || range === '1w' || range === '1m') return { key: date, label: date, unit: 'day' };
+    if (range === '6m') {
+      const parsed = new Date(date + 'T00:00:00Z');
+      if (!Number.isFinite(parsed.getTime())) return null;
+      const weekday = (parsed.getUTCDay() + 6) % 7;
+      parsed.setUTCDate(parsed.getUTCDate() - weekday);
+      const weekStart = parsed.toISOString().slice(0, 10);
+      return { key: weekStart, label: 'Week of ' + weekStart, unit: 'week' };
+    }
+    return { key: date.slice(0, 7), label: date.slice(0, 7), unit: 'month' };
+  }
+
+  function buildExpectancyTimeline(source, range) {
+    const buckets = new Map();
+    list(source).forEach(trade => {
+      const bucket = timelineBucket(trade.trade_date, range);
+      if (!bucket) return;
+      if (!buckets.has(bucket.key)) buckets.set(bucket.key, { ...bucket, trades: [] });
+      buckets.get(bucket.key).trades.push(trade);
+    });
+    const points = [...buckets.values()].sort((a, b) => a.key.localeCompare(b.key)).map(bucket => {
+      const summary = summarizePnl(bucket.trades);
+      return {
+        key: bucket.key,
+        label: bucket.label,
+        unit: bucket.unit,
+        tradeCount: summary.tradeCount,
+        validPnlCount: summary.validPnlCount,
+        complete: summary.complete,
+        expectancy: summary.expectancy
+      };
+    });
+    const measured = points.filter(point => Number.isFinite(point.expectancy));
+    return {
+      points,
+      measuredPeriods: measured.length,
+      positivePeriods: measured.filter(point => point.expectancy > 0).length,
+      flatPeriods: measured.filter(point => point.expectancy === 0).length,
+      negativePeriods: measured.filter(point => point.expectancy < 0).length
+    };
+  }
+
+  function buildExecutionQualityTimeline(source, range, scoreForTrade) {
+    const buckets = new Map();
+    list(source).forEach(trade => {
+      const bucket = timelineBucket(trade.trade_date, range);
+      if (!bucket) return;
+      if (!buckets.has(bucket.key)) buckets.set(bucket.key, { ...bucket, selectedTradeCount: 0, scores: [] });
+      const current = buckets.get(bucket.key);
+      current.selectedTradeCount++;
+      const rawScore = typeof scoreForTrade === 'function' ? scoreForTrade(trade) : NaN;
+      const score = finiteRecordedNumber(rawScore) ? Number(rawScore) : NaN;
+      if (Number.isFinite(score) && score >= 0 && score <= 100) current.scores.push(score);
+    });
+    const points = [...buckets.values()].sort((a, b) => a.key.localeCompare(b.key)).map(bucket => ({
+      key: bucket.key,
+      label: bucket.label,
+      unit: bucket.unit,
+      selectedTradeCount: bucket.selectedTradeCount,
+      reviewedTradeCount: bucket.scores.length,
+      averageScorePct: bucket.scores.length
+        ? bucket.scores.reduce((sum, value) => sum + value, 0) / bucket.scores.length
+        : null
+    }));
+    return {
+      points,
+      measuredPeriods: points.filter(point => Number.isFinite(point.averageScorePct)).length
+    };
+  }
+
+  function sampleReliability(count) {
+    const n = Number(count);
+    if (!Number.isFinite(n) || n <= 0) return { label: 'Not measured', largerSample: false };
+    if (n < 30) return { label: 'Preliminary sample', largerSample: false };
+    return { label: 'Larger descriptive sample', largerSample: true };
+  }
+
+  function summarizeExecutionQuality(source, scoreForTrade, categoriesForTrade) {
+    const trades = list(source);
+    const scores = [];
+    const categories = Object.fromEntries(Object.keys(EXECUTION_CATEGORIES).map(name => [name, { tradeCount: 0, total: 0 }]));
+    trades.forEach(trade => {
+      const rawScore = typeof scoreForTrade === 'function' ? scoreForTrade(trade) : NaN;
+      const score = finiteRecordedNumber(rawScore) ? Number(rawScore) : NaN;
+      if (Number.isFinite(score) && score >= 0 && score <= 100) scores.push(score);
+      const tradeCategories = typeof categoriesForTrade === 'function' ? categoriesForTrade(trade) : null;
+      Object.entries(EXECUTION_CATEGORIES).forEach(([name, key]) => {
+        const values = list(tradeCategories?.[key]?.values)
+          .filter(finiteRecordedNumber).map(Number)
+          .filter(value => value >= 0 && value <= 1);
+        if (!values.length) return;
+        const percent = values.reduce((sum, value) => sum + value, 0) / values.length * 100;
+        categories[name].tradeCount++;
+        categories[name].total += percent;
+      });
+    });
+    return {
+      selectedTradeCount: trades.length,
+      reviewedTradeCount: scores.length,
+      coveragePct: trades.length ? scores.length / trades.length * 100 : null,
+      averageScorePct: scores.length ? scores.reduce((sum, value) => sum + value, 0) / scores.length : null,
+      categories: Object.fromEntries(Object.entries(categories).map(([name, item]) => [name, {
+        tradeCount: item.tradeCount,
+        averagePct: item.tradeCount ? item.total / item.tradeCount : null
+      }]))
+    };
+  }
+
+  function groupExecutionEvidenceByRole(source, evidenceRows) {
+    const selectedIds = new Set(list(source).map(trade => String(trade.id || '')).filter(Boolean));
+    const evidenceByLabel = new Map();
+    list(evidenceRows).forEach(row => {
+      const tradeId = String(row?.trade_id || '');
+      if (!selectedIds.has(tradeId)) return;
+      const timeframe = String(row?.timeframe || '').trim();
+      const responsibility = String(row?.responsibility || '').trim();
+      if (!timeframe && !responsibility) return;
+      const label = [timeframe, responsibility].filter(Boolean).join(' · ');
+      if (!evidenceByLabel.has(label)) evidenceByLabel.set(label, new Set());
+      evidenceByLabel.get(label).add(tradeId);
+    });
+    const tradesById = new Map(list(source).map(trade => [String(trade.id || ''), trade]));
+    return [...evidenceByLabel.entries()].map(([label, ids]) => {
+      const members = [...ids].map(id => tradesById.get(id)).filter(Boolean);
+      const summary = summarizePnl(members);
+      return {
+        label,
+        count: members.length,
+        complete: summary.complete,
+        averagePnl: summary.expectancy,
+        profitFactor: profitFactor(members)
+      };
+    }).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+  }
+
+  return Object.freeze({
+    finiteRecordedNumber,
+    recordedPnl,
+    summarizePnl,
+    reliableRMultiple,
+    summarizeExpectancy,
+    profitFactor,
+    groupOutcomesByLabel,
+    indexReviewsByTrade,
+    buildExpectancyTimeline,
+    buildExecutionQualityTimeline,
+    sampleReliability,
+    summarizeExecutionQuality,
+    groupExecutionEvidenceByRole
+  });
+});

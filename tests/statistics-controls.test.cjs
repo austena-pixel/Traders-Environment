@@ -144,7 +144,9 @@ assert.ok(!html.includes('X-axis = trade number (T0, T1, T2, T3...).'),'highligh
 assert.match(html,/id="statsAutoZoomBtn"[^>]*aria-pressed="true"[^>]*aria-controls="statsIndicatorStack"/,'Auto Zoom starts enabled and controls the sidebar');
 assert.match(html,/<aside class="stats-indicator-stack stats-autozoom" id="statsIndicatorStack"/,'zoom scope is the right analytics sidebar');
 assert.match(html,/\.stats-indicator-stack\.stats-autozoom \.stats-indicator-card\.stats-card-zoomed\{\s*transform:scale\(/,'sidebar analytics cards receive the zoom transform');
-assert.equal((html.match(/class="stats-analysis-module stats-indicator-card stats-autozoom-bottom-anchor"/g)||[]).length,2,'Both separate analysis cards keep their bottom-up zoom anchors');
+assert.equal((html.match(/class="stats-analysis-module stats-indicator-card stats-autozoom-bottom-anchor"/g)||[]).length,1,'The remaining Statistics analysis card keeps its bottom-up zoom anchor');
+assert.match(html,/<section class="panel stats-research-panel stats-execution-profit-panel">[\s\S]*?id="statExecutionProfitChart"/,'Execution profitability comparison is preserved in Execution Quality');
+assert.match(html,/id="statsPeriodToolbar"[\s\S]*?<div class="stats-view-panel" id="statsStatisticsView"/,'shared period controls sit outside the environment panels');
 assert.match(html,/\.stats-indicator-stack\.stats-autozoom \.stats-indicator-card\.stats-autozoom-bottom-anchor\.stats-card-zoomed\{\s*transform-origin:right bottom;/,'Risk & Expectancy expands upward from its bottom-right edge');
 assert.match(html,/transform-origin:right top;/,'top analytics cards keep their right edge inside the page while zooming');
 assert.ok(html.includes('id="equityChart"'),'Equity Curve remains present');
