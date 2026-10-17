@@ -78,8 +78,10 @@ function extractFunction(name){
   throw new Error('Unclosed function '+name);
 }
 
-const stackClasses=createClassList(['stats-autozoom']);
+const stackClasses=createClassList();
+const controlsClasses=createClassList();
 const button={attributes:{},setAttribute(name,value){this.attributes[name]=value;}};
+button.closest=selector=>selector==='.stats-autozoom-controls'?{classList:controlsClasses}:null;
 const state={textContent:'ON'};
 const cards=['profit','win','risk'].map(name=>({
   name,
@@ -108,14 +110,14 @@ const elements=new Map([
 ]);
 const zoomContext=vm.createContext({$:selector=>elements.get(selector)});
 vm.runInContext(
-  'let statsAutoZoom=true;\n'+extractFunction('setStatsAutoZoom')+'\n'+extractFunction('setZoomedStatsCard'),
+  'let statsAutoZoom=false;\n'+extractFunction('setStatsAutoZoom')+'\n'+extractFunction('setZoomedStatsCard'),
   zoomContext
 );
 zoomContext.profitCard=cards[0];
 zoomContext.winCard=cards[1];
 zoomContext.riskCard=cards[2];
 zoomContext.outsideCard=outsideCard;
-vm.runInContext('setZoomedStatsCard(profitCard)',zoomContext);
+vm.runInContext('setStatsAutoZoom(true);setZoomedStatsCard(profitCard)',zoomContext);
 assert.equal(cards[0].classes.contains('stats-card-zoomed'),true,'Profit Factor can zoom');
 assert.equal(cards[1].classes.contains('stats-card-zoomed'),false);
 vm.runInContext('setZoomedStatsCard(winCard)',zoomContext);
@@ -130,6 +132,7 @@ vm.runInContext('setZoomedStatsCard(riskCard);setStatsAutoZoom(false)',zoomConte
 assert.equal(stackClasses.contains('stats-autozoom'),false);
 assert.equal(button.attributes['aria-pressed'],'false');
 assert.equal(state.textContent,'OFF');
+assert.equal(controlsClasses.contains('is-enabled'),false,'turning Auto Zoom off hides its magnification controls');
 assert.equal(cards[2].classes.contains('stats-card-zoomed'),false,'turning Auto Zoom off clears the zoomed section');
 vm.runInContext('setZoomedStatsCard(riskCard)',zoomContext);
 assert.equal(cards[2].classes.contains('stats-card-zoomed'),false,'disabled Auto Zoom cannot zoom cards');
@@ -137,12 +140,14 @@ vm.runInContext('setStatsAutoZoom(true);setZoomedStatsCard(winCard)',zoomContext
 assert.equal(stackClasses.contains('stats-autozoom'),true);
 assert.equal(button.attributes['aria-pressed'],'true');
 assert.equal(state.textContent,'ON');
+assert.equal(controlsClasses.contains('is-enabled'),true,'turning Auto Zoom on reveals its magnification controls');
 assert.equal(cards[1].classes.contains('stats-card-zoomed'),true);
 
 assert.ok(!html.includes('class="chart-legend-note"'),'highlighted trade-number note was removed');
 assert.ok(!html.includes('X-axis = trade number (T0, T1, T2, T3...).'),'highlighted X-axis explanation was removed');
-assert.match(html,/id="statsAutoZoomBtn"[^>]*aria-pressed="true"[^>]*aria-controls="statsIndicatorStack"/,'Auto Zoom starts enabled and controls the sidebar');
-assert.match(html,/<div class="stats-indicator-stack stats-indicator-grid stats-autozoom" id="statsIndicatorStack"/,'zoom scope is the customizable indicator grid');
+assert.match(html,/id="statsAutoZoomBtn"[^>]*aria-pressed="false"[^>]*aria-controls="statsIndicatorStack"/,'Auto Zoom starts disabled and controls the sidebar');
+assert.match(html,/<div class="stats-indicator-stack stats-indicator-grid" id="statsIndicatorStack"/,'zoom scope is the customizable indicator grid');
+assert.match(html,/\.stats-autozoom-controls:not\(\.is-enabled\) \.stats-autozoom-zoom\{display:none\}/,'percentage and slider stay hidden until Auto Zoom is enabled');
 assert.match(html,/\.stats-indicator-stack\.stats-autozoom \.stats-indicator-card\.stats-card-zoomed\{\s*transform:scale\(/,'sidebar analytics cards receive the zoom transform');
 assert.match(html,/\.stats-indicator-grid \.stats-indicator-card\{\s*min-width:0;min-height:112px/,'selected indicator cards use compact dashboard dimensions');
 assert.match(html,/<section class="panel stats-research-panel stats-execution-profit-panel">[\s\S]*?id="statExecutionProfitChart"/,'Execution profitability comparison is preserved in Execution Quality');
@@ -208,6 +213,7 @@ assert.match(html,/window.addEventListener\('resize',syncStatsAutoZoomViewportLi
 console.log('PASS manual zoom controls stay within the responsive current zoom limit and expand upward');
 assert.match(html,/const STATS_AUTOZOOM_PREFERENCE_KEY = 'tios_statistics_autozoom_percent_v1'/,'manual zoom uses a stable local preference key');
 assert.match(html,/let statsAutoZoomPercent = loadStatsAutoZoomPreference\(\);/,'saved zoom setting loads on startup');
+assert.match(html,/let statsAutoZoom = loadStatsAutoZoomEnabled\(\);/,'Auto Zoom restores the saved on/off state');
 const savedZoomContext=vm.createContext({localStorage:createStorage('138')});
 vm.runInNewContext(
   "const STATS_AUTOZOOM_PREFERENCE_KEY='tios_statistics_autozoom_percent_v1';\n"+
@@ -226,3 +232,25 @@ vm.runInNewContext(
 );
 assert.equal(invalidZoomContext.loadStatsAutoZoomPreference(),125,'invalid saved zoom falls back to 125%');
 console.log('PASS 125% is the default and user-selected zoom persists across reloads');
+const enabledStorage=createStorage(null);
+const enabledContext=vm.createContext({localStorage:enabledStorage});
+vm.runInNewContext(
+  "const STATS_AUTOZOOM_ENABLED_KEY='tios_statistics_autozoom_enabled_v1';\n"+
+  extractFunction('loadStatsAutoZoomEnabled')+'\n'+extractFunction('persistStatsAutoZoomEnabled'),
+  enabledContext
+);
+assert.equal(enabledContext.loadStatsAutoZoomEnabled(),false,'Auto Zoom is off for users without a saved choice');
+enabledContext.persistStatsAutoZoomEnabled(true);
+assert.equal(enabledStorage.value,'true','enabling Auto Zoom is saved');
+assert.equal(enabledContext.loadStatsAutoZoomEnabled(),true,'a saved Auto Zoom choice restores');
+enabledContext.persistStatsAutoZoomEnabled(false);
+assert.equal(enabledStorage.value,'false','disabling Auto Zoom is saved');
+const blockedEnabledContext=vm.createContext({localStorage:createStorage(null,{blocked:true})});
+vm.runInNewContext(
+  "const STATS_AUTOZOOM_ENABLED_KEY='tios_statistics_autozoom_enabled_v1';\n"+
+  extractFunction('loadStatsAutoZoomEnabled')+'\n'+extractFunction('persistStatsAutoZoomEnabled'),
+  blockedEnabledContext
+);
+assert.equal(blockedEnabledContext.loadStatsAutoZoomEnabled(),false,'blocked storage safely defaults Auto Zoom off');
+assert.doesNotThrow(()=>blockedEnabledContext.persistStatsAutoZoomEnabled(true));
+console.log('PASS Auto Zoom stays hidden until enabled and its state persists safely');
