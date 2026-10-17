@@ -26,6 +26,10 @@ const optionalStart=html.indexOf('<aside class="stats-dashboard-section"',layout
 assert.ok(sectionStart>=0&&layoutStart>sectionStart,'Section A groups the metrics, chart and optional indicator space.');
 assert.ok(chartStart>layoutStart&&optionalStart>chartStart,'The main outcomes chart sits beside the optional indicator area.');
 assert.ok(html.indexOf('</aside>',optionalStart)<html.indexOf('<dialog',optionalStart),'The optional indicator area remains inside Section A, before the indicator picker dialog.');
+assert.match(html,/\.stats-dashboard-section\{min-width:0;min-height:0;/,'the optional indicator panel can shrink to fit short screens');
+const compactDesktop=html.match(/@media\(min-width:761px\) and \(max-height:850px\)\{([\s\S]*?)\n\}/);
+assert.ok(compactDesktop,'Section A has a compact layout for short desktop screens');
+assert.match(compactDesktop[1],/height:clamp\(220px,calc\(100vh - 470px\),330px\)/,'the chart scales with viewport height on short desktop screens');
 assert.ok(!html.includes('class="stats-lower"'),'the retired lower Statistics panels are removed');
 assert.ok(!html.includes('Performance Details')&&!html.includes('Performance by Instrument'),'the circled legacy panels are no longer rendered');
 assert.ok(!html.includes('id="instrumentStatsBody"')&&!html.includes('function renderInstrumentStats'),'legacy instrument breakdown rendering is removed');

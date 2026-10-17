@@ -1989,7 +1989,7 @@ body.playbook-workspace .main{
 .stats-primary-pairs .positive{color:#45d69a}.stats-primary-pairs .negative{color:#ff727c}
 .stats-section-a-workspace{display:grid;grid-template-columns:minmax(0,2.05fr) minmax(245px,.95fr);gap:12px;align-items:stretch}
 .stats-combined-outcomes{min-width:0;padding:12px;border:1px solid #253449;border-radius:12px;background:#0c141e}
-.stats-dashboard-section{min-width:0;min-height:430px;padding:12px;border:1px solid #253449;border-radius:12px;background:#0c141e}
+.stats-dashboard-section{min-width:0;min-height:0;padding:12px;border:1px solid #253449;border-radius:12px;background:#0c141e}
 .stats-dashboard-header{align-items:center;margin-bottom:8px}
 .stats-dashboard-title{min-width:0}
 .stats-dashboard-title h3{margin:0;font-size:12px;line-height:1.3}
@@ -2084,6 +2084,20 @@ body.playbook-workspace .main{
   .stats-indicator-stack.stats-autozoom .stats-indicator-card.stats-card-zoomed{
     transform:scale(var(--stats-autozoom-scale));
   }
+}
+@media(min-width:761px) and (max-height:850px){
+  .stats-section-a{padding:12px}
+  .stats-section-a-header{margin-bottom:8px}
+  .stats-primary-summary{gap:7px;margin-bottom:8px}
+  .stats-primary-metric{min-height:102px;padding:9px 10px}
+  .stats-win-rate-gauge{height:48px}
+  .stats-section-a-workspace{gap:8px}
+  .stats-combined-outcomes,.stats-dashboard-section{padding:9px}
+  .stats-outcome-selectors{gap:4px;margin-bottom:8px;padding-bottom:6px}
+  .stats-outcome-selector{min-height:27px;padding:5px 8px}
+  .stats-outcome-workspace{padding:9px}
+  .stats-outcome-heading{margin-bottom:5px}
+  .stats-combined-outcomes .equity-canvas-wrap,.stats-outcome-canvas-wrap{height:clamp(220px,calc(100vh - 470px),330px)}
 }
 @media(prefers-reduced-motion:reduce){
   .stats-indicator-card,.stats-autozoom-thumb{transition:none}
