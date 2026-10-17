@@ -1961,7 +1961,7 @@ body.playbook-workspace .main{
   transform-origin:right bottom;
 }
 .stats-section-a{margin:0 0 14px;padding:16px}
-.stats-section-a-header,.stats-dashboard-header,.stats-outcome-heading{
+.stats-section-a-header,.stats-dashboard-header{
   display:flex;align-items:flex-start;justify-content:space-between;gap:12px;min-width:0
 }
 .stats-section-a-header{align-items:center;margin-bottom:12px}
@@ -2027,11 +2027,8 @@ body.playbook-workspace .main{
 .stats-outcome-selector:hover{background:#121d2b;color:#d7e2f0}
 .stats-outcome-selector.active{border-color:#314b68;background:#172438;color:#dceaff}
 .stats-outcome-selector:focus-visible,.stats-indicator-card-actions button:focus-visible{outline:2px solid #69a8ff;outline-offset:2px}
-.stats-outcome-workspace{min-width:0;padding:12px;border:1px solid #253449;border-radius:12px;background:#0c141e}
-.stats-outcome-heading{align-items:flex-start;margin:0 0 8px}
-.stats-outcome-heading h3{margin:0;color:#dce6f3;font-size:12px}
-.stats-outcome-heading p{margin:4px 0 0;color:#8f9fb4;font-size:9px;line-height:1.45}
-.stats-outcome-period{flex:0 0 auto;color:#8293a9;font-size:9px;text-align:right}
+.stats-outcome-workspace{position:relative;min-width:0;padding:30px 12px 12px;border:1px solid #253449;border-radius:12px;background:#0c141e}
+.stats-outcome-period{position:absolute;top:8px;right:12px;z-index:2;color:#8293a9;font-size:9px;text-align:right;pointer-events:none}
 .stats-outcome-canvas-wrap{position:relative;width:100%;height:400px}
 .stats-combined-outcomes .equity-canvas-wrap{height:400px;width:100%}
 .stats-indicator-dialog{width:min(620px,calc(100vw - 28px));max-height:min(80vh,760px);padding:0;border:1px solid #34445a;border-radius:14px;background:#101923;color:#e8eef7;box-shadow:0 24px 90px rgba(0,0,0,.65)}
@@ -2072,7 +2069,7 @@ body.playbook-workspace .main{
   .stats-outcome-selector{flex:1 1 calc(50% - 6px);white-space:normal}
   .stats-section-a{padding:11px}
   .stats-combined-outcomes,.stats-dashboard-section{padding:9px}
-  .stats-outcome-workspace{padding:8px}
+  .stats-outcome-workspace{padding:30px 8px 8px}
   .stats-combined-outcomes .equity-canvas-wrap,.stats-outcome-canvas-wrap{height:290px}
 }
 @media(max-width:900px){
@@ -2085,6 +2082,22 @@ body.playbook-workspace .main{
     transform:scale(var(--stats-autozoom-scale));
   }
 }
+@media(min-width:761px){
+  .page.active#page-statistics:has(#statsStatisticsView:not([hidden])){
+    display:flex;flex-direction:column;height:calc(100vh - 36px);height:calc(100dvh - 36px);min-height:0;overflow:hidden
+  }
+  .page.active#page-statistics:has(#statsStatisticsView:not([hidden]))>.page-head,
+  .page.active#page-statistics:has(#statsStatisticsView:not([hidden]))>.stats-toolbar{flex:0 0 auto}
+  #statsStatisticsView:not([hidden]){display:flex;flex:1 1 auto;min-height:0}
+  #statsStatisticsView:not([hidden])>.stats-section-a{
+    display:grid;grid-template-rows:auto auto minmax(0,1fr);flex:1 1 auto;height:auto;min-height:0;margin-bottom:0
+  }
+  .stats-section-a-workspace{min-height:0}
+  .stats-combined-outcomes{display:flex;flex-direction:column;min-height:0}
+  .stats-outcome-selectors{flex:0 0 auto}
+  .stats-outcome-workspace{display:flex;flex:1 1 auto;flex-direction:column;min-height:0;padding:30px 12px 12px}
+  .stats-combined-outcomes .equity-canvas-wrap,.stats-outcome-canvas-wrap{flex:1 1 auto;min-height:0;height:auto}
+}
 @media(min-width:761px) and (max-height:850px){
   .stats-section-a{padding:12px}
   .stats-section-a-header{margin-bottom:8px}
@@ -2095,9 +2108,7 @@ body.playbook-workspace .main{
   .stats-combined-outcomes,.stats-dashboard-section{padding:9px}
   .stats-outcome-selectors{gap:4px;margin-bottom:8px;padding-bottom:6px}
   .stats-outcome-selector{min-height:27px;padding:5px 8px}
-  .stats-outcome-workspace{padding:9px}
-  .stats-outcome-heading{margin-bottom:5px}
-  .stats-combined-outcomes .equity-canvas-wrap,.stats-outcome-canvas-wrap{height:clamp(220px,calc(100vh - 470px),330px)}
+  .stats-outcome-workspace{padding:30px 9px 9px}
 }
 @media(prefers-reduced-motion:reduce){
   .stats-indicator-card,.stats-autozoom-thumb{transition:none}
@@ -7164,13 +7175,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabComparison" data-stats-outcome="comparison" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Profit/Loss Comparison</button>
             </div>
             <div class="stats-outcome-workspace" id="statsOutcomeWorkspace" role="tabpanel" aria-labelledby="statsOutcomeTabEquity">
-              <div class="stats-outcome-heading">
-                <div>
-                  <h3 id="statsOutcomeTitle">Equity Curve</h3>
-                  <p id="equityChartDescription">Account equity after every trade in the selected period.</p>
-                </div>
-                <span class="stats-outcome-period" id="statsOutcomePeriod">—</span>
-              </div>
+              <span class="stats-outcome-period" id="statsOutcomePeriod">—</span>
               <div class="equity-canvas-wrap" id="equityCanvasWrap">
                 <canvas id="equityChart"></canvas>
               </div>
@@ -14761,11 +14766,11 @@ function renderStatisticsOutcomeChart(kind,source,series){
 }
 function renderCombinedOutcomeDiagram(series,source){
   const choices={
-    equity:{tab:'statsOutcomeTabEquity',title:'Equity Curve',description:'Account equity after every trade in the selected period.'},
-    drawdown:{tab:'statsOutcomeTabDrawdown',title:'Drawdown',description:'Peak-to-trough deterioration in verified account equity.'},
-    cumulative:{tab:'statsOutcomeTabCumulative',title:'Cumulative Net P&L',description:'Accumulated realized net P&L across trades in the selected period.'},
-    distribution:{tab:'statsOutcomeTabDistribution',title:'Trade Outcome Distribution',description:'Counts of recorded trade P&L values across equal outcome ranges.'},
-    comparison:{tab:'statsOutcomeTabComparison',title:'Profit/Loss Comparison',description:'Average realized outcome for winning trades and losing trades.'}
+    equity:{tab:'statsOutcomeTabEquity'},
+    drawdown:{tab:'statsOutcomeTabDrawdown'},
+    cumulative:{tab:'statsOutcomeTabCumulative'},
+    distribution:{tab:'statsOutcomeTabDistribution'},
+    comparison:{tab:'statsOutcomeTabComparison'}
   };
   const choice=choices[statsSelectedOutcome]||choices.equity;
   statsSelectedOutcome=statsSelectedOutcome in choices?statsSelectedOutcome:'equity';
@@ -14776,8 +14781,6 @@ function renderCombinedOutcomeDiagram(series,source){
     button.tabIndex=active?0:-1;
   });
   $('#statsOutcomeWorkspace')?.setAttribute('aria-labelledby',choice.tab);
-  setStatisticsText('statsOutcomeTitle',choice.title);
-  setStatisticsText('equityChartDescription',choice.description);
   setStatisticsText('statsOutcomePeriod',$('#statsDateRange')?.textContent||'—');
   const equityWrap=$('#equityCanvasWrap'),equityEmpty=$('#equityEmptyState');
   const chartWrap=$('#statsOutcomeCanvasWrap'),chartEmpty=$('#statsOutcomeEmpty'),unavailable=$('#statsOutcomeUnavailable');
