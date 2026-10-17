@@ -17,10 +17,7 @@
     'r-expectancy', 'qualifying-trades', 'setup-performance', 'edge-evidence-coverage',
     'execution-quality', 'rules-adherence', 'playbook-adherence', 'psychological-reflection'
   ]);
-  const DEFAULT_STATISTICS_INDICATORS = Object.freeze([
-    'net-pnl', 'period-return', 'win-rate', 'profit-factor', 'expectancy',
-    'execution-quality', 'max-drawdown'
-  ]);
+  const DEFAULT_STATISTICS_INDICATORS = Object.freeze([]);
 
   function list(value) {
     return Array.isArray(value) ? value.filter(item => item !== null && item !== undefined) : [];
