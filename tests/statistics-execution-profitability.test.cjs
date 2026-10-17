@@ -51,8 +51,9 @@ assert.match(nodes.get('statExecutionProfitInsight').textContent,/No eligible tr
 assert.ok(html.includes('const source=series.selectedTrades;'));
 assert.ok(html.includes('renderExecutionProfitability(source);'));
 assert.match(html,/async function updateTradeExecutionCompositeScore[\s\S]*?renderStatistics\(\);/);
-// All three neighboring cards keep their original IDs.
-for(const id of ['statProfitFactorDiagramTitle','statWinRateGaugeTitle','statExpectancyTitle'])assert.ok(html.includes('id="'+id+'"'));
+// Statistics can surface these measurements without duplicating the specialist research panels.
+for(const id of ["id:'profit-factor',title:'Profit Factor'","id:'win-rate',title:'Win Rate'","id:'expectancy',title:'Expectancy'","id:'execution-quality',title:'Overall Execution Quality'"])assert.ok(html.includes(id));
+assert.ok(html.includes('id="statsEdgeView"')&&html.includes('id="statsExecutionView"'));
 for(const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)){
  if(!/src=|application\/|importmap/.test(match[1]))new vm.Script(match[2]);
 }

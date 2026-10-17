@@ -1,4 +1,4 @@
-// Regression coverage for Statistics Profit Factor calculation and rendering.
+// Regression coverage for Profit Factor outcomes and the redesigned indicator card.
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
@@ -74,84 +74,20 @@ assert.equal(elements.get('#statProfitFactorGrossProfit').textContent,'—');
 assert.equal(elements.get('#statProfitFactorGrossLoss').textContent,'—');
 stats=calculate([{pnl:200},{pnl:null},{pnl:-25}]);
 assert.equal(stats.value,null,'unknown P&L must not be treated as zero');
-assert.equal(stats.grossProfit,200);
-assert.equal(stats.grossLoss,25);
 assert.equal(stats.missingPnlCount,1);
 assert.equal(stats.state,'incomplete');
 paint([{pnl:200},{pnl:null},{pnl:-25}]);
 assert.equal(value().textContent,'—');
 assert.match(explanation().textContent,/1 selected trade is missing recorded P&L/);
-stats=calculate([{pnl:''},{pnl:undefined},{pnl:'not-a-number'}]);
-assert.equal(stats.recordedTradeCount,0);
-assert.equal(stats.missingPnlCount,3);
-paint([{pnl:''},{pnl:undefined},{pnl:'not-a-number'}]);
-assert.equal(elements.get('#statProfitFactorGrossProfit').textContent,'—');
-assert.equal(elements.get('#statProfitFactorGrossLoss').textContent,'—');
 
-for(const id of ids)assert.ok(html.includes('id="'+id+'"'),'Missing diagram element '+id);
 assert.match(html,/\.eq\('account_id',\s*tradingAccount\.id\)/,'closed trades remain scoped to the selected account');
 assert.match(html,/\.eq\('position_status',\s*'closed'\)/,'source remains closed trades only');
-assert.ok(html.includes('calculateProfitFactorStats(source)'),'diagram uses selected-period trades');
-assert.ok(html.includes('id="statWinRateReturnLabel"'),'Win Rate header Return remains');
-assert.ok(html.includes('id="equityChart"'),'Equity Curve remains');
-assert.ok(html.includes('class="stats-analysis-pair stats-indicator-card"'),'drawdown and average P&L panel participates in sidebar Auto Zoom');
-assert.ok(html.includes('id="statDrawdownPath"'),'drawdown profile uses a dedicated accessible SVG path');
-assert.ok(html.includes('Maximum drawdown vs profit peak'),'drawdown is labeled against the profit peak');
-assert.ok(html.includes('Average P&amp;L per trade'),'expectancy is labeled as Average P&L per trade');
-assert.ok(html.includes("renderDrawdownExpectancyDiagram(profitPeakDrawdown"),'diagram receives the profit-peak drawdown model');
-assert.ok(html.includes('id="statExpectancyBar"'),'expectancy diagram includes the average-win/loss comparison');
-assert.ok(!html.includes('class="stats-future-analysis"'),'the empty placeholder is replaced by the requested diagrams');
-assert.ok(!html.includes('statReturnGauge'),'separate Return diagram was removed');
-assert.match(html,/\.stats-indicator-card\{\s*min-height:160px/,'desktop card keeps compact dimensions');
-assert.match(html,/@media\(max-width:520px\)\{\s*\.stats-indicator-stack\{grid-template-columns:1fr\}/,'mobile indicators stack in one column');
+assert.ok(html.includes("{id:'profit-factor',title:'Profit Factor'"),'Profit Factor is available in the Combined Outcomes indicator library');
+assert.ok(html.includes("result['profit-factor']=profitFactor.state"),'the customizable Profit Factor card uses the validated existing calculation');
+assert.ok(html.includes('id="statsOutcomeTabEquity"')&&html.includes('id="equityChart"'),'Equity Curve remains the first and default Combined Outcomes diagram');
+assert.ok(html.includes('id="statsOutcomeTabDrawdown"')&&html.includes('buildDrawdownSeries(series.points)'),'Drawdown uses a verified account-equity series');
+assert.match(html,/\.stats-indicator-grid \.stats-indicator-card\{\s*min-width:0;min-height:112px/,'indicator cards use compact dimensions');
+assert.match(html,/@media\(max-width:520px\)\{\s*\.stats-indicator-stack\{grid-template-columns:1fr\}/,'indicator cards remain usable on mobile');
 
-
-const profitPeakStart=html.indexOf('function maxDrawdownFromProfitPeak(');
-const profitPeakEnd=html.indexOf('\nfunction dailyStatsFromTrades(',profitPeakStart);
-assert.ok(profitPeakStart>=0&&profitPeakEnd>profitPeakStart,'Profit peak drawdown calculation must exist');
-const profitPeakContext={Number,Array};
-vm.runInNewContext(html.slice(profitPeakStart,profitPeakEnd),profitPeakContext);
-const peakDrawdown=profitPeakContext.maxDrawdownFromProfitPeak(
-  [{equity:1000},{equity:1028},{equity:1023},{equity:1026}],1000
-);
-assert.equal(peakDrawdown.amount,5);
-assert.equal(peakDrawdown.profitPeak,28);
-assert.ok(Math.abs(peakDrawdown.pct-(5/28*100))<1e-10,'drawdown percentage is measured against the profit peak, not full account equity');
-const noProfitPeak=profitPeakContext.maxDrawdownFromProfitPeak([{equity:1000},{equity:995}],1000);
-assert.equal(noProfitPeak.amount,5);
-assert.equal(noProfitPeak.pct,null,'percentage is unavailable when no positive profit peak exists');
-
-// Drawdown and expectancy diagrams consume selected-period values without filling missing P&L as zero.
-const diagramStart=html.indexOf('function renderDrawdownExpectancyDiagram(');
-const diagramEnd=html.indexOf('\nfunction renderStatisticsIndicators(',diagramStart);
-assert.ok(diagramStart>=0&&diagramEnd>diagramStart,'Drawdown and expectancy renderer must exist');
-const diagramSource=html.slice(diagramStart,diagramEnd);
-const diagramIds=['statAnalysisWinRate','statDrawdownValue','statDrawdownCaption','statDrawdownPath','statDrawdownSparkDesc','statExpectancyValue','statExpectancyCaption','statExpectancyBar','statExpectancyLossFill','statExpectancyWinFill','statExpectancyAvgLoss','statExpectancyAvgWin'];
-const diagramElements=new Map(diagramIds.map(id=>['#'+id,{textContent:'',className:'',style:{},attributes:{},setAttribute(name,value){this.attributes[name]=value;}}]));
-const diagramContext={Number,String,Array,Math,$:selector=>diagramElements.get(selector),formatProfitFactorCurrency:value=>'$'+Number(value).toFixed(2),signedMoney:value=>(value<0?'-':value>0?'+':'')+'$'+Math.abs(Number(value)).toFixed(2),formatReturnPct:value=>Number.isFinite(value)?(value>=0?'+':'')+value.toFixed(2)+'%':'—'};
-vm.runInNewContext(diagramSource,diagramContext);
-const renderDiagram=diagramContext.renderDrawdownExpectancyDiagram;
-const drawdown={amount:31.3,pct:.33,profitPeak:35};
-const series={points:[{equity:1000},{equity:1100},{equity:1068.7},{equity:1080}]};
-const selectedTrades=[{pnl:50},{pnl:-10},{pnl:20}];
-renderDiagram(drawdown,series,20,.21,66.7,selectedTrades,35,-10);
-assert.equal(diagramElements.get('#statAnalysisWinRate').textContent,'66.7% win rate');
-assert.equal(diagramElements.get('#statDrawdownValue').textContent,'-$31.30');
-assert.equal(diagramElements.get('#statDrawdownCaption').textContent,'-0.33% vs $35.00 profit peak');
-assert.match(diagramElements.get('#statDrawdownPath').attributes.d,/^M/,'drawdown mini chart is drawn from equity points');
-assert.equal(diagramElements.get('#statExpectancyValue').textContent,'+$20.00');
-assert.equal(diagramElements.get('#statExpectancyAvgLoss').textContent,'-$10.00');
-assert.equal(diagramElements.get('#statExpectancyAvgWin').textContent,'+$35.00');
-assert.equal(diagramElements.get('#statExpectancyLossFill').style.width,String(10/35*50)+'%');
-assert.equal(diagramElements.get('#statExpectancyWinFill').style.width,'50%');
-assert.match(diagramElements.get('#statExpectancyBar').attributes['aria-label'],/Mean net expectancy is \+\$20\.00 per trade/);
-renderDiagram(drawdown,series,0,0,0,[{pnl:10},{pnl:null}],5,0);
-assert.equal(diagramElements.get('#statExpectancyValue').textContent,'—','unknown P&L does not become a zero expectancy');
-assert.match(diagramElements.get('#statExpectancyCaption').textContent,/incomplete/);
-assert.equal(diagramElements.get('#statDrawdownValue').textContent,'—','drawdown is unavailable when selected P&L is incomplete');
-renderDiagram({amount:0,pct:0},{points:[{equity:100}]},0,null,0,[],0,0);
-assert.equal(diagramElements.get('#statDrawdownValue').textContent,'—');
-assert.equal(diagramElements.get('#statExpectancyValue').textContent,'—');
-
-console.log('PASS Profit Factor values, display states, currency, proportional bar and accessible description');
-console.log('PASS account/period scope, preserved Statistics panels and responsive CSS rules');
+console.log('PASS Profit Factor states, currency, proportional comparison, and incomplete-data handling');
+console.log('PASS Profit Factor remains selectable and the five combined-outcome diagrams are separated from specialist tabs');

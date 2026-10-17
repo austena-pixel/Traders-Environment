@@ -1960,6 +1960,93 @@ body.playbook-workspace .main{
 .stats-indicator-stack.stats-autozoom .stats-indicator-card.stats-autozoom-bottom-anchor.stats-card-zoomed{
   transform-origin:right bottom;
 }
+.stats-dashboard-section,.stats-combined-outcomes{margin-bottom:14px}
+.stats-dashboard-header,.stats-dashboard-toolbar,.stats-combined-header,.stats-outcome-heading{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;min-width:0
+}
+.stats-dashboard-header{margin-bottom:8px}
+.stats-dashboard-title,.stats-combined-header>div:first-child{min-width:0}
+.stats-dashboard-title h2,.stats-combined-header h2{margin:0;font-size:16px;line-height:1.3}
+.stats-dashboard-title p,.stats-combined-header p{margin:4px 0 0;color:#95a4b8;font-size:10px;line-height:1.5}
+.stats-dashboard-actions,.stats-dashboard-toolbar .stats-autozoom-controls{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap}
+.stats-dashboard-toolbar{align-items:center;margin:0 0 10px}
+.stats-dashboard-save-status{margin:0;color:#8293a9;font-size:9px;line-height:1.4;text-align:right}
+.stats-dashboard-actions .btn:disabled{opacity:.48;cursor:not-allowed}
+.stats-indicator-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,185px),1fr));
+  align-items:stretch;gap:9px;width:100%;height:auto;min-height:0
+}
+.stats-indicator-grid .stats-indicator-card{
+  min-width:0;min-height:112px;padding:12px;justify-content:flex-start;gap:6px;
+  border:1px solid #253449;border-radius:12px;background:#101a26
+}
+.stats-indicator-grid .stats-indicator-card.stats-card-zoomed{transform-origin:center top}
+.stats-indicator-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;min-width:0}
+.stats-indicator-card-title{margin:0;color:#d7e0ed;font-size:10px;font-weight:750;line-height:1.35;overflow-wrap:anywhere}
+.stats-indicator-source{display:block;margin-top:3px;color:#8293a9;font-size:8px;line-height:1.2}
+.stats-indicator-card-value{color:#eef4fc;font-size:21px;font-weight:750;line-height:1.1;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.stats-indicator-card-value.pos{color:#45d69a}.stats-indicator-card-value.neg{color:#ff727c}.stats-indicator-card-value.neutral{color:#eef4fc}
+.stats-indicator-card-detail{margin:0;color:#91a0b4;font-size:9px;line-height:1.4;overflow-wrap:anywhere}
+.stats-indicator-card-actions{display:flex;gap:5px;margin-top:auto;padding-top:3px}
+.stats-indicator-card-actions button{min-height:24px;padding:3px 7px;border:1px solid #31445c;border-radius:7px;background:#0c141e;color:#cbd7e7;font-size:8px;font-weight:700;cursor:pointer}
+.stats-indicator-card-actions button:hover{border-color:#527399;background:#142033}
+.stats-indicator-empty,.stats-outcome-message,.stats-outcome-unavailable{
+  margin:6px 0 0;padding:18px;border:1px dashed #31445c;border-radius:10px;
+  color:#a0afc2;background:#0c141e;font-size:11px;line-height:1.55;text-align:center
+}
+.stats-outcome-unavailable{border-style:solid;border-color:#39475a;text-align:left}
+.stats-dashboard-section{padding:15px}
+.stats-combined-outcomes{padding:16px}
+.stats-combined-header{align-items:flex-start;margin-bottom:12px}
+.stats-equity-summary{margin:0;gap:10px 20px}
+.stats-equity-summary-item{min-width:95px}
+.stats-equity-summary-item strong{font-size:15px}
+.stats-outcome-selectors{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px;padding:0 0 9px;border-bottom:1px solid #243247}
+.stats-outcome-selector{min-height:30px;padding:6px 10px;border:1px solid transparent;border-radius:8px;background:transparent;color:#97a8bd;font-size:9px;font-weight:750;cursor:pointer;white-space:nowrap}
+.stats-outcome-selector:hover{background:#121d2b;color:#d7e2f0}
+.stats-outcome-selector.active{border-color:#314b68;background:#172438;color:#dceaff}
+.stats-outcome-selector:focus-visible,.stats-indicator-card-actions button:focus-visible{outline:2px solid #69a8ff;outline-offset:2px}
+.stats-outcome-workspace{min-width:0;padding:12px;border:1px solid #253449;border-radius:12px;background:#0c141e}
+.stats-outcome-heading{align-items:flex-start;margin:0 0 8px}
+.stats-outcome-heading h3{margin:0;color:#dce6f3;font-size:12px}
+.stats-outcome-heading p{margin:4px 0 0;color:#8f9fb4;font-size:9px;line-height:1.45}
+.stats-outcome-period{flex:0 0 auto;color:#8293a9;font-size:9px;text-align:right}
+.stats-outcome-canvas-wrap{position:relative;width:100%;height:380px}
+.stats-combined-outcomes .equity-canvas-wrap{height:380px;width:100%}
+.stats-indicator-dialog{width:min(620px,calc(100vw - 28px));max-height:min(80vh,760px);padding:0;border:1px solid #34445a;border-radius:14px;background:#101923;color:#e8eef7;box-shadow:0 24px 90px rgba(0,0,0,.65)}
+.stats-indicator-dialog::backdrop{background:rgba(2,6,12,.72);backdrop-filter:blur(3px)}
+.stats-indicator-dialog form{display:flex;max-height:min(80vh,760px);flex-direction:column}
+.stats-indicator-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px;border-bottom:1px solid #26364a}
+.stats-indicator-dialog-head h2{margin:0;font-size:15px}
+.stats-indicator-dialog-head p{margin:4px 0 0;color:#91a1b5;font-size:10px}
+.stats-indicator-options{overflow:auto;padding:12px 16px}
+.stats-indicator-group{margin:0 0 12px;padding:0;border:0}
+.stats-indicator-group legend{margin:0 0 6px;color:#9cb0ca;font-size:9px;font-weight:800;letter-spacing:.45px;text-transform:uppercase}
+.stats-indicator-option{display:flex;align-items:flex-start;gap:9px;padding:9px;border:1px solid #243247;border-radius:8px;background:#0d151f;cursor:pointer}
+.stats-indicator-option+.stats-indicator-option{margin-top:5px}
+.stats-indicator-option input{margin:2px 0 0;accent-color:#69a8ff}
+.stats-indicator-option span{display:grid;gap:3px;min-width:0}
+.stats-indicator-option strong{font-size:10px}
+.stats-indicator-option small{color:#8495aa;font-size:9px;line-height:1.35}
+.stats-indicator-option.is-selected{opacity:.58;cursor:default}
+.stats-indicator-option.is-disabled{opacity:.5;cursor:not-allowed}
+.stats-indicator-dialog-actions{display:flex;justify-content:flex-end;gap:7px;padding:12px 16px;border-top:1px solid #26364a}
+@media(max-width:760px){
+  .stats-dashboard-header,.stats-dashboard-toolbar,.stats-combined-header{flex-direction:column;align-items:stretch}
+  .stats-dashboard-actions,.stats-dashboard-toolbar .stats-autozoom-controls{justify-content:flex-start}
+  .stats-dashboard-save-status{text-align:left}
+  .stats-equity-summary{justify-content:flex-start}
+  .stats-combined-outcomes .equity-canvas-wrap,.stats-outcome-canvas-wrap{height:320px}
+}
+@media(max-width:480px){
+  .stats-indicator-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .stats-indicator-grid .stats-indicator-card{min-height:104px;padding:10px}
+  .stats-indicator-card-value{font-size:18px}
+  .stats-outcome-selector{flex:1 1 calc(50% - 6px);white-space:normal}
+  .stats-combined-outcomes{padding:12px}
+  .stats-outcome-workspace{padding:8px}
+  .stats-combined-outcomes .equity-canvas-wrap,.stats-outcome-canvas-wrap{height:270px}
+}
 @media(max-width:900px){
   .stats-indicator-stack{--stats-autozoom-scale:1.22}
   .stats-indicator-stack.stats-autozoom .stats-indicator-card.stats-card-zoomed{transform:scale(var(--stats-autozoom-scale))}
@@ -7013,102 +7100,79 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
       <div class="stats-view-panel" id="statsStatisticsView" role="tabpanel" aria-labelledby="statsStatisticsTab">
 
-      <section class="panel chart-panel">
-        <div class="chart-panel-head">
-          <div class="stats-equity-heading">
-            <h3>Equity Curve</h3>
-            <p id="equityChartDescription">Account equity after every trade in the selected period.</p>
-            <div class="stats-equity-summary" role="group" aria-label="Selected-period equity performance">
-              <div class="stats-equity-summary-item">
-                <span>Current Balance</span>
-                <strong id="statEquityHeaderEnding" aria-live="polite">—</strong>
-              </div>
-              <div class="stats-equity-summary-item">
-                <span>Net P&amp;L</span>
-                <strong id="statEquityHeaderNetPnl" class="neutral" aria-live="polite">—</strong>
-              </div>
-            </div>
+      <section class="panel stats-dashboard-section" aria-labelledby="statsIndicatorsHeading">
+        <div class="stats-dashboard-header">
+          <div class="stats-dashboard-title">
+            <h2 id="statsIndicatorsHeading">My Indicators</h2>
+            <p>Choose a concise view of combined outcomes, methodology evidence and execution quality.</p>
           </div>
-          <div class="stats-autozoom-controls" role="group" aria-label="Analytics sidebar zoom controls">
-            <button class="stats-autozoom-toggle" id="statsAutoZoomBtn" type="button" aria-pressed="true" aria-controls="statsIndicatorStack" title="Automatically zoom an analytics section when hovered or focused">
+          <div class="stats-dashboard-actions">
+            <button class="btn small" id="statsAddIndicator" type="button">Add Indicator</button>
+            <button class="btn small" id="statsArrangeIndicators" type="button" aria-pressed="false">Arrange</button>
+            <button class="btn small" id="statsSaveIndicators" type="button" disabled>Save Layout</button>
+            <button class="btn small" id="statsResetIndicators" type="button">Reset Layout</button>
+          </div>
+        </div>
+        <div class="stats-dashboard-toolbar">
+          <div class="stats-autozoom-controls" role="group" aria-label="Indicator card zoom controls">
+            <button class="stats-autozoom-toggle" id="statsAutoZoomBtn" type="button" aria-pressed="true" aria-controls="statsIndicatorStack" title="Automatically zoom an indicator when hovered or focused">
               <span>Auto Zoom</span>
               <span class="stats-autozoom-track" aria-hidden="true"><span class="stats-autozoom-thumb"></span></span>
               <strong class="stats-autozoom-state" id="statsAutoZoomState">ON</strong>
             </button>
             <label class="stats-autozoom-zoom" for="statsAutoZoomRange">
               <span>Zoom</span>
-              <input id="statsAutoZoomRange" type="range" min="100" max="150" step="1" value="125" aria-label="Auto Zoom magnification" aria-controls="statsIndicatorStack" aria-valuetext="125%" title="Adjust how far Auto Zoom enlarges a section; the maximum follows the current zoom limit">
+              <input id="statsAutoZoomRange" type="range" min="100" max="150" step="1" value="125" aria-label="Auto Zoom magnification" aria-controls="statsIndicatorStack" aria-valuetext="125%" title="Adjust how far Auto Zoom enlarges a card; the maximum follows the current zoom limit">
               <output id="statsAutoZoomValue" for="statsAutoZoomRange" aria-live="polite">125%</output>
             </label>
           </div>
+          <p class="stats-dashboard-save-status" id="statsIndicatorSaveStatus" role="status" aria-live="polite">Layout changes are saved to your account when you choose Save Layout.</p>
         </div>
+        <div class="stats-indicator-stack stats-indicator-grid stats-autozoom" id="statsIndicatorStack" aria-label="Selected-period indicators"></div>
+        <p class="stats-indicator-empty hidden" id="statsIndicatorEmpty">No indicators selected. Use Add Indicator to choose the measurements you want.</p>
+      </section>
 
-        <div class="stats-visuals-layout">
-          <div class="stats-equity-column">
-            <div class="equity-canvas-wrap" id="equityCanvasWrap">
-              <canvas id="equityChart"></canvas>
+      <section class="panel chart-panel stats-combined-outcomes" aria-labelledby="statsCombinedOutcomesHeading">
+        <div class="stats-combined-header">
+          <div>
+            <h2 id="statsCombinedOutcomesHeading">Combined Outcomes</h2>
+            <p>Realized results reflect the combined effects of methodology, execution, market conditions and trading costs.</p>
+          </div>
+          <div class="stats-equity-summary" role="group" aria-label="Selected-period account outcomes">
+            <div class="stats-equity-summary-item">
+              <span>Ending Equity</span>
+              <strong id="statEquityHeaderEnding" aria-live="polite">—</strong>
             </div>
-
-            <div class="stats-empty hidden" id="equityEmptyState" style="min-height:160px">
-              No trades were recorded in this selected period.
+            <div class="stats-equity-summary-item">
+              <span>Net P&amp;L</span>
+              <strong id="statEquityHeaderNetPnl" class="neutral" aria-live="polite">—</strong>
             </div>
           </div>
-
-          <aside class="stats-indicator-stack stats-autozoom" id="statsIndicatorStack" aria-label="Selected-period indicators">
-            <section class="stats-indicator-card stats-profit-factor-card" tabindex="0" aria-labelledby="statProfitFactorDiagramTitle">
-              <div class="stats-indicator-head"><div>
-                <h4 id="statProfitFactorDiagramTitle">Profit Factor</h4>
-                <span class="stats-indicator-caption">Gross profit ÷ gross loss</span>
-              </div></div>
-              <div class="stats-indicator-value neutral stats-profit-factor-value" id="statProfitFactorDiagramValue" aria-live="polite">—</div>
-              <p class="stats-profit-factor-explanation" id="statProfitFactorExplanation" aria-live="polite">Record closed trades with P&amp;L to calculate profit factor.</p>
-              <div class="stats-profit-factor-bar" id="statProfitFactorBar" role="img" aria-label="Gross profit and gross loss comparison">
-                <span class="stats-profit-factor-segment stats-profit-factor-profit" id="statProfitFactorProfitFill" aria-hidden="true"></span>
-                <span class="stats-profit-factor-segment stats-profit-factor-loss" id="statProfitFactorLossFill" aria-hidden="true"></span>
-              </div>
-              <div class="stats-profit-factor-totals">
-                <div class="profit"><span>Gross profit</span><strong id="statProfitFactorGrossProfit">—</strong></div>
-                <div class="loss"><span>Gross loss</span><strong id="statProfitFactorGrossLoss">—</strong></div>
-              </div>
-            </section>
-
-            <section class="stats-indicator-card" tabindex="0" aria-labelledby="statWinRateGaugeTitle">
-              <div class="stats-indicator-head">
-                <h4 id="statWinRateGaugeTitle">Win rate</h4>
-                <span class="stats-win-return neutral" id="statWinRateReturnLabel">— return</span>
-              </div>
-              <svg class="stats-win-gauge" id="statWinRateGauge" viewBox="0 0 200 120" role="img" aria-label="Win rate indicator">
-                <path class="stats-win-arc stats-win-track" d="M 20 100 A 80 80 0 0 1 180 100" pathLength="100"></path>
-                <path class="stats-win-arc stats-win-progress" id="statWinRateGaugeProgress" d="M 20 100 A 80 80 0 0 1 180 100" pathLength="100" stroke-dasharray="0 100"></path>
-                <g id="statWinRateGaugeNeedle" transform="rotate(-90 100 100)">
-                  <line class="stats-win-needle" x1="100" y1="100" x2="100" y2="31"></line>
-                </g>
-                <circle class="stats-win-pivot" cx="100" cy="100" r="5"></circle>
-              </svg>
-              <div class="stats-win-value">
-                <div class="stats-indicator-value neutral" id="statWinRateGaugeValue">—</div>
-                <p class="stats-win-count" id="statWinRateGaugeCount">No trades in this period.</p>
-              </div>
-            </section>
-
-                <section class="stats-analysis-module stats-indicator-card stats-autozoom-bottom-anchor" tabindex="0" aria-labelledby="statExpectancyTitle">
-                  <div class="stats-analysis-title-row">
-                    <h4 id="statExpectancyTitle">Average P&amp;L per trade</h4>
-                    <span class="stats-analysis-kicker">PER TRADE</span>
-                  </div>
-                  <strong class="stats-analysis-value neutral" id="statExpectancyValue">—</strong>
-                  <div class="stats-expectancy-labels">
-                    <span><small>Average loss</small><strong class="neg" id="statExpectancyAvgLoss">—</strong></span>
-                    <span><small>Average profit</small><strong class="pos" id="statExpectancyAvgWin">—</strong></span>
-                  </div>
-                  <div class="stats-expectancy-bar" id="statExpectancyBar" role="img" aria-label="Average win and loss comparison unavailable.">
-                    <span class="stats-expectancy-loss" id="statExpectancyLossFill"></span>
-                    <span class="stats-expectancy-zero"></span>
-                    <span class="stats-expectancy-win" id="statExpectancyWinFill"></span>
-                  </div>
-                  <span class="stats-analysis-caption" id="statExpectancyCaption">Average trade return unavailable.</span>
-                </section>
-          </aside>
+        </div>
+        <div class="stats-outcome-selectors" role="tablist" aria-label="Combined outcome diagrams">
+          <button class="stats-outcome-selector active" type="button" role="tab" id="statsOutcomeTabEquity" data-stats-outcome="equity" aria-selected="true" aria-controls="statsOutcomeWorkspace">Equity Curve</button>
+          <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabDrawdown" data-stats-outcome="drawdown" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Drawdown</button>
+          <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabCumulative" data-stats-outcome="cumulative" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Cumulative P&amp;L</button>
+          <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabDistribution" data-stats-outcome="distribution" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Trade Distribution</button>
+          <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabComparison" data-stats-outcome="comparison" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Profit/Loss Comparison</button>
+        </div>
+        <div class="stats-outcome-workspace" id="statsOutcomeWorkspace" role="tabpanel" aria-labelledby="statsOutcomeTabEquity">
+          <div class="stats-outcome-heading">
+            <div>
+              <h3 id="statsOutcomeTitle">Equity Curve</h3>
+              <p id="equityChartDescription">Account equity after every trade in the selected period.</p>
+            </div>
+            <span class="stats-outcome-period" id="statsOutcomePeriod">—</span>
+          </div>
+          <div class="equity-canvas-wrap" id="equityCanvasWrap">
+            <canvas id="equityChart"></canvas>
+          </div>
+          <div class="stats-outcome-canvas-wrap hidden" id="statsOutcomeCanvasWrap">
+            <canvas id="statsOutcomeChart"></canvas>
+          </div>
+          <div class="stats-outcome-message hidden" id="equityEmptyState">No trades were recorded in this selected period.</div>
+          <div class="stats-outcome-message hidden" id="statsOutcomeEmpty"></div>
+          <div class="stats-outcome-unavailable hidden" id="statsOutcomeUnavailable" role="status" aria-live="polite"></div>
         </div>
       </section>
 
@@ -7194,6 +7258,20 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
         </section>
       </div>
       </div>
+
+      <dialog class="stats-indicator-dialog" id="statsIndicatorDialog" aria-labelledby="statsIndicatorDialogTitle">
+        <form method="dialog" id="statsIndicatorDialogForm">
+          <header class="stats-indicator-dialog-head">
+            <div><h2 id="statsIndicatorDialogTitle">Add Indicators</h2><p>Select measurements to add to My Indicators.</p></div>
+            <button class="btn small" type="button" id="statsIndicatorDialogClose" aria-label="Close indicator selection">Close</button>
+          </header>
+          <div class="stats-indicator-options" id="statsIndicatorOptions"></div>
+          <footer class="stats-indicator-dialog-actions">
+            <button class="btn small" type="button" id="statsIndicatorDialogCancel">Cancel</button>
+            <button class="btn primary small" type="submit" id="statsIndicatorDialogAdd">Add Selected</button>
+          </footer>
+        </form>
+      </dialog>
 
       <section class="stats-view-panel panel stats-edge-view" id="statsEdgeView" role="tabpanel" aria-labelledby="statsEdgeTab" hidden>
         <div class="stats-environment-heading">
@@ -8618,7 +8696,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 <script src="technical-instruments/ai-builder-schema.js"></script>
 <script src="technical-instruments/condition-logic.js"></script>
 <script src="technical-instruments/ai-builder-document.js"></script>
-<script src="core/statistics-environments.js?v=20261017-three-environments"></script>
+<script src="core/statistics-environments.js?v=20261017-custom-statistics-dashboard"></script>
 <script>
 /* =========================================================
    SUPABASE CONFIGURATION
@@ -8660,7 +8738,28 @@ let selectedEdgeTradeId = null;
 
 const STATS_RANGE_PREFERENCE_KEY = 'tios_statistics_selected_range_v1';
 const STATS_AUTOZOOM_PREFERENCE_KEY = 'tios_statistics_autozoom_percent_v1';
+const STATS_INDICATOR_PREFERENCE_KEY = 'tios_statistics_indicators_v1';
 const STATS_RANGE_OPTIONS = Object.freeze(['1d', '1w', '1m', '6m', '1y', 'all']);
+const STATISTICS_INDICATOR_CATALOG = Object.freeze([
+  {id:'net-pnl',title:'Net P&L',group:'Combined Outcomes',description:'Recorded realized net P&L for the selected period.'},
+  {id:'period-return',title:'Period Return',group:'Combined Outcomes',description:'Realized P&L divided by verified opening equity for this period.'},
+  {id:'win-rate',title:'Win Rate',group:'Combined Outcomes',description:'Winning trades divided by trades with complete recorded P&L.'},
+  {id:'profit-factor',title:'Profit Factor',group:'Combined Outcomes',description:'Gross profit divided by gross loss for complete P&L records.'},
+  {id:'avg-pnl-trade',title:'Average P&L per Trade',group:'Combined Outcomes',description:'Mean realized net P&L across the selected trades.'},
+  {id:'current-balance',title:'Current Balance',group:'Combined Outcomes',description:'Verified starting balance plus complete recorded trade P&L.'},
+  {id:'avg-profit',title:'Average Profit',group:'Combined Outcomes',description:'Mean P&L among winning trades.'},
+  {id:'avg-loss',title:'Average Loss',group:'Combined Outcomes',description:'Mean P&L among losing trades.'},
+  {id:'max-drawdown',title:'Maximum Drawdown',group:'Combined Outcomes',description:'Largest peak-to-trough decline from verified account equity.'},
+  {id:'expectancy',title:'Expectancy',group:'Edge Performance',description:'Existing validated expectancy: R when every selected trade has verified risk data; otherwise monetary expectancy.'},
+  {id:'r-expectancy',title:'R-Multiple Expectancy',group:'Edge Performance',description:'Mean R multiple when all selected trades have validated risk basis, risk amount and R multiple.'},
+  {id:'qualifying-trades',title:'Qualifying Trade Count',group:'Edge Performance',description:'Trades that qualify for the displayed validated expectancy measure.'},
+  {id:'setup-performance',title:'Setup Performance',group:'Edge Performance',description:'Best recorded setup by average realized P&L, when its P&L sample is complete.'},
+  {id:'edge-evidence-coverage',title:'Edge Evidence Coverage',group:'Edge Performance',description:'Share of selected trades with a recorded setup label.'},
+  {id:'execution-quality',title:'Overall Execution Quality',group:'Execution Quality',description:'Mean recorded execution assessment; unreviewed trades are excluded.'},
+  {id:'rules-adherence',title:'Rules Adherence',group:'Execution Quality',description:'Mean mapped Rules evidence from recorded execution reviews.'},
+  {id:'playbook-adherence',title:'Playbook Adherence',group:'Execution Quality',description:'Mean mapped Playbook evidence from recorded execution reviews.'},
+  {id:'psychological-reflection',title:'Psychological Reflection',group:'Execution Quality',description:'Mean mapped reflection evidence from recorded execution reviews.'}
+]);
 
 function loadStatsAutoZoomPreference(){
   try{
@@ -8705,7 +8804,14 @@ let statsRange = loadStatsRangePreference();
 let statsAutoZoom = true;
 let statsAutoZoomPercent = loadStatsAutoZoomPreference();
 let statsAnchorDate = new Date();
+let statsIndicatorIds = [...(window.TIOSStatisticsEnvironments?.DEFAULT_STATISTICS_INDICATORS||[])];
+let statsIndicatorDraft = [...statsIndicatorIds];
+let statsIndicatorLayoutDirty = false;
+let statsArrangeMode = false;
+let statsSelectedOutcome = 'equity';
+let lastStatisticsIndicatorSnapshot = null;
 let equityChartInstance = null;
+let statsOutcomeChartInstance = null;
 let statsEdgeTimelineInstance = null;
 let statsExecutionTrendInstance = null;
 let tradeSetupEvidenceMetadata = [];
@@ -9394,6 +9500,9 @@ async function initializeSupabase(){
       chartCapture.reset();
       chartWorkspace.reset();
       currentUser = null;
+      statsIndicatorIds=[...(statsAnalytics()?.DEFAULT_STATISTICS_INDICATORS||[])];
+      statsIndicatorDraft=[...statsIndicatorIds];
+      statsIndicatorLayoutDirty=false;
       window.location.replace('index.html?view=home');
       return;
     }
@@ -9451,6 +9560,7 @@ $('#loginForm').addEventListener('submit', async e=>{
 
 async function enterApp(user){
   currentUser=user;
+  loadStatisticsIndicatorLayout(user);
 
   const email=user.email || 'Signed in';
   const sideUserEmail=$('#sideUserEmail');
@@ -14301,10 +14411,10 @@ function tradesInDateRange(start,end){
 
 function pnlBeforeDate(start){
   const startKey=localDateString(start);
-
-  return trades
-    .filter(t=>t.trade_date<startKey)
-    .reduce((sum,t)=>sum+(Number(t.pnl)||0),0);
+  const before=trades.filter(t=>t.trade_date<startKey);
+  if(!before.length)return 0;
+  const summary=statsAnalytics()?.summarizePnl(before);
+  return summary?.complete?summary.netPnl:null;
 }
 
 function buildDailyEquitySeries(start,end){
@@ -14319,8 +14429,23 @@ function buildDailyEquitySeries(start,end){
       );
     });
 
-  const base=Number(tradingAccount?.starting_balance||0);
+  const rawBase=tradingAccount?.starting_balance;
+  const base=rawBase!==null&&rawBase!==undefined&&String(rawBase).trim()!==''?Number(rawBase):NaN;
+  const actualOpeningBalance=Number.isFinite(base)&&base>0;
+  const endKey=localDateString(end);
+  const historyThroughEnd=trades.filter(trade=>!trade.trade_date||trade.trade_date<=endKey);
+  const historySummary=statsAnalytics()?.summarizePnl(historyThroughEnd)||{complete:false,netPnl:null,missingPnlCount:historyThroughEnd.length};
+  const historyComplete=!historyThroughEnd.length||historySummary.complete;
   const priorPnl=pnlBeforeDate(start);
+  const selectedSummary=statsAnalytics()?.summarizePnl(selected)||{complete:false,missingPnlCount:selected.length};
+  const selectedComplete=!selected.length||selectedSummary.complete;
+  const equityAvailable=actualOpeningBalance&&historyComplete&&priorPnl!==null&&selectedComplete;
+  const unavailableReason=!actualOpeningBalance
+    ? 'Equity and drawdown need a verified opening balance above zero.'
+    : !historyComplete
+      ? `Equity and drawdown need complete P&L history; ${historySummary.missingPnlCount} trade${historySummary.missingPnlCount===1?' is':'s are'} missing recorded P&L.`
+      : null;
+  if(!equityAvailable)return{points:[],openingEquity:null,selectedTrades:selected,equityAvailable:false,unavailableReason};
   const openingEquity=base+priorPnl;
   let equity=openingEquity;
 
@@ -14337,7 +14462,7 @@ function buildDailyEquitySeries(start,end){
   }];
 
   selected.forEach((trade,index)=>{
-    const tradePnl=Number(trade.pnl)||0;
+    const tradePnl=Number(trade.pnl);
     equity+=tradePnl;
 
     points.push({
@@ -14356,7 +14481,9 @@ function buildDailyEquitySeries(start,end){
   return {
     points,
     openingEquity,
-    selectedTrades:selected
+    selectedTrades:selected,
+    equityAvailable:true,
+    unavailableReason:null
   };
 }
 
@@ -14429,22 +14556,13 @@ function renderEquityChart(series){
   }
 
   const canvas=$('#equityChart');
-  const wrap=$('#equityCanvasWrap');
-  const empty=$('#equityEmptyState');
-
-  if(!series.selectedTrades.length){
+  if(!series.equityAvailable||!series.selectedTrades.length){
     if(equityChartInstance){
       equityChartInstance.destroy();
       equityChartInstance=null;
     }
-
-    wrap.classList.add('hidden');
-    empty.classList.remove('hidden');
     return;
   }
-
-  wrap.classList.remove('hidden');
-  empty.classList.add('hidden');
 
   if(equityChartInstance){
     equityChartInstance.destroy();
@@ -14591,6 +14709,183 @@ function renderEquityChart(series){
       }
     }
   });
+}
+
+function destroyStatisticsOutcomeChart(){
+  if(statsOutcomeChartInstance){statsOutcomeChartInstance.destroy();statsOutcomeChartInstance=null;}
+}
+function renderStatisticsOutcomeChart(kind,source,series){
+  const analytics=statsAnalytics();
+  if(typeof Chart==='undefined')return{error:'The chart renderer did not load.'};
+  if(statsOutcomeChartInstance){statsOutcomeChartInstance.destroy();statsOutcomeChartInstance=null;}
+  let labels=[],values=[],records=[],datasetLabel='',chartType='line',color='#69a8ff';
+  let tooltipLabel=null,tooltipTitle=null,yTitle='P&L';
+  if(kind==='drawdown'){
+    if(!series.equityAvailable)return{error:series.unavailableReason||'Verified account equity is not available.'};
+    const drawdown=analytics?.buildDrawdownSeries(series.points);
+    if(!drawdown?.complete)return{error:'Complete verified equity data is needed to calculate drawdown.'};
+    records=drawdown.points;
+    labels=records.map(point=>point.label);
+    values=records.map(point=>point.drawdown);
+    datasetLabel='Peak-to-trough drawdown';
+    color='#ef8b95';
+    tooltipTitle=items=>{
+      const point=records[items[0]?.dataIndex||0];
+      return `${point.label} · ${point.date?formatDate(point.date):'Opening equity'}`;
+    };
+    tooltipLabel=context=>{
+      const point=records[context.dataIndex];
+      return [`Drawdown: ${money(point.drawdown)}`,`Peak equity: ${money(point.peakEquity)}`,Number.isFinite(point.drawdownPct)?`Peak-to-trough: ${point.drawdownPct.toFixed(2)}%`:'Peak-to-trough percentage unavailable.'];
+    };
+    yTitle='Drawdown';
+  }else if(kind==='cumulative'){
+    const cumulative=analytics?.buildCumulativePnlSeries(source);
+    if(!cumulative?.complete)return{error:source.length?'Cumulative P&L needs complete recorded P&L for every selected trade.':'No trades were recorded in this selected period.'};
+    records=cumulative.points;
+    labels=records.map(point=>point.label);
+    values=records.map(point=>point.cumulativePnl);
+    datasetLabel='Cumulative realized net P&L';
+    color='#62c99a';
+    tooltipTitle=items=>{
+      const point=records[items[0]?.dataIndex||0];
+      return point.trade?`${point.label} · ${formatDate(point.date)}`:'Selected-period start';
+    };
+    tooltipLabel=context=>{
+      const point=records[context.dataIndex];
+      return point.trade
+        ? [`Trade P&L: ${signedMoney(Number(point.trade.pnl))}`,`Cumulative net P&L: ${signedMoney(point.cumulativePnl)}`]
+        : `Cumulative net P&L: ${signedMoney(point.cumulativePnl)}`;
+    };
+  }else if(kind==='distribution'){
+    const distribution=analytics?.buildTradeOutcomeDistribution(source,8);
+    if(!distribution?.complete)return{error:source.length?'Trade distribution needs complete recorded P&L for every selected trade.':'No trades were recorded in this selected period.'};
+    if(!distribution.bins.length)return{error:'No trades were recorded in this selected period.'};
+    records=distribution.bins;
+    labels=records.map(bin=>records.length===1?money(bin.min):`${money(bin.min)} – ${money(bin.max)}`);
+    values=records.map(bin=>bin.count);
+    datasetLabel='Trade count by realized P&L range';
+    chartType='bar';
+    color='#829fc6';
+    tooltipLabel=context=>{
+      const bin=records[context.dataIndex];
+      return [`Trades: ${bin.count}`,bin.min===bin.max?`Outcome: ${money(bin.min)}`:`P&L range: ${money(bin.min)} to ${money(bin.max)}`];
+    };
+    yTitle='Trades';
+  }else if(kind==='comparison'){
+    const summary=analytics?.summarizeProfitLoss(source);
+    if(!summary?.complete)return{error:source.length?'Profit/loss comparison needs complete recorded P&L for every selected trade.':'No trades were recorded in this selected period.'};
+    if(!summary.wins&&!summary.losses)return{error:'No winning or losing outcomes were recorded in this selected period.'};
+    records=[{count:summary.wins},{count:summary.losses}];
+    labels=['Average winning trade','Average losing trade'];
+    values=[summary.averageWin,summary.averageLoss];
+    datasetLabel='Average realized trade P&L';
+    chartType='bar';
+    color=['#45c98d','#ed7b85'];
+    tooltipLabel=context=>{
+      const entry=records[context.dataIndex];
+      const outcome=context.dataIndex===0?'winning':'losing';
+      return [`Average P&L: ${signedMoney(context.parsed.y)}`,`${entry.count} ${outcome} trade${entry.count===1?'':'s'}`];
+    };
+  }else{
+    return{error:'Select a combined outcome diagram.'};
+  }
+  const canvas=$('#statsOutcomeChart');
+  if(!canvas)return{error:'The outcome chart area is unavailable.'};
+  statsOutcomeChartInstance=new Chart(canvas.getContext('2d'),{
+    type:chartType,
+    data:{labels,datasets:[{
+      label:datasetLabel,
+      data:values,
+      borderColor:color,
+      backgroundColor:chartType==='bar'?Array.isArray(color)?color:color+'bb':color,
+      borderWidth:2,
+      pointRadius:values.length<=35?2.5:0,
+      pointHoverRadius:5,
+      tension:0,
+      fill:false,
+      spanGaps:false
+    }]},
+    options:{
+      responsive:true,maintainAspectRatio:false,animation:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{
+          title:tooltipTitle,
+          label:tooltipLabel
+        }}
+      },
+      scales:{
+        x:{grid:{color:'rgba(118,136,160,.08)'},ticks:{color:'#9aa9bd',autoSkip:true,maxTicksLimit:18,maxRotation:0}},
+        y:{beginAtZero:true,grid:{color:'rgba(118,136,160,.10)'},title:{display:true,text:yTitle,color:'#aab8ca'},ticks:{color:'#9aa9bd',callback:value=>kind==='distribution'?value:'$'+Number(value).toLocaleString(undefined,{maximumFractionDigits:2})}}
+      }
+    }
+  });
+  canvas.setAttribute('aria-label',datasetLabel+' for the selected reporting period.');
+  return{chart:statsOutcomeChartInstance};
+}
+function renderCombinedOutcomeDiagram(series,source){
+  const choices={
+    equity:{tab:'statsOutcomeTabEquity',title:'Equity Curve',description:'Account equity after every trade in the selected period.'},
+    drawdown:{tab:'statsOutcomeTabDrawdown',title:'Drawdown',description:'Peak-to-trough deterioration in verified account equity.'},
+    cumulative:{tab:'statsOutcomeTabCumulative',title:'Cumulative Net P&L',description:'Accumulated realized net P&L across trades in the selected period.'},
+    distribution:{tab:'statsOutcomeTabDistribution',title:'Trade Outcome Distribution',description:'Counts of recorded trade P&L values across equal outcome ranges.'},
+    comparison:{tab:'statsOutcomeTabComparison',title:'Profit/Loss Comparison',description:'Average realized outcome for winning trades and losing trades.'}
+  };
+  const choice=choices[statsSelectedOutcome]||choices.equity;
+  statsSelectedOutcome=statsSelectedOutcome in choices?statsSelectedOutcome:'equity';
+  $$('[data-stats-outcome]').forEach(button=>{
+    const active=button.dataset.statsOutcome===statsSelectedOutcome;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-selected',String(active));
+    button.tabIndex=active?0:-1;
+  });
+  $('#statsOutcomeWorkspace')?.setAttribute('aria-labelledby',choice.tab);
+  setStatisticsText('statsOutcomeTitle',choice.title);
+  setStatisticsText('equityChartDescription',choice.description);
+  setStatisticsText('statsOutcomePeriod',$('#statsDateRange')?.textContent||'—');
+  const equityWrap=$('#equityCanvasWrap'),equityEmpty=$('#equityEmptyState');
+  const chartWrap=$('#statsOutcomeCanvasWrap'),chartEmpty=$('#statsOutcomeEmpty'),unavailable=$('#statsOutcomeUnavailable');
+  [equityWrap,equityEmpty,chartWrap,chartEmpty,unavailable].forEach(node=>node?.classList.add('hidden'));
+  if(statsSelectedOutcome==='equity'){
+    destroyStatisticsOutcomeChart();
+    if(!source.length){
+      equityEmpty?.classList.remove('hidden');
+      if(equityChartInstance){equityChartInstance.destroy();equityChartInstance=null;}
+      return;
+    }
+    if(!series.equityAvailable){
+      setStatisticsText('statsOutcomeUnavailable',series.unavailableReason||'Verified account equity is not available.');
+      unavailable?.classList.remove('hidden');
+      if(equityChartInstance){equityChartInstance.destroy();equityChartInstance=null;}
+      return;
+    }
+    if(typeof Chart==='undefined'){
+      setStatisticsText('statsOutcomeUnavailable','The chart renderer did not load. Reload the page to try again.');
+      unavailable?.classList.remove('hidden');
+      return;
+    }
+    equityWrap?.classList.remove('hidden');
+    renderEquityChart(series);
+    requestAnimationFrame(()=>equityChartInstance?.resize());
+    return;
+  }
+  if(equityChartInstance){equityChartInstance.destroy();equityChartInstance=null;}
+  if(statsSelectedOutcome==='drawdown'&&!series.equityAvailable){
+    setStatisticsText('statsOutcomeUnavailable',series.unavailableReason||'Verified account equity is not available.');
+    unavailable?.classList.remove('hidden');
+    return;
+  }
+  const rendered=renderStatisticsOutcomeChart(statsSelectedOutcome,source,series);
+  if(rendered.error){
+    const noTrades=!source.length&&['cumulative','distribution','comparison'].includes(statsSelectedOutcome);
+    const emptyMessage=rendered.error;
+    if(noTrades){setStatisticsText('statsOutcomeEmpty',emptyMessage);chartEmpty?.classList.remove('hidden');}
+    else{setStatisticsText('statsOutcomeUnavailable',emptyMessage);unavailable?.classList.remove('hidden');}
+    return;
+  }
+  chartWrap?.classList.remove('hidden');
+  requestAnimationFrame(()=>statsOutcomeChartInstance?.resize());
 }
 
 function renderInstrumentStats(sourceTrades){
@@ -14819,6 +15114,98 @@ function renderExecutionProfitability(source){
 function statsAnalytics(){
   return window.TIOSStatisticsEnvironments||null;
 }
+function normalizedStatisticsIndicatorIds(value){
+  const analytics=statsAnalytics();
+  return analytics?analytics.normalizeStatisticsIndicatorIds(value):[];
+}
+function loadStatisticsIndicatorLayout(user){
+  const metadata=user?.user_metadata||{};
+  const configured=Object.prototype.hasOwnProperty.call(metadata,STATS_INDICATOR_PREFERENCE_KEY)
+    ? metadata[STATS_INDICATOR_PREFERENCE_KEY]
+    : undefined;
+  statsIndicatorIds=normalizedStatisticsIndicatorIds(configured);
+  statsIndicatorDraft=[...statsIndicatorIds];
+  statsIndicatorLayoutDirty=false;
+  statsArrangeMode=false;
+  const arrangeButton=$('#statsArrangeIndicators');
+  if(arrangeButton){arrangeButton.setAttribute('aria-pressed','false');arrangeButton.textContent='Arrange'}
+  const saveButton=$('#statsSaveIndicators');
+  if(saveButton)saveButton.disabled=true;
+  setStatisticsText('statsIndicatorSaveStatus','Layout changes are saved to your account when you choose Save Layout.');
+}
+function updateStatisticsIndicatorDraft(ids){
+  statsIndicatorDraft=normalizedStatisticsIndicatorIds(ids);
+  statsIndicatorLayoutDirty=JSON.stringify(statsIndicatorDraft)!==JSON.stringify(statsIndicatorIds);
+  const saveButton=$('#statsSaveIndicators');
+  if(saveButton)saveButton.disabled=!statsIndicatorLayoutDirty;
+  setStatisticsText('statsIndicatorSaveStatus',statsIndicatorLayoutDirty
+    ? 'Unsaved layout changes. Save Layout to keep them across sessions.'
+    : 'Layout changes are saved to your account when you choose Save Layout.');
+  renderStatisticsIndicatorCards();
+}
+function renderStatisticsIndicatorDialogOptions(){
+  const container=$('#statsIndicatorOptions');
+  if(!container)return;
+  const groups=['Combined Outcomes','Edge Performance','Execution Quality'];
+  container.innerHTML=groups.map(group=>{
+    const cards=STATISTICS_INDICATOR_CATALOG.filter(item=>item.group===group);
+    return `<fieldset class="stats-indicator-group"><legend>${escapeHtml(group)}</legend>${cards.map(item=>{
+      const selected=statsIndicatorDraft.includes(item.id);
+      return `<label class="stats-indicator-option${selected?' is-selected':''}"><input type="checkbox" data-stats-indicator-pick="${escapeHtml(item.id)}"${selected?' checked disabled':''}><span><strong>${escapeHtml(item.title)}${selected?' · Added':''}</strong><small>${escapeHtml(item.description)}</small></span></label>`;
+    }).join('')}</fieldset>`;
+  }).join('');
+}
+function renderStatisticsIndicatorCards(snapshot=lastStatisticsIndicatorSnapshot){
+  const stack=$('#statsIndicatorStack');
+  const empty=$('#statsIndicatorEmpty');
+  if(!stack)return;
+  const cards=statsIndicatorDraft.map((id,index)=>{
+    const definition=STATISTICS_INDICATOR_CATALOG.find(item=>item.id===id);
+    if(!definition)return '';
+    const measurement=snapshot?.[id]||{value:'—',detail:'No measurement is available yet.',tone:'neutral'};
+    const actions=statsArrangeMode?`<div class="stats-indicator-card-actions" aria-label="Arrange ${escapeHtml(definition.title)}"><button type="button" data-indicator-action="up" data-indicator-index="${index}"${index===0?' disabled':''} aria-label="Move ${escapeHtml(definition.title)} up">Move up</button><button type="button" data-indicator-action="down" data-indicator-index="${index}"${index===statsIndicatorDraft.length-1?' disabled':''} aria-label="Move ${escapeHtml(definition.title)} down">Move down</button><button type="button" data-indicator-action="remove" data-indicator-index="${index}" aria-label="Remove ${escapeHtml(definition.title)}">Remove</button></div>`:'';
+    return `<article class="stats-indicator-card" tabindex="0" data-indicator-card="${escapeHtml(id)}" aria-label="${escapeHtml(definition.title)}: ${escapeHtml(measurement.value)}"><div class="stats-indicator-card-head"><div><h3 class="stats-indicator-card-title">${escapeHtml(definition.title)}</h3><span class="stats-indicator-source">${escapeHtml(definition.group)}</span></div></div><div class="stats-indicator-card-value ${escapeHtml(measurement.tone||'neutral')}">${escapeHtml(measurement.value)}</div><p class="stats-indicator-card-detail">${escapeHtml(measurement.detail)}</p>${actions}</article>`;
+  }).join('');
+  stack.innerHTML=cards;
+  if(empty)empty.classList.toggle('hidden',statsIndicatorDraft.length>0);
+}
+async function saveStatisticsIndicatorLayout(ids=statsIndicatorDraft){
+  const next=normalizedStatisticsIndicatorIds(ids);
+  const draftAtSave=[...statsIndicatorDraft];
+  const userId=currentUser?.id;
+  const saveButton=$('#statsSaveIndicators');
+  if(!db||!userId){setStatisticsText('statsIndicatorSaveStatus','Sign in again before saving this layout.');return false}
+  if(saveButton)saveButton.disabled=true;
+  setStatisticsText('statsIndicatorSaveStatus','Saving layout…');
+  try{
+    const {data:verifiedData,error:verifyError}=await db.auth.getUser();
+    const verifiedUser=verifiedData?.user;
+    if(verifyError||!verifiedUser||verifiedUser.id!==userId)throw verifyError||new Error('The active account changed.');
+    const metadata={...(verifiedUser.user_metadata||{}),[STATS_INDICATOR_PREFERENCE_KEY]:next};
+    const {data:updateData,error:updateError}=await db.auth.updateUser({data:metadata});
+    if(updateError)throw updateError;
+    if(updateData?.user?.id&&updateData.user.id!==userId)throw new Error('The active account changed while saving.');
+    currentUser=updateData?.user||{...verifiedUser,user_metadata:metadata};
+    statsIndicatorIds=[...next];
+    if(JSON.stringify(statsIndicatorDraft)===JSON.stringify(draftAtSave)&&JSON.stringify(draftAtSave)===JSON.stringify(next)){
+      statsIndicatorDraft=[...next];
+      statsIndicatorLayoutDirty=false;
+      setStatisticsText('statsIndicatorSaveStatus','Layout saved to your account.');
+    }else{
+      statsIndicatorLayoutDirty=JSON.stringify(statsIndicatorDraft)!==JSON.stringify(statsIndicatorIds);
+      setStatisticsText('statsIndicatorSaveStatus','Saved the previous layout. New changes still need saving.');
+    }
+    if(saveButton)saveButton.disabled=!statsIndicatorLayoutDirty;
+    renderStatisticsIndicatorCards();
+    return true;
+  }catch(error){
+    console.warn('Could not save Statistics indicator layout:',error);
+    if(saveButton)saveButton.disabled=!statsIndicatorLayoutDirty;
+    setStatisticsText('statsIndicatorSaveStatus','Could not save. Your changes are still here; try Save Layout again.');
+    return false;
+  }
+}
+
 function setStatisticsText(id,value,className){
   const node=document.getElementById(id);
   if(!node)return;
@@ -14831,6 +15218,92 @@ function statisticsProfitFactorLabel(value){
 }
 function statisticsRLabel(value){
   return Number.isFinite(value)?`${value>=0?'+':''}${value.toFixed(2)}R`:'—';
+}
+function statisticsIndicatorMeasurement(value,detail,tone='neutral'){
+  return {value:String(value??'—'),detail:String(detail||''),tone};
+}
+function buildStatisticsIndicatorSnapshot(source,options={}){
+  const analytics=statsAnalytics();
+  const selected=Array.isArray(source)?source:[];
+  const pnl=options.pnlSummary||analytics?.summarizePnl(selected)||{complete:false,tradeCount:selected.length,missingPnlCount:selected.length,netPnl:null};
+  const equitySeries=options.series||{equityAvailable:false,openingEquity:null,points:[],unavailableReason:'Verified account equity is unavailable.'};
+  const drawdown=options.drawdown||{amount:null,pct:null};
+  const expectancy=analytics?.summarizeExpectancy(selected)||{preferredValue:null,preferredUnit:'money',rComplete:false,rExpectancy:null,rCount:0,validPnlCount:0};
+  const profitLoss=analytics?.summarizeProfitLoss(selected)||{complete:false,missingPnlCount:selected.length,wins:0,losses:0,averageWin:null,averageLoss:null};
+  const profitFactor=calculateProfitFactorStats(selected);
+  const allPnl=analytics?.summarizePnl(trades)||{complete:false,missingPnlCount:trades.length,netPnl:null};
+  const actualStart=Number(tradingAccount?.starting_balance);
+  const accountEquityAvailable=Number.isFinite(actualStart)&&actualStart>0&&(!trades.length||allPnl.complete);
+  const currentBalance=accountEquityAvailable?actualStart+(trades.length?allPnl.netPnl:0):null;
+  const setupStats=analytics?.groupOutcomesByLabel(selected,trade=>trade.setup)||{groups:[]};
+  const eligibleSetups=setupStats.groups.filter(group=>group.complete&&Number.isFinite(group.averagePnl));
+  const topSetup=[...eligibleSetups].sort((a,b)=>b.averagePnl-a.averagePnl||b.count-a.count)[0]||null;
+  const selectedWithSetup=selected.filter(trade=>String(trade.setup||'').trim()).length;
+  const execution=options.execution||null;
+  const qualityCategory=(name)=>execution?.categories?.[name]||{averagePct:null,tradeCount:0};
+  const missingPnlDetail=pnl.missingPnlCount
+    ? `${pnl.missingPnlCount} selected trade${pnl.missingPnlCount===1?' is':'s are'} missing recorded P&L.`
+    : 'No trades in the selected period.';
+  const result={};
+  result['net-pnl']=pnl.complete
+    ? statisticsIndicatorMeasurement(signedMoney(pnl.netPnl),`${pnl.tradeCount} trades with complete recorded P&L.`,pnlClass(pnl.netPnl))
+    : statisticsIndicatorMeasurement('—',missingPnlDetail);
+  const periodReturn=pnl.complete&&selected.length&&equitySeries.equityAvailable&&Number(equitySeries.openingEquity)>0
+    ? pnl.netPnl/Number(equitySeries.openingEquity)*100:null;
+  result['period-return']=Number.isFinite(periodReturn)
+    ? statisticsIndicatorMeasurement(formatReturnPct(periodReturn),`Opening equity ${money(equitySeries.openingEquity)}; ${selected.length} recorded trades.`,pnlClass(periodReturn))
+    : statisticsIndicatorMeasurement('—',selected.length?equitySeries.unavailableReason||'A verified opening equity is required for this period.':'No trades in the selected period.');
+  const winRate=pnl.complete&&selected.length?selected.filter(trade=>Number(trade.pnl)>0).length/selected.length*100:null;
+  result['win-rate']=Number.isFinite(winRate)
+    ? statisticsIndicatorMeasurement(winRate.toFixed(1)+'%',`${selected.filter(trade=>Number(trade.pnl)>0).length} wins of ${selected.length} trades.`,winRate>=50?'pos':winRate>0?'neutral':'neg')
+    : statisticsIndicatorMeasurement('—',missingPnlDetail);
+  const factor=profitFactor.value;
+  result['profit-factor']=profitFactor.state==='finite'||profitFactor.state==='infinite'
+    ? statisticsIndicatorMeasurement(statisticsProfitFactorLabel(factor),`${formatProfitFactorCurrency(profitFactor.grossProfit)} gross profit · ${formatProfitFactorCurrency(profitFactor.grossLoss)} gross loss.`,factor>1?'pos':factor<1?'neg':'neutral')
+    : statisticsIndicatorMeasurement('—',profitFactor.state==='incomplete'?missingPnlDetail:'No positive or negative P&L outcomes recorded.');
+  result['avg-pnl-trade']=pnl.complete&&selected.length
+    ? statisticsIndicatorMeasurement(signedMoney(pnl.expectancy),`Mean realized net P&L across ${selected.length} trades.`,pnlClass(pnl.expectancy))
+    : statisticsIndicatorMeasurement('—',missingPnlDetail);
+  result['current-balance']=accountEquityAvailable
+    ? statisticsIndicatorMeasurement(money(currentBalance),'Verified starting balance plus complete recorded trade P&L.','neutral')
+    : statisticsIndicatorMeasurement('—','A verified starting balance and complete P&L history are required.');
+  result['avg-profit']=profitLoss.complete&&profitLoss.wins
+    ? statisticsIndicatorMeasurement(signedMoney(profitLoss.averageWin),`Mean outcome across ${profitLoss.wins} winning trades.`,'pos')
+    : statisticsIndicatorMeasurement('—',profitLoss.complete?'No winning trades recorded.':missingPnlDetail);
+  result['avg-loss']=profitLoss.complete&&profitLoss.losses
+    ? statisticsIndicatorMeasurement(signedMoney(profitLoss.averageLoss),`Mean outcome across ${profitLoss.losses} losing trades.`,'neg')
+    : statisticsIndicatorMeasurement('—',profitLoss.complete?'No losing trades recorded.':missingPnlDetail);
+  result['max-drawdown']=equitySeries.equityAvailable&&selected.length&&Number.isFinite(drawdown.amount)
+    ? statisticsIndicatorMeasurement(money(drawdown.amount),Number.isFinite(drawdown.pct)?`${drawdown.pct.toFixed(2)}% from a verified equity peak.`:'Verified equity peak-to-trough decline.',drawdown.amount>0?'neg':'neutral')
+    : statisticsIndicatorMeasurement('—',selected.length?equitySeries.unavailableReason||'Complete equity data is unavailable.':'No trades in the selected period.');
+  result.expectancy=Number.isFinite(expectancy.preferredValue)
+    ? statisticsIndicatorMeasurement(expectancy.preferredUnit==='R'?statisticsRLabel(expectancy.preferredValue):signedMoney(expectancy.preferredValue),expectancy.preferredUnit==='R'?`${expectancy.rCount} of ${selected.length} trades have validated risk data.`:`Mean realized net P&L across ${pnl.tradeCount} trades.`,pnlClass(expectancy.preferredValue))
+    : statisticsIndicatorMeasurement('—',pnl.complete?'No validated expectancy sample is available.':missingPnlDetail);
+  result['r-expectancy']=expectancy.rComplete&&Number.isFinite(expectancy.rExpectancy)
+    ? statisticsIndicatorMeasurement(statisticsRLabel(expectancy.rExpectancy),`Validated R data for all ${selected.length} selected trades.`,pnlClass(expectancy.rExpectancy))
+    : statisticsIndicatorMeasurement('—','Validated risk basis, risk amount and R multiple are not complete for this period.');
+  const qualifyingCount=Number.isFinite(expectancy.preferredValue)?(expectancy.preferredUnit==='R'?expectancy.rCount:expectancy.validPnlCount):0;
+  result['qualifying-trades']=qualifyingCount
+    ? statisticsIndicatorMeasurement(String(qualifyingCount),`Trades included in the current validated expectancy sample (${expectancy.preferredUnit==='R'?'R multiple':'recorded P&L'}).`,'neutral')
+    : statisticsIndicatorMeasurement('—','No trades qualify for a complete expectancy measurement.');
+  result['setup-performance']=topSetup
+    ? statisticsIndicatorMeasurement(signedMoney(topSetup.averagePnl),`${topSetup.label} · ${topSetup.count} trades · average realized P&L.`,pnlClass(topSetup.averagePnl))
+    : statisticsIndicatorMeasurement('—','No setup group has a complete recorded P&L sample.');
+  result['edge-evidence-coverage']=selected.length
+    ? statisticsIndicatorMeasurement((selectedWithSetup/selected.length*100).toFixed(0)+'%',`${selectedWithSetup} of ${selected.length} selected trades have a setup label.`,selectedWithSetup?'neutral':'neutral')
+    : statisticsIndicatorMeasurement('—','No trades in the selected period.');
+  const executionMetrics=[
+    ['execution-quality',execution?.averageScorePct,execution?.reviewedTradeCount,'eligible execution assessments'],
+    ['rules-adherence',qualityCategory('rules').averagePct,qualityCategory('rules').tradeCount,'trades with mapped Rules evidence'],
+    ['playbook-adherence',qualityCategory('playbook').averagePct,qualityCategory('playbook').tradeCount,'trades with mapped Playbook evidence'],
+    ['psychological-reflection',qualityCategory('psychology').averagePct,qualityCategory('psychology').tradeCount,'trades with mapped reflection evidence']
+  ];
+  executionMetrics.forEach(([id,value,count,label])=>{
+    result[id]=Number.isFinite(value)
+      ? statisticsIndicatorMeasurement(Number(value).toFixed(1)+'%',`${count} ${label}; unreviewed trades are excluded.`,Number(value)>=80?'pos':Number(value)<50?'neg':'neutral')
+      : statisticsIndicatorMeasurement('—','Not measured for this period; no eligible recorded assessments.');
+  });
+  return result;
 }
 function renderStatisticsTableBody(id,rows,columns,emptyMessage){
   const body=document.getElementById(id);
@@ -15138,6 +15611,8 @@ function renderStatistics(){
     setStatisticsText('statNavReturn','—');
     setStatisticsText('statNavExpectancy','—');
     setStatisticsText('statNavExecution','—');
+    lastStatisticsIndicatorSnapshot=null;
+    renderStatisticsIndicatorCards({});
     return;
   }
 
@@ -15167,68 +15642,43 @@ function renderStatistics(){
   const source=series.selectedTrades;
   const analytics=statsAnalytics();
   const selectedPnlStats=analytics?analytics.summarizePnl(source):{complete:false,tradeCount:source.length,missingPnlCount:0,netPnl:null};
-
-  const netPnl=source.reduce((s,t)=>s+(Number(t.pnl)||0),0);
-
-  const endingEquity=
-    series.points[series.points.length-1]?.equity ?? series.openingEquity;
-
-  const returnPct=selectedPnlStats.complete&&source.length
-    ? returnPctFromPnl(selectedPnlStats.netPnl)
+  const pnlComplete=selectedPnlStats.complete;
+  const netPnl=pnlComplete?selectedPnlStats.netPnl:null;
+  const endingEquity=series.equityAvailable
+    ? series.points[series.points.length-1]?.equity??series.openingEquity
     : null;
-
-  const wins=source.filter(t=>Number(t.pnl)>0);
-  const losses=source.filter(t=>Number(t.pnl)<0);
-
-  const grossProfit=wins.reduce((s,t)=>s+(Number(t.pnl)||0),0);
-
-  const grossLoss=Math.abs(
-    losses.reduce((s,t)=>s+(Number(t.pnl)||0),0)
-  );
-
-  const profitFactor=grossLoss
-    ? grossProfit/grossLoss
-    : grossProfit>0 ? Infinity : 0;
-
-  const profitFactorStats=calculateProfitFactorStats(source);
-
-  const avgTradeReturn=selectedPnlStats.complete&&source.length
-    ? averageTradeReturnPct(source)
+  const returnPct=pnlComplete&&source.length&&series.equityAvailable&&series.openingEquity>0
+    ? netPnl/series.openingEquity*100
     : null;
+  const wins=pnlComplete?source.filter(trade=>Number(trade.pnl)>0):[];
+  const losses=pnlComplete?source.filter(trade=>Number(trade.pnl)<0):[];
+  const drawdown=series.equityAvailable
+    ? maxDrawdownFromEquity(series.points,series.openingEquity)
+    : {amount:null,pct:null};
+  const profitPeakDrawdown=series.equityAvailable
+    ? maxDrawdownFromProfitPeak(series.points,series.openingEquity)
+    : {amount:null,pct:null,profitPeak:0,peakIndex:0,troughIndex:0};
 
-  const expectancy=selectedPnlStats.complete&&source.length
-    ? selectedPnlStats.netPnl/source.length
-    : null;
-
-  const drawdown=maxDrawdownFromEquity(
-    series.points,
-    series.openingEquity
-  );
-
-  const profitPeakDrawdown=maxDrawdownFromProfitPeak(
-    series.points,
-    series.openingEquity
-  );
-
-  const dayRows=dailyStatsFromTrades(source);
+  const dayRows=pnlComplete?dailyStatsFromTrades(source):[];
+  const tradingDayCount=new Set(source.map(trade=>String(trade.trade_date||'')).filter(Boolean)).size;
   const winningDays=dayRows.filter(x=>x.pnl>0).length;
   const losingDays=dayRows.filter(x=>x.pnl<0).length;
 
   const avgWin=wins.length
     ? wins.reduce((s,t)=>s+Number(t.pnl),0)/wins.length
-    : 0;
+    : null;
 
   const avgLoss=losses.length
     ? losses.reduce((s,t)=>s+Number(t.pnl),0)/losses.length
-    : 0;
+    : null;
 
   const largestWin=wins.length
     ? Math.max(...wins.map(t=>Number(t.pnl)||0))
-    : 0;
+    : null;
 
   const largestLoss=losses.length
     ? Math.min(...losses.map(t=>Number(t.pnl)||0))
-    : 0;
+    : null;
 
   const bestDay=dayRows.length
     ? [...dayRows].sort((a,b)=>b.pnl-a.pnl)[0]
@@ -15240,9 +15690,9 @@ function renderStatistics(){
 
   const avgDay=dayRows.length
     ? dayRows.reduce((s,x)=>s+x.pnl,0)/dayRows.length
-    : 0;
+    : null;
 
-  const recoveryFactor=!selectedPnlStats.complete||!source.length?null:drawdown.amount>0
+  const recoveryFactor=!pnlComplete||!source.length||!series.equityAvailable?null:drawdown.amount>0
     ? netPnl/drawdown.amount
     : netPnl>0 ? Infinity : 0;
 
@@ -15251,24 +15701,17 @@ function renderStatistics(){
       ? formatDate(localDateString(start))
       : `${formatDate(localDateString(start))} → ${formatDate(localDateString(end))}`;
 
-  $('#equityChartDescription').textContent=
-    statsRange==='1m'
-      ? `Individual monthly equity curve for ${statsAnchorDate.toLocaleString(undefined,{month:'long',year:'numeric'})}. T0 is the equity at the start of that month; each closed trade is then plotted in sequence.`
-      : `Cumulative account equity after every trade across the selected ${statsRangeLabel(statsRange)}. The vertical scale adjusts to keep real changes visible without flattening the curve.`;
+  setStatisticsText('statEquityHeaderEnding',endingEquity===null?'—':money(endingEquity));
+  setStatisticsText('statEquityHeaderNetPnl',pnlComplete&&source.length?signedMoney(netPnl):'—',pnlComplete&&source.length?pnlClass(netPnl):'neutral');
 
-  // Display the selected-period values beside the Equity Curve.
-  $('#statEquityHeaderEnding').textContent=money(endingEquity);
-  $('#statEquityHeaderNetPnl').textContent=selectedPnlStats.complete&&source.length?signedMoney(netPnl):'—';
-  $('#statEquityHeaderNetPnl').className=selectedPnlStats.complete&&source.length?pnlClass(netPnl):'neutral';
-
-  const winRate=selectedPnlStats.complete&&source.length
+  const winRate=pnlComplete&&source.length
     ? wins.length/source.length*100
     : null;
 
   $('#statTrades').textContent=source.length;
-  $('#statTradingDays').textContent=dayRows.length;
-  $('#statWinningDays').textContent=winningDays;
-  $('#statLosingDays').textContent=losingDays;
+  $('#statTradingDays').textContent=tradingDayCount;
+  $('#statWinningDays').textContent=pnlComplete?winningDays:'—';
+  $('#statLosingDays').textContent=pnlComplete?losingDays:'—';
 
   $('#statAvgWin').textContent=wins.length?money(avgWin):'—';
   $('#statAvgLoss').textContent=losses.length?money(avgLoss):'—';
@@ -15288,12 +15731,14 @@ function renderStatistics(){
   $('#statRecoveryFactor').textContent=
     recoveryFactor===Infinity ? '∞' : Number.isFinite(recoveryFactor)?recoveryFactor.toFixed(2):'—';
 
-  renderStatisticsIndicators(returnPct,winRate,source,profitFactorStats);
-  renderDrawdownExpectancyDiagram(profitPeakDrawdown,series,expectancy,avgTradeReturn,winRate,source,avgWin,avgLoss);
-  renderEquityChart(series);
   renderInstrumentStats(source);
   renderEdgePerformanceEnvironment(source);
   const executionStats=renderExecutionQualityEnvironment(source);
+  lastStatisticsIndicatorSnapshot=buildStatisticsIndicatorSnapshot(source,{
+    pnlSummary:selectedPnlStats,series,drawdown,execution:executionStats
+  });
+  renderStatisticsIndicatorCards(lastStatisticsIndicatorSnapshot);
+  renderCombinedOutcomeDiagram(series,source);
   renderStatisticsNavigationIndicators(source,returnPct,analytics?.summarizeExpectancy(source),executionStats);
 }
 
@@ -15412,6 +15857,65 @@ if(statsIndicatorStack){
 }
 setStatsAutoZoom(statsAutoZoom);
 
+$('#statsAddIndicator').addEventListener('click',()=>{
+  renderStatisticsIndicatorDialogOptions();
+  const dialog=$('#statsIndicatorDialog');
+  if(dialog&&!dialog.open)dialog.showModal();
+});
+$('#statsIndicatorDialogClose').addEventListener('click',()=>$('#statsIndicatorDialog')?.close());
+$('#statsIndicatorDialogCancel').addEventListener('click',()=>$('#statsIndicatorDialog')?.close());
+$('#statsIndicatorDialogForm').addEventListener('submit',event=>{
+  event.preventDefault();
+  const selected=$$('[data-stats-indicator-pick]:checked').map(input=>input.dataset.statsIndicatorPick).filter(Boolean);
+  const next=statsAnalytics()?.addStatisticsIndicatorIds(statsIndicatorDraft,selected)||[...statsIndicatorDraft,...selected.filter(id=>!statsIndicatorDraft.includes(id))];
+  $('#statsIndicatorDialog')?.close();
+  if(selected.length)updateStatisticsIndicatorDraft(next);
+});
+$('#statsArrangeIndicators').addEventListener('click',event=>{
+  statsArrangeMode=!statsArrangeMode;
+  event.currentTarget.setAttribute('aria-pressed',String(statsArrangeMode));
+  event.currentTarget.textContent=statsArrangeMode?'Done':'Arrange';
+  renderStatisticsIndicatorCards();
+});
+$('#statsSaveIndicators').addEventListener('click',()=>saveStatisticsIndicatorLayout());
+$('#statsResetIndicators').addEventListener('click',async()=>{
+  const defaults=[...(statsAnalytics()?.DEFAULT_STATISTICS_INDICATORS||[])];
+  statsArrangeMode=false;
+  const arrangeButton=$('#statsArrangeIndicators');
+  if(arrangeButton){arrangeButton.setAttribute('aria-pressed','false');arrangeButton.textContent='Arrange'}
+  updateStatisticsIndicatorDraft(defaults);
+  await saveStatisticsIndicatorLayout(defaults);
+});
+statsIndicatorStack?.addEventListener('click',event=>{
+  const button=event.target.closest('[data-indicator-action]');
+  if(!button||button.disabled)return;
+  const index=Number(button.dataset.indicatorIndex);
+  if(!Number.isInteger(index)||index<0||index>=statsIndicatorDraft.length)return;
+  const analytics=statsAnalytics();
+  let next;
+  if(button.dataset.indicatorAction==='remove')next=analytics?.removeStatisticsIndicatorId(statsIndicatorDraft,statsIndicatorDraft[index]);
+  else if(button.dataset.indicatorAction==='up')next=analytics?.moveStatisticsIndicatorId(statsIndicatorDraft,statsIndicatorDraft[index],-1);
+  else if(button.dataset.indicatorAction==='down')next=analytics?.moveStatisticsIndicatorId(statsIndicatorDraft,statsIndicatorDraft[index],1);
+  else return;
+  if(!next)return;
+  updateStatisticsIndicatorDraft(next);
+});
+
+const statisticsOutcomeTabs=$$('[data-stats-outcome]');
+statisticsOutcomeTabs.forEach((button,index)=>{
+  button.addEventListener('click',()=>{
+    statsSelectedOutcome=button.dataset.statsOutcome;
+    renderStatistics();
+  });
+  button.addEventListener('keydown',event=>{
+    if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+    event.preventDefault();
+    const next=event.key==='Home'?0:event.key==='End'?statisticsOutcomeTabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+statisticsOutcomeTabs.length)%statisticsOutcomeTabs.length;
+    statisticsOutcomeTabs[next].focus();
+    statisticsOutcomeTabs[next].click();
+  });
+});
+
 function setStatisticsView(view){
   const selected=['statistics','edge','execution'].includes(view)?view:'statistics';
   $$('[data-stats-view]').forEach(button=>{
@@ -15425,7 +15929,10 @@ function setStatisticsView(view){
   $('#statsExecutionView').hidden=selected!=='execution';
   setZoomedStatsCard(null);
   requestAnimationFrame(()=>{
-    if(selected==='statistics'&&equityChartInstance)equityChartInstance.resize();
+    if(selected==='statistics'){
+      if(equityChartInstance)equityChartInstance.resize();
+      if(typeof statsOutcomeChartInstance!=='undefined'&&statsOutcomeChartInstance)statsOutcomeChartInstance.resize();
+    }
     if(selected==='edge'&&statsEdgeTimelineInstance)statsEdgeTimelineInstance.resize();
     if(selected==='execution'){
       if(statsExecutionTrendInstance)statsExecutionTrendInstance.resize();
