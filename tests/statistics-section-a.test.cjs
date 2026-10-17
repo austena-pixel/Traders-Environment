@@ -27,6 +27,8 @@ assert.ok(sectionStart>=0&&layoutStart>sectionStart,'Section A groups the metric
 assert.ok(chartStart>layoutStart&&optionalStart>chartStart,'The main outcomes chart sits beside the optional indicator area.');
 assert.ok(html.indexOf('</aside>',optionalStart)<html.indexOf('<dialog',optionalStart),'The optional indicator area remains inside Section A, before the indicator picker dialog.');
 assert.match(html,/\.stats-dashboard-section\{min-width:0;min-height:0;/,'the optional indicator panel can shrink to fit short screens');
+assert.ok(!html.includes('Measure financial outcomes, methodology evidence and execution quality for one shared reporting period.'),'the Statistics intro subtitle row is removed so Section A can begin higher');
+assert.ok(html.includes('<h1>Statistics</h1>')&&html.includes('aria-label="Performance environments"'),'the Statistics title and environment tabs remain available');
 assert.ok(!html.includes('id="statsOutcomeTitle"')&&!html.includes('id="equityChartDescription"')&&!html.includes('class="stats-outcome-heading"'),'the chart title and description are removed');
 const outcomeWorkspace=html.indexOf('<div class="stats-outcome-workspace" id="statsOutcomeWorkspace"');
 const outcomePeriod=html.indexOf('<span class="stats-outcome-period" id="statsOutcomePeriod"',outcomeWorkspace);
