@@ -26,6 +26,9 @@ const optionalStart=html.indexOf('<aside class="stats-dashboard-section"',layout
 assert.ok(sectionStart>=0&&layoutStart>sectionStart,'Section A groups the metrics, chart and optional indicator space.');
 assert.ok(chartStart>layoutStart&&optionalStart>chartStart,'The main outcomes chart sits beside the optional indicator area.');
 assert.ok(html.indexOf('</aside>',optionalStart)<html.indexOf('<dialog',optionalStart),'The optional indicator area remains inside Section A, before the indicator picker dialog.');
+assert.ok(!html.includes('class="stats-lower"'),'the retired lower Statistics panels are removed');
+assert.ok(!html.includes('Performance Details')&&!html.includes('Performance by Instrument'),'the circled legacy panels are no longer rendered');
+assert.ok(!html.includes('id="instrumentStatsBody"')&&!html.includes('function renderInstrumentStats'),'legacy instrument breakdown rendering is removed');
 for(const id of [
   'statEquityHeaderEnding','statEquityHeaderNetPnl','statWinRateGauge','statWinRateGaugeValue',
   'statWinRateReturnLabel','statProfitFactorDiagramValue','statsPrimaryAvgPnlValue',
@@ -88,5 +91,6 @@ balanceContext.trades=[{pnl:5},{pnl:null}];
 assert.equal(balanceContext.verifiedCurrentAccountBalance().value,null,'incomplete P&L does not create a guessed current balance');
 
 console.log('PASS Section A keeps the primary outcome chart beside a blank, optional-indicator panel');
+console.log('PASS the legacy Performance Details and Performance by Instrument panels are removed');
 console.log('PASS current balance, net P&L, win rate, period return, profit factor, and average P&L render from complete data');
 console.log('PASS missing recorded P&L stays unavailable instead of becoming a zero');

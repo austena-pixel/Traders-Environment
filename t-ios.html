@@ -2292,62 +2292,10 @@ body.playbook-workspace .main{
   height:420px;
   width:100%;
 }
-.stats-lower{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:14px;
-}
-.stats-box{padding:15px}
-.stats-box h3{
-  margin:0 0 12px;
-  font-size:14px;
-}
-.stat-list{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:0 18px;
-}
-.stat-list-row{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  padding:9px 0;
-  border-bottom:1px solid #18212c;
-  font-size:11px;
-}
-.stat-list-row span:first-child{color:var(--muted)}
-.breakdown-table{
-  width:100%;
-  border-collapse:collapse;
-}
-.breakdown-table th,
-.breakdown-table td{
-  text-align:left;
-  border-bottom:1px solid #18212c;
-  padding:9px 8px;
-  font-size:10px;
-}
-.breakdown-table th{
-  color:#8794a7;
-  text-transform:uppercase;
-  letter-spacing:.5px;
-  font-weight:800;
-}
-.breakdown-table td:nth-child(n+2),
-.breakdown-table th:nth-child(n+2){
-  text-align:right;
-}
-.stats-note{
-  margin-top:10px;
-  color:#8794a7;
-  font-size:9px;
-  line-height:1.5;
-}
 @media(max-width:1450px){
   .stats-grid{grid-template-columns:repeat(4,1fr)}
 }
 @media(max-width:900px){
-  .stats-lower{grid-template-columns:1fr}
   .stats-visuals-layout{grid-template-columns:1fr}
   .stats-indicator-stack{
     grid-template-columns:repeat(2,minmax(0,1fr));
@@ -7242,87 +7190,6 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
         </div>
       </section>
 
-      <div class="stats-lower">
-        <section class="panel stats-box">
-          <h3>Performance Details</h3>
-
-          <div class="stat-list">
-            <div class="stat-list-row">
-              <span>Trades</span>
-              <strong id="statTrades">0</strong>
-            </div>
-            <div class="stat-list-row">
-              <span>Trading days</span>
-              <strong id="statTradingDays">0</strong>
-            </div>
-            <div class="stat-list-row">
-              <span>Winning days</span>
-              <strong id="statWinningDays">0</strong>
-            </div>
-            <div class="stat-list-row">
-              <span>Losing days</span>
-              <strong id="statLosingDays">0</strong>
-            </div>
-            <div class="stat-list-row">
-              <span>Average win</span>
-              <strong id="statAvgWin">$0.00</strong>
-            </div>
-            <div class="stat-list-row">
-              <span>Average loss</span>
-              <strong id="statAvgLoss">$0.00</strong>
-            </div>
-            <div class="stat-list-row">
-              <span>Largest win</span>
-              <strong id="statLargestWin">$0.00</strong>
-            </div>
-            <div class="stat-list-row">
-              <span>Largest loss</span>
-              <strong id="statLargestLoss">$0.00</strong>
-            </div>
-            <div class="stat-list-row">
-              <span>Best trading day</span>
-              <strong id="statBestDay">—</strong>
-            </div>
-            <div class="stat-list-row">
-              <span>Worst trading day</span>
-              <strong id="statWorstDay">—</strong>
-            </div>
-            <div class="stat-list-row">
-              <span>Average daily P&amp;L</span>
-              <strong id="statAvgDay">$0.00</strong>
-            </div>
-            <div class="stat-list-row">
-              <span>Recovery factor</span>
-              <strong id="statRecoveryFactor">—</strong>
-            </div>
-          </div>
-
-          <div class="stats-note">
-            Recovery factor = net P&amp;L ÷ maximum drawdown. It helps show how efficiently the account recovered relative to the depth of its drawdown.
-          </div>
-        </section>
-
-        <section class="panel stats-box">
-          <h3>Performance by Instrument</h3>
-
-          <div class="table-wrap">
-            <table class="breakdown-table">
-              <thead>
-                <tr>
-                  <th>Instrument</th>
-                  <th>Trades</th>
-                  <th>Win rate</th>
-                  <th>P&amp;L</th>
-                  <th>Avg Return</th>
-                </tr>
-              </thead>
-              <tbody id="instrumentStatsBody">
-                <tr><td colspan="5" class="muted">No data</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </div>
       </div>
 
       <dialog class="stats-indicator-dialog" id="statsIndicatorDialog" aria-labelledby="statsIndicatorDialogTitle">
@@ -14603,18 +14470,6 @@ function maxDrawdownFromProfitPeak(points,openingEquity){
   return {amount:maxDrawdown,pct:maxDrawdownPct,profitPeak:peakAtMaxDrawdown,peakIndex:peakIndexAtMaxDrawdown,troughIndex};
 }
 
-function dailyStatsFromTrades(sourceTrades){
-  const map={};
-
-  sourceTrades.forEach(t=>{
-    map[t.trade_date]=(map[t.trade_date]||0)+(Number(t.pnl)||0);
-  });
-
-  return Object.entries(map)
-    .map(([date,pnl])=>({date,pnl}))
-    .sort((a,b)=>a.date.localeCompare(b.date));
-}
-
 function renderEquityChart(series){
   if(typeof Chart==='undefined'){
     console.error('Chart.js did not load.');
@@ -14952,59 +14807,6 @@ function renderCombinedOutcomeDiagram(series,source){
   }
   chartWrap?.classList.remove('hidden');
   requestAnimationFrame(()=>statsOutcomeChartInstance?.resize());
-}
-
-function renderInstrumentStats(sourceTrades){
-  const body=$('#instrumentStatsBody');
-
-  if(!sourceTrades.length){
-    body.innerHTML='<tr><td colspan="5" class="muted">No data in this timeframe.</td></tr>';
-    return;
-  }
-
-  const grouped={};
-
-  sourceTrades.forEach(t=>{
-    const key=(t.instrument||'Unknown').trim() || 'Unknown';
-
-    if(!grouped[key]){
-      grouped[key]={trades:0,wins:0,pnl:0};
-    }
-
-    grouped[key].trades++;
-    grouped[key].pnl+=Number(t.pnl)||0;
-
-    if(Number(t.pnl)>0){
-      grouped[key].wins++;
-    }
-  });
-
-  const rows=Object.entries(grouped)
-    .map(([instrument,data])=>({
-      instrument,
-      ...data,
-      winRate:data.trades ? data.wins/data.trades*100 : 0,
-      avgReturn:data.trades && initialAccountBalance()>0
-        ? (data.pnl/data.trades)/initialAccountBalance()*100
-        : null
-    }))
-    .sort((a,b)=>b.pnl-a.pnl);
-
-  body.innerHTML='';
-
-  rows.forEach(row=>{
-    const tr=document.createElement('tr');
-
-    tr.innerHTML=`
-      <td><strong>${escapeHtml(row.instrument)}</strong></td>
-      <td>${row.trades}</td>
-      <td>${row.winRate.toFixed(1)}%</td>
-      <td class="${pnlClass(row.pnl)}">${signedMoney(row.pnl)}</td>
-      <td class="${row.avgReturn===null?'neutral':pnlClass(row.avgReturn)}">${formatReturnPct(row.avgReturn)}</td>
-    `;
-
-    body.appendChild(tr);
-  });
 }
 
 function calculateProfitFactorStats(source){
@@ -15736,50 +15538,9 @@ function renderStatistics(){
     ? netPnl/series.openingEquity*100
     : null;
   const wins=pnlComplete?source.filter(trade=>Number(trade.pnl)>0):[];
-  const losses=pnlComplete?source.filter(trade=>Number(trade.pnl)<0):[];
   const drawdown=series.equityAvailable
     ? maxDrawdownFromEquity(series.points,series.openingEquity)
     : {amount:null,pct:null};
-  const profitPeakDrawdown=series.equityAvailable
-    ? maxDrawdownFromProfitPeak(series.points,series.openingEquity)
-    : {amount:null,pct:null,profitPeak:0,peakIndex:0,troughIndex:0};
-
-  const dayRows=pnlComplete?dailyStatsFromTrades(source):[];
-  const tradingDayCount=new Set(source.map(trade=>String(trade.trade_date||'')).filter(Boolean)).size;
-  const winningDays=dayRows.filter(x=>x.pnl>0).length;
-  const losingDays=dayRows.filter(x=>x.pnl<0).length;
-
-  const avgWin=wins.length
-    ? wins.reduce((s,t)=>s+Number(t.pnl),0)/wins.length
-    : null;
-
-  const avgLoss=losses.length
-    ? losses.reduce((s,t)=>s+Number(t.pnl),0)/losses.length
-    : null;
-
-  const largestWin=wins.length
-    ? Math.max(...wins.map(t=>Number(t.pnl)||0))
-    : null;
-
-  const largestLoss=losses.length
-    ? Math.min(...losses.map(t=>Number(t.pnl)||0))
-    : null;
-
-  const bestDay=dayRows.length
-    ? [...dayRows].sort((a,b)=>b.pnl-a.pnl)[0]
-    : null;
-
-  const worstDay=dayRows.length
-    ? [...dayRows].sort((a,b)=>a.pnl-b.pnl)[0]
-    : null;
-
-  const avgDay=dayRows.length
-    ? dayRows.reduce((s,x)=>s+x.pnl,0)/dayRows.length
-    : null;
-
-  const recoveryFactor=!pnlComplete||!source.length||!series.equityAvailable?null:drawdown.amount>0
-    ? netPnl/drawdown.amount
-    : netPnl>0 ? Infinity : 0;
 
   $('#statsDateRange').textContent=
     localDateString(start)===localDateString(end)
@@ -15795,30 +15556,6 @@ function renderStatistics(){
     : null;
   renderStatisticsIndicators(returnPct,winRate,source,calculateProfitFactorStats(source),selectedPnlStats);
 
-  $('#statTrades').textContent=source.length;
-  $('#statTradingDays').textContent=tradingDayCount;
-  $('#statWinningDays').textContent=pnlComplete?winningDays:'—';
-  $('#statLosingDays').textContent=pnlComplete?losingDays:'—';
-
-  $('#statAvgWin').textContent=wins.length?money(avgWin):'—';
-  $('#statAvgLoss').textContent=losses.length?money(avgLoss):'—';
-  $('#statLargestWin').textContent=wins.length?signedMoney(largestWin):'—';
-  $('#statLargestLoss').textContent=losses.length?signedMoney(largestLoss):'—';
-
-  $('#statBestDay').textContent=bestDay
-    ? `${formatDate(bestDay.date)} • ${signedMoney(bestDay.pnl)}`
-    : '—';
-
-  $('#statWorstDay').textContent=worstDay
-    ? `${formatDate(worstDay.date)} • ${signedMoney(worstDay.pnl)}`
-    : '—';
-
-  $('#statAvgDay').textContent=dayRows.length?signedMoney(avgDay):'—';
-
-  $('#statRecoveryFactor').textContent=
-    recoveryFactor===Infinity ? '∞' : Number.isFinite(recoveryFactor)?recoveryFactor.toFixed(2):'—';
-
-  renderInstrumentStats(source);
   renderEdgePerformanceEnvironment(source);
   const executionStats=renderExecutionQualityEnvironment(source);
   lastStatisticsIndicatorSnapshot=buildStatisticsIndicatorSnapshot(source,{
