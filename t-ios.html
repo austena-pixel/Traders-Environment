@@ -2028,6 +2028,7 @@ body.playbook-workspace .main{
 .stats-average-pnl-zero{position:absolute;z-index:1;top:-1px;bottom:-1px;left:calc(50% - .5px);width:1px;background:#d2dbea}
 .stats-section-a-workspace{display:grid;grid-template-columns:minmax(0,2.05fr) minmax(245px,.95fr);gap:12px;align-items:stretch}
 .stats-combined-outcomes{min-width:0;padding:12px;border:0;border-radius:12px;background:var(--stats-unified-fill,var(--hios-theme-bg,var(--bg)))}
+.stats-history-charts-heading{margin:0 0 8px;color:#e1eaf5;font-size:12px;line-height:1.2;font-weight:750}
 .stats-dashboard-section{min-width:0;min-height:0;padding:12px;border:0;border-radius:12px;background:var(--stats-unified-fill,var(--hios-theme-bg,var(--bg)))}
 .stats-personal-intelligence{display:flex;flex-direction:column;min-width:0;min-height:0;height:100%;padding:12px}
 .stats-personal-intelligence-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-bottom:10px;border-bottom:1px solid rgba(77,96,125,.24)}
@@ -2219,7 +2220,15 @@ body.playbook-workspace .main{
   #statsStatisticsView:not([hidden])>.stats-section-a{
     display:grid;grid-template-rows:auto minmax(0,1fr);flex:1 1 auto;height:auto;min-height:0;margin-bottom:0
   }
-  .stats-section-a-workspace{min-height:0}
+  .stats-section-a-workspace{
+    min-height:0;
+    grid-template-columns:minmax(0,60%) minmax(245px,calc(31.67% - 4px)) minmax(600px,calc(68.33% - 8px));
+    overflow-x:auto;overflow-y:hidden;scrollbar-color:#33445a transparent;scrollbar-width:thin;overscroll-behavior-x:contain
+  }
+  .stats-section-a-workspace::before{content:"";grid-column:1;grid-row:1;min-width:0}
+  .stats-personal-intelligence{grid-column:2;grid-row:1}
+  .stats-combined-outcomes{grid-column:3;grid-row:1}
+  .stats-section-a-workspace:focus-visible{outline:2px solid #69a8ff;outline-offset:2px}
   .stats-combined-outcomes{display:flex;flex-direction:column;min-height:0}
   .stats-outcome-selectors{flex:0 0 auto}
   .stats-outcome-workspace{display:flex;flex:1 1 auto;flex-direction:column;min-height:0;padding:30px 12px 12px}
@@ -7287,29 +7296,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           </article>
         </div>
 
-        <div class="stats-section-a-workspace">
-          <section class="stats-combined-outcomes" aria-label="Combined outcome chart">
-            <div class="stats-outcome-selectors" role="tablist" aria-label="Combined outcome diagrams">
-              <button class="stats-outcome-selector active" type="button" role="tab" id="statsOutcomeTabEquity" data-stats-outcome="equity" aria-selected="true" aria-controls="statsOutcomeWorkspace">Equity Curve</button>
-              <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabDrawdown" data-stats-outcome="drawdown" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Drawdown</button>
-              <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabCumulative" data-stats-outcome="cumulative" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Cumulative P&amp;L</button>
-              <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabDistribution" data-stats-outcome="distribution" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Trade Distribution</button>
-              <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabComparison" data-stats-outcome="comparison" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Profit/Loss Comparison</button>
-            </div>
-            <div class="stats-outcome-workspace" id="statsOutcomeWorkspace" role="tabpanel" aria-labelledby="statsOutcomeTabEquity">
-              <span class="stats-outcome-period" id="statsOutcomePeriod">—</span>
-              <div class="equity-canvas-wrap" id="equityCanvasWrap">
-                <canvas id="equityChart"></canvas>
-              </div>
-              <div class="stats-outcome-canvas-wrap hidden" id="statsOutcomeCanvasWrap">
-                <canvas id="statsOutcomeChart"></canvas>
-              </div>
-              <div class="stats-outcome-message hidden" id="equityEmptyState">No trades were recorded in this selected period.</div>
-              <div class="stats-outcome-message hidden" id="statsOutcomeEmpty"></div>
-              <div class="stats-outcome-unavailable hidden" id="statsOutcomeUnavailable" role="status" aria-live="polite"></div>
-            </div>
-          </section>
-
+        <div class="stats-section-a-workspace" role="group" tabindex="0" aria-label="Personal Intelligence followed by History Charts">
           <aside class="stats-dashboard-section stats-personal-intelligence" id="statsPersonalIntelligence" aria-labelledby="statsPersonalIntelligenceHeading">
             <div class="stats-personal-intelligence-header">
               <div class="stats-personal-intelligence-title">
@@ -7367,6 +7354,30 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <div class="stats-personal-intelligence-status" id="statsPIStatus" role="status" aria-live="polite"></div>
             <p class="stats-personal-intelligence-footnote" id="statsPIFootnote">I’ll start with the results shown. AI runs only after you send a message. When connected, saved conversations are private to your account and can be deleted in Settings.</p>
           </aside>
+
+          <section class="stats-combined-outcomes" aria-label="History Charts">
+            <h3 class="stats-history-charts-heading">History Charts</h3>
+            <div class="stats-outcome-selectors" role="tablist" aria-label="Combined outcome diagrams">
+              <button class="stats-outcome-selector active" type="button" role="tab" id="statsOutcomeTabEquity" data-stats-outcome="equity" aria-selected="true" aria-controls="statsOutcomeWorkspace">Equity Curve</button>
+              <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabDrawdown" data-stats-outcome="drawdown" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Drawdown</button>
+              <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabCumulative" data-stats-outcome="cumulative" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Cumulative P&amp;L</button>
+              <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabDistribution" data-stats-outcome="distribution" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Trade Distribution</button>
+              <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabComparison" data-stats-outcome="comparison" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Profit/Loss Comparison</button>
+            </div>
+            <div class="stats-outcome-workspace" id="statsOutcomeWorkspace" role="tabpanel" aria-labelledby="statsOutcomeTabEquity">
+              <span class="stats-outcome-period" id="statsOutcomePeriod">—</span>
+              <div class="equity-canvas-wrap" id="equityCanvasWrap">
+                <canvas id="equityChart"></canvas>
+              </div>
+              <div class="stats-outcome-canvas-wrap hidden" id="statsOutcomeCanvasWrap">
+                <canvas id="statsOutcomeChart"></canvas>
+              </div>
+              <div class="stats-outcome-message hidden" id="equityEmptyState">No trades were recorded in this selected period.</div>
+              <div class="stats-outcome-message hidden" id="statsOutcomeEmpty"></div>
+              <div class="stats-outcome-unavailable hidden" id="statsOutcomeUnavailable" role="status" aria-live="polite"></div>
+            </div>
+          </section>
+
           <div class="hidden" aria-hidden="true">
             <aside class="stats-dashboard-section" aria-labelledby="statsIndicatorsHeading">
             <div class="stats-dashboard-header">
