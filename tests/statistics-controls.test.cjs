@@ -226,6 +226,7 @@ assert.equal((html.match(/data-stats-range=/g)||[]).length,6,'all reporting rang
 console.log('PASS selected timeframe persists, restores, and falls back safely');
 console.log('PASS Auto Zoom covers highlighted financial summaries and optional indicators on hover or focus');
 console.log('PASS highlighted labels are removed while the Equity Curve remains intact');
+assert.match(html,/\.stats-personal-intelligence\{[^}]*transform-origin:center bottom/,'Personal Intelligence zoom grows upward so its lower content stays in view');
 const zoomRange={min:'100',max:'150',value:'125',attributes:{},setAttribute(name,value){this.attributes[name]=value;}};
 const zoomOutput={textContent:'125%'};
 const zoomPreferenceStorage=createStorage(null);
