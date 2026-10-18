@@ -142,7 +142,7 @@ vm.runInContext([
   extractFunction('statisticsChartSurfaceColor'),
   extractFunction('ensureStatisticsChartThemeObserver'),
   extractFunction('renderEquityChart')
-].join('\\n'),equityContext);
+].join('\n'),equityContext);
 const equityRenderSeries={...equitySeries,points:[
   {...equitySeries.points[0]},
   {...equitySeries.points[1],tradeReturn:1.2},
