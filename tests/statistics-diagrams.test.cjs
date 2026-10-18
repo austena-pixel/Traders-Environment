@@ -23,8 +23,14 @@ function MockChart(context,config){
   this.config=config;
   this.destroyed=false;
   this.resize=()=>{this.resized=true};
+  this.update=mode=>{this.updateMode=mode};
   this.destroy=()=>{this.destroyed=true};
   latestChart=this;
+}
+const themeObservers=[];
+class MockMutationObserver{
+  constructor(callback){this.callback=callback;themeObservers.push(this)}
+  observe(){}
 }
 function mockClassList(initial=[]){
   const values=new Set(initial);
@@ -61,6 +67,9 @@ const context=vm.createContext({
   $:selector=>nodes.get(selector),
   $$:selector=>{assert.equal(selector,'[data-stats-outcome]');return tabs},
   requestAnimationFrame:callback=>callback(),
+  MutationObserver:MockMutationObserver,
+  document:{documentElement:{},getElementById:id=>nodes.get('#'+id)},
+  getComputedStyle:()=>({backgroundColor:'#151515'}),
   setStatisticsText:(id,value)=>{const node=nodes.get('#'+id);if(node)node.textContent=String(value??'—')},
   money:value=>'$'+Number(value).toFixed(2),
   signedMoney:value=>(Number(value)>0?'+$':Number(value)<0?'-$':'$')+Math.abs(Number(value)).toFixed(2),
@@ -73,6 +82,9 @@ const context=vm.createContext({
 });
 vm.runInContext('let renderedEquitySeries=null;function renderEquityChart(series){renderedEquitySeries=series;equityChartInstance={resized:false,resize(){this.resized=true}}}',context);
 vm.runInContext([
+  'let statisticsChartThemeObserver=null;let statisticsChartThemeRefreshFrame=0;',
+  extractFunction('statisticsChartSurfaceColor'),
+  extractFunction('ensureStatisticsChartThemeObserver'),
   extractFunction('destroyStatisticsOutcomeChart'),
   extractFunction('renderStatisticsOutcomeChart'),
   extractFunction('renderCombinedOutcomeDiagram')
@@ -81,6 +93,10 @@ vm.runInContext([
 let result=vm.runInContext('renderStatisticsOutcomeChart("drawdown",selectedTrades,equitySeries)',Object.assign(context,{selectedTrades,equitySeries}));
 assert.ok(result.chart);
 assert.deepEqual(Array.from(latestChart.config.data.datasets[0].data),[0,0,40]);
+assert.equal(latestChart.config.options.scales.x.grid.color(), '#151515','grid lines match the rendered chart surface');
+assert.equal(latestChart.config.options.scales.y.border.color(), '#151515','axis borders match the rendered chart surface');
+themeObservers[0].callback([{attributeName:'data-hios-theme'}]);
+assert.equal(latestChart.updateMode,'none','theme changes redraw the chart without animation');
 const drawdownTooltip=latestChart.config.options.plugins.tooltip.callbacks.label({dataIndex:2});
 assert.deepEqual(Array.from(drawdownTooltip),['Drawdown: $40.00','Peak equity: $1120.00','Peak-to-trough: 3.57%']);
 
@@ -109,6 +125,11 @@ const equityContext=vm.createContext({
   Chart:MockChart,
   console,
   $:selector=>selector==='#equityChart'?equityCanvas:null,
+  MutationObserver:MockMutationObserver,
+  document:{documentElement:{},getElementById:()=>({})},
+  getComputedStyle:()=>({backgroundColor:'#151515'}),
+  requestAnimationFrame:callback=>callback(),
+  statsOutcomeChartInstance:null,
   statsRange:'1m',equityChartInstance:null,
   Number,Math,
   money:value=>'$'+Number(value).toFixed(2),
@@ -116,7 +137,12 @@ const equityContext=vm.createContext({
   formatDate:value=>String(value),
   formatReturnPct:value=>Number.isFinite(value)?(value>=0?'+':'')+Number(value).toFixed(2)+'%':'—'
 });
-vm.runInContext(extractFunction('renderEquityChart'),equityContext);
+vm.runInContext([
+  'let statisticsChartThemeObserver=null;let statisticsChartThemeRefreshFrame=0;',
+  extractFunction('statisticsChartSurfaceColor'),
+  extractFunction('ensureStatisticsChartThemeObserver'),
+  extractFunction('renderEquityChart')
+].join('\\n'),equityContext);
 const equityRenderSeries={...equitySeries,points:[
   {...equitySeries.points[0]},
   {...equitySeries.points[1],tradeReturn:1.2},
@@ -125,6 +151,7 @@ const equityRenderSeries={...equitySeries,points:[
 vm.runInContext('renderEquityChart(equityRenderSeries)',Object.assign(equityContext,{equityRenderSeries}));
 assert.deepEqual(Array.from(latestChart.config.data.labels),['T0','T1','T2']);
 assert.deepEqual(Array.from(latestChart.config.data.datasets[0].data),[1000,1120,1080]);
+assert.equal(latestChart.config.options.scales.x.grid.color(), '#151515','Equity Curve grid lines match the rendered chart surface');
 const equityTooltip=latestChart.config.options.plugins.tooltip.callbacks.label({dataIndex:1});
 assert.deepEqual(Array.from(equityTooltip),['EURUSD • Long','Trade P&L: +$120.00','Trade return: +1.20%','Equity: $1120.00']);
 
