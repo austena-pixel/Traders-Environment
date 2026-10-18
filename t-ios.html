@@ -1983,10 +1983,11 @@ body.playbook-workspace .main{
 #page-statistics:has(#statsStatisticsView[hidden])>.stats-section-a-header{margin-bottom:14px;border-bottom:1px solid #253449;border-radius:12px}
 .stats-section-a-header>.stats-period-dropdown,.stats-section-a-header>.stats-view-tabs,.stats-section-a-header>.stats-autozoom-controls{min-width:0;padding:5px;border:1px solid #2b3b50;border-radius:11px;background:linear-gradient(145deg,#111a26,#0b1119);box-shadow:inset 0 1px rgba(255,255,255,.025)}
 .stats-section-a-header>.stats-period-dropdown{flex:0 0 auto}
-.stats-section-a-header>.stats-view-tabs{flex:1 1 460px;min-width:min(100%,360px);width:min(100%,660px);margin-left:auto}
+.stats-section-a-header>.stats-view-tabs{flex:0 0 auto;min-width:0;max-width:100%;width:auto;margin-left:auto;grid-template-columns:repeat(3,max-content)}
 .stats-section-a-header>.stats-view-tabs .range-btn{border-radius:8px}
-.stats-section-a-header .stats-view-tabs .range-btn{min-height:32px;padding:6px 8px;gap:6px}
+.stats-section-a-header .stats-view-tabs .range-btn{flex:0 0 auto;min-height:32px;padding:6px 9px;gap:8px;white-space:nowrap}
 .stats-section-a-header .stats-view-tab-label,.stats-section-a-header .stats-view-tab-value{font-size:9px}
+.stats-section-a-header .stats-view-tab-label{overflow-wrap:normal}
 .stats-section-a-header>.stats-autozoom-controls{flex:0 0 auto;gap:6px;min-height:42px}
 .stats-section-a-header .stats-autozoom-zoom input[type="range"]{width:68px;min-width:50px}
 #page-statistics:has(#statsEdgeView:not([hidden])) .stats-section-a-header>.stats-autozoom-controls,
@@ -2075,6 +2076,7 @@ body.playbook-workspace .main{
 .stats-indicator-dialog-actions{display:flex;justify-content:flex-end;gap:7px;padding:12px 16px;border-top:1px solid #26364a}
 @media(max-width:760px){
   .stats-section-a-header{flex-direction:column;align-items:stretch}
+  .stats-section-a-header>.stats-view-tabs{width:100%;margin-left:0;grid-template-columns:repeat(3,max-content);justify-content:start}
   .stats-section-a-header .stats-autozoom-controls{justify-content:flex-start}
   .stats-page-period-controls{justify-content:flex-start;width:100%}
   .stats-primary-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
