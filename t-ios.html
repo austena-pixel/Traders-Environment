@@ -6775,6 +6775,86 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 @media(max-width:600px){#page-journal .journal-level-view.panel{padding:14px}.journal-scope-head{flex-wrap:wrap}.journal-review-stats,.journal-session-summary-stats,.journal-session-stats{grid-template-columns:minmax(0,1fr)}}
 </style>
 
+<style id="stats-execution-research-styles">
+#statsExecutionView .stats-execution-sections{display:grid;gap:12px}
+#statsExecutionView .stats-execution-section{min-width:0;padding:14px;border:1px solid #253449;border-radius:14px;background:rgba(8,13,20,.82)}
+#statsExecutionView .stats-execution-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin:0 0 12px}
+#statsExecutionView .stats-execution-section-head>div{min-width:0}
+#statsExecutionView .stats-execution-section-index{display:block;margin-bottom:4px;color:#7794b4;font-size:9px;font-weight:800;letter-spacing:.13em}
+#statsExecutionView .stats-execution-section-head h3{margin:0 0 5px;color:#e1eaf5;font-size:15px}
+#statsExecutionView .stats-execution-section-head p{margin:0;color:#8fa0b5;font-size:10px;line-height:1.5}
+#statsExecutionView .stats-execution-kpis{grid-template-columns:repeat(4,minmax(0,1fr));margin:0}
+#statsExecutionView .stats-execution-kpis .stats-environment-kpi{min-height:100px;background:rgba(15,23,33,.88)}
+#statsExecutionView .stats-execution-kpis .stats-environment-kpi>span{font-size:10px}
+#statsExecutionView .stats-execution-kpis .stats-environment-kpi>strong{font-size:18px}
+#statsExecutionView .stats-execution-kpis .stats-execution-unavailable-kpi>strong{font-size:14px;color:#b8c5d5}
+#statsExecutionView .stats-execution-gap-tabs{display:flex;gap:6px;overflow-x:auto;padding:0 0 8px;margin:0 0 8px;border-bottom:1px solid rgba(46,62,81,.55);scrollbar-width:thin}
+#statsExecutionView .stats-execution-gap-tab{flex:0 0 auto;min-height:34px;padding:7px 10px;border:1px solid transparent;border-radius:8px;background:transparent;color:#91a0b3;font-size:10px;font-weight:700;cursor:pointer}
+#statsExecutionView .stats-execution-gap-tab:hover{color:#dbe7f5;background:rgba(29,44,62,.55)}
+#statsExecutionView .stats-execution-gap-tab[aria-selected=true]{border-color:#365579;background:#17263a;color:#dbeafe}
+#statsExecutionView .stats-execution-gap-tab:focus-visible{outline:2px solid #77a9e8;outline-offset:2px}
+#statsExecutionView .stats-execution-gap-panel{min-width:0;min-height:270px;padding:12px 4px}
+#statsExecutionView .stats-execution-gap-panel[hidden]{display:none!important}
+#statsExecutionView .stats-execution-gap-empty{display:flex;min-height:245px;flex-direction:column;align-items:flex-start;justify-content:center;gap:9px;max-width:760px;margin:0 auto;padding:20px 22px}
+#statsExecutionView .stats-execution-gap-empty h4{margin:0;color:#e5edf7;font-size:14px}
+#statsExecutionView .stats-execution-gap-empty p{max-width:690px;margin:0;color:#95a6ba;font-size:10px;line-height:1.6}
+#statsExecutionView .stats-execution-gap-empty>small{color:#8293a9;font-size:9px;line-height:1.5}
+#statsExecutionView .stats-execution-status-tag{padding:4px 8px;border-radius:999px;background:rgba(55,91,129,.2);color:#98c4f1;font-size:9px;font-weight:750}
+#statsExecutionView .stats-execution-gap-evidence{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%;margin:3px 0}
+#statsExecutionView .stats-execution-gap-evidence>div{display:grid;gap:5px;min-width:0;padding:10px;border:1px solid rgba(48,65,85,.7);border-radius:9px;background:rgba(13,20,29,.64)}
+#statsExecutionView .stats-execution-gap-evidence span{color:#8293a9;font-size:9px;line-height:1.4}
+#statsExecutionView .stats-execution-gap-evidence strong{color:#d6e1ee;font-size:11px}
+#statsExecutionView .stats-execution-consistency-chart{height:285px}
+#statsExecutionView .stats-execution-consistency-chart canvas{width:100%!important;height:100%!important}
+#statsExecutionView .stats-execution-adherence-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:10px}
+#statsExecutionView .stats-execution-diagnostic-card{display:grid;align-content:start;gap:6px}
+#statsExecutionView .stats-execution-diagnostic-card h4,#statsExecutionView .stats-research-panel h4{margin:0 0 2px;color:#e1eaf5;font-size:11px}
+#statsExecutionView .stats-execution-diagnostic-card>strong{color:#e6effa;font-size:20px;font-variant-numeric:tabular-nums}
+#statsExecutionView .stats-execution-diagnostic-card>p{margin:0;color:#8fa0b5;font-size:9px;line-height:1.45}
+#statsExecutionView .stats-execution-psychology-card{margin-bottom:10px}
+#statsExecutionView .stats-execution-psychology-card>small{color:#8293a9;font-size:9px;line-height:1.45}
+#statsExecutionView .stats-execution-diagnostics-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#statsExecutionView .stats-execution-diagnostics-grid .stats-research-panel{min-width:0}
+#statsExecutionView .stats-execution-diagnostics-grid .stats-research-panel h4{margin:0 0 5px;color:#e1eaf5;font-size:11px}
+#statsExecutionView .stats-execution-diagnostics-grid .stats-research-panel>p{margin:0 0 8px;color:#8fa0b5;font-size:9px;line-height:1.5}
+#statsExecutionView .stats-execution-diagnostic-wide{grid-column:1/-1}
+#statsExecutionView .stats-execution-diagnostics-grid .table-wrap{max-width:100%;overflow-x:auto}
+#statsExecutionView .stats-execution-not-measured{display:inline-flex;margin-top:5px;padding:7px 9px;border-radius:8px;background:rgba(39,54,72,.52);color:#bcc9d9;font-size:10px;font-weight:750}
+#statsExecutionView .stats-psychology-state-panel{margin:0 0 10px}
+#statsExecutionView .stats-execution-reflection-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#statsExecutionView .stats-execution-reflection-record{min-width:0;padding:10px;border:1px solid rgba(46,62,81,.65);border-radius:9px;background:rgba(10,16,24,.62)}
+#statsExecutionView .stats-execution-reflection-record h5{margin:0 0 7px;color:#dce7f4;font-size:10px}
+#statsExecutionView .stats-execution-reflection-record dl{display:grid;gap:6px;margin:0}
+#statsExecutionView .stats-execution-reflection-record dl>div{display:grid;grid-template-columns:minmax(88px,.32fr) minmax(0,1fr);gap:8px}
+#statsExecutionView .stats-execution-reflection-record dt{color:#8293a9;font-size:8px;font-weight:750}
+#statsExecutionView .stats-execution-reflection-record dd{margin:0;color:#bdc9d8;font-size:9px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+#statsExecutionView .stats-execution-framework-details{margin-top:10px;padding:10px 12px;border:1px solid #253449;border-radius:10px;background:rgba(10,16,24,.55)}
+#statsExecutionView .stats-execution-framework-details>summary{color:#c4d2e2;font-size:10px;font-weight:750;cursor:pointer}
+#statsExecutionView .stats-execution-framework-details[open]>summary{margin-bottom:8px}
+#statsExecutionView .stats-execution-framework-details .stats-psychology-view{padding:8px 0;min-height:0;border:0;background:transparent}
+#statsExecutionView .stats-execution-framework-details .stats-fear-layout{grid-template-columns:minmax(0,1.4fr) minmax(0,.8fr) minmax(0,.8fr);gap:9px;margin-top:8px}
+#statsExecutionView .stats-execution-framework-details .stats-behavior-secondary{gap:9px;margin-top:9px}
+#statsExecutionView .stats-execution-framework-details .stats-fear-panel{padding:10px}
+@media(max-width:900px){
+  #statsExecutionView .stats-execution-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #statsExecutionView .stats-execution-diagnostics-grid{grid-template-columns:1fr}
+  #statsExecutionView .stats-execution-diagnostic-wide{grid-column:auto}
+  #statsExecutionView .stats-execution-framework-details .stats-fear-layout{grid-template-columns:1fr 1fr}
+}
+@media(max-width:560px){
+  #statsExecutionView.stats-execution-view{padding:11px}
+  #statsExecutionView .stats-execution-section{padding:10px}
+  #statsExecutionView .stats-execution-kpis{gap:7px}
+  #statsExecutionView .stats-execution-kpis .stats-environment-kpi{min-height:96px;padding:9px}
+  #statsExecutionView .stats-execution-kpis .stats-environment-kpi>strong{font-size:16px}
+  #statsExecutionView .stats-execution-gap-empty{padding:16px 10px}
+  #statsExecutionView .stats-execution-gap-evidence{grid-template-columns:1fr}
+  #statsExecutionView .stats-execution-adherence-grid{grid-template-columns:1fr}
+  #statsExecutionView .stats-execution-reflection-list{grid-template-columns:1fr}
+  #statsExecutionView .stats-execution-framework-details .stats-fear-layout{grid-template-columns:1fr}
+  #statsExecutionView .stats-execution-gap-tab{padding:7px 8px;font-size:9px}
+}
+</style>
 </head>
 
 <body>
@@ -7541,68 +7621,137 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
       </section>
 
       <section class="stats-view-panel panel stats-execution-view" id="statsExecutionView" role="tabpanel" aria-labelledby="statsExecutionTab" hidden>
-        <div class="stats-environment-heading">
-          <h2>Execution Quality</h2>
-          <p>Measures recorded adherence and trader-reported state alongside financial outcomes. Associations are descriptive and do not establish causation.</p>
-        </div>
-        <div class="stats-environment-kpis stats-execution-kpis">
-          <article class="stats-environment-kpi stats-execution-overall-kpi">
-            <span>Overall execution quality</span>
-            <strong id="statsExecutionOverallValue">—</strong>
-            <small id="statsExecutionCoverageNote">No eligible execution assessments in this period.</small>
-          </article>
-          <article class="stats-environment-kpi">
-            <span>Rules adherence</span>
-            <strong id="statsExecutionRulesValue">—</strong>
-            <small id="statsExecutionRulesCount">Not measured</small>
-          </article>
-          <article class="stats-environment-kpi">
-            <span>Playbook adherence</span>
-            <strong id="statsExecutionPlaybookValue">—</strong>
-            <small id="statsExecutionPlaybookCount">Not measured</small>
-          </article>
-          <article class="stats-environment-kpi">
-            <span>Psychological reflection</span>
-            <strong id="statsExecutionPsychologyValue">—</strong>
-            <small id="statsExecutionPsychologyCount">Not measured</small>
-          </article>
-        </div>
+  <div class="stats-environment-heading">
+    <h2>Execution Quality</h2>
+    <p>Measures recorded execution evidence and investigates where decisions may differ from a methodology. Execution scores remain separate from profitability.</p>
+  </div>
+  <div class="stats-execution-sections">
+    <section class="stats-execution-section" id="statsExecutionOverview" aria-labelledby="statsExecutionOverviewTitle">
+      <header class="stats-execution-section-head">
+        <div><span class="stats-execution-section-index">SECTION A</span><h3 id="statsExecutionOverviewTitle">Execution Overview</h3><p>Recorded Rules and Playbook adherence, available reference evidence, independent opportunities, and assessment coverage.</p></div>
+      </header>
+      <div class="stats-environment-kpis stats-execution-kpis">
+        <article class="stats-environment-kpi">
+          <span>Execution Adherence</span>
+          <strong id="statsExecutionAdherenceValue">—</strong>
+          <small id="statsExecutionAdherenceNote">Not yet measured from Rules and Playbook checks.</small>
+        </article>
+        <article class="stats-environment-kpi stats-execution-unavailable-kpi">
+          <span>Profit Gap</span>
+          <strong>Not yet measured</strong>
+          <small>Requires comparable reference and actual outcomes for matched opportunities.</small>
+        </article>
+        <article class="stats-environment-kpi stats-execution-unavailable-kpi">
+          <span>Opportunity Capture</span>
+          <strong>Not yet measured</strong>
+          <small>No independent opportunity-detection records are connected.</small>
+        </article>
+        <article class="stats-environment-kpi">
+          <span>Evidence Coverage</span>
+          <strong id="statsExecutionEvidenceValue">—</strong>
+          <small id="statsExecutionCoverageNote">Full, partial, and unassessed records will be distinguished.</small>
+        </article>
+      </div>
+      <p class="stats-evidence-caveat">Execution adherence uses recorded Rules and Playbook checks only. Profitability never increases or decreases an adherence score.</p>
+    </section>
 
-        <div class="stats-execution-analysis-grid">
-          <section class="panel stats-research-panel">
-            <h3>Execution quality over time</h3>
-            <p id="statsExecutionTrendSummary">Averages use only trades with measured execution assessments.</p>
-            <div class="stats-research-chart-wrap">
-              <canvas id="statsExecutionTrendChart" role="img" aria-label="Measured execution quality by chronological period"></canvas>
-              <div class="stats-research-empty" id="statsExecutionTrendEmpty" hidden>No execution assessments are recorded in this period.</div>
+    <section class="stats-execution-section" id="statsExecutionProfitGap" aria-labelledby="statsExecutionProfitGapTitle">
+      <header class="stats-execution-section-head">
+        <div><span class="stats-execution-section-index">SECTION B</span><h3 id="statsExecutionProfitGapTitle">Profit Gap Analysis</h3><p>Compare actual outcomes with independently modeled reference results only when both describe the same opportunities and use compatible risk, costs, and units.</p></div>
+      </header>
+      <div class="stats-execution-gap-tabs" role="tablist" aria-label="Profit Gap analysis diagrams">
+        <button class="stats-execution-gap-tab" type="button" role="tab" id="statsExecutionGapTabReference" aria-controls="statsExecutionGapReferencePanel" aria-selected="true" tabindex="0" data-execution-diagram="reference-actual">Reference vs Actual</button>
+        <button class="stats-execution-gap-tab" type="button" role="tab" id="statsExecutionGapTabOverTime" aria-controls="statsExecutionGapOverTimePanel" aria-selected="false" tabindex="-1" data-execution-diagram="gap-over-time">Profit Gap Over Time</button>
+        <button class="stats-execution-gap-tab" type="button" role="tab" id="statsExecutionGapTabDeviation" aria-controls="statsExecutionGapDeviationPanel" aria-selected="false" tabindex="-1" data-execution-diagram="gap-by-deviation">Gap by Deviation</button>
+        <button class="stats-execution-gap-tab" type="button" role="tab" id="statsExecutionGapTabConsistency" aria-controls="statsExecutionGapConsistencyPanel" aria-selected="false" tabindex="-1" data-execution-diagram="consistency">Execution Consistency</button>
+        <button class="stats-execution-gap-tab" type="button" role="tab" id="statsExecutionGapTabBehavior" aria-controls="statsExecutionGapBehaviorPanel" aria-selected="false" tabindex="-1" data-execution-diagram="behavior">Behavior Trend</button>
+      </div>
+      <div class="stats-execution-gap-workspace">
+        <section class="stats-execution-gap-panel" id="statsExecutionGapReferencePanel" role="tabpanel" aria-labelledby="statsExecutionGapTabReference" data-execution-diagram-panel="reference-actual">
+          <div class="stats-execution-gap-empty">
+            <span class="stats-execution-status-tag">Reference evidence unavailable</span>
+            <h4>No comparable reference results to plot</h4>
+            <p>No Shadow Trading or matched reference-results table is connected to the current Execution Quality data. The app will not simulate a methodology result or calculate a Profit Gap from unmatched trades.</p>
+            <div class="stats-execution-gap-evidence">
+              <div><span>Reference methodology outcomes</span><strong>Not available</strong></div>
+              <div><span>Actual outcomes in selected period</span><strong id="statsExecutionGapActualCount">—</strong></div>
+              <div><span>Matched opportunities</span><strong>Not available</strong></div>
             </div>
-            <p class="stats-research-note">Each point is the mean of eligible execution scores in the interval; tooltips show the trade count.</p>
-          </section>
-          <section class="panel stats-research-panel stats-execution-profit-panel">
-            <h3 id="statExecutionProfitTitle">Execution Quality vs Profitability</h3>
-            <p>Average net P&amp;L by recorded execution-quality range. This comparison is descriptive only.</p>
-            <div class="stats-execution-axis">Y · Average net P&amp;L</div>
-            <svg id="statExecutionProfitChart" class="stats-execution-chart" viewBox="0 0 260 112" role="img" aria-label="Execution quality comparison awaiting records"></svg>
-            <div class="stats-execution-axis stats-execution-x">X · Execution Quality (%)</div>
-            <div id="statExecutionProfitGroups" class="stats-execution-groups" aria-label="Group averages and trade counts"></div>
-            <p id="statExecutionProfitInsight" class="stats-execution-insight" aria-live="polite">No eligible trades in this period.</p>
-          </section>
-        </div>
-
-        <section class="panel stats-research-panel stats-psychology-state-panel">
-          <h3>Trader-reported psychology</h3>
-          <p>These are the states selected in the trade journal. They are self-reported labels, not detected mental states.</p>
-          <div class="table-wrap">
-            <table class="stats-research-table">
-              <thead><tr><th>Reported state</th><th>Trades</th><th>Average execution quality</th><th>Average net P&amp;L</th></tr></thead>
-              <tbody id="statsPsychologyStatesBody"><tr><td colspan="4" class="muted">No self-reported states are recorded in this period.</td></tr></tbody>
-            </table>
+            <small>A negative gap can mean actual performance exceeded the reference; it does not prove correct execution.</small>
           </div>
         </section>
+        <section class="stats-execution-gap-panel" id="statsExecutionGapOverTimePanel" role="tabpanel" aria-labelledby="statsExecutionGapTabOverTime" data-execution-diagram-panel="gap-over-time" hidden>
+          <div class="stats-execution-gap-empty"><span class="stats-execution-status-tag">Awaiting matched outcomes</span><h4>Profit Gap Over Time</h4><p>This timeline needs dated reference results paired with actual outcomes for the same opportunities. No paired result series is available yet.</p></div>
+        </section>
+        <section class="stats-execution-gap-panel" id="statsExecutionGapDeviationPanel" role="tabpanel" aria-labelledby="statsExecutionGapTabDeviation" data-execution-diagram-panel="gap-by-deviation" hidden>
+          <div class="stats-execution-gap-empty"><span class="stats-execution-status-tag">Awaiting structured deviation evidence</span><h4>Gap by Deviation Type</h4><p>Recorded error notes are free text and are not yet classified or linked to matched reference outcomes. No gap is attributed to a deviation.</p></div>
+        </section>
+        <section class="stats-execution-gap-panel" id="statsExecutionGapConsistencyPanel" role="tabpanel" aria-labelledby="statsExecutionGapTabConsistency" data-execution-diagram-panel="consistency" hidden>
+          <div class="stats-research-panel-head"><div><h4>Execution Consistency Trend</h4><p id="statsExecutionTrendSummary">Averages use only trades with measured execution assessments.</p></div></div>
+          <div class="stats-research-chart-wrap stats-execution-consistency-chart">
+            <canvas id="statsExecutionTrendChart" role="img" aria-label="Measured execution quality by chronological period"></canvas>
+            <div class="stats-research-empty" id="statsExecutionTrendEmpty" hidden>No execution assessments are recorded in this period.</div>
+          </div>
+          <p class="stats-research-note">Uses the existing execution assessment score and selected reporting period. The historical score definition is retained; it remains separate from profitability.</p>
+        </section>
+        <section class="stats-execution-gap-panel" id="statsExecutionGapBehaviorPanel" role="tabpanel" aria-labelledby="statsExecutionGapTabBehavior" data-execution-diagram-panel="behavior" hidden>
+          <div class="stats-execution-gap-empty"><span class="stats-execution-status-tag">Awaiting linked behavioral evidence</span><h4>Behavioral Pattern Trend</h4><p>Trader-reported state and reflection records exist, but the current data does not contain structured behavioral events linked to execution deviations. No pattern is inferred.</p></div>
+        </section>
+      </div>
+      <p class="stats-evidence-caveat">A modeled reference is an estimate, not a profit guarantee. The selected reporting period applies to every available chart.</p>
+    </section>
 
-        <section class="stats-psychology-view stats-behavior-demo" id="statsPsychologyView" aria-label="Illustrative Four-Fear and behavior demonstrations">
-        <h3>Four-Fear and Behavior Demonstrations</h3>
-        <p>These existing diagrams remain illustrative examples. They do not represent measurements from your trading records or psychological diagnoses.</p>
+    <section class="stats-execution-section" id="statsExecutionDiagnostics" aria-labelledby="statsExecutionDiagnosticsTitle">
+      <header class="stats-execution-section-head">
+        <div><span class="stats-execution-section-index">SECTION C</span><h3 id="statsExecutionDiagnosticsTitle">Execution Diagnostics</h3><p>What is recorded about the rules, reviews, and deviations associated with selected trades.</p></div>
+      </header>
+      <div class="stats-execution-adherence-grid">
+        <article class="stats-research-panel stats-execution-diagnostic-card"><h4>Rules adherence</h4><strong id="statsExecutionRulesValue">—</strong><p id="statsExecutionRulesCount">Not measured</p></article>
+        <article class="stats-research-panel stats-execution-diagnostic-card"><h4>Playbook adherence</h4><strong id="statsExecutionPlaybookValue">—</strong><p id="statsExecutionPlaybookCount">Not measured</p></article>
+      </div>
+      <div class="stats-execution-diagnostics-grid">
+        <section class="stats-research-panel stats-execution-diagnostic-wide">
+          <h4>Recorded assessment timeline</h4>
+          <p id="statsExecutionTimelineNote">Trade-linked review status for the selected period.</p>
+          <div class="table-wrap"><table class="stats-research-table"><thead><tr><th>Trade date</th><th>Instrument</th><th>Review evidence</th></tr></thead><tbody id="statsExecutionTimelineBody"><tr><td colspan="3" class="muted">No trade records in this period.</td></tr></tbody></table></div>
+          <p class="stats-evidence-caveat">The current schema does not record paired planned-versus-actual decision events. This is a trade-linked review timeline, not a live decision timeline.</p>
+        </section>
+        <section class="stats-research-panel">
+          <h4>Recorded deviation notes</h4>
+          <p id="statsExecutionDeviationNote">Trader-entered notes are shown as written and are not assigned a cause.</p>
+          <div class="table-wrap"><table class="stats-research-table"><thead><tr><th>Trade date</th><th>Instrument</th><th>Trader-entered note</th></tr></thead><tbody id="statsExecutionDeviationBody"><tr><td colspan="3" class="muted">No deviation notes are recorded in this period.</td></tr></tbody></table></div>
+        </section>
+        <section class="stats-research-panel">
+          <h4>Opportunity participation</h4>
+          <p>Opportunity capture cannot be measured from closed trades alone. There is no independent record of eligible opportunities, missed entries, or participation requirements.</p>
+          <div class="stats-execution-not-measured" role="status">Not yet measured</div>
+        </section>
+      </div>
+    </section>
+
+    <section class="stats-execution-section" id="statsExecutionBehavioralResearch" aria-labelledby="statsExecutionBehavioralResearchTitle">
+      <header class="stats-execution-section-head">
+        <div><span class="stats-execution-section-index">SECTION D</span><h3 id="statsExecutionBehavioralResearchTitle">Behavioral Research</h3><p>Separate observed trade records from possible psychological explanations. Reported labels and reflections are not diagnoses.</p></div>
+      </header>
+      <article class="stats-research-panel stats-execution-diagnostic-card stats-execution-psychology-card">
+        <h4>Structured psychology criteria</h4><strong id="statsExecutionPsychologyValue">—</strong><p id="statsExecutionPsychologyCount">Not measured</p>
+        <small>Existing scored reflection criteria only; this is not an inferred mental state or fear score.</small>
+      </article>
+      <section class="stats-research-panel stats-psychology-state-panel">
+        <h4>Trader-reported states by outcome</h4>
+        <p>These are the states selected in the trade journal. Associations with execution quality or P&amp;L are descriptive only and do not establish cause.</p>
+        <div class="table-wrap"><table class="stats-research-table"><thead><tr><th>Reported state</th><th>Trades</th><th>Average execution assessment</th><th>Average recorded net P&amp;L</th></tr></thead><tbody id="statsPsychologyStatesBody"><tr><td colspan="4" class="muted">No self-reported states are recorded in this period.</td></tr></tbody></table></div>
+      </section>
+      <section class="stats-research-panel">
+        <h4>Trade-linked reflections</h4>
+        <p id="statsExecutionReflectionNote">Saved review text is shown as recorded. It may support later investigation, but does not by itself establish a behavioral cause.</p>
+        <div class="stats-execution-reflection-list" id="statsExecutionReflectionList" aria-live="polite"><p class="stats-research-note">No trade-linked reflections are recorded in this period.</p></div>
+      </section>
+      <details class="stats-execution-framework-details" id="statsExecutionFrameworkToggle">
+        <summary>Explore the illustrative Four-Fear framework and behavior diagrams</summary>
+        <section class="stats-psychology-view stats-behavior-demo" id="statsPsychologyView" aria-label="Illustrative Four-Fear and behavior framework">
+        <h3>Four-Fear Research Framework — Illustrative Examples</h3>
+        <p>These diagrams are educational examples only. They are not measured from saved trading records, validated fear scores, or psychological diagnoses.</p>
         <div class="stats-fear-layout">
           <article class="stats-fear-panel" aria-labelledby="statsFearTrendTitle">
             <h4 id="statsFearTrendTitle">Psychological Behaviour Trend</h4>
@@ -7662,7 +7811,10 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           </article>
         </div>
       </section>
-      </section>
+      </details>
+    </section>
+  </div>
+</section>
     </section>
 
 
@@ -8862,7 +9014,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 <script src="technical-instruments/ai-builder-schema.js"></script>
 <script src="technical-instruments/condition-logic.js"></script>
 <script src="technical-instruments/ai-builder-document.js"></script>
-<script src="core/statistics-environments.js?v=20261017-custom-statistics-dashboard"></script>
+<script src="core/statistics-environments.js?v=20261018-execution-quality-research"></script>
 <script>
 /* =========================================================
    SUPABASE CONFIGURATION
@@ -15660,27 +15812,139 @@ function renderEdgePerformanceEnvironment(source){
   renderEdgeTimeline(source);
   return execution;
 }
+function executionTradeDateLabel(trade){
+  return String(trade?.trade_date||trade?.closed_at||trade?.created_at||'Date not recorded').slice(0,10);
+}
+function executionTradeInstrumentLabel(trade){
+  const instrument=String(trade?.instrument||trade?.symbol||trade?.pair||'Instrument not recorded');
+  return trade?.direction?instrument+' · '+String(trade.direction):instrument;
+}
+function renderExecutionDiagnostics(source){
+  const latest=(Array.isArray(source)?source:[]).slice().sort((a,b)=>
+    executionTradeDateLabel(b).localeCompare(executionTradeDateLabel(a))
+  );
+  const timeline=latest.slice(0,10).map(trade=>{
+    const review=executionReviewForTrade(trade.id);
+    const checks=review?executionChecksForReview(review.id):[];
+    const score=executionScoreForTrade(trade.id);
+    const status=Number.isFinite(score)?'Measured execution assessment'
+      :checks.length?'Partial review evidence'
+      :review?'Narrative review only':'No execution review';
+    return {trade,status};
+  });
+  const measuredCount=latest.filter(trade=>Number.isFinite(executionScoreForTrade(trade.id))).length;
+  setStatisticsText('statsExecutionTimelineNote',
+    'Showing '+timeline.length+' of '+latest.length+' selected trades · '+measuredCount+' have a measured execution assessment.');
+  renderStatisticsTableBody('statsExecutionTimelineBody',timeline,[
+    {value:row=>executionTradeDateLabel(row.trade)},
+    {value:row=>executionTradeInstrumentLabel(row.trade)},
+    {value:row=>row.status}
+  ],'No trade records in this period.');
+
+  const deviations=latest.map(trade=>({trade,review:executionReviewForTrade(trade.id)}))
+    .filter(item=>item.review&&String(item.review.execution_errors||'').trim())
+    .slice(0,8)
+    .map(item=>({
+      date:executionTradeDateLabel(item.trade),
+      instrument:executionTradeInstrumentLabel(item.trade),
+      note:String(item.review.execution_errors||'').trim().slice(0,420)
+    }));
+  setStatisticsText('statsExecutionDeviationNote',deviations.length
+    ?deviations.length+' trader-entered note'+(deviations.length===1?'':'s')+' in the selected period · unclassified text'
+    :'No trader-entered deviation notes in this period.');
+  renderStatisticsTableBody('statsExecutionDeviationBody',deviations,[
+    {value:row=>row.date},
+    {value:row=>row.instrument},
+    {value:row=>row.note}
+  ],'No deviation notes are recorded in this period.');
+}
+function renderExecutionReflectionRecords(source){
+  const container=document.getElementById('statsExecutionReflectionList');
+  if(!container)return;
+  container.replaceChildren();
+  const records=(Array.isArray(source)?source:[]).map(trade=>({
+    trade,
+    review:executionReviewForTrade(trade.id)
+  })).filter(item=>item.review&&[
+    item.review.what_went_well,item.review.execution_errors,
+    item.review.next_adjustment,item.review.notes
+  ].some(value=>String(value||'').trim()))
+   .sort((a,b)=>executionTradeDateLabel(b.trade).localeCompare(executionTradeDateLabel(a.trade)))
+   .slice(0,6);
+  const note=document.getElementById('statsExecutionReflectionNote');
+  if(note)note.textContent=records.length
+    ?'Showing '+records.length+' saved review'+(records.length===1?'':'s')+' from the selected period. Trader-reported evidence; no cause is inferred.'
+    :'No trade-linked reflection text is recorded in this period.';
+  if(!records.length){
+    const empty=document.createElement('p');
+    empty.className='stats-research-note';
+    empty.textContent='No trade-linked reflections are recorded in this period.';
+    container.appendChild(empty);
+    return;
+  }
+  records.forEach(item=>{
+    const article=document.createElement('article');
+    article.className='stats-execution-reflection-record';
+    const heading=document.createElement('h5');
+    heading.textContent=executionTradeDateLabel(item.trade)+' · '+executionTradeInstrumentLabel(item.trade);
+    const list=document.createElement('dl');
+    [
+      ['What went well',item.review.what_went_well],
+      ['Reported deviation',item.review.execution_errors],
+      ['Next adjustment',item.review.next_adjustment],
+      ['Notes',item.review.notes]
+    ].forEach(([label,value])=>{
+      const text=String(value||'').trim();
+      if(!text)return;
+      const row=document.createElement('div');
+      const term=document.createElement('dt');
+      const description=document.createElement('dd');
+      term.textContent=label;
+      description.textContent=text;
+      row.append(term,description);
+      list.appendChild(row);
+    });
+    article.append(heading,list);
+    container.appendChild(article);
+  });
+}
 function renderExecutionQualityEnvironment(source){
   const analytics=statsAnalytics();
   if(!analytics)return;
+  const categoriesForTrade=trade=>executionMappedCompositeForTrade(trade.id).categories;
   const quality=analytics.summarizeExecutionQuality(source,
     trade=>executionScoreForTrade(trade.id),
-    trade=>executionMappedCompositeForTrade(trade.id).categories
+    categoriesForTrade
   );
-  setStatisticsText('statsExecutionOverallValue',Number.isFinite(quality.averageScorePct)
-    ? quality.averageScorePct.toFixed(1)+'%':'—');
-  setStatisticsText('statsExecutionCoverageNote',quality.reviewedTradeCount
-    ? `${quality.reviewedTradeCount} of ${quality.selectedTradeCount} selected trades had an eligible execution assessment; unreviewed trades are excluded, not scored as zero.`
-    : 'No eligible execution assessments in this period.');
-  const categoryIds={rules:['statsExecutionRulesValue','statsExecutionRulesCount'],playbook:['statsExecutionPlaybookValue','statsExecutionPlaybookCount'],psychology:['statsExecutionPsychologyValue','statsExecutionPsychologyCount']};
+  const adherence=analytics.summarizeExecutionAdherence(source,categoriesForTrade);
+  const adherenceValue=Number.isFinite(adherence.adherencePct)
+    ?adherence.adherencePct.toFixed(1)+'%':'Not yet measured';
+  setStatisticsText('statsExecutionAdherenceValue',adherenceValue);
+  setStatisticsText('statsExecutionAdherenceNote',adherence.itemCount
+    ?adherence.itemCount+' recorded Rules and Playbook checks across '+adherence.measuredTradeCount+' trades · '+adherence.fullyAssessedTradeCount+' fully covered · '+adherence.partiallyAssessedTradeCount+' partial.'
+    :'No recorded Rules or Playbook checks in this period.');
+  const evidenceCoverage=adherence.selectedTradeCount
+    ?adherence.fullyAssessedTradeCount/adherence.selectedTradeCount*100:null;
+  setStatisticsText('statsExecutionEvidenceValue',Number.isFinite(evidenceCoverage)
+    ?evidenceCoverage.toFixed(1)+'%':'Not yet measured');
+  setStatisticsText('statsExecutionCoverageNote',
+    adherence.fullyAssessedTradeCount+' fully assessed · '+adherence.partiallyAssessedTradeCount+
+    ' partial · '+adherence.unassessedTradeCount+' unassessed of '+adherence.selectedTradeCount+
+    ' selected trades. Partial and unassessed records are excluded from the adherence score.');
+  const analyticsWithPnl=source.filter(trade=>analytics.recordedPnl(trade)!==null).length;
+  setStatisticsText('statsExecutionGapActualCount',analyticsWithPnl+' recorded outcome'+(analyticsWithPnl===1?'':'s')+' · not matched to references');
+  const categoryIds={
+    rules:['statsExecutionRulesValue','statsExecutionRulesCount'],
+    playbook:['statsExecutionPlaybookValue','statsExecutionPlaybookCount'],
+    psychology:['statsExecutionPsychologyValue','statsExecutionPsychologyCount']
+  };
   Object.entries(categoryIds).forEach(([name,[valueId,countId]])=>{
     const category=quality.categories[name];
     setStatisticsText(valueId,Number.isFinite(category?.averagePct)?category.averagePct.toFixed(1)+'%':'—');
     setStatisticsText(countId,category?.tradeCount
-      ? `${category.tradeCount} trade${category.tradeCount===1?'':'s'} with mapped ${name==='psychology'?'reflection':name==='rules'?'Rules':'Playbook'} evidence`
-      : 'Not measured');
+      ?category.tradeCount+' trade'+(category.tradeCount===1?'':'s')+' with mapped '+(name==='psychology'?'reflection':name==='rules'?'Rules':'Playbook')+' evidence'
+      :'Not measured');
   });
-  renderExecutionProfitability(source);
   renderExecutionTimeline(source);
   const executionScores=new Map(source.map(trade=>[trade.id,executionScoreForTrade(trade.id)]));
   const states=analytics.groupOutcomesByLabel(source,trade=>trade.psychology,trade=>executionScores.get(trade.id));
@@ -15690,6 +15954,8 @@ function renderExecutionQualityEnvironment(source){
     {value:row=>Number.isFinite(row.averageQualityPct)?row.averageQualityPct.toFixed(1)+'% ('+row.qualityCount+' reviewed)':'—'},
     {value:row=>row.complete?signedMoney(row.averagePnl):'—'}
   ],'No self-reported states are recorded in this period.');
+  renderExecutionDiagnostics(source);
+  renderExecutionReflectionRecords(source);
   return quality;
 }
 
@@ -16050,8 +16316,11 @@ function setStatisticsView(view){
     if(selected==='edge'&&statsEdgeTimelineInstance)statsEdgeTimelineInstance.resize();
     if(selected==='execution'){
       if(statsExecutionTrendInstance)statsExecutionTrendInstance.resize();
-      renderStatisticsFearDemonstration();
-      renderStatsBehaviorExtras();
+      const framework=document.getElementById('statsExecutionFrameworkToggle');
+      if(framework?.open){
+        renderStatisticsFearDemonstration();
+        renderStatsBehaviorExtras();
+      }
     }
   });
 }
@@ -16193,6 +16462,45 @@ function renderStatsBehaviorExtras(){
     });
   }
 }
+function activateExecutionDiagramTab(selectedTab){
+  const tabs=Array.from(document.querySelectorAll('[data-execution-diagram]'));
+  if(!selectedTab)return;
+  tabs.forEach(tab=>{
+    const active=tab===selectedTab;
+    tab.setAttribute('aria-selected',String(active));
+    tab.tabIndex=active?0:-1;
+    const panel=document.getElementById(tab.getAttribute('aria-controls'));
+    if(panel)panel.hidden=!active;
+  });
+  if(selectedTab.dataset.executionDiagram==='consistency'){
+    requestAnimationFrame(()=>{
+      if(statsExecutionTrendInstance){
+        statsExecutionTrendInstance.resize();
+        statsExecutionTrendInstance.update('none');
+      }
+    });
+  }
+}
+const executionDiagramTabs=Array.from(document.querySelectorAll('[data-execution-diagram]'));
+executionDiagramTabs.forEach((tab,index)=>{
+  tab.addEventListener('click',()=>activateExecutionDiagramTab(tab));
+  tab.addEventListener('keydown',event=>{
+    if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+    event.preventDefault();
+    const targetIndex=event.key==='Home'?0:event.key==='End'?executionDiagramTabs.length-1
+      :(index+(event.key==='ArrowRight'?1:-1)+executionDiagramTabs.length)%executionDiagramTabs.length;
+    const target=executionDiagramTabs[targetIndex];
+    activateExecutionDiagramTab(target);
+    target.focus();
+  });
+});
+document.getElementById('statsExecutionFrameworkToggle')?.addEventListener('toggle',event=>{
+  if(!event.currentTarget.open)return;
+  requestAnimationFrame(()=>{
+    renderStatisticsFearDemonstration();
+    renderStatsBehaviorExtras();
+  });
+});
 document.getElementById('statsFearTradeSample')?.addEventListener('change',renderStatisticsFearDemonstration);
 ['Wrong','Losing','Fomo','Leaving'].forEach(name=>{
   const input=document.getElementById('statsFear'+name);
