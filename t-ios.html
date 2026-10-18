@@ -2086,10 +2086,7 @@ body.playbook-workspace .main{
 .stats-personal-intelligence-feedback{display:flex;gap:5px;margin-top:5px}
 .stats-personal-intelligence-feedback button{min-height:23px;padding:3px 7px;border:1px solid #28374a;border-radius:6px;background:#0d141d;color:#aebed1;font-size:8px;cursor:pointer}
 .stats-personal-intelligence-feedback button[aria-pressed="true"]{border-color:#356e5b;background:#10231c;color:#a5e0be}
-.stats-personal-intelligence-prompts{display:flex;flex:0 0 auto;flex-wrap:wrap;gap:6px;padding:0 0 9px}
-.stats-personal-intelligence-prompt{min-height:29px;padding:6px 9px;border:1px solid #27364a;border-radius:999px;background:#0b1017;color:#c2cede;font-size:10px;font-weight:700;line-height:1.25;cursor:pointer;transition:background .14s ease,color .14s ease,border-color .14s ease}
-.stats-personal-intelligence-prompt:hover{border-color:#405a7b;background:#111c29;color:#f0f5fb}
-.stats-personal-intelligence-prompt:focus-visible,.stats-personal-intelligence-composer textarea:focus-visible{outline:2px solid #69a8ff;outline-offset:2px}
+.stats-personal-intelligence-composer textarea:focus-visible{outline:2px solid #69a8ff;outline-offset:2px}
 .stats-personal-intelligence-composer{display:flex;flex:0 0 auto;align-items:flex-end;gap:8px;padding-top:9px;border-top:1px solid rgba(77,96,125,.24)}
 .stats-personal-intelligence-composer textarea{flex:1 1 auto;min-width:0;min-height:42px;max-height:112px;padding:10px 11px;border:1px solid #2a3749;border-radius:10px;background:#0a0f16;color:#eef4fc;font-size:12px;line-height:1.4;resize:none}
 .stats-personal-intelligence-composer textarea::placeholder{color:#8798ad}
@@ -2098,7 +2095,6 @@ body.playbook-workspace .main{
 .stats-personal-intelligence-status{min-height:16px;padding-top:4px;color:#aebbd0;font-size:10px;line-height:1.4}
 .stats-personal-intelligence-status:empty{display:none}
 .stats-personal-intelligence-status[data-error="true"]{color:#ff9aa2}
-.stats-personal-intelligence-footnote{margin:5px 0 0;color:#8e9eb3;font-size:9px;line-height:1.4}
 @media(max-width:900px){
   .stats-personal-intelligence{min-height:320px;height:auto}
   .stats-personal-intelligence-messages{min-height:130px;max-height:340px}
@@ -2109,8 +2105,6 @@ body.playbook-workspace .main{
   .stats-personal-intelligence-title p{font-size:10px}
   .stats-personal-intelligence-messages{min-height:120px;padding-top:10px}
   .stats-personal-intelligence-bubble{font-size:11px;padding:9px 10px}
-  .stats-personal-intelligence-prompt{font-size:9px;padding:6px 8px}
-  .stats-personal-intelligence-footnote{font-size:8px}
   .stats-pi-settings{grid-template-columns:1fr}
   .stats-pi-setting-wide{grid-column:auto}
 }
@@ -7366,17 +7360,11 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               </section>
             </div>
             <div class="stats-personal-intelligence-messages" id="statsPIMessages" role="log" aria-live="polite" aria-relevant="additions"></div>
-            <div class="stats-personal-intelligence-prompts" role="group" aria-label="Suggested questions">
-              <button type="button" class="stats-personal-intelligence-prompt" data-pi-prompt="What stands out in these results?">Explore these results</button>
-              <button type="button" class="stats-personal-intelligence-prompt" data-pi-prompt="Help me compare my results with my execution quality.">Review execution</button>
-              <button type="button" class="stats-personal-intelligence-prompt" data-pi-prompt="What evidence should I collect next to understand my trading better?">What should I review next?</button>
-            </div>
             <form class="stats-personal-intelligence-composer" id="statsPIForm">
               <textarea id="statsPIInput" name="message" rows="1" maxlength="2000" aria-label="Message Personal Intelligence" placeholder="Ask about your results, execution, or trading patterns…"></textarea>
               <button class="btn primary stats-personal-intelligence-send" id="statsPISend" type="submit" disabled>Send</button>
             </form>
             <div class="stats-personal-intelligence-status" id="statsPIStatus" role="status" aria-live="polite"></div>
-            <p class="stats-personal-intelligence-footnote" id="statsPIFootnote">I’ll start with the results shown. AI runs only after you send a message. When connected, saved conversations are private to your account and can be deleted in Settings.</p>
           </aside>
           <section class="stats-personal-intelligence-panel stats-personal-intelligence-history-section" id="statsPIHistory" aria-label="Personal Intelligence chat history">
             <h4 class="stats-pi-panel-title">Personal Intelligence chat history</h4>
