@@ -1,13 +1,13 @@
 (function(){
 'use strict';
 const endpoint='/api/tios-personal-intelligence';
+const storageEndpoint='/api/tios-personal-intelligence-storage';
 const panel=document.getElementById('statsPersonalIntelligence');
 if(!panel)return;
 const log=document.getElementById('statsPIMessages'),form=document.getElementById('statsPIForm'),input=document.getElementById('statsPIInput'),send=document.getElementById('statsPISend'),status=document.getElementById('statsPIStatus'),connection=document.getElementById('statsPIConnection');
 const prompts=[...panel.querySelectorAll('[data-pi-prompt]')];
 const historyPanel=document.getElementById('statsPIHistory'),historyList=document.getElementById('statsPIHistoryList'),settingsPanel=document.getElementById('statsPISettings'),settingsNote=document.getElementById('statsPISettingsNote');
 const actions=[...panel.querySelectorAll('[data-pi-action]')];
-const table={conversations:'tios_personal_intelligence_conversations',messages:'tios_personal_intelligence_messages',preferences:'tios_personal_intelligence_preferences'};
 const defaults={proactive_enabled:false,conversation_frequency:'balanced',investigation_focus:'both',personalization_enabled:true,include_trade_evidence:true,retention_days:365,development_goal:''};
 const engine=window.TIOSPersonalIntelligenceEngine||null;
 let history=[],busy=false,configured=null,openingRow=null,refreshTimer=0,scopePending=false,scopeEpoch=0,currentConversationId=null,currentConversationKind='user';
@@ -135,10 +135,19 @@ function openingText(context){
 }
 function unavailableMessage(){
   persistenceAvailable=false;
-  if(settingsNote)settingsNote.textContent='Conversation storage and preferences need the Personal Intelligence Supabase migration. The chat remains available for this session.';
-  if(!persistenceMessageShown){setStatus('Chat history is not connected yet. The Personal Intelligence database migration has not been applied.',true);persistenceMessageShown=true}
+  if(settingsNote)settingsNote.textContent='Conversation storage and preferences need the Cloudflare D1 connection. The chat remains available for this session.';
+  if(!persistenceMessageShown){setStatus('Chat history is not connected yet. Cloudflare D1 storage is not configured.',true);persistenceMessageShown=true}
 }
-function supabaseReady(){return typeof db!=='undefined'&&db?.from&&db?.auth}
+function authReady(){return typeof db!=='undefined'&&db?.auth}
+async function storageRequest(action,payload={},scope=accountScope()){
+  if(!authReady())throw new Error('Sign in to T·IOS before using Personal Intelligence.');
+  const session=await db.auth.getSession(),token=session?.data?.session?.access_token;
+  if(session?.error||!token)throw new Error('Your session has expired. Sign in again before continuing.');
+  const response=await fetch(storageEndpoint,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},credentials:'same-origin',body:JSON.stringify({action,payload:{...payload,...(scope?.accountId?{accountId:scope.accountId}:{})}})});
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(result.error?.message||'Cloudflare storage could not complete this request.');
+  return result;
+}
 function updatePreferencesFromUI(){
   preferences={
     proactive_enabled:Boolean(document.getElementById('statsPIProactive').checked),
@@ -163,30 +172,20 @@ async function savePreferences(){
   if(!preferencesLoaded)return;
   const scope=accountScope();if(!scope.ready||!persistenceAvailable)return;
   updatePreferencesFromUI();
-  const {error}=await db.from(table.preferences).upsert({...preferences,user_id:scope.userId,updated_at:new Date().toISOString()},{onConflict:'user_id'});
-  if(error){unavailableMessage();return}
-  if(settingsNote)settingsNote.textContent='Settings saved. Proactive observations and retention cleanup run only while T-IOS is open.';
+  try{await storageRequest('preferences.set',{preferences},scope)}catch{unavailableMessage();return}
+  if(settingsNote)settingsNote.textContent='Settings saved in Cloudflare. Proactive observations and retention cleanup run only while T-IOS is open.';
   if(preferences.proactive_enabled)processObservations();
 }
 function scheduleSavePreferences(){clearTimeout(savePreferencesTimer);savePreferencesTimer=setTimeout(savePreferences,220)}
 async function pruneHistory(scope){
   if(!preferences.retention_days)return;
-  const cutoff=new Date(Date.now()-preferences.retention_days*86400000).toISOString();
-  const {error}=await db.from(table.conversations).delete().eq('user_id',scope.userId).eq('account_id',scope.accountId).lt('last_message_at',cutoff);
-  if(error)throw error;
+  await storageRequest('conversations.prune',{retentionDays:preferences.retention_days},scope);
 }
 async function loadPreferences(scope,epoch=scopeEpoch){
-  const result=await db.from(table.preferences).select('*').eq('user_id',scope.userId).maybeSingle();
-  if(result.error)throw result.error;
+  const result=await storageRequest('preferences.get',{},scope);
   if(!isCurrentScope(scope,epoch))return false;
-  if(result.data){preferences={...defaults,...result.data};}
-  else{
-    preferences={...defaults};
-    const inserted=await db.from(table.preferences).insert({...preferences,user_id:scope.userId}).select().single();
-    if(inserted.error)throw inserted.error;
-    if(!isCurrentScope(scope,epoch))return false;
-    preferences={...defaults,...inserted.data};
-  }
+  preferences={...defaults,...(result.preferences||{})};
+  if(!isCurrentScope(scope,epoch))return false;
   preferencesLoaded=true;renderPreferences();
   return true;
 }
@@ -199,20 +198,19 @@ async function loadTopicsAndFeedback(conversations,scope,epoch=scopeEpoch){
   const nextFeedback={helpful:0,notRelevant:0};
   const ids=conversations.slice(0,30).map(item=>item.id);
   if(ids.length){
-    const {data,error}=await db.from(table.messages).select('feedback').eq('user_id',scope.userId).in('conversation_id',ids).not('feedback','is',null);
-    if(error)return;
-    (data||[]).forEach(item=>{if(item.feedback==='helpful')nextFeedback.helpful++;if(item.feedback==='not_relevant')nextFeedback.notRelevant++});
+    try{const result=await storageRequest('messages.feedback-summary',{conversationIds:ids},scope);Object.assign(nextFeedback,result.feedback||{})}catch{return}
   }
   if(!isCurrentScope(scope,epoch))return;
   topicCounts=nextTopics;feedbackCounts=nextFeedback;
 }
 async function refreshHistoryList(scopeOverride=null,epoch=scopeEpoch){
   const scope=scopeOverride||accountScope();
-  if(!scope.ready||!persistenceAvailable){historyList.replaceChildren();const empty=document.createElement('p');empty.className='stats-pi-history-empty';empty.textContent='Saved conversations will appear here after the database migration is applied.';historyList.append(empty);return []}
-  const {data,error}=await db.from(table.conversations).select('id,title,topic,conversation_kind,observation_priority,last_message_at,created_at').eq('user_id',scope.userId).eq('account_id',scope.accountId).order('last_message_at',{ascending:false}).limit(30);
-  if(error){if(isCurrentScope(scope,epoch))unavailableMessage();return []}
+  if(!scope.ready||!persistenceAvailable){historyList.replaceChildren();const empty=document.createElement('p');empty.className='stats-pi-history-empty';empty.textContent='Saved conversations will appear here after Cloudflare D1 is connected.';historyList.append(empty);return []}
+  let conversations;
+  try{conversations=(await storageRequest('conversations.list',{},scope)).conversations||[]}
+  catch{if(isCurrentScope(scope,epoch))unavailableMessage();return []}
   if(!isCurrentScope(scope,epoch))return [];
-  const conversations=data||[];historyList.replaceChildren();
+  historyList.replaceChildren();
   if(!conversations.length){topicCounts=[];feedbackCounts={helpful:0,notRelevant:0};const empty=document.createElement('p');empty.className='stats-pi-history-empty';empty.textContent='No saved conversations for this account yet.';historyList.append(empty);return conversations}
   conversations.forEach(conversation=>{
     const row=document.createElement('div');row.className='stats-pi-history-row';
@@ -228,20 +226,18 @@ async function refreshHistoryList(scopeOverride=null,epoch=scopeEpoch){
 }
 async function loadConversation(id){
   const scope=accountScope();
-  const {data:conversation,error:conversationError}=await db.from(table.conversations).select('id,conversation_kind,title,topic').eq('id',id).eq('user_id',scope.userId).eq('account_id',scope.accountId).maybeSingle();
-  if(conversationError)throw conversationError;
+  const result=await storageRequest('conversations.get',{id},scope),conversation=result.conversation;
   if(!conversation)throw new Error('That conversation is no longer available for the selected account.');
-  const {data,error}=await db.from(table.messages).select('id,role,source,content,evidence_context,feedback,created_at').eq('conversation_id',id).eq('user_id',scope.userId).order('created_at',{ascending:true}).order('id',{ascending:true});
-  if(error)throw error;
+  const data=result.messages||[];
   if(!isCurrentScope(scope))return;
   currentConversationId=id;currentConversationKind=conversation.conversation_kind||'user';history=[];log.replaceChildren();openingRow=null;
-  (data||[]).forEach(message=>{
+  data.forEach(message=>{
     const messageContext=message.evidence_context&&Object.keys(message.evidence_context).length?message.evidence_context:null;
     appendMessage(message.role,message.content,{source:message.source,messageId:message.id,feedback:message.feedback,createdAt:message.created_at,context:messageContext});
     history.push({role:message.role,content:message.content});
   });
   while(history.length>12)history.shift();
-  if(!(data||[]).length)resetConversation(currentContext);
+  if(!data.length)resetConversation(currentContext);
   setStatus('',false);input.value='';resizeInput();updateControls();
 }
 async function openConversation(id){
@@ -255,16 +251,14 @@ async function refreshHistory(){
 async function deleteConversation(id){
   if(!confirm('Delete this saved Personal Intelligence conversation? This also removes its messages.'))return;
   const scope=accountScope();
-  const {error}=await db.from(table.conversations).delete().eq('id',id).eq('user_id',scope.userId).eq('account_id',scope.accountId);
-  if(error){setStatus('The conversation could not be deleted.',true);return}
+  try{await storageRequest('conversations.delete',{id},scope)}catch{setStatus('The conversation could not be deleted.',true);return}
   if(currentConversationId===id)resetConversation(readContext());
   await refreshHistory();setStatus('Conversation deleted.',false);
 }
 async function clearConversationHistory(){
   if(!confirm('Delete every saved Personal Intelligence conversation for this account? This cannot be undone.'))return;
   const scope=accountScope();if(!scope.ready||!persistenceAvailable)return;
-  const {error}=await db.from(table.conversations).delete().eq('user_id',scope.userId).eq('account_id',scope.accountId);
-  if(error){setStatus('Saved conversations could not be deleted.',true);return}
+  try{await storageRequest('conversations.clear',{},scope)}catch{setStatus('Saved conversations could not be deleted.',true);return}
   currentConversationId=null;resetConversation(readContext());await refreshHistory();
   if(settingsNote)settingsNote.textContent='Saved conversations for this account were deleted.';
 }
@@ -272,8 +266,7 @@ async function saveFeedback(messageId,value,bar){
   const scope=accountScope();if(!persistenceAvailable||!scope.ready)return;
   const previous=bar.querySelector('button[aria-pressed="true"]')?.dataset.piFeedback||null;
   if(previous===value)return;
-  const {error}=await db.from(table.messages).update({feedback:value}).eq('id',messageId).eq('user_id',scope.userId);
-  if(error){setStatus('Feedback could not be saved.',true);return}
+  try{await storageRequest('messages.feedback',{messageId,feedback:value},scope)}catch{setStatus('Feedback could not be saved.',true);return}
   bar.querySelectorAll('button').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.piFeedback===value)));
   if(previous==='helpful')feedbackCounts.helpful=Math.max(0,feedbackCounts.helpful-1);
   if(previous==='not_relevant')feedbackCounts.notRelevant=Math.max(0,feedbackCounts.notRelevant-1);
@@ -283,17 +276,14 @@ async function saveFeedback(messageId,value,bar){
 async function persistMessage(conversationId,role,source,content,context){
   const scope=accountScope();
   const safeContext=context?{period:context.period||'',summary:context.summary||{},...(context.evidence?{evidence:context.evidence}:{})}:{};
-  const {data,error}=await db.from(table.messages).insert({conversation_id:conversationId,user_id:scope.userId,role,source,content:String(content).slice(0,6000),evidence_context:safeContext}).select('id,created_at').single();
-  if(error)throw error;
-  return data;
+  return storageRequest('messages.create',{conversationId,role,source,content:String(content).slice(0,6000),evidenceContext:safeContext},scope);
 }
 async function ensureConversation(context){
   if(!persistenceAvailable)return null;
   const scope=accountScope();if(!scope.ready)return null;
   if(currentConversationId)return currentConversationId;
-  const {data,error}=await db.from(table.conversations).insert({user_id:scope.userId,account_id:scope.accountId,title:'New investigation',topic:'general',conversation_kind:'user'}).select('id,conversation_kind').single();
-  if(error)throw error;
-  currentConversationId=data.id;currentConversationKind=data.conversation_kind||'user';
+  const data=await storageRequest('conversations.create',{title:'New investigation',topic:'general',kind:'user'},scope);
+  currentConversationId=data.id;currentConversationKind=data.kind||'user';
   if(openingRow?.isConnected&&openingRow.dataset.persisted!=='true'){
     const bubble=openingRow.querySelector('.stats-personal-intelligence-bubble');
     const saved=await persistMessage(data.id,'assistant','local_start',bubble?.textContent||'What would you like to investigate?',context);
@@ -303,17 +293,15 @@ async function ensureConversation(context){
   return data.id;
 }
 async function updateConversationAfterMessage(conversationId,message,topic){
-  const scope=accountScope(),update={last_message_at:new Date().toISOString(),topic};
-  if(currentConversationKind==='user')update.title=String(message||'New investigation').trim().replace(/\s+/g,' ').slice(0,80)||'New investigation';
-  const {error}=await db.from(table.conversations).update(update).eq('id',conversationId).eq('user_id',scope.userId).eq('account_id',scope.accountId);
-  if(error)throw error;
+  const scope=accountScope(),title=currentConversationKind==='user'?String(message||'New investigation').trim().replace(/\s+/g,' ').slice(0,80)||'New investigation':undefined;
+  await storageRequest('conversations.update',{id:conversationId,topic,...(title?{title}:{})},scope);
 }
-function handleDatabaseUnavailable(){
+function handleStorageUnavailable(){
   unavailableMessage();preferencesLoaded=false;
   if(!persistenceAvailable){preferences={...defaults};renderPreferences()}
 }
 async function loadScopeData(epoch){
-  const scope=accountScope();if(!scope.ready||!supabaseReady())return;
+  const scope=accountScope();if(!scope.ready||!authReady())return;
   if(!isCurrentScope(scope,epoch))return;
   persistenceAvailable=false;preferencesLoaded=false;
   try{
@@ -328,11 +316,11 @@ async function loadScopeData(epoch){
     if(!isCurrentScope(scope,epoch))return;
     if(conversations.length)await loadConversation(conversations[0].id);
     else resetConversation(readContext());
-    if(settingsNote)settingsNote.textContent='Settings saved. Proactive observations and retention cleanup run only while T-IOS is open.';
+    if(settingsNote)settingsNote.textContent='Settings saved in Cloudflare. Proactive observations and retention cleanup run only while T-IOS is open.';
     if(preferences.proactive_enabled)await processObservations();
   }catch(error){
     console.warn('Personal Intelligence persistence is unavailable:',error);
-    if(epoch===scopeEpoch)handleDatabaseUnavailable();
+    if(epoch===scopeEpoch)handleStorageUnavailable();
   }
 }
 function formatCooldown(retryAfter){
@@ -360,7 +348,7 @@ async function sendMessage(value){
   const epoch=scopeEpoch,snapshot=requestContext(),row=appendMessage('user',message),requestHistory=history.slice(-3).map(item=>({role:item.role,content:item.content.slice(0,500)}));
   busy=true;setStatus('T·IOS is reviewing the selected evidence…',false);updateControls();input.disabled=true;
   try{
-    if(!supabaseReady())throw new Error('Sign in to T·IOS before using Personal Intelligence.');
+    if(!authReady())throw new Error('Sign in to T·IOS before using Personal Intelligence.');
     const session=await db.auth.getSession(),token=session?.data?.session?.access_token;
     if(session?.error||!token)throw new Error('Your session has expired. Sign in again before chatting.');
     const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},credentials:'same-origin',body:JSON.stringify({message,history:requestHistory,context:snapshot})});
@@ -384,7 +372,7 @@ async function sendMessage(value){
           userRow=appendMessage('user',message,{messageId:userSaved.id,createdAt:userSaved.created_at,context:currentEvidenceContext(snapshot)});
           assistantRow=appendMessage('assistant',answer,{messageId:answerSaved.id,createdAt:answerSaved.created_at,context:currentEvidenceContext(snapshot)});
         }
-      }catch(error){console.warn('Personal Intelligence conversation could not be saved:',error);setStatus('T·IOS replied, but this conversation could not be saved. Check the database setup.',true)}
+      }catch(error){console.warn('Personal Intelligence conversation could not be saved:',error);setStatus('T·IOS replied, but this conversation could not be saved. Check the Cloudflare storage connection.',true)}
     }
     if(!userRow)userRow=appendMessage('user',message,{context:currentEvidenceContext(snapshot)});
     if(!assistantRow)assistantRow=appendMessage('assistant',answer,{context:currentEvidenceContext(snapshot)});
@@ -401,21 +389,12 @@ async function processObservations(){
   if(!engine.frequencyAllows(candidate,preferences.conversation_frequency))return;
   observationBusy=true;
   try{
-    const {data:recent,error:recentError}=await db.from(table.conversations).select('last_message_at').eq('user_id',scope.userId).eq('account_id',scope.accountId).eq('conversation_kind','observation').order('last_message_at',{ascending:false}).limit(1);
-    if(recentError)throw recentError;
-    const cooldown=engine.cooldownMs(preferences.conversation_frequency),last=recent?.[0]?.last_message_at;
-    if(last&&Date.now()-new Date(last).getTime()<cooldown)return;
     const topic=candidate.type.includes('execution')?'execution':candidate.type.includes('edge')||candidate.type.includes('playbook')?'edge':'statistics';
-    const inserted=await db.from(table.conversations).upsert({
-      user_id:scope.userId,account_id:scope.accountId,title:candidate.title,topic,conversation_kind:'observation',observation_key:candidate.observationKey,observation_priority:candidate.priority
-    },{onConflict:'user_id,account_id,observation_key',ignoreDuplicates:true}).select('id,conversation_kind').maybeSingle();
-    if(inserted.error)throw inserted.error;
-    if(!inserted.data)return;
+    const inserted=await storageRequest('observations.create',{title:candidate.title,topic,observationKey:candidate.observationKey,priority:candidate.priority,frequency:preferences.conversation_frequency},scope);
+    if(!inserted.created||!inserted.conversation)return;
     const snapshot=requestContext(),messageContext=currentEvidenceContext(snapshot);
-    const saved=await persistMessage(inserted.data.id,'assistant','observation',candidate.text,messageContext);
-    const {error:updateError}=await db.from(table.conversations).update({last_message_at:saved.created_at}).eq('id',inserted.data.id).eq('user_id',scope.userId).eq('account_id',scope.accountId);
-    if(updateError)throw updateError;
-    if(!currentConversationId||!history.some(item=>item.role==='user'))await loadConversation(inserted.data.id);
+    await persistMessage(inserted.conversation.id,'assistant','observation',candidate.text,messageContext);
+    if(!currentConversationId||!history.some(item=>item.role==='user'))await loadConversation(inserted.conversation.id);
     else setStatus('T·IOS started a new evidence-based observation. Open History to view it.',false);
     await refreshHistory();
   }catch(error){console.warn('Proactive observation could not be saved:',error)}
