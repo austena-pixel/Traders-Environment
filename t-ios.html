@@ -14528,11 +14528,32 @@ function maxDrawdownFromProfitPeak(points,openingEquity){
   return {amount:maxDrawdown,pct:maxDrawdownPct,profitPeak:peakAtMaxDrawdown,peakIndex:peakIndexAtMaxDrawdown,troughIndex};
 }
 
+let statisticsChartThemeObserver=null;
+let statisticsChartThemeRefreshFrame=0;
+function statisticsChartSurfaceColor(){
+  const workspace=document.getElementById('statsOutcomeWorkspace');
+  return workspace?getComputedStyle(workspace).backgroundColor:'#0c141e';
+}
+function ensureStatisticsChartThemeObserver(){
+  if(statisticsChartThemeObserver||typeof MutationObserver==='undefined')return;
+  statisticsChartThemeObserver=new MutationObserver(records=>{
+    if(!records.some(record=>record.attributeName==='data-hios-theme'||record.attributeName==='style'))return;
+    if(statisticsChartThemeRefreshFrame)return;
+    statisticsChartThemeRefreshFrame=requestAnimationFrame(()=>{
+      statisticsChartThemeRefreshFrame=0;
+      equityChartInstance?.update('none');
+      statsOutcomeChartInstance?.update('none');
+    });
+  });
+  statisticsChartThemeObserver.observe(document.documentElement,{attributes:true,attributeFilter:['data-hios-theme','style']});
+}
+
 function renderEquityChart(series){
   if(typeof Chart==='undefined'){
     console.error('Chart.js did not load.');
     return;
   }
+  ensureStatisticsChartThemeObserver();
 
   const canvas=$('#equityChart');
   if(!series.equityAvailable||!series.selectedTrades.length){
@@ -14660,8 +14681,8 @@ function renderEquityChart(series){
       },
       scales:{
         x:{
-          grid:{color:'#0c141e'},
-          border:{color:'#0c141e'},
+          grid:{color:statisticsChartSurfaceColor},
+          border:{color:statisticsChartSurfaceColor},
           ticks:{
             color:'#7f8da1',
             autoSkip:true,
@@ -14677,8 +14698,8 @@ function renderEquityChart(series){
         y:{
           min:equityAxisMin,
           max:equityAxisMax,
-          grid:{color:'#0c141e'},
-          border:{color:'#0c141e'},
+          grid:{color:statisticsChartSurfaceColor},
+          border:{color:statisticsChartSurfaceColor},
           ticks:{
             color:'#7f8da1',
             callback:value=>'$'+Number(value).toLocaleString(
@@ -14698,6 +14719,7 @@ function destroyStatisticsOutcomeChart(){
 function renderStatisticsOutcomeChart(kind,source,series){
   const analytics=statsAnalytics();
   if(typeof Chart==='undefined')return{error:'The chart renderer did not load.'};
+  ensureStatisticsChartThemeObserver();
   if(statsOutcomeChartInstance){statsOutcomeChartInstance.destroy();statsOutcomeChartInstance=null;}
   let labels=[],values=[],records=[],datasetLabel='',chartType='line',color='#69a8ff';
   let tooltipLabel=null,tooltipTitle=null,yTitle='P&L';
@@ -14797,8 +14819,8 @@ function renderStatisticsOutcomeChart(kind,source,series){
         }}
       },
       scales:{
-        x:{grid:{color:'#0c141e'},border:{color:'#0c141e'},ticks:{color:'#9aa9bd',autoSkip:true,maxTicksLimit:18,maxRotation:0}},
-        y:{beginAtZero:true,grid:{color:'#0c141e'},border:{color:'#0c141e'},title:{display:true,text:yTitle,color:'#aab8ca'},ticks:{color:'#9aa9bd',callback:value=>kind==='distribution'?value:'$'+Number(value).toLocaleString(undefined,{maximumFractionDigits:2})}}
+        x:{grid:{color:statisticsChartSurfaceColor},border:{color:statisticsChartSurfaceColor},ticks:{color:'#9aa9bd',autoSkip:true,maxTicksLimit:18,maxRotation:0}},
+        y:{beginAtZero:true,grid:{color:statisticsChartSurfaceColor},border:{color:statisticsChartSurfaceColor},title:{display:true,text:yTitle,color:'#aab8ca'},ticks:{color:'#9aa9bd',callback:value=>kind==='distribution'?value:'$'+Number(value).toLocaleString(undefined,{maximumFractionDigits:2})}}
       }
     }
   });
