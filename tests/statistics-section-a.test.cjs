@@ -28,7 +28,7 @@ assert.ok(sectionStart>=0&&layoutStart>sectionStart,'Section A groups the metric
 assert.ok(personalIntelligenceStart>layoutStart&&chartStart>personalIntelligenceStart,'Section A starts with Personal Intelligence and History Charts follows it.');
 assert.ok(optionalStart>chartStart,'The optional indicator space remains after History Charts inside Section A.');
 assert.ok(html.includes('role="group" tabindex="0" aria-label="Personal Intelligence followed by History Charts"'),'the horizontally scrollable row remains named and keyboard accessible');
-assert.match(html,/grid-template-columns:minmax\\(0,60%\\) minmax\\(245px,calc\\(31\\.67% - 4px\\)\\) minmax\\(600px,calc\\(68\\.33% - 8px\\)\\)/,'the workspace aligns Section A to the marked guide and keeps its existing proportional width');
+assert.match(html,/grid-template-columns:minmax\(0,60%\) minmax\(245px,calc\(31\.67% - 4px\)\) minmax\(600px,calc\(68\.33% - 8px\)\)/,'the workspace aligns Section A to the marked guide and keeps its existing proportional width');
 assert.ok(html.includes('<h3 class="stats-history-charts-heading">History Charts</h3>'),'the chart panel is clearly labeled History Charts');
 assert.ok(html.indexOf('</aside>',optionalStart)<html.indexOf('<dialog',optionalStart),'The optional indicator area remains inside Section A, before the indicator picker dialog.');
 assert.match(html,/\.stats-dashboard-section\{min-width:0;min-height:0;/,'the optional indicator panel can shrink to fit short screens');
