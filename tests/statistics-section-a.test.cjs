@@ -64,6 +64,7 @@ assert.match(personalIntelligenceScript,/row\.append\(open,remove\);historyList\
 assert.ok(!html.includes('stats-personal-intelligence-prompts')&&!html.includes('data-pi-prompt=')&&!html.includes('stats-personal-intelligence-footnote'),'the fixed question buttons and highlighted explanatory paragraph are removed for more chat space');
 assert.ok(!personalIntelligenceScript.includes('data-pi-prompt'),'the removed suggested questions have no remaining chat handlers');
 assert.ok(!/<section class="stats-personal-intelligence-panel stats-personal-intelligence-history-section"[^>]*hidden/.test(html),'the saved chat history is visible without opening the chat history menu');
+assert.match(html,/\.stats-personal-intelligence-panel\.stats-personal-intelligence-history-section\{[^}]*border:0[^}]*background:var\(--bg\)/,'the Section A history panel matches the page black and has no border');
 assert.ok(html.includes('<h3 class="stats-graphs-heading">Graphs</h3>'),'the chart panel is clearly labeled Graphs');
 assert.ok(html.indexOf('</aside>',optionalStart)<html.indexOf('<dialog',optionalStart),'The optional indicator area remains inside Section A, before the indicator picker dialog.');
 assert.match(html,/\.stats-dashboard-section\{min-width:0;min-height:0;/,'the optional indicator panel can shrink to fit short screens');
