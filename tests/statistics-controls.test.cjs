@@ -104,7 +104,8 @@ function makeCard(name,kind){
 }
 const primaryCards=['balance','netPnl','winRate','profitFactor','averagePnl'].map(name=>makeCard(name,'stats-primary-metric'));
 const indicatorCards=['expectancy','qualifying','coverage'].map(name=>makeCard(name,'stats-indicator-card'));
-const cards=[...primaryCards,...indicatorCards];
+const personalIntelligenceCard=makeCard('personalIntelligence','stats-personal-intelligence');
+const cards=[...primaryCards,...indicatorCards,personalIntelligenceCard];
 function makeContainer(containerCards,classList){
   return {
     classList,
@@ -112,16 +113,18 @@ function makeContainer(containerCards,classList){
     contains(node){return containerCards.includes(node);},
     querySelectorAll(selector){
       assert.equal(selector,'.stats-card-zoomed');
-      return containerCards.filter(card=>card.classes.contains('stats-card-zoomed'));
+      return containerCards.filter(card=>card!==this&&card.classes.contains('stats-card-zoomed'));
     }
   };
 }
 const summary=makeContainer(primaryCards,summaryClasses);
 const stack=makeContainer(indicatorCards,stackClasses);
+const personalIntelligence=makeContainer([personalIntelligenceCard],personalIntelligenceCard.classes);
 const outsideCard=makeCard('outside','outside-card');
 const elements=new Map([
   ['#statsPrimarySummary',summary],
   ['#statsIndicatorStack',stack],
+  ['#statsPersonalIntelligence',personalIntelligence],
   ['#statsAutoZoomBtn',button],
   ['#statsAutoZoomState',state]
 ]);
@@ -138,6 +141,7 @@ const cardByName=Object.fromEntries(cards.map(card=>[card.name,card]));
 Object.entries(cardByName).forEach(([name,card])=>zoomContext[name+'Card']=card);
 zoomContext.outsideCard=outsideCard;
 vm.runInContext('setStatsAutoZoom(true)',zoomContext);
+assert.equal(personalIntelligenceCard.classes.contains('stats-autozoom'),true,'Auto Zoom also enables the Personal Intelligence space');
 for(const name of ['balance','netPnl','winRate','profitFactor','averagePnl']){
   vm.runInContext('setZoomedStatsCard('+name+'Card)',zoomContext);
   assert.equal(cardByName[name].classes.contains('stats-card-zoomed'),true,name+' can zoom');
@@ -145,8 +149,11 @@ for(const name of ['balance','netPnl','winRate','profitFactor','averagePnl']){
 }
 vm.runInContext('setZoomedStatsCard(expectancyCard)',zoomContext);
 assert.equal(cardByName.expectancy.classes.contains('stats-card-zoomed'),true,'optional indicators keep Auto Zoom');
+vm.runInContext('setZoomedStatsCard(personalIntelligenceCard)',zoomContext);
+assert.equal(personalIntelligenceCard.classes.contains('stats-card-zoomed'),true,'the Personal Intelligence space can zoom with the same control');
+assert.equal(cards.filter(card=>card.classes.contains('stats-card-zoomed')).length,1,'the Personal Intelligence space shares the single zoom focus');
 vm.runInContext('setZoomedStatsCard(outsideCard)',zoomContext);
-assert.equal(cards.some(card=>card.classes.contains('stats-card-zoomed')),false,'cards outside Statistics cannot zoom');
+assert.equal(cards.some(card=>card.classes.contains('stats-card-zoomed')),false,'cards outside the supported zoom areas cannot zoom');
 
 const eventHandlers={};
 const summaryEvents={
@@ -163,10 +170,25 @@ eventHandlers.focusin({target:{closest:selector=>cardByName.averagePnl}});
 assert.equal(cardByName.averagePnl.classes.contains('stats-card-zoomed'),true,'keyboard focus zooms a highlighted summary card');
 eventHandlers.focusout({relatedTarget:null});
 assert.equal(cardByName.averagePnl.classes.contains('stats-card-zoomed'),false,'leaving keyboard focus clears its zoom');
+const personalIntelligenceEvents={
+  addEventListener(name,handler){eventHandlers['personal-'+name]=handler;},
+  contains(node){return node===personalIntelligenceCard;}
+};
+zoomContext.personalIntelligenceEvents=personalIntelligenceEvents;
+vm.runInContext("bindStatsAutoZoomCards(personalIntelligenceEvents,'.stats-personal-intelligence')",zoomContext);
+eventHandlers['personal-pointerover']({target:{closest:selector=>personalIntelligenceCard},relatedTarget:null});
+assert.equal(personalIntelligenceCard.classes.contains('stats-card-zoomed'),true,'hover zooms the Personal Intelligence space');
+eventHandlers['personal-pointerleave']();
+assert.equal(personalIntelligenceCard.classes.contains('stats-card-zoomed'),false,'leaving Personal Intelligence clears its zoom');
+eventHandlers['personal-focusin']({target:{closest:selector=>personalIntelligenceCard}});
+assert.equal(personalIntelligenceCard.classes.contains('stats-card-zoomed'),true,'keyboard focus zooms the Personal Intelligence space');
+eventHandlers['personal-focusout']({relatedTarget:null});
+assert.equal(personalIntelligenceCard.classes.contains('stats-card-zoomed'),false,'leaving Personal Intelligence focus clears its zoom');
 
 vm.runInContext('setZoomedStatsCard(expectancyCard);setStatsAutoZoom(false)',zoomContext);
 assert.equal(summaryClasses.contains('stats-autozoom'),false);
 assert.equal(stackClasses.contains('stats-autozoom'),false);
+assert.equal(personalIntelligenceCard.classes.contains('stats-autozoom'),false);
 assert.equal(button.attributes['aria-pressed'],'false');
 assert.equal(state.textContent,'OFF');
 assert.equal(controlsClasses.contains('is-enabled'),false,'turning Auto Zoom off hides its magnification controls');
@@ -183,11 +205,12 @@ assert.equal(cardByName.winRate.classes.contains('stats-card-zoomed'),true);
 
 assert.ok(!html.includes('class="chart-legend-note"'),'highlighted trade-number note was removed');
 assert.ok(!html.includes('X-axis = trade number (T0, T1, T2, T3...).'),'highlighted X-axis explanation was removed');
-assert.match(html,/id="statsAutoZoomBtn"[^>]*aria-pressed="false"[^>]*aria-controls="statsPrimarySummary statsIndicatorStack"/,'Auto Zoom controls highlighted summaries and optional indicators');
+assert.match(html,/id="statsAutoZoomBtn"[^>]*aria-pressed="false"[^>]*aria-controls="statsPrimarySummary statsIndicatorStack statsPersonalIntelligence"/,'Auto Zoom controls Statistics cards and the Personal Intelligence space');
 assert.match(html,/<div class="stats-indicator-stack stats-indicator-grid" id="statsIndicatorStack"/,'zoom scope is the customizable indicator grid');
 assert.match(html,/\.stats-autozoom-controls:not\(\.is-enabled\) \.stats-autozoom-zoom\{display:none\}/,'percentage and slider stay hidden until Auto Zoom is enabled');
 assert.match(html,/#statsPrimarySummary\.stats-autozoom \.stats-primary-metric\.stats-card-zoomed\{transform:scale\(/,'highlighted summary cards receive the zoom transform');
 assert.match(html,/\.stats-indicator-stack\.stats-autozoom \.stats-indicator-card\.stats-card-zoomed\{\s*transform:scale\(/,'sidebar analytics cards keep the zoom transform');
+assert.match(html,/\.stats-personal-intelligence\.stats-autozoom\.stats-card-zoomed\{transform:scale\(/,'Personal Intelligence uses the shared Auto Zoom magnification');
 assert.equal((html.match(/<article class="[^"]*stats-primary-metric[^"]*" role="listitem" tabindex="0">/g)||[]).length,5,'all five highlighted financial summaries are keyboard-focusable');
 assert.match(html,/\.stats-indicator-grid \.stats-indicator-card\{\s*min-width:0;min-height:112px/,'selected indicator cards use compact dashboard dimensions');
 assert.match(html,/<section class="panel stats-research-panel stats-execution-profit-panel">[\s\S]*?id="statExecutionProfitChart"/,'Execution profitability comparison is preserved in Execution Quality');
@@ -208,11 +231,13 @@ const zoomOutput={textContent:'125%'};
 const zoomPreferenceStorage=createStorage(null);
 const zoomScaleStack={style:{values:{},setProperty(name,value){this.values[name]=value;}}};
 const zoomScaleSummary={style:{values:{},setProperty(name,value){this.values[name]=value;}}};
+const zoomScalePersonalIntelligence={style:{values:{},setProperty(name,value){this.values[name]=value;}}};
 const zoomElements=new Map([
   ['#statsAutoZoomRange',zoomRange],
   ['#statsAutoZoomValue',zoomOutput],
   ['#statsIndicatorStack',zoomScaleStack],
-  ['#statsPrimarySummary',zoomScaleSummary]
+  ['#statsPrimarySummary',zoomScaleSummary],
+  ['#statsPersonalIntelligence',zoomScalePersonalIntelligence]
 ]);
 const zoomViewport={innerWidth:1440};
 const scaleContext=vm.createContext({
@@ -236,6 +261,7 @@ assert.equal(zoomPreferenceStorage.value,'137','manual zoom adjustment becomes t
 assert.equal(zoomOutput.textContent,'137%','manual zoom percentage is readable');
 assert.equal(zoomScaleStack.style.values['--stats-autozoom-scale'],'1.37','manual zoom scales optional indicator cards');
 assert.equal(zoomScaleSummary.style.values['--stats-autozoom-scale'],'1.37','the same manual zoom scales highlighted summary cards');
+assert.equal(zoomScalePersonalIntelligence.style.values['--stats-autozoom-scale'],'1.37','the same manual zoom scales Personal Intelligence');
 assert.equal(zoomRange.max,'150','desktop maximum stays at the current zoom');
 zoomViewport.innerWidth=800;
 scaleContext.syncStatsAutoZoomViewportLimit();
