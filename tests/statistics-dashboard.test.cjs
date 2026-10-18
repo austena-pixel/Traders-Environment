@@ -173,4 +173,31 @@ assert.ok(html.includes('summarizeProfitLoss(source)'));
 
 console.log('PASS indicator add/remove/reorder normalization, persistence guard, and strict outcome calculators');
 console.log('PASS selected-period equity requires a verified opening balance and complete recorded history');
+
+const adherenceTrades=[{id:'complete'},{id:'partial'},{id:'unassessed'}];
+const adherenceEvidence={
+  complete:{checklist:{values:[1,0]},playbook:{values:[1]}},
+  partial:{checklist:{values:[0.5,'invalid',2]},playbook:{values:[]}},
+  unassessed:{checklist:{values:[]},playbook:{values:[]}}
+};
+const adherence=stats.summarizeExecutionAdherence(adherenceTrades,trade=>adherenceEvidence[trade.id]);
+assert.equal(adherence.selectedTradeCount,3);
+assert.equal(adherence.fullyAssessedTradeCount,1,'complete coverage requires both Rules and Playbook evidence on the same trade');
+assert.equal(adherence.partiallyAssessedTradeCount,1,'one-sided evidence is reported as partial, not failed');
+assert.equal(adherence.unassessedTradeCount,1,'unassessed trades stay outside the adherence score');
+assert.equal(adherence.itemCount,4,'invalid and out-of-range values are excluded');
+assert.equal(adherence.adherencePct,62.5,'recorded Rules and Playbook evidence is pooled by measured item');
+assert.equal(adherence.categories.rules.assessedTradeCount,2);
+assert.equal(adherence.categories.playbook.assessedTradeCount,1);
+
+for(const id of ['statsExecutionOverview','statsExecutionProfitGap','statsExecutionDiagnostics','statsExecutionBehavioralResearch'])
+  assert.ok(html.includes('id="'+id+'"'),'missing Execution Quality section '+id);
+for(const tab of ['reference-actual','gap-over-time','gap-by-deviation','consistency','behavior'])
+  assert.ok(html.includes('data-execution-diagram="'+tab+'"'),'missing Profit Gap workspace tab '+tab);
+assert.ok(html.includes('statsExecutionTimelineBody'),'missing trade-linked assessment timeline');
+assert.ok(html.includes('statsExecutionReflectionList'),'missing trade-linked reflection records');
+assert.ok(html.includes('No Shadow Trading or matched reference-results table'),'missing honest reference-data state');
+
 console.log('PASS all five combined outcome selectors are connected to period-filtered calculations');
+console.log('PASS execution adherence pools only recorded Rules/Playbook evidence and reports full, partial, and missing coverage');
+console.log('PASS Execution Quality sections, diagram tabs, and evidence-backed empty states are present');
