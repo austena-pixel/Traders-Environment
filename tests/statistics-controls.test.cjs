@@ -127,10 +127,10 @@ const elements=new Map([
 ]);
 const zoomContext=vm.createContext({$:selector=>elements.get(selector)});
 vm.runInContext(
-  'let statsAutoZoom=false;\\n'+
-  extractFunction('statsAutoZoomContainers')+'\\n'+
-  extractFunction('setStatsAutoZoom')+'\\n'+
-  extractFunction('setZoomedStatsCard')+'\\n'+
+  'let statsAutoZoom=false;\n'+
+  extractFunction('statsAutoZoomContainers')+'\n'+
+  extractFunction('setStatsAutoZoom')+'\n'+
+  extractFunction('setZoomedStatsCard')+'\n'+
   extractFunction('bindStatsAutoZoomCards'),
   zoomContext
 );
