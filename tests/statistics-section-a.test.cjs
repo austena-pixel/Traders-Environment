@@ -20,11 +20,16 @@ function extractFunction(name){
 }
 
 const sectionStart=html.indexOf('<section class="panel stats-section-a"');
-const layoutStart=html.indexOf('<div class="stats-section-a-workspace">',sectionStart);
+const layoutStart=html.indexOf('<div class="stats-section-a-workspace"',sectionStart);
 const chartStart=html.indexOf('<section class="stats-combined-outcomes"',layoutStart);
-const optionalStart=html.indexOf('<aside class="stats-dashboard-section"',layoutStart);
+const personalIntelligenceStart=html.indexOf('<aside class="stats-dashboard-section stats-personal-intelligence"',layoutStart);
+const optionalStart=html.indexOf('<aside class="stats-dashboard-section" aria-labelledby="statsIndicatorsHeading"',layoutStart);
 assert.ok(sectionStart>=0&&layoutStart>sectionStart,'Section A groups the metrics, chart and optional indicator space.');
-assert.ok(chartStart>layoutStart&&optionalStart>chartStart,'The main outcomes chart sits beside the optional indicator area.');
+assert.ok(personalIntelligenceStart>layoutStart&&chartStart>personalIntelligenceStart,'Section A starts with Personal Intelligence and History Charts follows it.');
+assert.ok(optionalStart>chartStart,'The optional indicator space remains after History Charts inside Section A.');
+assert.ok(html.includes('role="group" tabindex="0" aria-label="Personal Intelligence followed by History Charts"'),'the horizontally scrollable row remains named and keyboard accessible');
+assert.match(html,/grid-template-columns:minmax\\(0,60%\\) minmax\\(245px,calc\\(31\\.67% - 4px\\)\\) minmax\\(600px,calc\\(68\\.33% - 8px\\)\\)/,'the workspace aligns Section A to the marked guide and keeps its existing proportional width');
+assert.ok(html.includes('<h3 class="stats-history-charts-heading">History Charts</h3>'),'the chart panel is clearly labeled History Charts');
 assert.ok(html.indexOf('</aside>',optionalStart)<html.indexOf('<dialog',optionalStart),'The optional indicator area remains inside Section A, before the indicator picker dialog.');
 assert.match(html,/\.stats-dashboard-section\{min-width:0;min-height:0;/,'the optional indicator panel can shrink to fit short screens');
 assert.ok(!html.includes('Measure financial outcomes, methodology evidence and execution quality for one shared reporting period.'),'the Statistics intro subtitle row is removed so Section A can begin higher');
@@ -127,7 +132,7 @@ assert.equal(balanceContext.verifiedCurrentAccountBalance().value,105,'a complet
 balanceContext.trades=[{pnl:5},{pnl:null}];
 assert.equal(balanceContext.verifiedCurrentAccountBalance().value,null,'incomplete P&L does not create a guessed current balance');
 
-console.log('PASS Section A keeps the primary outcome chart beside a blank, optional-indicator panel');
+console.log('PASS Section A aligns Personal Intelligence before the History Charts panel');
 console.log('PASS the legacy Performance Details and Performance by Instrument panels are removed');
 console.log('PASS current balance, net P&L, win rate, period return, profit factor, and average P&L render from complete data');
 console.log('PASS missing recorded P&L stays unavailable instead of becoming a zero');
