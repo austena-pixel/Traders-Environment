@@ -2222,12 +2222,11 @@ body.playbook-workspace .main{
   }
   .stats-section-a-workspace{
     min-height:0;
-    grid-template-columns:minmax(0,60%) minmax(245px,calc(31.67% - 4px)) minmax(600px,calc(68.33% - 8px));
-    overflow-x:auto;overflow-y:hidden;scrollbar-color:#33445a transparent;scrollbar-width:thin;overscroll-behavior-x:contain
+    grid-template-columns:minmax(0,calc(60% - 12px)) minmax(0,40%);
+    overflow:hidden
   }
-  .stats-section-a-workspace::before{content:"";grid-column:1;grid-row:1;min-width:0}
-  .stats-personal-intelligence{grid-column:2;grid-row:1}
-  .stats-combined-outcomes{grid-column:3;grid-row:1}
+  .stats-personal-intelligence{grid-column:1;grid-row:1;width:calc(52.7833% + 2.333px);justify-self:start}
+  .stats-combined-outcomes{grid-column:2;grid-row:1}
   .stats-section-a-workspace:focus-visible{outline:2px solid #69a8ff;outline-offset:2px}
   .stats-combined-outcomes{display:flex;flex-direction:column;min-height:0}
   .stats-outcome-selectors{flex:0 0 auto}
@@ -7296,7 +7295,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           </article>
         </div>
 
-        <div class="stats-section-a-workspace" role="group" tabindex="0" aria-label="Personal Intelligence followed by History Charts">
+        <div class="stats-section-a-workspace" role="group" aria-label="Personal Intelligence on the left; History Charts on the right">
           <aside class="stats-dashboard-section stats-personal-intelligence" id="statsPersonalIntelligence" aria-labelledby="statsPersonalIntelligenceHeading">
             <div class="stats-personal-intelligence-header">
               <div class="stats-personal-intelligence-title">
