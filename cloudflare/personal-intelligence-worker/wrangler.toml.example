@@ -1,0 +1,10 @@
+name = "tios-personal-intelligence-storage"
+main = "worker.mjs"
+compatibility_date = "2026-10-18"
+workers_dev = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tios-personal-intelligence"
+database_id = "REPLACE_WITH_THE_D1_DATABASE_ID"
+migrations_dir = "migrations"

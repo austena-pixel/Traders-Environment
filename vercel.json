@@ -1,8 +1,9 @@
 {
-  "buildCommand": "node scripts/verify-ai-builder-provider.cjs && node --test tests/tios-personal-intelligence-engine.test.cjs tests/tios-personal-intelligence-service.test.cjs",
+  "buildCommand": "node scripts/verify-ai-builder-provider.cjs && node --test tests/tios-personal-intelligence-engine.test.cjs tests/tios-personal-intelligence-service.test.cjs tests/tios-personal-intelligence-storage.test.cjs tests/tios-personal-intelligence-cloudflare.test.cjs",
   "outputDirectory": ".",
   "functions": {
     "api/tios-ai-builder.js": { "maxDuration": 60 },
-    "api/tios-personal-intelligence.js": { "maxDuration": 60 }
+    "api/tios-personal-intelligence.js": { "maxDuration": 60 },
+    "api/tios-personal-intelligence-storage.js": { "maxDuration": 30 }
   }
 }
