@@ -402,6 +402,58 @@
     };
   }
 
+  function summarizeExecutionAdherence(source, categoriesForTrade) {
+    const trades = list(source);
+    const categoryKeys = { rules: EXECUTION_CATEGORIES.rules, playbook: EXECUTION_CATEGORIES.playbook };
+    const categoryTotals = Object.fromEntries(Object.keys(categoryKeys).map(name => [name, {
+      assessedTradeCount: 0,
+      itemCount: 0,
+      total: 0
+    }]));
+    let fullyAssessedTradeCount = 0;
+    let partiallyAssessedTradeCount = 0;
+    let unassessedTradeCount = 0;
+    let itemCount = 0;
+    let total = 0;
+
+    trades.forEach(trade => {
+      const tradeCategories = typeof categoriesForTrade === 'function' ? categoriesForTrade(trade) : null;
+      const valuesByCategory = {};
+      Object.entries(categoryKeys).forEach(([name, key]) => {
+        const values = list(tradeCategories?.[key]?.values)
+          .filter(finiteRecordedNumber).map(Number)
+          .filter(value => value >= 0 && value <= 1);
+        valuesByCategory[name] = values;
+        if (!values.length) return;
+        categoryTotals[name].assessedTradeCount++;
+        categoryTotals[name].itemCount += values.length;
+        categoryTotals[name].total += values.reduce((sum, value) => sum + value, 0);
+        itemCount += values.length;
+        total += values.reduce((sum, value) => sum + value, 0);
+      });
+      const hasRules = valuesByCategory.rules.length > 0;
+      const hasPlaybook = valuesByCategory.playbook.length > 0;
+      if (hasRules && hasPlaybook) fullyAssessedTradeCount++;
+      else if (hasRules || hasPlaybook) partiallyAssessedTradeCount++;
+      else unassessedTradeCount++;
+    });
+
+    return {
+      selectedTradeCount: trades.length,
+      fullyAssessedTradeCount,
+      partiallyAssessedTradeCount,
+      unassessedTradeCount,
+      measuredTradeCount: fullyAssessedTradeCount + partiallyAssessedTradeCount,
+      itemCount,
+      adherencePct: itemCount ? total / itemCount * 100 : null,
+      categories: Object.fromEntries(Object.entries(categoryTotals).map(([name, item]) => [name, {
+        assessedTradeCount: item.assessedTradeCount,
+        itemCount: item.itemCount,
+        adherencePct: item.itemCount ? item.total / item.itemCount * 100 : null
+      }]))
+    };
+  }
+
   function groupExecutionEvidenceByRole(source, evidenceRows) {
     const selectedIds = new Set(list(source).map(trade => String(trade.id || '')).filter(Boolean));
     const evidenceByLabel = new Map();
@@ -452,6 +504,7 @@
     buildExecutionQualityTimeline,
     sampleReliability,
     summarizeExecutionQuality,
+    summarizeExecutionAdherence,
     groupExecutionEvidenceByRole
   });
 });
