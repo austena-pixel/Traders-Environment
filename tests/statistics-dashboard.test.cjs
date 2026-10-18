@@ -67,6 +67,30 @@ function extractFunction(name){
   }
   throw new Error('Unclosed '+name);
 }
+const renderedIndicatorStack={innerHTML:''};
+const renderContext=vm.createContext({
+  $:selector=>selector==='#statsIndicatorStack'?renderedIndicatorStack:selector==='#statsIndicatorEmpty'?{classList:{toggle(){}}}:null,
+  statsIndicatorDraft:['net-pnl','win-rate'],
+  statsArrangeMode:false,
+  lastStatisticsIndicatorSnapshot:{'net-pnl':{value:'+$80.00',detail:'Test measurement.'},'win-rate':{value:'60%',detail:'Test measurement.'}},
+  STATISTICS_INDICATOR_CATALOG:[
+    {id:'net-pnl',title:'Net P&L',group:'Combined Outcomes'},
+    {id:'win-rate',title:'Win Rate',group:'Combined Outcomes'}
+  ],
+  escapeHtml:value=>String(value)
+});
+vm.runInContext(extractFunction('renderStatisticsIndicatorCards'),renderContext);
+renderContext.renderStatisticsIndicatorCards();
+assert.equal((renderedIndicatorStack.innerHTML.match(/data-indicator-action="remove"/g)||[]).length,2,
+  'each optional indicator has its own remove control outside Arrange mode');
+assert.match(renderedIndicatorStack.innerHTML,/aria-label="Remove Net P&L"/);
+assert.doesNotMatch(renderedIndicatorStack.innerHTML,/data-indicator-action="up"/,
+  'move controls remain exclusive to Arrange mode');
+renderContext.statsArrangeMode=true;
+renderContext.renderStatisticsIndicatorCards();
+assert.equal((renderedIndicatorStack.innerHTML.match(/data-indicator-action="remove"/g)||[]).length,2,
+  'per-indicator remove controls remain available while arranging');
+assert.match(renderedIndicatorStack.innerHTML,/data-indicator-action="up"/);
 function equityContext(records,startingBalance){
   const context=vm.createContext({
     trades:records,

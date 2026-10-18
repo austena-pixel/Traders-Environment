@@ -2034,6 +2034,10 @@ body.playbook-workspace .main{
 }
 .stats-indicator-grid .stats-indicator-card.stats-card-zoomed{transform-origin:center top}
 .stats-indicator-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;min-width:0}
+.stats-indicator-card-heading{min-width:0}
+.stats-indicator-remove{display:inline-grid;place-items:center;flex:0 0 22px;width:22px;height:22px;padding:0;border:1px solid #31445c;border-radius:7px;background:#0c141e;color:#9eafc3;font-size:15px;line-height:1;cursor:pointer}
+.stats-indicator-remove:hover{border-color:#a44b57;background:#28151b;color:#ff8790}
+.stats-indicator-remove:focus-visible{outline:2px solid #69a8ff;outline-offset:2px}
 .stats-indicator-card-title{margin:0;color:#d7e0ed;font-size:10px;font-weight:750;line-height:1.35;overflow-wrap:anywhere}
 .stats-indicator-source{display:block;margin-top:3px;color:#8293a9;font-size:8px;line-height:1.2}
 .stats-indicator-card-value{color:#eef4fc;font-size:21px;font-weight:750;line-height:1.1;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
@@ -15083,8 +15087,9 @@ function renderStatisticsIndicatorCards(snapshot=lastStatisticsIndicatorSnapshot
     const definition=STATISTICS_INDICATOR_CATALOG.find(item=>item.id===id);
     if(!definition)return '';
     const measurement=snapshot?.[id]||{value:'—',detail:'No measurement is available yet.',tone:'neutral'};
-    const actions=statsArrangeMode?`<div class="stats-indicator-card-actions" aria-label="Arrange ${escapeHtml(definition.title)}"><button type="button" data-indicator-action="up" data-indicator-index="${index}"${index===0?' disabled':''} aria-label="Move ${escapeHtml(definition.title)} up">Move up</button><button type="button" data-indicator-action="down" data-indicator-index="${index}"${index===statsIndicatorDraft.length-1?' disabled':''} aria-label="Move ${escapeHtml(definition.title)} down">Move down</button><button type="button" data-indicator-action="remove" data-indicator-index="${index}" aria-label="Remove ${escapeHtml(definition.title)}">Remove</button></div>`:'';
-    return `<article class="stats-indicator-card" tabindex="0" data-indicator-card="${escapeHtml(id)}" aria-label="${escapeHtml(definition.title)}: ${escapeHtml(measurement.value)}"><div class="stats-indicator-card-head"><div><h3 class="stats-indicator-card-title">${escapeHtml(definition.title)}</h3><span class="stats-indicator-source">${escapeHtml(definition.group)}</span></div></div><div class="stats-indicator-card-value ${escapeHtml(measurement.tone||'neutral')}">${escapeHtml(measurement.value)}</div><p class="stats-indicator-card-detail">${escapeHtml(measurement.detail)}</p>${actions}</article>`;
+    const actions=statsArrangeMode?`<div class="stats-indicator-card-actions" aria-label="Arrange ${escapeHtml(definition.title)}"><button type="button" data-indicator-action="up" data-indicator-index="${index}"${index===0?' disabled':''} aria-label="Move ${escapeHtml(definition.title)} up">Move up</button><button type="button" data-indicator-action="down" data-indicator-index="${index}"${index===statsIndicatorDraft.length-1?' disabled':''} aria-label="Move ${escapeHtml(definition.title)} down">Move down</button></div>`:'';
+    const removeButton=`<button class="stats-indicator-remove" type="button" data-indicator-action="remove" data-indicator-index="${index}" aria-label="Remove ${escapeHtml(definition.title)}" title="Remove optional indicator">×</button>`;
+    return `<article class="stats-indicator-card" tabindex="0" data-indicator-card="${escapeHtml(id)}" aria-label="${escapeHtml(definition.title)}: ${escapeHtml(measurement.value)}"><div class="stats-indicator-card-head"><div class="stats-indicator-card-heading"><h3 class="stats-indicator-card-title">${escapeHtml(definition.title)}</h3><span class="stats-indicator-source">${escapeHtml(definition.group)}</span></div>${removeButton}</div><div class="stats-indicator-card-value ${escapeHtml(measurement.tone||'neutral')}">${escapeHtml(measurement.value)}</div><p class="stats-indicator-card-detail">${escapeHtml(measurement.detail)}</p>${actions}</article>`;
   }).join('');
   stack.innerHTML=cards;
   if(empty)empty.classList.toggle('hidden',statsIndicatorDraft.length>0);
