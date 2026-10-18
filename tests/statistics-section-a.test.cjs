@@ -25,10 +25,13 @@ const chartStart=html.indexOf('<section class="stats-combined-outcomes"',layoutS
 const personalIntelligenceStart=html.indexOf('<aside class="stats-dashboard-section stats-personal-intelligence"',layoutStart);
 const optionalStart=html.indexOf('<aside class="stats-dashboard-section" aria-labelledby="statsIndicatorsHeading"',layoutStart);
 assert.ok(sectionStart>=0&&layoutStart>sectionStart,'Section A groups the metrics, chart and optional indicator space.');
-assert.ok(personalIntelligenceStart>layoutStart&&chartStart>personalIntelligenceStart,'Section A starts with Personal Intelligence and History Charts follows it.');
+assert.ok(personalIntelligenceStart>layoutStart&&chartStart>personalIntelligenceStart,'Personal Intelligence stays before History Charts in the workspace.');
 assert.ok(optionalStart>chartStart,'The optional indicator space remains after History Charts inside Section A.');
-assert.ok(html.includes('role="group" tabindex="0" aria-label="Personal Intelligence followed by History Charts"'),'the horizontally scrollable row remains named and keyboard accessible');
-assert.match(html,/grid-template-columns:minmax\(0,60%\) minmax\(245px,calc\(31\.67% - 4px\)\) minmax\(600px,calc\(68\.33% - 8px\)\)/,'the workspace aligns Section A to the marked guide and keeps its existing proportional width');
+assert.ok(html.includes('role="group" aria-label="Personal Intelligence on the left; History Charts on the right"'),'the workspace describes the intended left/right grouping accessibly');
+assert.match(html,/\.stats-section-a-workspace\{[^}]*grid-template-columns:minmax\(0,calc\(60% - 12px\)\) minmax\(0,40%\)/,'History Charts begin on the right at the yellow guide while Sections A and B stay left');
+assert.match(html,/\.stats-personal-intelligence\{grid-column:1;grid-row:1;width:calc\(52\.7833% \+ 2\.333px\)/,'Personal Intelligence keeps its prior rendered width inside the narrower left column');
+assert.match(html,/\.stats-combined-outcomes\{grid-column:2;grid-row:1\}/,'History Charts occupy the right-hand column');
+assert.ok(html.indexOf('class="stats-primary-summary"')<layoutStart,'the summary stays above the left/right split');
 assert.ok(html.includes('<h3 class="stats-history-charts-heading">History Charts</h3>'),'the chart panel is clearly labeled History Charts');
 assert.ok(html.indexOf('</aside>',optionalStart)<html.indexOf('<dialog',optionalStart),'The optional indicator area remains inside Section A, before the indicator picker dialog.');
 assert.match(html,/\.stats-dashboard-section\{min-width:0;min-height:0;/,'the optional indicator panel can shrink to fit short screens');
@@ -132,7 +135,7 @@ assert.equal(balanceContext.verifiedCurrentAccountBalance().value,105,'a complet
 balanceContext.trades=[{pnl:5},{pnl:null}];
 assert.equal(balanceContext.verifiedCurrentAccountBalance().value,null,'incomplete P&L does not create a guessed current balance');
 
-console.log('PASS Section A aligns Personal Intelligence before the History Charts panel');
+console.log('PASS the financial summary and Personal Intelligence stay left of History Charts');
 console.log('PASS the legacy Performance Details and Performance by Instrument panels are removed');
 console.log('PASS current balance, net P&L, win rate, period return, profit factor, and average P&L render from complete data');
 console.log('PASS missing recorded P&L stays unavailable instead of becoming a zero');
