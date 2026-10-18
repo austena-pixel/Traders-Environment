@@ -67,6 +67,40 @@ function extractFunction(name){
   }
   throw new Error('Unclosed '+name);
 }
+const executionTabsMarkup=(html.match(/<div class="stats-execution-section-tabs"[\s\S]*?<\/div>/)||[])[0]||'';
+const executionTabNames=Array.from(executionTabsMarkup.matchAll(/data-execution-quality-tab>([^<]+)<\/button>/g),match=>match[1]);
+assert.deepEqual(executionTabNames,[
+  'Execution Overview','Profit Gap Analysis','Execution Diagnostics','Behavioral Research'
+],'Execution Quality exposes only the four requested top-level views');
+const executionTabPanels=Array.from(html.matchAll(/<section class="stats-execution-section"([^>]*)>/g),match=>match[1]);
+assert.equal(executionTabPanels.length,4,'the four tab buttons have four content panels');
+assert.equal(executionTabPanels.filter(attributes=>!/\shidden(?:\s|$)/.test(attributes)).length,1,
+  'only the default Execution Overview panel is visible initially');
+assert.match(executionTabPanels[0],/id="statsExecutionOverview"[^>]*role="tabpanel"/);
+
+const executionPanelIds=['statsExecutionOverview','statsExecutionProfitGap','statsExecutionDiagnostics','statsExecutionBehavioralResearch'];
+const executionPanelMocks=new Map(executionPanelIds.map((id,index)=>[id,{id,hidden:index!==0}]));
+const executionTabMocks=executionPanelIds.map((id,index)=>({
+  attributes:{'aria-controls':id,'aria-selected':String(index===0)},
+  tabIndex:index===0?0:-1,
+  setAttribute(name,value){this.attributes[name]=value;},
+  getAttribute(name){return this.attributes[name];}
+}));
+const executionTabContext=vm.createContext({
+  document:{querySelectorAll:()=>executionTabMocks,getElementById:id=>executionPanelMocks.get(id)},
+  requestAnimationFrame:callback=>callback(),
+  statsExecutionTrendInstance:null
+});
+vm.runInContext(extractFunction('activateExecutionQualityTab'),executionTabContext);
+executionTabMocks.forEach((tab,selectedIndex)=>{
+  executionTabContext.activateExecutionQualityTab(tab);
+  assert.deepEqual(executionTabMocks.map(item=>item.attributes['aria-selected']),
+    executionTabMocks.map((_,index)=>String(index===selectedIndex)),
+    'selecting a top-level tab updates its selected state');
+  assert.deepEqual(executionPanelIds.map(id=>executionPanelMocks.get(id).hidden),
+    executionPanelIds.map((_,index)=>index!==selectedIndex),
+    'selecting a top-level tab shows only its matching panel');
+});
 const renderedIndicatorStack={innerHTML:''};
 const renderContext=vm.createContext({
   $:selector=>selector==='#statsIndicatorStack'?renderedIndicatorStack:selector==='#statsIndicatorEmpty'?{classList:{toggle(){}}}:null,
@@ -200,4 +234,5 @@ assert.ok(html.includes('No Shadow Trading or matched reference-results table'),
 
 console.log('PASS all five combined outcome selectors are connected to period-filtered calculations');
 console.log('PASS execution adherence pools only recorded Rules/Playbook evidence and reports full, partial, and missing coverage');
-console.log('PASS Execution Quality sections, diagram tabs, and evidence-backed empty states are present');
+console.log('PASS Execution Quality uses four accessible top-level tabs with one visible panel at a time');
+console.log('PASS Profit Gap diagram tabs and evidence-backed empty states are present');
