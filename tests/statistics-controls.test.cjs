@@ -1,4 +1,4 @@
-// Regression coverage for Statistics sidebar zoom and selected-timeframe persistence.
+// Regression coverage for Statistics sidebar zoom and selected-period persistence.
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
@@ -38,8 +38,10 @@ const timeframeButtons=['1d','1w','1m','6m','1y','all'].map(range=>({
   classList:createClassList(range==='1d'?['active']:[])
 }));
 const storage=createStorage('1m');
+const currentRangeLabel={textContent:''};
 const rangeContext=vm.createContext({
   localStorage:storage,
+  $:selector=>selector==='#statsPeriodCurrent'?currentRangeLabel:null,
   $$:selector=>{
     assert.equal(selector,'[data-stats-range]','only Statistics timeframe buttons should be synchronized');
     return timeframeButtons;
@@ -50,8 +52,11 @@ assert.equal(vm.runInContext('statsRange',rangeContext),'1m','saved Month timefr
 rangeContext.syncStatsRangeButtons();
 assert.equal(timeframeButtons.find(button=>button.dataset.statsRange==='1m').classList.contains('active'),true);
 assert.equal(timeframeButtons.find(button=>button.dataset.statsRange==='1d').classList.contains('active'),false);
+assert.equal(currentRangeLabel.textContent,'Month','the single period control shows the saved reporting range');
 rangeContext.persistStatsRangePreference('6m');
 assert.equal(storage.value,'6m','new timeframe selection is saved');
+vm.runInContext("statsRange='6m';syncStatsRangeButtons()",rangeContext);
+assert.equal(currentRangeLabel.textContent,'6 Months','the selected reporting range updates the single control');
 rangeContext.persistStatsRangePreference('invalid-range');
 assert.equal(storage.value,'6m','invalid timeframe values are ignored');
 
@@ -157,6 +162,8 @@ assert.ok(html.includes('data-indicator-action="up"')&&html.includes('data-indic
 assert.ok(html.includes('id="equityChart"'),'Equity Curve remains present');
 assert.match(html,/\$\$\('\[data-stats-range\]'\)\.forEach\(btn=>\{/,'timeframe handlers are scoped to Statistics buttons');
 assert.match(html,/persistStatsRangePreference\(statsRange\);/,'selected timeframe is persisted after selection');
+assert.match(html,/<details class="stats-period-dropdown" id="statsPeriodSelector">[\s\S]*?<summary class="stats-period-trigger" aria-label="Choose reporting period"><span>Period:<\/span><strong id="statsPeriodCurrent">Day<\/strong><\/summary>/,'six visible date pills collapse into one button that shows the current range');
+assert.equal((html.match(/data-stats-range=/g)||[]).length,6,'all reporting ranges remain available in the menu');
 
 console.log('PASS selected timeframe persists, restores, and falls back safely');
 console.log('PASS Auto Zoom is accessible, toggleable, and restricted to sidebar analytics cards');

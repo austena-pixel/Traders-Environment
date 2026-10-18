@@ -272,11 +272,6 @@
     }
     function capture(){
       if(!prefs)return;
-      host.querySelectorAll('.charts-grid [data-chart-id]').forEach(card=>{
-        const chart=activeCharts().find(item=>item.id===card.dataset.chartId);
-        const interval=card.querySelector('[data-chart-field="interval"]');
-        if(chart&&interval)chart.interval=interval.value;
-      });
       host.querySelectorAll('[data-charts-setup-id]').forEach(panel=>{
         const chart=activeCharts().find(item=>item.id===panel.dataset.chartsSetupId);
         if(!chart)return;
@@ -538,15 +533,25 @@
       if(stored){chart.symbol=stored.symbol;chart.interval=stored.interval;}
       const panel=[...host.querySelectorAll('[data-charts-setup-id]')].find(p=>p.dataset.chartsSetupId===chart.id);
       if(panel){panel.querySelector('[data-chart-field="symbol"]').value=chart.symbol;syncDerivHint(panel);}
-      const interval=card.querySelector('[data-chart-field="interval"]');if(interval)interval.value=chart.interval;
+      syncIntervalControl(card,chart);
       updateMarketSelects();mountChart(card,true);changed();
     }
     function refreshWidgets(){host.querySelectorAll('[data-chart-id]').forEach(card=>mountChart(card))}
     function intervalLabel(value){
-      return ({'1':'1min','3':'3min','5':'5min','15':'15min','30':'30min','60':'1hour','120':'2hour','240':'4hour','D':'1day','W':'1week','M':'1month'})[value]||String(value);
+      return ({'1':'1min','3':'3min','5':'5min','15':'15min','30':'30min','60':'1H','120':'2H','240':'4H','D':'1D','W':'1W','M':'1M'})[value]||String(value);
+    }
+    function syncIntervalControl(card,chart){
+      const control=card?.querySelector('.charts-timeframes-control');
+      if(!control||!chart)return;
+      const trigger=control.querySelector('.charts-timeframes-trigger');
+      const current=control.querySelector('.charts-timeframes-current');
+      const label=intervalLabel(chart.interval);
+      if(trigger)trigger.dataset.chartIntervalCurrent=chart.interval;
+      if(current)current.textContent=label;
+      control.querySelectorAll('[data-chart-interval]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.chartInterval===chart.interval)));
     }
     function cardMarkup(chart,index){return `<section class="charts-card" data-chart-id="${escape(chart.id)}" aria-label="Chart ${index+1}">
-            <div class="charts-card-top"><strong>Chart ${index+1}</strong><label class="charts-timeframes-control"><span>Timeframes:</span><select data-chart-field="interval" aria-label="Chart ${index+1} timeframe">${P.intervals.map(([value])=>`<option value="${value}" ${chart.interval===value?'selected':''}>${intervalLabel(value)}</option>`).join('')}</select></label><div class="charts-card-actions">
+            <div class="charts-card-top"><strong>Chart ${index+1}</strong><details class="charts-timeframes-control"><summary class="charts-timeframes-trigger" data-chart-interval-current="${escape(chart.interval)}"><span>Timeframes: </span><strong class="charts-timeframes-current">${intervalLabel(chart.interval)}</strong></summary><div class="charts-timeframes-options" role="group" aria-label="Chart ${index+1} timeframes">${P.intervals.map(([value])=>`<button type="button" class="charts-timeframes-option" data-chart-interval="${escape(value)}" aria-pressed="${chart.interval===value}">${intervalLabel(value)}</button>`).join('')}</div></details><div class="charts-card-actions">
               ${index===0?`<button class="btn small charts-reveal-controls" type="button" data-charts-action="toggle-panel" aria-controls="chartsPanel" aria-expanded="${!controlsCollapsed}" ${controlsCollapsed?'':'hidden'}>Show controls</button><button class="btn small charts-account-link" type="button" data-charts-action="manage-deriv-account" title="Manage the selected Deriv MT5 account inside T-IOS">Deriv account</button><a class="btn small charts-tv-link" href="https://www.tradingview.com/chart/?symbol=${escape(encodeURIComponent(chart.symbol))}" target="_blank" rel="noopener noreferrer" data-charts-tv-chart title="Open this symbol on TradingView with its full toolbar; changes are not tracked in T-IOS">Open TradingView ↗</a>`:''}
               <button class="btn small" type="button" data-charts-action="capture" title="Capture this chart as evidence for a trade">Capture</button><button class="btn small" type="button" data-charts-action="add-market" title="Add this chart market to your saved list">Add market</button><button class="btn small" type="button" data-charts-action="reset-chart" title="Reload this chart to its saved instrument, or the configured instrument if no saved chart exists">Reset instrument</button><button class="btn small" type="button" data-charts-action="expand" aria-expanded="false">Expand</button></div></div>
             <form class="charts-controls">
@@ -934,11 +939,21 @@
       if(event.target.matches('[data-charts-count]')){selectChartCount(Number(event.target.value));return}
       if(event.target.matches('[data-charts-setting]')){
         prefs[event.target.dataset.chartsSetting]=event.target.value;changed();refreshWidgets();
-      }else if(event.target.matches('[data-chart-field="interval"]')){
-        capture();changed();mountChart(cardForControl(event.target));
       }
     });
     host.addEventListener('click',event=>{
+      const intervalOption=event.target.closest('[data-chart-interval]');
+      if(intervalOption){
+        const card=intervalOption.closest('[data-chart-id]');
+        const chart=activeCharts().find(item=>item.id===card?.dataset.chartId);
+        const nextInterval=intervalOption.dataset.chartInterval;
+        if(!chart||!P.intervals.some(([value])=>value===nextInterval))return;
+        chart.interval=nextInterval;
+        card.querySelector('.charts-timeframes-control')?.removeAttribute('open');
+        syncIntervalControl(card,chart);
+        capture();changed();mountChart(card);
+        return;
+      }
       const firstLayout=event.target.closest('[data-charts-onboarding-layout]');
       if(firstLayout&&accountStep==='layout'&&!firstRunSaving){
         firstRunLayout=firstLayout.dataset.chartsOnboardingLayout;
