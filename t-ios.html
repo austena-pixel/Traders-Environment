@@ -1754,6 +1754,17 @@ body.playbook-workspace .main{
   gap:7px;
   flex-wrap:wrap;
 }
+.stats-period-dropdown{position:relative;display:block;flex:0 0 auto;min-width:0}
+.stats-period-trigger{position:relative;display:flex;align-items:center;gap:7px;min-height:34px;padding:7px 30px 7px 10px;border:1px solid var(--line);border-radius:9px;background:#0e151f;color:var(--text);font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer;list-style:none}
+.stats-period-trigger::-webkit-details-marker{display:none}
+.stats-period-trigger::after{content:"";position:absolute;right:11px;top:calc(50% - 3px);width:7px;height:7px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg)}
+.stats-period-trigger span{color:var(--muted);font-weight:600}
+.stats-period-trigger strong{font-weight:800}
+.stats-period-dropdown[open] .stats-period-trigger{border-color:var(--blue)}
+.stats-period-trigger:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.stats-period-options{position:absolute;top:calc(100% + 6px);left:0;z-index:30;display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;width:190px;padding:7px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);box-shadow:0 12px 28px rgba(0,0,0,.48)}
+.stats-period-dropdown[open] .stats-period-options{display:grid}
+.stats-period-options .range-btn{min-width:0;padding:7px 8px;white-space:nowrap}
 .range-btn{
   border:1px solid var(--line);
   background:#0e151f;
@@ -1970,8 +1981,8 @@ body.playbook-workspace .main{
 .stats-section-a-header{align-items:center;gap:10px;margin:0;padding:8px 10px;border:1px solid #253449;border-bottom:0;border-radius:12px 12px 0 0;background:#0c141e;flex-wrap:wrap}
 #statsStatisticsView:not([hidden])>.stats-section-a{border-top:0;border-radius:0 0 12px 12px}
 #page-statistics:has(#statsStatisticsView[hidden])>.stats-section-a-header{margin-bottom:14px;border-bottom:1px solid #253449;border-radius:12px}
-.stats-section-a-header>.range-tabs,.stats-section-a-header>.stats-view-tabs,.stats-section-a-header>.stats-autozoom-controls{min-width:0;padding:5px;border:1px solid #2b3b50;border-radius:11px;background:linear-gradient(145deg,#111a26,#0b1119);box-shadow:inset 0 1px rgba(255,255,255,.025)}
-.stats-section-a-header>.range-tabs{flex:0 0 auto;gap:5px}
+.stats-section-a-header>.stats-period-dropdown,.stats-section-a-header>.stats-view-tabs,.stats-section-a-header>.stats-autozoom-controls{min-width:0;padding:5px;border:1px solid #2b3b50;border-radius:11px;background:linear-gradient(145deg,#111a26,#0b1119);box-shadow:inset 0 1px rgba(255,255,255,.025)}
+.stats-section-a-header>.stats-period-dropdown{flex:0 0 auto}
 .stats-section-a-header>.stats-view-tabs{flex:1 1 460px;min-width:min(100%,360px);width:min(100%,660px);margin-left:auto}
 .stats-section-a-header>.stats-view-tabs .range-btn{border-radius:8px}
 .stats-section-a-header .stats-view-tabs .range-btn{min-height:32px;padding:6px 8px;gap:6px}
@@ -7090,14 +7101,17 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
       </header>
 
       <div class="stats-section-a-header" role="group" aria-label="Statistics section controls">
-        <div class="range-tabs" role="group" aria-label="Reporting period">
-          <button class="range-btn active" data-stats-range="1d">Day</button>
-          <button class="range-btn" data-stats-range="1w">Week</button>
-          <button class="range-btn" data-stats-range="1m">Month</button>
-          <button class="range-btn" data-stats-range="6m">6 Months</button>
-          <button class="range-btn" data-stats-range="1y">Year</button>
-          <button class="range-btn" data-stats-range="all">All</button>
-        </div>
+        <details class="stats-period-dropdown" id="statsPeriodSelector">
+          <summary class="stats-period-trigger" aria-label="Choose reporting period"><span>Period:</span><strong id="statsPeriodCurrent">Day</strong></summary>
+          <div class="stats-period-options" role="group" aria-label="Reporting period">
+            <button class="range-btn active" type="button" data-stats-range="1d">Day</button>
+            <button class="range-btn" type="button" data-stats-range="1w">Week</button>
+            <button class="range-btn" type="button" data-stats-range="1m">Month</button>
+            <button class="range-btn" type="button" data-stats-range="6m">6 Months</button>
+            <button class="range-btn" type="button" data-stats-range="1y">Year</button>
+            <button class="range-btn" type="button" data-stats-range="all">All</button>
+          </div>
+        </details>
         <div class="stats-view-tabs" role="tablist" aria-label="Performance environments">
           <button class="range-btn active stats-view-tab" type="button" role="tab" id="statsStatisticsTab" data-stats-view="statistics" aria-selected="true" aria-controls="statsStatisticsView">
             <span class="stats-view-tab-label">Statistics</span><strong class="stats-view-tab-value" id="statNavReturn" aria-live="polite">—</strong>
@@ -8698,6 +8712,7 @@ const STATS_AUTOZOOM_PREFERENCE_KEY = 'tios_statistics_autozoom_percent_v1';
 const STATS_AUTOZOOM_ENABLED_KEY = 'tios_statistics_autozoom_enabled_v1';
 const STATS_INDICATOR_PREFERENCE_KEY = 'tios_statistics_indicators_v1';
 const STATS_RANGE_OPTIONS = Object.freeze(['1d', '1w', '1m', '6m', '1y', 'all']);
+const STATS_RANGE_BUTTON_LABELS = Object.freeze({'1d':'Day','1w':'Week','1m':'Month','6m':'6 Months','1y':'Year','all':'All'});
 const STATISTICS_INDICATOR_CATALOG = Object.freeze([
   {id:'net-pnl',title:'Net P&L',group:'Combined Outcomes',description:'Recorded realized net P&L for the selected period.'},
   {id:'period-return',title:'Period Return',group:'Combined Outcomes',description:'Realized P&L divided by verified opening equity for this period.'},
@@ -8766,6 +8781,8 @@ function syncStatsRangeButtons(){
   $$('[data-stats-range]').forEach(btn=>{
     btn.classList.toggle('active',btn.dataset.statsRange===statsRange);
   });
+  const label=$('#statsPeriodCurrent');
+  if(label)label.textContent=STATS_RANGE_BUTTON_LABELS[statsRange]||'Day';
 }
 
 let statsRange = loadStatsRangePreference();
@@ -15984,6 +16001,7 @@ $$('[data-stats-range]').forEach(btn=>{
     }
 
     syncStatsRangeButtons();
+    $('#statsPeriodSelector')?.removeAttribute('open');
     renderStatistics();
   });
 });

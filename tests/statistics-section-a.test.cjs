@@ -37,7 +37,10 @@ assert.ok(pagePeriodControls>pageHead&&pagePeriodControls<sectionControls,'date 
 assert.ok(sectionControls>pagePeriodControls&&statisticsPanel>sectionControls,'Section A controls sit immediately above its content');
 assert.ok(!html.slice(pageHead,statisticsPanel).includes('class="stats-toolbar"'),'the separate toolbar row is removed');
 assert.ok(!html.includes('id="statsCombinedOutcomesHeading"'),'the old Section A heading and description are removed');
-assert.ok(html.indexOf('class="range-tabs" role="group" aria-label="Reporting period"',sectionControls)<html.indexOf('class="stats-view-tabs" role="tablist" aria-label="Performance environments"',sectionControls),'the period buttons replace the old A heading and the environment tabs move into D');
+const periodDropdown=html.indexOf('<details class="stats-period-dropdown" id="statsPeriodSelector">',sectionControls);
+assert.ok(periodDropdown>sectionControls&&periodDropdown<html.indexOf('class="stats-view-tabs" role="tablist" aria-label="Performance environments"',sectionControls),'one compact period control leaves more room for the separate performance tabs');
+assert.match(html,/<summary class="stats-period-trigger" aria-label="Choose reporting period"><span>Period:<\/span><strong id="statsPeriodCurrent">Day<\/strong><\/summary>/,'the Statistics control shows its selected reporting range');
+assert.equal((html.match(/data-stats-range=/g)||[]).length,6,'all six reporting ranges stay available inside the menu');
 assert.ok(!html.includes('id="statsOutcomeTitle"')&&!html.includes('id="equityChartDescription"')&&!html.includes('class="stats-outcome-heading"'),'the chart title and description are removed');
 const outcomeWorkspace=html.indexOf('<div class="stats-outcome-workspace" id="statsOutcomeWorkspace"');
 const outcomePeriod=html.indexOf('<span class="stats-outcome-period" id="statsOutcomePeriod"',outcomeWorkspace);
