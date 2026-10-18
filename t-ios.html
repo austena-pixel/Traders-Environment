@@ -2027,13 +2027,13 @@ body.playbook-workspace .main{
 .stats-dashboard-section{min-width:0;min-height:0;padding:12px;border:0;border-radius:12px;background:var(--stats-unified-fill,var(--hios-theme-bg,var(--bg)))}
 .stats-dashboard-header{align-items:center;margin-bottom:8px}
 .stats-dashboard-title{min-width:0}
-.stats-dashboard-title h3{margin:0;font-size:12px;line-height:1.3}
-.stats-dashboard-title p{margin:4px 0 0;color:#8798ad;font-size:8px;line-height:1.45}
-.stats-dashboard-actions{display:flex;align-items:center;justify-content:flex-end;gap:5px;flex-wrap:wrap}
-.stats-dashboard-actions .btn{min-height:25px;padding:4px 7px;font-size:8px}
+.stats-dashboard-title h3{margin:0;font-size:15px;line-height:1.3;font-weight:750}
+.stats-dashboard-title p{margin:5px 0 0;color:#b3c0d2;font-size:11px;line-height:1.45}
+.stats-dashboard-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap}
+.stats-dashboard-actions .btn{min-height:31px;padding:6px 9px;font-size:11px}
 .stats-dashboard-actions .btn:disabled{opacity:.48;cursor:not-allowed}
-.stats-dashboard-toolbar{display:flex;justify-content:flex-end;min-height:16px;margin:0 0 6px}
-.stats-dashboard-save-status{margin:0;color:#8293a9;font-size:8px;line-height:1.4;text-align:right}
+.stats-dashboard-toolbar{display:flex;justify-content:flex-end;min-height:20px;margin:0 0 8px}
+.stats-dashboard-save-status{margin:0;color:#b0bdd0;font-size:10px;line-height:1.45;text-align:right}
 .stats-indicator-grid{
   display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,185px),1fr));
   align-items:stretch;gap:9px;width:100%;height:auto;min-height:0
@@ -2061,13 +2061,13 @@ body.playbook-workspace .main{
   color:#a0afc2;background:#0c141e;font-size:11px;line-height:1.55;text-align:center
 }
 .stats-outcome-unavailable{border-style:solid;border-color:#39475a;text-align:left}
-.stats-outcome-selectors{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px;padding:0 0 9px;border-bottom:1px solid #243247}
-.stats-outcome-selector{min-height:30px;padding:6px 10px;border:1px solid transparent;border-radius:8px;background:transparent;color:#97a8bd;font-size:9px;font-weight:750;cursor:pointer;white-space:nowrap}
-.stats-outcome-selector:hover{background:#121d2b;color:#d7e2f0}
-.stats-outcome-selector.active{border-color:#314b68;background:#172438;color:#dceaff}
+.stats-outcome-selectors{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px;padding:0 0 10px;border-bottom:1px solid #243247}
+.stats-outcome-selector{min-height:34px;padding:7px 12px;border:1px solid transparent;border-radius:8px;background:transparent;color:#c0ccdc;font-size:11px;font-weight:750;cursor:pointer;white-space:nowrap}
+.stats-outcome-selector:hover{background:#121d2b;color:#f0f5fc}
+.stats-outcome-selector.active{border-color:#314b68;background:#172438;color:#f0f6ff}
 .stats-outcome-selector:focus-visible,.stats-indicator-card-actions button:focus-visible{outline:2px solid #69a8ff;outline-offset:2px}
 .stats-outcome-workspace{position:relative;min-width:0;padding:30px 12px 12px;border:0;border-radius:12px;background:var(--stats-unified-fill,var(--hios-theme-bg,var(--bg)))}
-.stats-outcome-period{position:absolute;top:8px;right:12px;z-index:2;color:#8293a9;font-size:9px;text-align:right;pointer-events:none}
+.stats-outcome-period{position:absolute;top:8px;right:12px;z-index:2;color:#b0bdd0;font-size:10px;text-align:right;pointer-events:none}
 .stats-outcome-canvas-wrap{position:relative;width:100%;height:400px}
 .stats-combined-outcomes .equity-canvas-wrap{height:400px;width:100%}
 .stats-indicator-dialog{width:min(620px,calc(100vw - 28px));max-height:min(80vh,760px);padding:0;border:1px solid #34445a;border-radius:14px;background:#101923;color:#e8eef7;box-shadow:0 24px 90px rgba(0,0,0,.65)}
@@ -2109,7 +2109,8 @@ body.playbook-workspace .main{
   .stats-indicator-grid{grid-template-columns:1fr;gap:7px}
   .stats-indicator-grid .stats-indicator-card{min-height:104px;padding:10px}
   .stats-indicator-card-value{font-size:18px}
-  .stats-outcome-selector{flex:1 1 calc(50% - 6px);white-space:normal}
+  .stats-outcome-selector{flex:1 1 calc(50% - 6px);min-height:33px;padding:6px 8px;white-space:normal}
+  .stats-dashboard-actions .btn{min-height:29px;padding:5px 8px;font-size:10px}
   .stats-section-a{padding:11px}
   .stats-combined-outcomes,.stats-dashboard-section{padding:9px}
   .stats-outcome-workspace{padding:30px 8px 8px}
@@ -2149,8 +2150,8 @@ body.playbook-workspace .main{
   .stats-win-rate-gauge{max-width:195px;height:66px}
   .stats-section-a-workspace{gap:8px}
   .stats-combined-outcomes,.stats-dashboard-section{padding:9px}
-  .stats-outcome-selectors{gap:4px;margin-bottom:8px;padding-bottom:6px}
-  .stats-outcome-selector{min-height:27px;padding:5px 8px}
+  .stats-outcome-selectors{gap:6px;margin-bottom:9px;padding-bottom:7px}
+  .stats-outcome-selector{min-height:32px;padding:6px 9px}
   .stats-outcome-workspace{padding:30px 9px 9px}
 }
 @media(prefers-reduced-motion:reduce){
