@@ -2047,7 +2047,9 @@ body.playbook-workspace .main{
 .stats-personal-intelligence-panel{max-height:220px;overflow:auto;margin:4px 0 7px;padding:10px;border:1px solid #26364a;border-radius:9px;background:#0b1017;box-shadow:0 12px 28px rgba(0,0,0,.32)}
 .stats-personal-intelligence-panel[hidden]{display:none}
 .stats-personal-intelligence-history-section{display:flex;flex-direction:column;min-height:0;max-height:none;margin:0;padding:9px;overflow:hidden}
-.stats-personal-intelligence-history-section .stats-pi-history-list{min-height:0;overflow:auto}
+.stats-personal-intelligence-history-section .stats-pi-history-list{flex:1 1 auto;min-height:0;overflow:auto;align-content:start}
+.stats-personal-intelligence-history-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:9px;border-top:1px solid rgba(77,96,125,.24)}
+.stats-personal-intelligence-history-actions .stats-personal-intelligence-tool{flex:1 1 auto}
 .stats-pi-panel-title{margin:0 0 8px;color:#e4edf8;font-size:11px;font-weight:800}
 .stats-pi-history-list{display:grid;gap:5px}
 .stats-pi-history-empty,.stats-pi-panel-note{margin:0;color:#9cabc0;font-size:10px;line-height:1.45}
@@ -2055,7 +2057,8 @@ body.playbook-workspace .main{
 .stats-pi-history-open{flex:1;min-width:0;padding:7px 8px;border:1px solid #202d3e;border-radius:7px;background:#101722;color:#dce6f2;text-align:left;font-size:10px;cursor:pointer}
 .stats-pi-history-open:hover{border-color:#426086}
 .stats-pi-history-meta{display:block;margin-top:3px;color:#8fa0b5;font-size:9px}
-.stats-pi-history-delete{flex:0 0 27px;width:27px;height:27px;border:1px solid #2a3441;border-radius:6px;background:#111720;color:#aeb9c7;font-size:15px;cursor:pointer}
+.stats-pi-history-delete{display:grid;place-items:center;flex:0 0 22px;width:22px;height:22px;padding:0;border:0;background:transparent;color:#9ba9bb;font-size:13px;line-height:1;opacity:.66;cursor:pointer;transform-origin:center;transition:transform .14s ease,color .14s ease,opacity .14s ease}
+.stats-pi-history-delete:hover,.stats-pi-history-delete:focus-visible{color:#eef4fc;opacity:1;transform:scale(1.18)}
 .stats-pi-settings{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
 .stats-pi-setting{display:flex;flex-direction:column;gap:4px;min-width:0;color:#b9c7d8;font-size:9px;font-weight:750}
 .stats-pi-setting input:not([type="checkbox"]),.stats-pi-setting select,.stats-pi-setting textarea{width:100%;min-height:29px;padding:6px 7px;border:1px solid #28374a;border-radius:6px;background:#111923;color:#e3ebf5;font:inherit}
@@ -7338,11 +7341,6 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               </div>
               <span class="stats-personal-intelligence-connection" id="statsPIConnection" aria-live="polite">Connecting…</span>
             </div>
-            <div class="stats-personal-intelligence-toolbar" role="group" aria-label="Personal Intelligence controls">
-              <button class="stats-personal-intelligence-tool" type="button" data-pi-action="new">New chat</button>
-              <button class="stats-personal-intelligence-tool" type="button" data-pi-action="history" aria-expanded="true" aria-controls="statsPIHistory">History</button>
-              <button class="stats-personal-intelligence-tool" type="button" data-pi-action="settings" aria-expanded="false" aria-controls="statsPISettings">Settings</button>
-            </div>
             <div class="stats-personal-intelligence-panels">
               <section class="stats-personal-intelligence-panel" id="statsPISettings" aria-label="Personal Intelligence settings" hidden>
                 <h4 class="stats-pi-panel-title">Personal Intelligence settings</h4>
@@ -7383,6 +7381,11 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           <section class="stats-personal-intelligence-panel stats-personal-intelligence-history-section" id="statsPIHistory" aria-label="Personal Intelligence chat history">
             <h4 class="stats-pi-panel-title">Personal Intelligence chat history</h4>
             <div class="stats-pi-history-list" id="statsPIHistoryList"><p class="stats-pi-history-empty">Sign in to view saved conversations.</p></div>
+            <div class="stats-personal-intelligence-history-actions" role="group" aria-label="Personal Intelligence controls">
+              <button class="stats-personal-intelligence-tool" type="button" data-pi-action="history" aria-expanded="true" aria-controls="statsPIHistory">History</button>
+              <button class="stats-personal-intelligence-tool" type="button" data-pi-action="new">New chat</button>
+              <button class="stats-personal-intelligence-tool" type="button" data-pi-action="settings" aria-expanded="false" aria-controls="statsPISettings">Settings</button>
+            </div>
           </section>
           <div class="hidden" aria-hidden="true">
             <aside class="stats-dashboard-section" aria-labelledby="statsIndicatorsHeading">
