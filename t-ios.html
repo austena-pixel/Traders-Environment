@@ -1974,6 +1974,7 @@ body.playbook-workspace .main{
 .stats-indicator-stack.stats-autozoom .stats-indicator-card.stats-autozoom-bottom-anchor.stats-card-zoomed{
   transform-origin:right bottom;
 }
+.stats-visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 .stats-section-a{--stats-unified-fill:var(--hios-theme-bg,var(--bg));margin:0 0 14px;padding:16px;border:0;background:var(--stats-unified-fill)}
 .stats-section-a-header,.stats-dashboard-header{
   display:flex;align-items:flex-start;justify-content:space-between;gap:12px;min-width:0
@@ -1983,6 +1984,9 @@ body.playbook-workspace .main{
 #page-statistics:has(#statsStatisticsView[hidden])>.stats-section-a-header{margin-bottom:14px;border-bottom:1px solid #253449;border-radius:12px}
 .stats-section-a-header>.stats-period-dropdown,.stats-section-a-header>.stats-view-tabs,.stats-section-a-header>.stats-autozoom-controls{min-width:0;padding:5px;border:1px solid #2b3b50;border-radius:11px;background:linear-gradient(145deg,#111a26,#0b1119);box-shadow:inset 0 1px rgba(255,255,255,.025)}
 .stats-section-a-header>.stats-period-dropdown{flex:0 0 auto}
+.stats-section-a-header>.stats-date-navigation-controls{flex:0 1 auto;justify-content:flex-start;gap:4px;max-width:100%;margin:0;min-width:0}
+.stats-section-a-header .stats-date-navigation-controls .btn{min-height:29px;padding:4px 7px;font-size:8px;white-space:nowrap}
+.stats-section-a-header .stats-date-navigation-controls .stats-date-range{color:#8798ad;font-size:8px;white-space:nowrap}
 .stats-section-a-header>.stats-view-tabs{flex:0 0 auto;min-width:0;max-width:100%;width:auto;margin-left:auto;grid-template-columns:repeat(3,max-content)}
 .stats-section-a-header>.stats-view-tabs .range-btn{border-radius:8px}
 .stats-section-a-header .stats-view-tabs .range-btn{flex:0 0 auto;min-height:32px;padding:6px 9px;gap:8px;white-space:nowrap}
@@ -7152,32 +7156,14 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
     <!-- PLACEHOLDERS -->
 
     <section class="page" id="page-statistics">
-      <header class="page-head">
-        <div class="stats-page-intro">
-          <h1>Statistics</h1>
-        </div>
-        <div class="top-actions stats-page-period-controls" id="statsPeriodToolbar" role="group" aria-label="Shared reporting period controls">
+      <h1 class="stats-visually-hidden">Statistics</h1>
+      <div class="stats-section-a-header" role="group" aria-label="Statistics section controls">
+        <div class="top-actions stats-page-period-controls stats-date-navigation-controls" id="statsPeriodToolbar" role="group" aria-label="Shared reporting period controls">
           <button class="btn small" id="statsPrevPeriod">← Previous</button>
-          <input type="date" id="statsAnchorInput" style="width:auto;min-width:145px;padding:7px 9px">
-          <input type="month" id="statsMonthInput" class="hidden" style="width:auto;min-width:145px;padding:7px 9px" aria-label="Select month">
           <button class="btn small" id="statsLatestTrade">Latest Trade</button>
           <button class="btn small" id="statsNextPeriod">Next →</button>
           <div class="stats-date-range" id="statsDateRange">—</div>
         </div>
-      </header>
-
-      <div class="stats-section-a-header" role="group" aria-label="Statistics section controls">
-        <details class="stats-period-dropdown" id="statsPeriodSelector">
-          <summary class="stats-period-trigger" aria-label="Choose reporting period"><span>Period:</span><strong id="statsPeriodCurrent">Day</strong></summary>
-          <div class="stats-period-options" role="group" aria-label="Reporting period">
-            <button class="range-btn active" type="button" data-stats-range="1d">Day</button>
-            <button class="range-btn" type="button" data-stats-range="1w">Week</button>
-            <button class="range-btn" type="button" data-stats-range="1m">Month</button>
-            <button class="range-btn" type="button" data-stats-range="6m">6 Months</button>
-            <button class="range-btn" type="button" data-stats-range="1y">Year</button>
-            <button class="range-btn" type="button" data-stats-range="all">All</button>
-          </div>
-        </details>
         <div class="stats-view-tabs" role="tablist" aria-label="Performance environments">
           <button class="range-btn active stats-view-tab" type="button" role="tab" id="statsStatisticsTab" data-stats-view="statistics" aria-selected="true" aria-controls="statsStatisticsView">
             <span class="stats-view-tab-label">Statistics</span><strong class="stats-view-tab-value" id="statNavReturn" aria-live="polite">—</strong>
@@ -7189,6 +7175,17 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <span class="stats-view-tab-label">Execution Quality</span><strong class="stats-view-tab-value" id="statNavExecution" aria-live="polite">—</strong>
           </button>
         </div>
+        <details class="stats-period-dropdown" id="statsPeriodSelector">
+          <summary class="stats-period-trigger" aria-label="Choose reporting period"><span>Period:</span><strong id="statsPeriodCurrent">Day</strong></summary>
+          <div class="stats-period-options" role="group" aria-label="Reporting period">
+            <button class="range-btn active" type="button" data-stats-range="1d">Day</button>
+            <button class="range-btn" type="button" data-stats-range="1w">Week</button>
+            <button class="range-btn" type="button" data-stats-range="1m">Month</button>
+            <button class="range-btn" type="button" data-stats-range="6m">6 Months</button>
+            <button class="range-btn" type="button" data-stats-range="1y">Year</button>
+            <button class="range-btn" type="button" data-stats-range="all">All</button>
+          </div>
+        </details>
         <div class="stats-autozoom-controls" role="group" aria-label="Statistics card auto zoom controls">
           <button class="stats-autozoom-toggle" id="statsAutoZoomBtn" type="button" aria-pressed="false" aria-controls="statsPrimarySummary" title="Automatically zoom a Statistics card when hovered or focused">
             <span>Auto Zoom</span>
@@ -15697,24 +15694,10 @@ function renderStatistics(){
   const series=buildDailyEquitySeries(start,end);
 
   const periodNavDisabled=statsRange==='all';
-  const monthMode=statsRange==='1m';
 
   $('#statsPrevPeriod').disabled=periodNavDisabled;
   $('#statsNextPeriod').disabled=periodNavDisabled;
   $('#statsLatestTrade').disabled=!trades.length;
-
-  const dateInput=$('#statsAnchorInput');
-  const monthInput=$('#statsMonthInput');
-
-  dateInput.classList.toggle('hidden',monthMode);
-  monthInput.classList.toggle('hidden',!monthMode);
-
-  dateInput.disabled=periodNavDisabled || monthMode;
-  monthInput.disabled=periodNavDisabled || !monthMode;
-
-  dateInput.value=localDateString(statsAnchorDate);
-  monthInput.value=
-    `${statsAnchorDate.getFullYear()}-${String(statsAnchorDate.getMonth()+1).padStart(2,'0')}`;
 
   const source=series.selectedTrades;
   const analytics=statsAnalytics();
@@ -16168,29 +16151,9 @@ $('#statsLatestTrade').addEventListener('click',()=>{
   }
 });
 
-$('#statsAnchorInput').addEventListener('change',e=>{
-  if(e.target.value){
-    statsAnchorDate=parseLocalDate(e.target.value);
-    renderStatistics();
-  }
-});
 
-$('#statsMonthInput').addEventListener('change',e=>{
-  if(!e.target.value){
-    return;
-  }
 
-  const [year,month]=e.target.value.split('-').map(Number);
 
-  if(Number.isFinite(year) && Number.isFinite(month)){
-    statsAnchorDate=new Date(year,month-1,1);
-    statsRange='1m';
-    persistStatsRangePreference(statsRange);
-    syncStatsRangeButtons();
-
-    renderStatistics();
-  }
-});
 
 
 
