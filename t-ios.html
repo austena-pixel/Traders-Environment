@@ -2012,6 +2012,9 @@ body.playbook-workspace .main{
 .stats-primary-pairs>span{min-width:0;color:#8495aa;font-size:7px;line-height:1.25}
 .stats-primary-pairs strong{display:block;margin-top:3px;color:#d8e2ef;font-size:9px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .stats-primary-pairs .positive{color:#45d69a}.stats-primary-pairs .negative{color:#ff727c}
+.stats-primary-pair-track{display:block;height:4px;margin-top:5px;overflow:hidden;border-radius:999px;background:#263448}
+.stats-primary-pair-track>span{display:block;width:0;height:100%;border-radius:inherit;transition:width .2s ease}
+.stats-primary-pair-track.profit>span{background:#45d69a}.stats-primary-pair-track.loss>span{background:#ff727c}
 .stats-section-a-workspace{display:grid;grid-template-columns:minmax(0,2.05fr) minmax(245px,.95fr);gap:12px;align-items:stretch}
 .stats-combined-outcomes{min-width:0;padding:12px;border:0;border-radius:12px;background:var(--stats-unified-fill,var(--hios-theme-bg,var(--bg)))}
 .stats-dashboard-section{min-width:0;min-height:0;padding:12px;border:0;border-radius:12px;background:var(--stats-unified-fill,var(--hios-theme-bg,var(--bg)))}
@@ -2036,7 +2039,7 @@ body.playbook-workspace .main{
 .stats-indicator-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;min-width:0}
 .stats-indicator-card-heading{min-width:0}
 .stats-indicator-remove{display:inline-grid;place-items:center;flex:0 0 18px;width:18px;height:18px;padding:0;border:0;border-radius:50%;background:transparent;color:#9eafc3;font-size:13px;line-height:1;cursor:pointer;opacity:.36;transform:scale(.94);transition:opacity .15s ease,color .15s ease,transform .15s ease}
-.stats-indicator-remove:hover{color:#e4edf8;opacity:1;transform:scale(1.16)}
+.stats-indicator-remove:hover{color:#e4edf8;opacity:1;transform:scale(1.2)}
 .stats-indicator-remove:focus-visible{outline:2px solid #69a8ff;outline-offset:2px;opacity:1}
 .stats-indicator-card-title{margin:0;color:#d7e0ed;font-size:10px;font-weight:750;line-height:1.35;overflow-wrap:anywhere}
 .stats-indicator-source{display:block;margin-top:3px;color:#8293a9;font-size:8px;line-height:1.2}
@@ -7183,9 +7186,9 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <span>Average P&amp;L per Trade</span>
             <strong id="statsPrimaryAvgPnlValue" class="neutral" aria-live="polite">—</strong>
             <small id="statsPrimaryAvgPnlCount">No trades in this period.</small>
-            <div class="stats-primary-pairs">
-              <span>Average profit<strong class="positive" id="statsPrimaryAvgProfit">—</strong></span>
-              <span>Average loss<strong class="negative" id="statsPrimaryAvgLoss">—</strong></span>
+            <div class="stats-primary-pairs" id="statsPrimaryAvgPnlDiagram" role="group" aria-label="Average profit and average loss comparison">
+              <span>Average profit<strong class="positive" id="statsPrimaryAvgProfit">—</strong><span class="stats-primary-pair-track profit" aria-hidden="true"><span id="statsPrimaryAvgProfitBar"></span></span></span>
+              <span>Average loss<strong class="negative" id="statsPrimaryAvgLoss">—</strong><span class="stats-primary-pair-track loss" aria-hidden="true"><span id="statsPrimaryAvgLossBar"></span></span></span>
             </div>
           </article>
         </div>
@@ -15571,6 +15574,19 @@ function renderStatisticsIndicators(returnPct,winRate,source,profitFactorStats,p
   const averageLoss=profitLoss?.complete&&profitLoss.losses?profitLoss.averageLoss:null;
   setStatisticsText('statsPrimaryAvgProfit',Number.isFinite(averageProfit)?signedMoney(averageProfit):'—');
   setStatisticsText('statsPrimaryAvgLoss',Number.isFinite(averageLoss)?signedMoney(averageLoss):'—');
+  const comparisonScale=Math.max(Number.isFinite(averageProfit)?Math.abs(averageProfit):0,Number.isFinite(averageLoss)?Math.abs(averageLoss):0);
+  const setComparisonBar=(id,value)=>{
+    const bar=$('#'+id);
+    if(!bar)return;
+    const width=Number.isFinite(value)&&comparisonScale>0?Math.min(100,Math.abs(value)/comparisonScale*100):0;
+    bar.style.width=`${width}%`;
+  };
+  setComparisonBar('statsPrimaryAvgProfitBar',averageProfit);
+  setComparisonBar('statsPrimaryAvgLossBar',averageLoss);
+  const comparison=$('#statsPrimaryAvgPnlDiagram');
+  comparison?.setAttribute('aria-label',Number.isFinite(averageProfit)&&Number.isFinite(averageLoss)
+    ?`Average profit ${signedMoney(averageProfit)} compared with average loss ${signedMoney(averageLoss)}. Bars share the same scale.`
+    :'Average profit and average loss comparison is unavailable for this period.');
 }
 function renderStatistics(){
   if(!tradingAccount){
