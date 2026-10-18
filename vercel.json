@@ -1,7 +1,8 @@
 {
-  "buildCommand": "node scripts/verify-ai-builder-provider.cjs",
+  "buildCommand": "node scripts/verify-ai-builder-provider.cjs && node --test tests/tios-personal-intelligence-service.test.cjs",
   "outputDirectory": ".",
   "functions": {
-    "api/tios-ai-builder.js": { "maxDuration": 60 }
+    "api/tios-ai-builder.js": { "maxDuration": 60 },
+    "api/tios-personal-intelligence.js": { "maxDuration": 60 }
   }
 }
