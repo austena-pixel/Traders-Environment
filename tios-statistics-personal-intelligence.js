@@ -12,7 +12,7 @@ const engine=window.TIOSPersonalIntelligenceEngine||null;
 let history=[],busy=false,configured=null,openingRow=null,refreshTimer=0,scopePending=false,scopeEpoch=0,currentConversationId=null,currentConversationKind='user';
 let currentContext=readContext(),currentSignature=JSON.stringify(currentContext),currentScope=accountScope().key,lastScopeReady=false;
 let preferences={...defaults},persistenceAvailable=false,preferencesLoaded=false,topicCounts=[],feedbackCounts={helpful:0,notRelevant:0};
-let persistenceMessageShown=false,savePreferencesTimer=0,quotaAvailableAt=0,quotaTimer=0,observationBusy=false;
+let persistenceMessageShown=false,savePreferencesTimer=0,quotaAvailableAt=0,quotaTimer=0,observationBusy=false,activityTimer=0,activityRow=null;
 
 function text(id){return document.getElementById(id)?.textContent?.trim().replace(/\s+/g,' ').slice(0,180)||'—'}
 function accountScope(){
@@ -48,6 +48,42 @@ function requestContext(){
   return snapshot;
 }
 function setStatus(message,error){status.textContent=message||'';if(error)status.dataset.error='true';else delete status.dataset.error}
+function activitySteps(message){
+  const query=String(message||'').toLowerCase();
+  const steps=['Analyzing your question…','Reviewing the selected trading evidence…','Thinking through relevant patterns…'];
+  if(/\b(compare|comparison|versus|vs\.?|difference|contrast)\b/.test(query))steps.push('Comparing the relevant outcomes…');
+  else if(/\b(win|loss|return|profit|equity|balance|drawdown|expectancy|statistics?)\b/.test(query))steps.push('Checking the selected-period figures…');
+  else if(/\b(execution|edge|playbook|rules?|discipline|psychology|behavio[u]?r)\b/.test(query))steps.push('Checking the related process evidence…');
+  else steps.push('Matching the evidence to your question…');
+  steps.push('Preparing a clear response…');
+  return steps;
+}
+function setActivityMessage(message){
+  const label=activityRow?.querySelector('[data-pi-activity-message]');
+  if(label){label.textContent=message;log.scrollTop=log.scrollHeight}
+}
+function stopActivity(){
+  if(activityTimer){window.clearInterval(activityTimer);activityTimer=0}
+  activityRow?.remove();activityRow=null;
+}
+function startActivity(message){
+  stopActivity();
+  const row=document.createElement('article');row.className='stats-personal-intelligence-message stats-personal-intelligence-activity';row.dataset.role='assistant';row.dataset.source='activity';row.setAttribute('role','status');row.setAttribute('aria-live','polite');row.setAttribute('aria-atomic','true');
+  const avatar=document.createElement('span');avatar.className='stats-personal-intelligence-avatar';avatar.setAttribute('aria-hidden','true');avatar.textContent='T';
+  const body=document.createElement('div');body.className='stats-personal-intelligence-message-body';
+  const sender=document.createElement('span');sender.className='stats-personal-intelligence-sender';sender.textContent='T·IOS';
+  const bubble=document.createElement('div');bubble.className='stats-personal-intelligence-bubble';
+  const label=document.createElement('span');label.dataset.piActivityMessage='';
+  const dots=document.createElement('span');dots.className='stats-pi-activity-dots';dots.setAttribute('aria-hidden','true');
+  for(let index=0;index<3;index++)dots.append(document.createElement('i'));
+  bubble.append(label,dots);body.append(sender,bubble);row.append(avatar,body);log.append(row);activityRow=row;
+  const steps=activitySteps(message);let index=0;setActivityMessage(steps[0]);
+  activityTimer=window.setInterval(()=>{
+    if(!busy||activityRow!==row||!row.isConnected){stopActivity();return}
+    if(index>=steps.length-1){window.clearInterval(activityTimer);activityTimer=0;return}
+    setActivityMessage(steps[++index]);
+  },1500);
+}
 function localTime(value){
   const parsed=value?new Date(value):new Date();
   if(Number.isNaN(parsed.getTime()))return '';
@@ -115,7 +151,7 @@ function updateActionPanels(which){
   if(which==='history'){refreshHistoryList();historyPanel.scrollIntoView?.({block:'nearest',behavior:'smooth'});}
 }
 function resetConversation(context){
-  currentConversationId=null;currentConversationKind='user';history=[];log.replaceChildren();
+  stopActivity();currentConversationId=null;currentConversationKind='user';history=[];log.replaceChildren();
   const opening=openingText(context);openingRow=appendMessage('assistant',opening,{source:'local_start'});openingRow.dataset.opening='true';keep('assistant',opening);
   setStatus('',false);input.value='';resizeInput();updateControls();
 }
@@ -344,7 +380,7 @@ async function sendMessage(value){
   if(configured===false){setStatus('T·IOS AI is not connected yet. The opening question is still available.',true);return}
   if(Date.now()<quotaAvailableAt){updateControls();return}
   const epoch=scopeEpoch,snapshot=requestContext(),row=appendMessage('user',message),requestHistory=history.slice(-3).map(item=>({role:item.role,content:item.content.slice(0,500)}));
-  busy=true;setStatus('T·IOS is reviewing the selected evidence…',false);updateControls();input.disabled=true;
+  busy=true;setStatus('',false);startActivity(message);updateControls();input.disabled=true;
   try{
     if(!authReady())throw new Error('Sign in to T·IOS before using Personal Intelligence.');
     const session=await db.auth.getSession(),token=session?.data?.session?.access_token;
@@ -361,6 +397,7 @@ async function sendMessage(value){
     if(epoch!==scopeEpoch||accountScope().key!==currentScope){setStatus('The selected account changed while T·IOS was responding. That reply was discarded.',true);return}
     let conversationId=null,userRow=null,assistantRow=null;
     if(persistenceAvailable){
+      setActivityMessage('Saving your conversation…');
       try{
         conversationId=await ensureConversation(snapshot);
         if(conversationId){
@@ -378,7 +415,7 @@ async function sendMessage(value){
     if(!status.dataset.error)setStatus('',false);
     if(conversationId)refreshHistory();
   }catch(error){row.remove();setStatus(error.message||'T·IOS could not reply right now. Try again shortly.',true)}
-  finally{busy=false;input.disabled=false;updateControls();input.focus({preventScroll:true})}
+  finally{stopActivity();busy=false;input.disabled=false;updateControls();input.focus({preventScroll:true})}
 }
 async function processObservations(){
   if(observationBusy||!engine||!persistenceAvailable||!preferences.proactive_enabled||scopePending)return;
