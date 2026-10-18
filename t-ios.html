@@ -2070,6 +2070,12 @@ body.playbook-workspace .main{
 .stats-personal-intelligence-message[data-source="observation"] .stats-personal-intelligence-sender{color:#83bcff}
 .stats-personal-intelligence-time{margin-left:7px;color:#8797ab;font-size:8px;font-weight:500;text-transform:none;letter-spacing:0}
 .stats-personal-intelligence-messages{display:flex;flex:1 1 auto;flex-direction:column;gap:13px;min-height:80px;overflow-y:auto;padding:14px 3px 10px;scrollbar-color:#34445a transparent;scrollbar-width:thin}
+.stats-personal-intelligence-messages::-webkit-scrollbar,.stats-personal-intelligence-composer textarea::-webkit-scrollbar{width:7px;height:7px}
+.stats-personal-intelligence-messages::-webkit-scrollbar-track,.stats-personal-intelligence-composer textarea::-webkit-scrollbar-track{background:transparent}
+.stats-personal-intelligence-messages::-webkit-scrollbar-thumb,.stats-personal-intelligence-composer textarea::-webkit-scrollbar-thumb{background:#34445a;border-radius:999px}
+.stats-personal-intelligence-messages::-webkit-scrollbar-thumb:hover,.stats-personal-intelligence-composer textarea::-webkit-scrollbar-thumb:hover{background:#445a76}
+.stats-personal-intelligence-messages::-webkit-scrollbar-button,.stats-personal-intelligence-composer textarea::-webkit-scrollbar-button{display:none;width:0;height:0}
+.stats-personal-intelligence-messages::-webkit-scrollbar-corner,.stats-personal-intelligence-composer textarea::-webkit-scrollbar-corner{background:transparent}
 .stats-personal-intelligence-message{display:flex;align-items:flex-start;gap:9px;max-width:100%}
 .stats-personal-intelligence-message[data-role="user"]{justify-content:flex-end}
 .stats-personal-intelligence-avatar{display:grid;place-items:center;flex:0 0 27px;width:27px;height:27px;border-radius:50%;background:#1b2b41;color:#b9d7ff;font-size:9px;font-weight:850;letter-spacing:.2px}
@@ -2088,7 +2094,7 @@ body.playbook-workspace .main{
 .stats-personal-intelligence-feedback button[aria-pressed="true"]{border-color:#356e5b;background:#10231c;color:#a5e0be}
 .stats-personal-intelligence-composer{display:flex;flex:0 0 auto;flex-direction:column;gap:0;padding:0;border:0}
 .stats-personal-intelligence-composer-row{display:flex;align-items:center;gap:8px;min-width:0}
-.stats-personal-intelligence-composer textarea{display:block;flex:1 1 auto;width:100%;min-width:0;min-height:42px;max-height:112px;padding:8px 2px 9px;border:0;border-bottom:1px solid rgba(77,96,125,.38);border-radius:0;background:transparent;color:#eef4fc;font-size:12px;line-height:1.4;resize:none}
+.stats-personal-intelligence-composer textarea{display:block;flex:1 1 auto;width:100%;min-width:0;min-height:42px;max-height:112px;padding:8px 2px 9px;border:0;border-bottom:1px solid rgba(77,96,125,.38);border-radius:0;background:transparent;color:#eef4fc;font-size:12px;line-height:1.4;resize:none;scrollbar-color:#34445a transparent;scrollbar-width:thin}
 .stats-personal-intelligence-composer textarea:focus-visible{outline:none;border-bottom-color:#69a8ff}
 .stats-personal-intelligence-composer textarea::placeholder{color:#8798ad}
 .stats-personal-intelligence-composer-hint{min-height:22px;padding:5px 2px 0;color:#8798ad;font-size:10px;line-height:1.3}
