@@ -54,6 +54,9 @@ assert.ok(personalIntelligenceComposer.includes('placeholder="Type here…"')&&p
 assert.ok(personalIntelligenceComposer.includes('Ask anything about your trading')&&personalIntelligenceComposer.includes('<svg viewBox="0 0 24 24"'),'the composer shows the draft hint below the line and uses an icon-only send button');
 assert.match(html,/\.stats-personal-intelligence-composer\{[^}]*border:0\}/,'the composer has no enclosing border');
 assert.match(html,/\.stats-personal-intelligence-composer textarea\{[^}]*border:0;border-bottom:1px solid/,'the typing area has only the requested horizontal line, with no box border');
+assert.match(html,/\.stats-personal-intelligence-composer textarea\{[^}]*scrollbar-color:#34445a transparent;scrollbar-width:thin/,'the composer scrollbar uses the same thin dark thumb as the conversation area');
+assert.match(html,/\.stats-personal-intelligence-messages::-webkit-scrollbar-thumb,\.stats-personal-intelligence-composer textarea::-webkit-scrollbar-thumb\{background:#34445a;border-radius:999px\}/,'the conversation and composer use the same borderless scrollbar thumb');
+assert.match(html,/\.stats-personal-intelligence-messages::-webkit-scrollbar-button,\.stats-personal-intelligence-composer textarea::-webkit-scrollbar-button\{display:none/,'native scrollbar arrows are removed from both chat areas');
 assert.match(html,/\.stats-personal-intelligence-send\{[^}]*border:0;[^}]*background:transparent/,'the icon-only send control has no border or button fill');
 assert.match(personalIntelligenceScript,/row\.append\(open,remove\);historyList\.append\(row\)/,'each history X stays immediately beside its corresponding conversation');
 assert.ok(!html.includes('stats-personal-intelligence-prompts')&&!html.includes('data-pi-prompt=')&&!html.includes('stats-personal-intelligence-footnote'),'the fixed question buttons and highlighted explanatory paragraph are removed for more chat space');
