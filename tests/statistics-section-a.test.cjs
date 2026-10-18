@@ -22,17 +22,22 @@ function extractFunction(name){
 const sectionStart=html.indexOf('<section class="panel stats-section-a"');
 const layoutStart=html.indexOf('<div class="stats-section-a-workspace"',sectionStart);
 const chartStart=html.indexOf('<section class="stats-combined-outcomes"',layoutStart);
+const summaryStart=html.indexOf('<div class="stats-primary-summary"',sectionStart);
 const personalIntelligenceStart=html.indexOf('<aside class="stats-dashboard-section stats-personal-intelligence"',layoutStart);
+const personalIntelligenceHistoryStart=html.indexOf('id="statsPIHistory"',personalIntelligenceStart);
 const optionalStart=html.indexOf('<aside class="stats-dashboard-section" aria-labelledby="statsIndicatorsHeading"',layoutStart);
 assert.ok(sectionStart>=0&&layoutStart>sectionStart,'Section A groups the metrics, chart and optional indicator space.');
-assert.ok(personalIntelligenceStart>layoutStart&&chartStart>personalIntelligenceStart,'Personal Intelligence stays before History Charts in the workspace.');
+assert.ok(summaryStart>sectionStart&&summaryStart<layoutStart,'the financial summary spans above the horizontal workspace.');
+assert.ok(chartStart>layoutStart&&personalIntelligenceStart>chartStart&&personalIntelligenceHistoryStart>personalIntelligenceStart,'Graphs, Personal Intelligence chat, and chat history follow horizontally from the main sidebar side.');
 assert.ok(optionalStart>chartStart,'The optional indicator space remains after History Charts inside Section A.');
-assert.ok(html.includes('role="group" aria-label="Personal Intelligence on the left; History Charts on the right"'),'the workspace describes the intended left/right grouping accessibly');
-assert.match(html,/\.stats-section-a-workspace\{[^}]*grid-template-columns:minmax\(0,calc\(60% - 12px\)\) minmax\(0,40%\)/,'History Charts begin on the right at the yellow guide while Sections A and B stay left');
-assert.match(html,/\.stats-personal-intelligence\{grid-column:1;grid-row:1;width:calc\(52\.7833% \+ 2\.333px\)/,'Personal Intelligence keeps its prior rendered width inside the narrower left column');
-assert.match(html,/\.stats-combined-outcomes\{grid-column:2;grid-row:1\}/,'History Charts occupy the right-hand column');
-assert.ok(html.indexOf('class="stats-primary-summary"')<layoutStart,'the summary stays above the left/right split');
-assert.ok(html.includes('<h3 class="stats-history-charts-heading">History Charts</h3>'),'the chart panel is clearly labeled History Charts');
+assert.ok(html.includes('role="group" aria-label="Graphs on the left, Personal Intelligence chat in the middle, and chat history on the right"'),'the workspace describes the intended horizontal order accessibly');
+assert.match(html,/\.stats-section-a-workspace\{[^}]*grid-template-columns:minmax\(0,3\.3fr\) minmax\(220px,1\.7fr\) minmax\(170px,1fr\)/,'the graph, Personal Intelligence, and chat-history columns fit side by side');
+assert.match(html,/\.stats-combined-outcomes\{grid-column:1;grid-row:1\}/,'Graphs occupy the column nearest the main sidebar');
+assert.match(html,/\.stats-personal-intelligence\{grid-column:2;grid-row:1/,'Personal Intelligence occupies the middle column');
+assert.match(html,/\.stats-personal-intelligence-history-section\{grid-column:3;grid-row:1/,'saved chat history occupies the right-hand column');
+assert.match(html,/\.stats-personal-intelligence-history-section\{display:flex;flex-direction:column;min-height:0;max-height:none/,'the saved chat history remains visible in its own column');
+assert.ok(!/<section class="stats-personal-intelligence-panel stats-personal-intelligence-history-section"[^>]*hidden/.test(html),'the saved chat history is visible without opening the chat history menu');
+assert.ok(html.includes('<h3 class="stats-graphs-heading">Graphs</h3>'),'the chart panel is clearly labeled Graphs');
 assert.ok(html.indexOf('</aside>',optionalStart)<html.indexOf('<dialog',optionalStart),'The optional indicator area remains inside Section A, before the indicator picker dialog.');
 assert.match(html,/\.stats-dashboard-section\{min-width:0;min-height:0;/,'the optional indicator panel can shrink to fit short screens');
 assert.ok(!html.includes('Measure financial outcomes, methodology evidence and execution quality for one shared reporting period.'),'the Statistics intro subtitle row is removed so Section A can begin higher');
@@ -57,7 +62,7 @@ const equityCanvas=html.indexOf('<div class="equity-canvas-wrap" id="equityCanva
 assert.ok(outcomeWorkspace>=0&&outcomePeriod>outcomeWorkspace&&equityCanvas>outcomePeriod,'the selected-period date is inside the graph section above the chart');
 assert.match(html,/\.page\.active#page-statistics:has\(#statsStatisticsView:not\(\[hidden\]\)\)\{[^}]*height:calc\(100dvh - 36px\)/,'the active Statistics page fills the available viewport');
 assert.match(html,/\.page\.active#page-statistics:has\(#statsStatisticsView:not\(\[hidden\]\)\)>\.stats-section-a-header\{flex:0 0 auto\}/,'the merged control row stays fixed above the expanding statistics view');
-assert.match(html,/#statsStatisticsView:not\(\[hidden\]\)>\.stats-section-a\{[^}]*grid-template-rows:auto minmax\(0,1fr\)/,'the chart row takes the remaining section height below the summary');
+assert.match(html,/#statsStatisticsView:not\(\[hidden\]\)>\.stats-section-a\{[^}]*grid-template-rows:auto minmax\(0,1fr\)/,'the summary spans above the columns, which fill the remaining statistics section height');
 assert.match(html,/\.stats-combined-outcomes\{display:flex;flex-direction:column;min-height:0\}/,'the combined chart panel can stretch vertically');
 assert.match(html,/\.stats-outcome-workspace\{display:flex;flex:1 1 auto;flex-direction:column;min-height:0;padding:30px 12px 12px\}/,'the graph workspace fills the available chart panel');
 assert.match(html,/\.stats-combined-outcomes \.equity-canvas-wrap,\.stats-outcome-canvas-wrap\{flex:1 1 auto;min-height:0;height:auto\}/,'each outcome chart canvas expands to fill its workspace');
@@ -135,7 +140,7 @@ assert.equal(balanceContext.verifiedCurrentAccountBalance().value,105,'a complet
 balanceContext.trades=[{pnl:5},{pnl:null}];
 assert.equal(balanceContext.verifiedCurrentAccountBalance().value,null,'incomplete P&L does not create a guessed current balance');
 
-console.log('PASS the financial summary and Personal Intelligence stay left of History Charts');
+console.log('PASS Graphs, Personal Intelligence chat, and chat history are arranged horizontally after the full-width financial summary');
 console.log('PASS the legacy Performance Details and Performance by Instrument panels are removed');
 console.log('PASS current balance, net P&L, win rate, period return, profit factor, and average P&L render from complete data');
 console.log('PASS missing recorded P&L stays unavailable instead of becoming a zero');

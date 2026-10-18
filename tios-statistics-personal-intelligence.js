@@ -111,10 +111,10 @@ function updateControls(){
   prompts.forEach(button=>button.disabled=busy||configured===false||!account.ready||scopePending||cooling);
 }
 function updateActionPanels(which){
-  const showHistory=which==='history'&&historyPanel.hidden,showSettings=which==='settings'&&settingsPanel.hidden;
-  historyPanel.hidden=!showHistory;settingsPanel.hidden=!showSettings;
-  actions.forEach(button=>button.setAttribute('aria-expanded',String(button.dataset.piAction==='history'?showHistory:button.dataset.piAction==='settings'?showSettings:false)));
-  if(showHistory)refreshHistoryList();
+  const showSettings=which==='settings'&&settingsPanel.hidden;
+  historyPanel.hidden=false;settingsPanel.hidden=!showSettings;
+  actions.forEach(button=>button.setAttribute('aria-expanded',String(button.dataset.piAction==='history'?true:button.dataset.piAction==='settings'?showSettings:false)));
+  if(which==='history'){refreshHistoryList();historyPanel.scrollIntoView?.({block:'nearest',behavior:'smooth'});}
 }
 function resetConversation(context){
   currentConversationId=null;currentConversationKind='user';history=[];log.replaceChildren();
@@ -241,7 +241,7 @@ async function loadConversation(id){
   setStatus('',false);input.value='';resizeInput();updateControls();
 }
 async function openConversation(id){
-  try{await loadConversation(id);historyPanel.hidden=true;actions.find(button=>button.dataset.piAction==='history')?.setAttribute('aria-expanded','false')}
+  try{await loadConversation(id);historyPanel.hidden=false;actions.find(button=>button.dataset.piAction==='history')?.setAttribute('aria-expanded','true')}
   catch(error){setStatus('Could not open that conversation. '+(error.message||''),true)}
 }
 async function refreshHistory(){
@@ -425,17 +425,17 @@ function setupSettings(){
 function setupActions(){
   actions.forEach(button=>button.addEventListener('click',()=>{
     const action=button.dataset.piAction;
-    if(action==='new'){historyPanel.hidden=true;settingsPanel.hidden=true;currentConversationId=null;resetConversation(readContext());setStatus('New conversation ready.',false);return}
+    if(action==='new'){historyPanel.hidden=false;settingsPanel.hidden=true;currentConversationId=null;resetConversation(readContext());setStatus('New conversation ready.',false);actions.forEach(item=>item.setAttribute('aria-expanded',String(item.dataset.piAction==='history')));return}
     updateActionPanels(action);
   }));
-  log.addEventListener('keydown',event=>{if(event.key==='Escape'){historyPanel.hidden=true;settingsPanel.hidden=true;actions.forEach(button=>button.setAttribute('aria-expanded','false'))}});
+  log.addEventListener('keydown',event=>{if(event.key==='Escape'){historyPanel.hidden=false;settingsPanel.hidden=true;actions.forEach(button=>button.setAttribute('aria-expanded',String(button.dataset.piAction==='history')))}});
 }
 window.addEventListener('tios:dashboard-updated',scheduleRefresh);
 window.addEventListener('tios:personal-intelligence-evidence-updated',scheduleRefresh);
 window.addEventListener('tios:auth-ui',scheduleRefresh);
 window.addEventListener('tios:conversation-scope-changing',()=>{
   scopeEpoch++;scopePending=true;history=[];log.replaceChildren();openingRow=null;currentConversationId=null;
-  historyPanel.hidden=true;settingsPanel.hidden=true;historyList.replaceChildren();
+  historyPanel.hidden=false;settingsPanel.hidden=true;historyList.replaceChildren();
   preferences={...defaults};preferencesLoaded=false;persistenceAvailable=false;renderPreferences();
   appendMessage('assistant','Your selected account is changing. I’ll load only its conversations when the Statistics finish loading.',{source:'local_start'});
   input.value='';setStatus('',false);updateControls();
@@ -444,6 +444,7 @@ form.addEventListener('submit',event=>{event.preventDefault();sendMessage(input.
 input.addEventListener('input',()=>{resizeInput();updateControls()});
 input.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();form.requestSubmit()}});
 prompts.forEach(button=>button.addEventListener('click',()=>sendMessage(button.dataset.piPrompt||'')));
+historyPanel.hidden=false;settingsPanel.hidden=true;actions.forEach(button=>button.setAttribute('aria-expanded',String(button.dataset.piAction==='history')));
 setupSettings();setupActions();resetConversation(currentContext);checkConnection();
 const initialScope=accountScope();
 if(initialScope.ready){lastScopeReady=true;loadScopeData(++scopeEpoch)}

@@ -1996,7 +1996,7 @@ body.playbook-workspace .main{
 .stats-section-a-header .stats-autozoom-zoom input[type="range"]{width:68px;min-width:50px}
 #page-statistics:has(#statsEdgeView:not([hidden])) .stats-section-a-header>.stats-autozoom-controls,
 #page-statistics:has(#statsExecutionView:not([hidden])) .stats-section-a-header>.stats-autozoom-controls{display:none}
-.stats-primary-summary{position:relative;isolation:isolate;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin:0 0 12px;--stats-autozoom-scale:1.5}
+.stats-primary-summary{position:relative;isolation:isolate;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin:0 0 8px;--stats-autozoom-scale:1.5}
 .stats-primary-metric{position:relative;min-width:0;min-height:128px;padding:13px 14px;border:0;border-radius:11px;background:var(--stats-unified-fill,var(--hios-theme-bg,var(--bg)));transform-origin:center top;transition:transform .18s ease}
 .stats-primary-metric>span:first-child,.stats-primary-metric-head>span{display:block;color:#c0ccdc;font-size:11px;font-weight:750;letter-spacing:.15px;line-height:1.3}
 .stats-primary-metric>strong{display:block;margin-top:8px;color:#eef4fc;font-size:23px;font-weight:800;line-height:1.15;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
@@ -2026,9 +2026,9 @@ body.playbook-workspace .main{
 .stats-average-pnl-loss-bar{right:50%;border-radius:999px 0 0 999px;background:#ff727c}
 .stats-average-pnl-profit-bar{left:50%;border-radius:0 999px 999px 0;background:#45d69a}
 .stats-average-pnl-zero{position:absolute;z-index:1;top:-1px;bottom:-1px;left:calc(50% - .5px);width:1px;background:#d2dbea}
-.stats-section-a-workspace{display:grid;grid-template-columns:minmax(0,2.05fr) minmax(245px,.95fr);gap:12px;align-items:stretch}
+.stats-section-a-workspace{display:grid;grid-template-columns:minmax(0,3.3fr) minmax(220px,1.7fr) minmax(170px,1fr);gap:10px;align-items:stretch}
 .stats-combined-outcomes{min-width:0;padding:12px;border:0;border-radius:12px;background:var(--stats-unified-fill,var(--hios-theme-bg,var(--bg)))}
-.stats-history-charts-heading{margin:0 0 8px;color:#e1eaf5;font-size:12px;line-height:1.2;font-weight:750}
+.stats-graphs-heading{margin:0 0 8px;color:#e1eaf5;font-size:12px;line-height:1.2;font-weight:750}
 .stats-dashboard-section{min-width:0;min-height:0;padding:12px;border:0;border-radius:12px;background:var(--stats-unified-fill,var(--hios-theme-bg,var(--bg)))}
 .stats-personal-intelligence{display:flex;flex-direction:column;min-width:0;min-height:0;height:100%;padding:12px}
 .stats-personal-intelligence-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-bottom:10px;border-bottom:1px solid rgba(77,96,125,.24)}
@@ -2046,6 +2046,8 @@ body.playbook-workspace .main{
 .stats-personal-intelligence-panels{position:relative;z-index:5;flex:0 0 auto}
 .stats-personal-intelligence-panel{max-height:220px;overflow:auto;margin:4px 0 7px;padding:10px;border:1px solid #26364a;border-radius:9px;background:#0b1017;box-shadow:0 12px 28px rgba(0,0,0,.32)}
 .stats-personal-intelligence-panel[hidden]{display:none}
+.stats-personal-intelligence-history-section{display:flex;flex-direction:column;min-height:0;max-height:none;margin:0;padding:9px;overflow:hidden}
+.stats-personal-intelligence-history-section .stats-pi-history-list{min-height:0;overflow:auto}
 .stats-pi-panel-title{margin:0 0 8px;color:#e4edf8;font-size:11px;font-weight:800}
 .stats-pi-history-list{display:grid;gap:5px}
 .stats-pi-history-empty,.stats-pi-panel-note{margin:0;color:#9cabc0;font-size:10px;line-height:1.45}
@@ -2222,11 +2224,16 @@ body.playbook-workspace .main{
   }
   .stats-section-a-workspace{
     min-height:0;
-    grid-template-columns:minmax(0,calc(60% - 12px)) minmax(0,40%);
+    grid-template-columns:minmax(0,3.3fr) minmax(220px,1.7fr) minmax(170px,1fr);
+    gap:10px;
     overflow:hidden
   }
-  .stats-personal-intelligence{grid-column:1;grid-row:1;width:calc(52.7833% + 2.333px);justify-self:start}
-  .stats-combined-outcomes{grid-column:2;grid-row:1}
+  .stats-primary-summary{grid-template-columns:repeat(5,minmax(0,1fr));margin:0 0 8px}
+  .stats-primary-metric{min-height:88px;padding:8px 9px}
+  .stats-primary-metric small{font-size:10px}
+  .stats-combined-outcomes{grid-column:1;grid-row:1}
+  .stats-personal-intelligence{grid-column:2;grid-row:1;width:auto;height:100%;justify-self:stretch}
+  .stats-personal-intelligence-history-section{grid-column:3;grid-row:1}
   .stats-section-a-workspace:focus-visible{outline:2px solid #69a8ff;outline-offset:2px}
   .stats-combined-outcomes{display:flex;flex-direction:column;min-height:0}
   .stats-outcome-selectors{flex:0 0 auto}
@@ -2236,10 +2243,12 @@ body.playbook-workspace .main{
 @media(min-width:761px) and (max-height:850px){
   .stats-section-a{padding:12px}
   .stats-section-a-header{margin-bottom:6px}
-  .stats-primary-summary{gap:7px;margin-bottom:8px}
-  .stats-primary-metric{min-height:118px;padding:10px 12px}
+  .stats-primary-summary{gap:6px;margin:0 0 8px}
+  .stats-primary-metric{min-height:78px;padding:7px 8px}
+  .stats-primary-metric small{font-size:9px}
+  .stats-personal-intelligence-history-section{padding:7px}
   .stats-win-rate-gauge{max-width:195px;height:66px}
-  .stats-section-a-workspace{gap:8px}
+  .stats-section-a-workspace{gap:8px;grid-template-columns:minmax(0,3.3fr) minmax(190px,1.7fr) minmax(150px,1fr)}
   .stats-combined-outcomes,.stats-dashboard-section{padding:9px}
   .stats-outcome-selectors{gap:6px;margin-bottom:9px;padding-bottom:7px}
   .stats-outcome-selector{min-height:32px;padding:6px 9px}
@@ -7242,7 +7251,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
       <div class="stats-view-panel" id="statsStatisticsView" role="tabpanel" aria-labelledby="statsStatisticsTab">
 
-      <section class="panel stats-section-a" aria-label="Section A financial outcomes and Personal Intelligence">
+      <section class="panel stats-section-a" aria-label="Section A statistics dashboard">
         <div class="stats-primary-summary" id="statsPrimarySummary" role="list" aria-label="Selected-period financial outcomes">
           <article class="stats-primary-metric" role="listitem" tabindex="0">
             <span>Current Balance</span>
@@ -7295,8 +7304,30 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           </article>
         </div>
 
-        <div class="stats-section-a-workspace" role="group" aria-label="Personal Intelligence on the left; History Charts on the right">
-          <aside class="stats-dashboard-section stats-personal-intelligence" id="statsPersonalIntelligence" aria-labelledby="statsPersonalIntelligenceHeading">
+        <div class="stats-section-a-workspace" role="group" aria-label="Graphs on the left, Personal Intelligence chat in the middle, and chat history on the right">
+          <section class="stats-combined-outcomes" aria-label="Graphs">
+            <h3 class="stats-graphs-heading">Graphs</h3>
+            <div class="stats-outcome-selectors" role="tablist" aria-label="Combined outcome diagrams">
+              <button class="stats-outcome-selector active" type="button" role="tab" id="statsOutcomeTabEquity" data-stats-outcome="equity" aria-selected="true" aria-controls="statsOutcomeWorkspace">Equity Curve</button>
+              <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabDrawdown" data-stats-outcome="drawdown" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Drawdown</button>
+              <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabCumulative" data-stats-outcome="cumulative" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Cumulative P&amp;L</button>
+              <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabDistribution" data-stats-outcome="distribution" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Trade Distribution</button>
+              <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabComparison" data-stats-outcome="comparison" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Profit/Loss Comparison</button>
+            </div>
+            <div class="stats-outcome-workspace" id="statsOutcomeWorkspace" role="tabpanel" aria-labelledby="statsOutcomeTabEquity">
+              <span class="stats-outcome-period" id="statsOutcomePeriod">—</span>
+              <div class="equity-canvas-wrap" id="equityCanvasWrap">
+                <canvas id="equityChart"></canvas>
+              </div>
+              <div class="stats-outcome-canvas-wrap hidden" id="statsOutcomeCanvasWrap">
+                <canvas id="statsOutcomeChart"></canvas>
+              </div>
+              <div class="stats-outcome-message hidden" id="equityEmptyState">No trades were recorded in this selected period.</div>
+              <div class="stats-outcome-message hidden" id="statsOutcomeEmpty"></div>
+              <div class="stats-outcome-unavailable hidden" id="statsOutcomeUnavailable" role="status" aria-live="polite"></div>
+            </div>
+          </section>
+          <aside class="stats-dashboard-section stats-personal-intelligence" id="statsPersonalIntelligence" aria-label="Personal Intelligence chat">
             <div class="stats-personal-intelligence-header">
               <div class="stats-personal-intelligence-title">
                 <span class="stats-personal-intelligence-mark" aria-hidden="true">T</span>
@@ -7309,14 +7340,10 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             </div>
             <div class="stats-personal-intelligence-toolbar" role="group" aria-label="Personal Intelligence controls">
               <button class="stats-personal-intelligence-tool" type="button" data-pi-action="new">New chat</button>
-              <button class="stats-personal-intelligence-tool" type="button" data-pi-action="history" aria-expanded="false" aria-controls="statsPIHistory">History</button>
+              <button class="stats-personal-intelligence-tool" type="button" data-pi-action="history" aria-expanded="true" aria-controls="statsPIHistory">History</button>
               <button class="stats-personal-intelligence-tool" type="button" data-pi-action="settings" aria-expanded="false" aria-controls="statsPISettings">Settings</button>
             </div>
             <div class="stats-personal-intelligence-panels">
-              <section class="stats-personal-intelligence-panel" id="statsPIHistory" aria-label="Saved conversations" hidden>
-                <h4 class="stats-pi-panel-title">Saved conversations for this account</h4>
-                <div class="stats-pi-history-list" id="statsPIHistoryList"><p class="stats-pi-history-empty">Sign in to view saved conversations.</p></div>
-              </section>
               <section class="stats-personal-intelligence-panel" id="statsPISettings" aria-label="Personal Intelligence settings" hidden>
                 <h4 class="stats-pi-panel-title">Personal Intelligence settings</h4>
                 <div class="stats-pi-settings">
@@ -7353,30 +7380,10 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <div class="stats-personal-intelligence-status" id="statsPIStatus" role="status" aria-live="polite"></div>
             <p class="stats-personal-intelligence-footnote" id="statsPIFootnote">I’ll start with the results shown. AI runs only after you send a message. When connected, saved conversations are private to your account and can be deleted in Settings.</p>
           </aside>
-
-          <section class="stats-combined-outcomes" aria-label="History Charts">
-            <h3 class="stats-history-charts-heading">History Charts</h3>
-            <div class="stats-outcome-selectors" role="tablist" aria-label="Combined outcome diagrams">
-              <button class="stats-outcome-selector active" type="button" role="tab" id="statsOutcomeTabEquity" data-stats-outcome="equity" aria-selected="true" aria-controls="statsOutcomeWorkspace">Equity Curve</button>
-              <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabDrawdown" data-stats-outcome="drawdown" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Drawdown</button>
-              <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabCumulative" data-stats-outcome="cumulative" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Cumulative P&amp;L</button>
-              <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabDistribution" data-stats-outcome="distribution" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Trade Distribution</button>
-              <button class="stats-outcome-selector" type="button" role="tab" id="statsOutcomeTabComparison" data-stats-outcome="comparison" aria-selected="false" aria-controls="statsOutcomeWorkspace" tabindex="-1">Profit/Loss Comparison</button>
-            </div>
-            <div class="stats-outcome-workspace" id="statsOutcomeWorkspace" role="tabpanel" aria-labelledby="statsOutcomeTabEquity">
-              <span class="stats-outcome-period" id="statsOutcomePeriod">—</span>
-              <div class="equity-canvas-wrap" id="equityCanvasWrap">
-                <canvas id="equityChart"></canvas>
-              </div>
-              <div class="stats-outcome-canvas-wrap hidden" id="statsOutcomeCanvasWrap">
-                <canvas id="statsOutcomeChart"></canvas>
-              </div>
-              <div class="stats-outcome-message hidden" id="equityEmptyState">No trades were recorded in this selected period.</div>
-              <div class="stats-outcome-message hidden" id="statsOutcomeEmpty"></div>
-              <div class="stats-outcome-unavailable hidden" id="statsOutcomeUnavailable" role="status" aria-live="polite"></div>
-            </div>
+          <section class="stats-personal-intelligence-panel stats-personal-intelligence-history-section" id="statsPIHistory" aria-label="Personal Intelligence chat history">
+            <h4 class="stats-pi-panel-title">Personal Intelligence chat history</h4>
+            <div class="stats-pi-history-list" id="statsPIHistoryList"><p class="stats-pi-history-empty">Sign in to view saved conversations.</p></div>
           </section>
-
           <div class="hidden" aria-hidden="true">
             <aside class="stats-dashboard-section" aria-labelledby="statsIndicatorsHeading">
             <div class="stats-dashboard-header">
