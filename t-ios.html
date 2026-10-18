@@ -2035,9 +2035,9 @@ body.playbook-workspace .main{
 .stats-indicator-grid .stats-indicator-card.stats-card-zoomed{transform-origin:center top}
 .stats-indicator-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;min-width:0}
 .stats-indicator-card-heading{min-width:0}
-.stats-indicator-remove{display:inline-grid;place-items:center;flex:0 0 22px;width:22px;height:22px;padding:0;border:1px solid #31445c;border-radius:7px;background:#0c141e;color:#9eafc3;font-size:15px;line-height:1;cursor:pointer}
-.stats-indicator-remove:hover{border-color:#a44b57;background:#28151b;color:#ff8790}
-.stats-indicator-remove:focus-visible{outline:2px solid #69a8ff;outline-offset:2px}
+.stats-indicator-remove{display:inline-grid;place-items:center;flex:0 0 22px;width:22px;height:22px;padding:0;border:1px solid #31445c;border-radius:7px;background:#0c141e;color:#9eafc3;font-size:15px;line-height:1;cursor:pointer;opacity:.55;transition:opacity .15s ease,border-color .15s ease,background-color .15s ease,color .15s ease}
+.stats-indicator-remove:hover{border-color:#a44b57;background:#28151b;color:#ff8790;opacity:1}
+.stats-indicator-remove:focus-visible{outline:2px solid #69a8ff;outline-offset:2px;opacity:1}
 .stats-indicator-card-title{margin:0;color:#d7e0ed;font-size:10px;font-weight:750;line-height:1.35;overflow-wrap:anywhere}
 .stats-indicator-source{display:block;margin-top:3px;color:#8293a9;font-size:8px;line-height:1.2}
 .stats-indicator-card-value{color:#eef4fc;font-size:21px;font-weight:750;line-height:1.1;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
