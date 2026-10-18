@@ -6776,11 +6776,16 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 </style>
 
 <style id="stats-execution-research-styles">
-#statsExecutionView .stats-execution-sections{display:grid;gap:12px}
-#statsExecutionView .stats-execution-section{min-width:0;padding:14px;border:1px solid #253449;border-radius:14px;background:rgba(8,13,20,.82)}
+#statsExecutionView .stats-execution-sections{display:block;min-width:0}
+#statsExecutionView .stats-execution-section-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:0 0 12px;margin:0 0 14px;border-bottom:1px solid rgba(46,62,81,.55)}
+#statsExecutionView .stats-execution-section-tab{min-width:0;min-height:36px;padding:8px 10px;border:1px solid #253449;border-radius:9px;background:rgba(13,20,29,.72);color:#91a0b3;font-size:10px;font-weight:700;line-height:1.25;cursor:pointer}
+#statsExecutionView .stats-execution-section-tab:hover{border-color:#365579;background:rgba(29,44,62,.55);color:#dbe7f5}
+#statsExecutionView .stats-execution-section-tab[aria-selected=true]{border-color:#365579;background:#17263a;color:#dbeafe;box-shadow:inset 0 0 0 1px rgba(105,168,255,.08)}
+#statsExecutionView .stats-execution-section-tab:focus-visible{outline:2px solid #77a9e8;outline-offset:2px}
+#statsExecutionView .stats-execution-section{min-width:0;padding:0;border:0;border-radius:0;background:transparent}
+#statsExecutionView .stats-execution-section[hidden]{display:none!important}
 #statsExecutionView .stats-execution-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin:0 0 12px}
 #statsExecutionView .stats-execution-section-head>div{min-width:0}
-#statsExecutionView .stats-execution-section-index{display:block;margin-bottom:4px;color:#7794b4;font-size:9px;font-weight:800;letter-spacing:.13em}
 #statsExecutionView .stats-execution-section-head h3{margin:0 0 5px;color:#e1eaf5;font-size:15px}
 #statsExecutionView .stats-execution-section-head p{margin:0;color:#8fa0b5;font-size:10px;line-height:1.5}
 #statsExecutionView .stats-execution-kpis{grid-template-columns:repeat(4,minmax(0,1fr));margin:0}
@@ -6843,7 +6848,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 }
 @media(max-width:560px){
   #statsExecutionView.stats-execution-view{padding:11px}
-  #statsExecutionView .stats-execution-section{padding:10px}
+  #statsExecutionView .stats-execution-section-tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding-bottom:10px;margin-bottom:11px}
+  #statsExecutionView .stats-execution-section-tab{padding:8px 7px;font-size:9px}
   #statsExecutionView .stats-execution-kpis{gap:7px}
   #statsExecutionView .stats-execution-kpis .stats-environment-kpi{min-height:96px;padding:9px}
   #statsExecutionView .stats-execution-kpis .stats-environment-kpi>strong{font-size:16px}
@@ -7626,9 +7632,15 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
     <p>Measures recorded execution evidence and investigates where decisions may differ from a methodology. Execution scores remain separate from profitability.</p>
   </div>
   <div class="stats-execution-sections">
-    <section class="stats-execution-section" id="statsExecutionOverview" aria-labelledby="statsExecutionOverviewTitle">
+    <div class="stats-execution-section-tabs" role="tablist" aria-label="Execution Quality sections">
+      <button class="stats-execution-section-tab" type="button" role="tab" id="statsExecutionOverviewTab" aria-controls="statsExecutionOverview" aria-selected="true" tabindex="0" data-execution-quality-tab>Execution Overview</button>
+      <button class="stats-execution-section-tab" type="button" role="tab" id="statsExecutionProfitGapTab" aria-controls="statsExecutionProfitGap" aria-selected="false" tabindex="-1" data-execution-quality-tab>Profit Gap Analysis</button>
+      <button class="stats-execution-section-tab" type="button" role="tab" id="statsExecutionDiagnosticsTab" aria-controls="statsExecutionDiagnostics" aria-selected="false" tabindex="-1" data-execution-quality-tab>Execution Diagnostics</button>
+      <button class="stats-execution-section-tab" type="button" role="tab" id="statsExecutionBehavioralResearchTab" aria-controls="statsExecutionBehavioralResearch" aria-selected="false" tabindex="-1" data-execution-quality-tab>Behavioral Research</button>
+    </div>
+    <section class="stats-execution-section" id="statsExecutionOverview" role="tabpanel" aria-labelledby="statsExecutionOverviewTab" tabindex="0">
       <header class="stats-execution-section-head">
-        <div><span class="stats-execution-section-index">SECTION A</span><h3 id="statsExecutionOverviewTitle">Execution Overview</h3><p>Recorded Rules and Playbook adherence, available reference evidence, independent opportunities, and assessment coverage.</p></div>
+        <div><h3 id="statsExecutionOverviewTitle">Execution Overview</h3><p>Recorded Rules and Playbook adherence, available reference evidence, independent opportunities, and assessment coverage.</p></div>
       </header>
       <div class="stats-environment-kpis stats-execution-kpis">
         <article class="stats-environment-kpi">
@@ -7655,9 +7667,9 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
       <p class="stats-evidence-caveat">Execution adherence uses recorded Rules and Playbook checks only. Profitability never increases or decreases an adherence score.</p>
     </section>
 
-    <section class="stats-execution-section" id="statsExecutionProfitGap" aria-labelledby="statsExecutionProfitGapTitle">
+    <section class="stats-execution-section" id="statsExecutionProfitGap" role="tabpanel" aria-labelledby="statsExecutionProfitGapTab" tabindex="0" hidden>
       <header class="stats-execution-section-head">
-        <div><span class="stats-execution-section-index">SECTION B</span><h3 id="statsExecutionProfitGapTitle">Profit Gap Analysis</h3><p>Compare actual outcomes with independently modeled reference results only when both describe the same opportunities and use compatible risk, costs, and units.</p></div>
+        <div><h3 id="statsExecutionProfitGapTitle">Profit Gap Analysis</h3><p>Compare actual outcomes with independently modeled reference results only when both describe the same opportunities and use compatible risk, costs, and units.</p></div>
       </header>
       <div class="stats-execution-gap-tabs" role="tablist" aria-label="Profit Gap analysis diagrams">
         <button class="stats-execution-gap-tab" type="button" role="tab" id="statsExecutionGapTabReference" aria-controls="statsExecutionGapReferencePanel" aria-selected="true" tabindex="0" data-execution-diagram="reference-actual">Reference vs Actual</button>
@@ -7701,9 +7713,9 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
       <p class="stats-evidence-caveat">A modeled reference is an estimate, not a profit guarantee. The selected reporting period applies to every available chart.</p>
     </section>
 
-    <section class="stats-execution-section" id="statsExecutionDiagnostics" aria-labelledby="statsExecutionDiagnosticsTitle">
+    <section class="stats-execution-section" id="statsExecutionDiagnostics" role="tabpanel" aria-labelledby="statsExecutionDiagnosticsTab" tabindex="0" hidden>
       <header class="stats-execution-section-head">
-        <div><span class="stats-execution-section-index">SECTION C</span><h3 id="statsExecutionDiagnosticsTitle">Execution Diagnostics</h3><p>What is recorded about the rules, reviews, and deviations associated with selected trades.</p></div>
+        <div><h3 id="statsExecutionDiagnosticsTitle">Execution Diagnostics</h3><p>What is recorded about the rules, reviews, and deviations associated with selected trades.</p></div>
       </header>
       <div class="stats-execution-adherence-grid">
         <article class="stats-research-panel stats-execution-diagnostic-card"><h4>Rules adherence</h4><strong id="statsExecutionRulesValue">—</strong><p id="statsExecutionRulesCount">Not measured</p></article>
@@ -7729,9 +7741,9 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
       </div>
     </section>
 
-    <section class="stats-execution-section" id="statsExecutionBehavioralResearch" aria-labelledby="statsExecutionBehavioralResearchTitle">
+    <section class="stats-execution-section" id="statsExecutionBehavioralResearch" role="tabpanel" aria-labelledby="statsExecutionBehavioralResearchTab" tabindex="0" hidden>
       <header class="stats-execution-section-head">
-        <div><span class="stats-execution-section-index">SECTION D</span><h3 id="statsExecutionBehavioralResearchTitle">Behavioral Research</h3><p>Separate observed trade records from possible psychological explanations. Reported labels and reflections are not diagnoses.</p></div>
+        <div><h3 id="statsExecutionBehavioralResearchTitle">Behavioral Research</h3><p>Separate observed trade records from possible psychological explanations. Reported labels and reflections are not diagnoses.</p></div>
       </header>
       <article class="stats-research-panel stats-execution-diagnostic-card stats-execution-psychology-card">
         <h4>Structured psychology criteria</h4><strong id="statsExecutionPsychologyValue">—</strong><p id="statsExecutionPsychologyCount">Not measured</p>
@@ -16481,6 +16493,47 @@ function activateExecutionDiagramTab(selectedTab){
     });
   }
 }
+function activateExecutionQualityTab(selectedTab){
+  const tabs=Array.from(document.querySelectorAll('[data-execution-quality-tab]'));
+  if(!selectedTab||!tabs.includes(selectedTab))return;
+  let activePanel=null;
+  tabs.forEach(tab=>{
+    const active=tab===selectedTab;
+    tab.setAttribute('aria-selected',String(active));
+    tab.tabIndex=active?0:-1;
+    const panel=document.getElementById(tab.getAttribute('aria-controls'));
+    if(panel){
+      panel.hidden=!active;
+      if(active)activePanel=panel;
+    }
+  });
+  requestAnimationFrame(()=>{
+    if(activePanel?.id==='statsExecutionProfitGap'&&statsExecutionTrendInstance){
+      statsExecutionTrendInstance.resize();
+      statsExecutionTrendInstance.update('none');
+    }
+    if(activePanel?.id==='statsExecutionBehavioralResearch'){
+      const framework=document.getElementById('statsExecutionFrameworkToggle');
+      if(framework?.open){
+        renderStatisticsFearDemonstration();
+        renderStatsBehaviorExtras();
+      }
+    }
+  });
+}
+const executionQualityTabs=Array.from(document.querySelectorAll('[data-execution-quality-tab]'));
+executionQualityTabs.forEach((tab,index)=>{
+  tab.addEventListener('click',()=>activateExecutionQualityTab(tab));
+  tab.addEventListener('keydown',event=>{
+    if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+    event.preventDefault();
+    const targetIndex=event.key==='Home'?0:event.key==='End'?executionQualityTabs.length-1
+      :(index+(event.key==='ArrowRight'?1:-1)+executionQualityTabs.length)%executionQualityTabs.length;
+    const target=executionQualityTabs[targetIndex];
+    activateExecutionQualityTab(target);
+    target.focus();
+  });
+});
 const executionDiagramTabs=Array.from(document.querySelectorAll('[data-execution-diagram]'));
 executionDiagramTabs.forEach((tab,index)=>{
   tab.addEventListener('click',()=>activateExecutionDiagramTab(tab));
