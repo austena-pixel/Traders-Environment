@@ -61,8 +61,9 @@ for(const id of [
   'statsPrimaryAvgProfit','statsPrimaryAvgLoss','statsPrimaryAvgPnlDiagram',
   'statsPrimaryAvgProfitBar','statsPrimaryAvgLossBar','statsOutcomeTabEquity','statsIndicatorStack'
 ])assert.ok(html.includes('id="'+id+'"'),'Missing Section A measurement '+id);
-assert.match(html,/stats-primary-pair-track profit/,'the average-profit comparison bar is present');
-assert.match(html,/stats-primary-pair-track loss/,'the average-loss comparison bar is present');
+assert.match(html,/class="stats-average-pnl-track"/,'the average-profit/loss comparison diagram is present');
+assert.match(html,/class="stats-average-pnl-zero"/,'the comparison diagram marks its zero baseline');
+assert.match(html,/class="stats-primary-unit">PER TRADE/,'the average P&L card labels its per-trade unit');
 assert.match(html,/const groups=\['Edge Performance','Execution Quality'\]/,'optional indicators come from the specialist environments');
 assert.match(html,/Latest balance reported by the selected account/,'current balance prefers the selected account value');
 
@@ -98,8 +99,8 @@ assert.equal(nodes.get('statProfitFactorDiagramValue').textContent,'6.00×');
 assert.equal(nodes.get('statsPrimaryAvgPnlValue').textContent,'+$33.33');
 assert.equal(nodes.get('statsPrimaryAvgProfit').textContent,'+$60.00');
 assert.equal(nodes.get('statsPrimaryAvgLoss').textContent,'-$20.00');
-assert.equal(nodes.get('statsPrimaryAvgProfitBar').style.width,'100%','the average-profit bar uses the full shared scale');
-assert.ok(Math.abs(parseFloat(nodes.get('statsPrimaryAvgLossBar').style.width)-33.3333)<0.01,'the average-loss bar uses the same proportional scale');
+assert.equal(nodes.get('statsPrimaryAvgProfitBar').style.width,'50%','the average-profit bar extends right from the zero baseline');
+assert.ok(Math.abs(parseFloat(nodes.get('statsPrimaryAvgLossBar').style.width)-16.6667)<0.01,'the average-loss bar extends left on the same scale');
 assert.match(nodes.get('statsPrimaryAvgPnlDiagram').attributes['aria-label'],/\+\$60\.00 compared with average loss -\$20\.00/,'the comparison exposes an accessible summary');
 
 const incompleteTrades=[{pnl:80},{pnl:null}];
