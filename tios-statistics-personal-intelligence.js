@@ -5,7 +5,6 @@ const storageEndpoint='/api/tios-personal-intelligence-storage';
 const panel=document.getElementById('statsPersonalIntelligence');
 if(!panel)return;
 const log=document.getElementById('statsPIMessages'),form=document.getElementById('statsPIForm'),input=document.getElementById('statsPIInput'),send=document.getElementById('statsPISend'),status=document.getElementById('statsPIStatus'),connection=document.getElementById('statsPIConnection');
-const prompts=[...panel.querySelectorAll('[data-pi-prompt]')];
 const historyPanel=document.getElementById('statsPIHistory'),historyList=document.getElementById('statsPIHistoryList'),settingsPanel=document.getElementById('statsPISettings'),settingsNote=document.getElementById('statsPISettingsNote');
 const actions=[...historyPanel.querySelectorAll('[data-pi-action]')];
 const defaults={proactive_enabled:false,conversation_frequency:'balanced',investigation_focus:'both',personalization_enabled:true,include_trade_evidence:true,retention_days:365,development_goal:''};
@@ -108,7 +107,6 @@ function resizeInput(){input.style.height='auto';input.style.height=Math.min(112
 function updateControls(){
   const account=accountScope(),cooling=Date.now()<quotaAvailableAt;
   send.disabled=busy||!input.value.trim()||configured===false||!account.ready||scopePending||cooling;
-  prompts.forEach(button=>button.disabled=busy||configured===false||!account.ready||scopePending||cooling);
 }
 function updateActionPanels(which){
   const showSettings=which==='settings'&&settingsPanel.hidden;
@@ -443,7 +441,6 @@ window.addEventListener('tios:conversation-scope-changing',()=>{
 form.addEventListener('submit',event=>{event.preventDefault();sendMessage(input.value)});
 input.addEventListener('input',()=>{resizeInput();updateControls()});
 input.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();form.requestSubmit()}});
-prompts.forEach(button=>button.addEventListener('click',()=>sendMessage(button.dataset.piPrompt||'')));
 historyPanel.hidden=false;settingsPanel.hidden=true;actions.forEach(button=>button.setAttribute('aria-expanded',String(button.dataset.piAction==='history')));
 setupSettings();setupActions();resetConversation(currentContext);checkConnection();
 const initialScope=accountScope();

@@ -44,6 +44,10 @@ assert.ok(piActions.indexOf('data-pi-action="history"')<piActions.indexOf('data-
 assert.ok(personalIntelligenceScript.includes("historyPanel.querySelectorAll('[data-pi-action]')"),'the moved action buttons remain connected to their handlers');
 assert.match(html,/\.stats-pi-history-delete\{[^}]*border:0;[^}]*background:transparent;[^}]*font-size:13px/,'saved-conversation X controls remain small and have no border or button fill');
 assert.match(html,/\.stats-pi-history-delete:hover,\.stats-pi-history-delete:focus-visible\{color:#eef4fc;opacity:1;transform:scale\(1\.18\)\}/,'the X controls brighten and enlarge slightly on hover or keyboard focus');
+assert.match(html,/\.stats-pi-history-row\{display:flex;align-items:center;gap:6px\}/,'each saved conversation keeps its X aligned at the right of its row, as shown in the reference');
+assert.match(personalIntelligenceScript,/row\.append\(open,remove\);historyList\.append\(row\)/,'each history X stays immediately beside its corresponding conversation');
+assert.ok(!html.includes('stats-personal-intelligence-prompts')&&!html.includes('data-pi-prompt=')&&!html.includes('stats-personal-intelligence-footnote'),'the fixed question buttons and highlighted explanatory paragraph are removed for more chat space');
+assert.ok(!personalIntelligenceScript.includes('data-pi-prompt'),'the removed suggested questions have no remaining chat handlers');
 assert.ok(!/<section class="stats-personal-intelligence-panel stats-personal-intelligence-history-section"[^>]*hidden/.test(html),'the saved chat history is visible without opening the chat history menu');
 assert.ok(html.includes('<h3 class="stats-graphs-heading">Graphs</h3>'),'the chart panel is clearly labeled Graphs');
 assert.ok(html.indexOf('</aside>',optionalStart)<html.indexOf('<dialog',optionalStart),'The optional indicator area remains inside Section A, before the indicator picker dialog.');
