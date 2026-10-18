@@ -2012,9 +2012,12 @@ body.playbook-workspace .main{
 .stats-primary-pairs>span{min-width:0;color:#8495aa;font-size:7px;line-height:1.25}
 .stats-primary-pairs strong{display:block;margin-top:3px;color:#d8e2ef;font-size:9px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .stats-primary-pairs .positive{color:#45d69a}.stats-primary-pairs .negative{color:#ff727c}
-.stats-primary-pair-track{display:block;height:4px;margin-top:5px;overflow:hidden;border-radius:999px;background:#263448}
-.stats-primary-pair-track>span{display:block;width:0;height:100%;border-radius:inherit;transition:width .2s ease}
-.stats-primary-pair-track.profit>span{background:#45d69a}.stats-primary-pair-track.loss>span{background:#ff727c}
+.stats-primary-unit{margin-left:auto;color:#718198!important;font-size:7px!important;letter-spacing:.45px;text-transform:uppercase;white-space:nowrap}
+.stats-average-pnl-track{position:relative;height:6px;margin-top:8px;overflow:hidden;border-radius:999px;background:#263448}
+.stats-average-pnl-loss-bar,.stats-average-pnl-profit-bar{position:absolute;top:0;bottom:0;width:0;transition:width .2s ease}
+.stats-average-pnl-loss-bar{right:50%;border-radius:999px 0 0 999px;background:#ff727c}
+.stats-average-pnl-profit-bar{left:50%;border-radius:0 999px 999px 0;background:#45d69a}
+.stats-average-pnl-zero{position:absolute;z-index:1;top:-1px;bottom:-1px;left:calc(50% - .5px);width:1px;background:#d2dbea}
 .stats-section-a-workspace{display:grid;grid-template-columns:minmax(0,2.05fr) minmax(245px,.95fr);gap:12px;align-items:stretch}
 .stats-combined-outcomes{min-width:0;padding:12px;border:0;border-radius:12px;background:var(--stats-unified-fill,var(--hios-theme-bg,var(--bg)))}
 .stats-dashboard-section{min-width:0;min-height:0;padding:12px;border:0;border-radius:12px;background:var(--stats-unified-fill,var(--hios-theme-bg,var(--bg)))}
@@ -7183,12 +7186,20 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <small id="statProfitFactorExplanation">No closed trades in this selected period.</small>
           </article>
           <article class="stats-primary-metric" role="listitem">
-            <span>Average P&amp;L per Trade</span>
+            <div class="stats-primary-metric-head">
+              <span>Average P&amp;L per Trade</span>
+              <span class="stats-primary-unit">PER TRADE</span>
+            </div>
             <strong id="statsPrimaryAvgPnlValue" class="neutral" aria-live="polite">—</strong>
             <small id="statsPrimaryAvgPnlCount">No trades in this period.</small>
-            <div class="stats-primary-pairs" id="statsPrimaryAvgPnlDiagram" role="group" aria-label="Average profit and average loss comparison">
-              <span>Average profit<strong class="positive" id="statsPrimaryAvgProfit">—</strong><span class="stats-primary-pair-track profit" aria-hidden="true"><span id="statsPrimaryAvgProfitBar"></span></span></span>
-              <span>Average loss<strong class="negative" id="statsPrimaryAvgLoss">—</strong><span class="stats-primary-pair-track loss" aria-hidden="true"><span id="statsPrimaryAvgLossBar"></span></span></span>
+            <div class="stats-primary-pairs" role="group" aria-label="Average loss and average profit">
+              <span>Average loss<strong class="negative" id="statsPrimaryAvgLoss">—</strong></span>
+              <span>Average profit<strong class="positive" id="statsPrimaryAvgProfit">—</strong></span>
+            </div>
+            <div class="stats-average-pnl-track" id="statsPrimaryAvgPnlDiagram" role="img" aria-label="Average profit and average loss comparison unavailable">
+              <span class="stats-average-pnl-loss-bar" id="statsPrimaryAvgLossBar"></span>
+              <span class="stats-average-pnl-zero" aria-hidden="true"></span>
+              <span class="stats-average-pnl-profit-bar" id="statsPrimaryAvgProfitBar"></span>
             </div>
           </article>
         </div>
@@ -15578,7 +15589,7 @@ function renderStatisticsIndicators(returnPct,winRate,source,profitFactorStats,p
   const setComparisonBar=(id,value)=>{
     const bar=$('#'+id);
     if(!bar)return;
-    const width=Number.isFinite(value)&&comparisonScale>0?Math.min(100,Math.abs(value)/comparisonScale*100):0;
+    const width=Number.isFinite(value)&&comparisonScale>0?Math.min(50,Math.abs(value)/comparisonScale*50):0;
     bar.style.width=`${width}%`;
   };
   setComparisonBar('statsPrimaryAvgProfitBar',averageProfit);
