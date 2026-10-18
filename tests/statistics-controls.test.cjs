@@ -188,7 +188,7 @@ assert.match(html,/<div class="stats-indicator-stack stats-indicator-grid" id="s
 assert.match(html,/\.stats-autozoom-controls:not\(\.is-enabled\) \.stats-autozoom-zoom\{display:none\}/,'percentage and slider stay hidden until Auto Zoom is enabled');
 assert.match(html,/#statsPrimarySummary\.stats-autozoom \.stats-primary-metric\.stats-card-zoomed\{transform:scale\(/,'highlighted summary cards receive the zoom transform');
 assert.match(html,/\.stats-indicator-stack\.stats-autozoom \.stats-indicator-card\.stats-card-zoomed\{\s*transform:scale\(/,'sidebar analytics cards keep the zoom transform');
-assert.match(html,/<div class="stats-primary-summary" id="statsPrimarySummary"[^>]*>[\s\S]*?(?:<article class="[^"]*stats-primary-metric[^"]*" role="listitem" tabindex="0">){5}/,'all five highlighted financial summaries are keyboard-focusable');
+assert.equal((html.match(/<article class="[^"]*stats-primary-metric[^"]*" role="listitem" tabindex="0">/g)||[]).length,5,'all five highlighted financial summaries are keyboard-focusable');
 assert.match(html,/\.stats-indicator-grid \.stats-indicator-card\{\s*min-width:0;min-height:112px/,'selected indicator cards use compact dashboard dimensions');
 assert.match(html,/<section class="panel stats-research-panel stats-execution-profit-panel">[\s\S]*?id="statExecutionProfitChart"/,'Execution profitability comparison is preserved in Execution Quality');
 assert.match(html,/id="statsPeriodToolbar"[\s\S]*?<div class="stats-view-panel" id="statsStatisticsView"/,'shared period controls sit outside the environment panels');
