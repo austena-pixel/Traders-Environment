@@ -14660,7 +14660,8 @@ function renderEquityChart(series){
       },
       scales:{
         x:{
-          grid:{color:'rgba(118,136,160,.08)'},
+          grid:{color:'#0c141e'},
+          border:{color:'#0c141e'},
           ticks:{
             color:'#7f8da1',
             autoSkip:true,
@@ -14676,7 +14677,8 @@ function renderEquityChart(series){
         y:{
           min:equityAxisMin,
           max:equityAxisMax,
-          grid:{color:'rgba(118,136,160,.10)'},
+          grid:{color:'#0c141e'},
+          border:{color:'#0c141e'},
           ticks:{
             color:'#7f8da1',
             callback:value=>'$'+Number(value).toLocaleString(
@@ -14795,8 +14797,8 @@ function renderStatisticsOutcomeChart(kind,source,series){
         }}
       },
       scales:{
-        x:{grid:{color:'rgba(118,136,160,.08)'},ticks:{color:'#9aa9bd',autoSkip:true,maxTicksLimit:18,maxRotation:0}},
-        y:{beginAtZero:true,grid:{color:'rgba(118,136,160,.10)'},title:{display:true,text:yTitle,color:'#aab8ca'},ticks:{color:'#9aa9bd',callback:value=>kind==='distribution'?value:'$'+Number(value).toLocaleString(undefined,{maximumFractionDigits:2})}}
+        x:{grid:{color:'#0c141e'},border:{color:'#0c141e'},ticks:{color:'#9aa9bd',autoSkip:true,maxTicksLimit:18,maxRotation:0}},
+        y:{beginAtZero:true,grid:{color:'#0c141e'},border:{color:'#0c141e'},title:{display:true,text:yTitle,color:'#aab8ca'},ticks:{color:'#9aa9bd',callback:value=>kind==='distribution'?value:'$'+Number(value).toLocaleString(undefined,{maximumFractionDigits:2})}}
       }
     }
   });
