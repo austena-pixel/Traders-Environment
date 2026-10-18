@@ -1993,31 +1993,31 @@ body.playbook-workspace .main{
 #page-statistics:has(#statsEdgeView:not([hidden])) .stats-section-a-header>.stats-autozoom-controls,
 #page-statistics:has(#statsExecutionView:not([hidden])) .stats-section-a-header>.stats-autozoom-controls{display:none}
 .stats-primary-summary{position:relative;isolation:isolate;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin:0 0 12px;--stats-autozoom-scale:1.5}
-.stats-primary-metric{position:relative;min-width:0;min-height:112px;padding:11px 12px;border:0;border-radius:11px;background:var(--stats-unified-fill,var(--hios-theme-bg,var(--bg)));transform-origin:center top;transition:transform .18s ease}
-.stats-primary-metric>span:first-child,.stats-primary-metric-head>span{display:block;color:#9eacc0;font-size:9px;font-weight:750;letter-spacing:.2px}
-.stats-primary-metric>strong{display:block;margin-top:7px;color:#eef4fc;font-size:19px;font-weight:800;line-height:1.15;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.stats-primary-metric{position:relative;min-width:0;min-height:128px;padding:13px 14px;border:0;border-radius:11px;background:var(--stats-unified-fill,var(--hios-theme-bg,var(--bg)));transform-origin:center top;transition:transform .18s ease}
+.stats-primary-metric>span:first-child,.stats-primary-metric-head>span{display:block;color:#c0ccdc;font-size:11px;font-weight:750;letter-spacing:.15px;line-height:1.3}
+.stats-primary-metric>strong{display:block;margin-top:8px;color:#eef4fc;font-size:23px;font-weight:800;line-height:1.15;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .stats-primary-metric>strong.pos{color:#45d69a}.stats-primary-metric>strong.neg{color:#ff727c}.stats-primary-metric>strong.neutral{color:#eef4fc}
-.stats-primary-metric small{display:block;margin-top:6px;color:#8798ad;font-size:8px;line-height:1.35}
+.stats-primary-metric small{display:block;margin-top:7px;color:#b3c0d2;font-size:11px;line-height:1.4}
 #statsPrimarySummary.stats-autozoom .stats-primary-metric.stats-card-zoomed{transform:scale(var(--stats-autozoom-scale));z-index:5}
 #statsPrimarySummary.stats-autozoom .stats-primary-metric:first-child.stats-card-zoomed{transform-origin:left top}
 #statsPrimarySummary.stats-autozoom .stats-primary-metric:last-child.stats-card-zoomed{transform-origin:right top}
 .stats-primary-metric:focus-visible{outline:2px solid #69a8ff;outline-offset:2px}
 .stats-primary-metric-head{display:flex;align-items:center;justify-content:space-between;gap:7px}
-.stats-win-return{flex:0 0 auto;font-size:8px;font-weight:800;font-variant-numeric:tabular-nums}
+.stats-win-return{flex:0 0 auto;font-size:11px;font-weight:800;font-variant-numeric:tabular-nums}
 .stats-win-return.pos{color:#45d69a}.stats-win-return.neg{color:#ff727c}.stats-win-return.neutral{color:#aebbd0}
-.stats-win-rate-gauge{display:block;width:100%;max-width:150px;height:58px;margin:0 auto -1px;overflow:visible}
+.stats-win-rate-gauge{display:block;width:100%;max-width:210px;height:72px;margin:0 auto 1px;overflow:visible}
 .stats-win-rate-track,.stats-win-rate-progress{fill:none;stroke-width:12;stroke-linecap:round}
 .stats-win-rate-track{stroke:#263448}.stats-win-rate-progress{stroke:#45d69a;transition:stroke-dasharray .2s ease}
-.stats-win-rate-gauge-value{fill:#eef4fc;font-size:21px;font-weight:850;text-anchor:middle;font-variant-numeric:tabular-nums}
-.stats-primary-metric .stats-indicator-value{display:block;margin-top:7px;font-size:19px}
-.stats-profit-factor-bar{display:flex;height:5px;margin:7px 0 6px;overflow:hidden;border-radius:999px;background:#263448}
+.stats-win-rate-gauge-value{fill:#eef4fc;font-size:28px;font-weight:850;text-anchor:middle;font-variant-numeric:tabular-nums}
+.stats-primary-metric .stats-indicator-value{display:block;margin-top:8px;font-size:23px}
+.stats-profit-factor-bar{display:flex;height:7px;margin:8px 0 7px;overflow:hidden;border-radius:999px;background:#263448}
 .stats-profit-factor-profit-fill{height:100%;background:#45d69a}.stats-profit-factor-loss-fill{height:100%;background:#ff727c}
 .stats-primary-pairs{display:flex;justify-content:space-between;gap:8px;margin-top:6px}
-.stats-primary-pairs>span{min-width:0;color:#8495aa;font-size:7px;line-height:1.25}
-.stats-primary-pairs strong{display:block;margin-top:3px;color:#d8e2ef;font-size:9px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.stats-primary-pairs>span{min-width:0;color:#b3c0d2;font-size:9px;line-height:1.35;font-weight:650}
+.stats-primary-pairs strong{display:block;margin-top:3px;color:#e0e8f2;font-size:11px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .stats-primary-pairs .positive{color:#45d69a}.stats-primary-pairs .negative{color:#ff727c}
-.stats-primary-unit{margin-left:auto;color:#718198!important;font-size:7px!important;letter-spacing:.45px;text-transform:uppercase;white-space:nowrap}
-.stats-average-pnl-track{position:relative;height:6px;margin-top:8px;overflow:hidden;border-radius:999px;background:#263448}
+.stats-primary-unit{margin-left:auto;color:#aebbd0!important;font-size:9px!important;letter-spacing:.35px;text-transform:uppercase;white-space:nowrap}
+.stats-average-pnl-track{position:relative;height:7px;margin-top:9px;overflow:hidden;border-radius:999px;background:#263448}
 .stats-average-pnl-loss-bar,.stats-average-pnl-profit-bar{position:absolute;top:0;bottom:0;width:0;transition:width .2s ease}
 .stats-average-pnl-loss-bar{right:50%;border-radius:999px 0 0 999px;background:#ff727c}
 .stats-average-pnl-profit-bar{left:50%;border-radius:0 999px 999px 0;background:#45d69a}
@@ -2101,9 +2101,11 @@ body.playbook-workspace .main{
 }
 @media(max-width:480px){
   .stats-primary-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
-  .stats-primary-metric{min-height:100px;padding:9px}
-  .stats-primary-metric>strong,.stats-primary-metric .stats-indicator-value{font-size:17px}
-  .stats-win-rate-gauge{height:52px}
+  .stats-primary-metric{min-height:112px;padding:10px}
+  .stats-primary-metric>strong,.stats-primary-metric .stats-indicator-value{font-size:20px}
+  .stats-win-rate-gauge{max-width:185px;height:62px}
+  .stats-win-rate-gauge-value{font-size:26px}
+  .stats-primary-metric small{font-size:10.5px}
   .stats-indicator-grid{grid-template-columns:1fr;gap:7px}
   .stats-indicator-grid .stats-indicator-card{min-height:104px;padding:10px}
   .stats-indicator-card-value{font-size:18px}
@@ -2143,8 +2145,8 @@ body.playbook-workspace .main{
   .stats-section-a{padding:12px}
   .stats-section-a-header{margin-bottom:6px}
   .stats-primary-summary{gap:7px;margin-bottom:8px}
-  .stats-primary-metric{min-height:102px;padding:9px 10px}
-  .stats-win-rate-gauge{height:48px}
+  .stats-primary-metric{min-height:118px;padding:10px 12px}
+  .stats-win-rate-gauge{max-width:195px;height:66px}
   .stats-section-a-workspace{gap:8px}
   .stats-combined-outcomes,.stats-dashboard-section{padding:9px}
   .stats-outcome-selectors{gap:4px;margin-bottom:8px;padding-bottom:6px}
