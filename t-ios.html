@@ -1992,12 +1992,16 @@ body.playbook-workspace .main{
 .stats-section-a-header .stats-autozoom-zoom input[type="range"]{width:68px;min-width:50px}
 #page-statistics:has(#statsEdgeView:not([hidden])) .stats-section-a-header>.stats-autozoom-controls,
 #page-statistics:has(#statsExecutionView:not([hidden])) .stats-section-a-header>.stats-autozoom-controls{display:none}
-.stats-primary-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin:0 0 12px}
-.stats-primary-metric{min-width:0;min-height:112px;padding:11px 12px;border:0;border-radius:11px;background:var(--stats-unified-fill,var(--hios-theme-bg,var(--bg)))}
+.stats-primary-summary{position:relative;isolation:isolate;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin:0 0 12px;--stats-autozoom-scale:1.5}
+.stats-primary-metric{position:relative;min-width:0;min-height:112px;padding:11px 12px;border:0;border-radius:11px;background:var(--stats-unified-fill,var(--hios-theme-bg,var(--bg)));transform-origin:center top;transition:transform .18s ease}
 .stats-primary-metric>span:first-child,.stats-primary-metric-head>span{display:block;color:#9eacc0;font-size:9px;font-weight:750;letter-spacing:.2px}
 .stats-primary-metric>strong{display:block;margin-top:7px;color:#eef4fc;font-size:19px;font-weight:800;line-height:1.15;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .stats-primary-metric>strong.pos{color:#45d69a}.stats-primary-metric>strong.neg{color:#ff727c}.stats-primary-metric>strong.neutral{color:#eef4fc}
 .stats-primary-metric small{display:block;margin-top:6px;color:#8798ad;font-size:8px;line-height:1.35}
+#statsPrimarySummary.stats-autozoom .stats-primary-metric.stats-card-zoomed{transform:scale(var(--stats-autozoom-scale));z-index:5}
+#statsPrimarySummary.stats-autozoom .stats-primary-metric:first-child.stats-card-zoomed{transform-origin:left top}
+#statsPrimarySummary.stats-autozoom .stats-primary-metric:last-child.stats-card-zoomed{transform-origin:right top}
+.stats-primary-metric:focus-visible{outline:2px solid #69a8ff;outline-offset:2px}
 .stats-primary-metric-head{display:flex;align-items:center;justify-content:space-between;gap:7px}
 .stats-win-return{flex:0 0 auto;font-size:8px;font-weight:800;font-variant-numeric:tabular-nums}
 .stats-win-return.pos{color:#45d69a}.stats-win-return.neg{color:#ff727c}.stats-win-return.neutral{color:#aebbd0}
@@ -7135,15 +7139,15 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <span class="stats-view-tab-label">Execution Quality</span><strong class="stats-view-tab-value" id="statNavExecution" aria-live="polite">—</strong>
           </button>
         </div>
-        <div class="stats-autozoom-controls" role="group" aria-label="Optional indicator card zoom controls">
-          <button class="stats-autozoom-toggle" id="statsAutoZoomBtn" type="button" aria-pressed="false" aria-controls="statsIndicatorStack" title="Automatically zoom an optional indicator when hovered or focused">
+        <div class="stats-autozoom-controls" role="group" aria-label="Statistics card auto zoom controls">
+          <button class="stats-autozoom-toggle" id="statsAutoZoomBtn" type="button" aria-pressed="false" aria-controls="statsPrimarySummary statsIndicatorStack" title="Automatically zoom a Statistics card when hovered or focused">
             <span>Auto Zoom</span>
             <span class="stats-autozoom-track" aria-hidden="true"><span class="stats-autozoom-thumb"></span></span>
             <strong class="stats-autozoom-state" id="statsAutoZoomState">OFF</strong>
           </button>
           <label class="stats-autozoom-zoom" for="statsAutoZoomRange">
             <span>Zoom</span>
-            <input id="statsAutoZoomRange" type="range" min="100" max="150" step="1" value="125" aria-label="Auto Zoom magnification" aria-controls="statsIndicatorStack" aria-valuetext="125%" title="Adjust the Auto Zoom magnification; the maximum follows the current zoom limit">
+            <input id="statsAutoZoomRange" type="range" min="100" max="150" step="1" value="125" aria-label="Auto Zoom magnification" aria-controls="statsPrimarySummary statsIndicatorStack" aria-valuetext="125%" title="Adjust the Auto Zoom magnification; the maximum follows the current zoom limit">
             <output id="statsAutoZoomValue" for="statsAutoZoomRange" aria-live="polite">125%</output>
           </label>
         </div>
@@ -7152,18 +7156,18 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
       <div class="stats-view-panel" id="statsStatisticsView" role="tabpanel" aria-labelledby="statsStatisticsTab">
 
       <section class="panel stats-section-a" aria-label="Section A financial outcomes">
-        <div class="stats-primary-summary" role="list" aria-label="Selected-period financial outcomes">
-          <article class="stats-primary-metric" role="listitem">
+        <div class="stats-primary-summary" id="statsPrimarySummary" role="list" aria-label="Selected-period financial outcomes">
+          <article class="stats-primary-metric" role="listitem" tabindex="0">
             <span>Current Balance</span>
             <strong id="statEquityHeaderEnding" aria-live="polite">—</strong>
             <small id="statsPrimaryBalanceCaption">Latest verified account balance</small>
           </article>
-          <article class="stats-primary-metric" role="listitem">
+          <article class="stats-primary-metric" role="listitem" tabindex="0">
             <span>Net P&amp;L</span>
             <strong id="statEquityHeaderNetPnl" class="neutral" aria-live="polite">—</strong>
             <small>Selected-period realized result</small>
           </article>
-          <article class="stats-primary-metric stats-primary-win-rate" role="listitem">
+          <article class="stats-primary-metric stats-primary-win-rate" role="listitem" tabindex="0">
             <div class="stats-primary-metric-head"><span>Win Rate</span><strong class="stats-win-return neutral" id="statWinRateReturnLabel" aria-live="polite">— return</strong></div>
             <svg class="stats-win-rate-gauge" id="statWinRateGauge" viewBox="0 0 200 120" role="img" aria-label="Win rate is unavailable.">
               <path class="stats-win-rate-track" d="M20 100 A80 80 0 0 1 180 100" pathLength="100"></path>
@@ -7172,7 +7176,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             </svg>
             <small id="statWinRateGaugeCount">No trades in this period.</small>
           </article>
-          <article class="stats-primary-metric" role="listitem">
+          <article class="stats-primary-metric" role="listitem" tabindex="0">
             <span>Profit Factor</span>
             <strong class="stats-indicator-value stats-profit-factor-value neutral" id="statProfitFactorDiagramValue">—</strong>
             <div class="stats-profit-factor-bar" id="statProfitFactorBar" role="img" aria-label="No recorded gross profit or gross loss is available for comparison.">
@@ -7185,7 +7189,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             </div>
             <small id="statProfitFactorExplanation">No closed trades in this selected period.</small>
           </article>
-          <article class="stats-primary-metric" role="listitem">
+          <article class="stats-primary-metric" role="listitem" tabindex="0">
             <div class="stats-primary-metric-head">
               <span>Average P&amp;L per Trade</span>
               <span class="stats-primary-unit">PER TRADE</span>
@@ -15702,6 +15706,10 @@ function moveStatsPeriod(direction){
 }
 
 /* STATISTICS ANALYTICS AUTO-ZOOM */
+function statsAutoZoomContainers(){
+  return [$('#statsPrimarySummary'),$('#statsIndicatorStack')].filter(Boolean);
+}
+
 function statsAutoZoomMaxPercent(){
   const width=window.innerWidth||document.documentElement.clientWidth||1440;
   if(width<=520)return 106;
@@ -15724,8 +15732,9 @@ function setStatsAutoZoomPercent(value,{persist=true}={}){
   range.setAttribute('aria-valuetext',percent+'%');
   const output=$('#statsAutoZoomValue');
   if(output)output.textContent=percent+'%';
-  const stack=$('#statsIndicatorStack');
-  if(stack)stack.style.setProperty('--stats-autozoom-scale',(percent/100).toFixed(2));
+  statsAutoZoomContainers().forEach(container=>{
+    container.style.setProperty('--stats-autozoom-scale',(percent/100).toFixed(2));
+  });
   statsAutoZoomPercent=preferredPercent;
   if(persist)persistStatsAutoZoomPreference(preferredPercent);
 }
@@ -15737,11 +15746,10 @@ function syncStatsAutoZoomViewportLimit(){
 
 function setStatsAutoZoom(enabled){
   statsAutoZoom=Boolean(enabled);
-  const stack=$('#statsIndicatorStack');
   const toggle=$('#statsAutoZoomBtn');
   const state=$('#statsAutoZoomState');
   const controls=toggle?.closest('.stats-autozoom-controls');
-  if(stack)stack.classList.toggle('stats-autozoom',statsAutoZoom);
+  statsAutoZoomContainers().forEach(container=>container.classList.toggle('stats-autozoom',statsAutoZoom));
   if(toggle)toggle.setAttribute('aria-pressed',String(statsAutoZoom));
   if(state)state.textContent=statsAutoZoom?'ON':'OFF';
   if(controls)controls.classList.toggle('is-enabled',statsAutoZoom);
@@ -15749,13 +15757,38 @@ function setStatsAutoZoom(enabled){
 }
 
 function setZoomedStatsCard(card){
-  const stack=$('#statsIndicatorStack');
-  if(!stack)return;
-  const zoomed=statsAutoZoom&&card&&card.matches('.stats-indicator-card')&&stack.contains(card)?card:null;
-  stack.querySelectorAll('.stats-indicator-card.stats-card-zoomed').forEach(current=>{
-    if(current!==zoomed)current.classList.remove('stats-card-zoomed');
+  const containers=statsAutoZoomContainers();
+  const zoomed=statsAutoZoom&&card&&card.matches('.stats-primary-metric,.stats-indicator-card')
+    &&containers.some(container=>container.contains(card))?card:null;
+  containers.forEach(container=>{
+    container.querySelectorAll('.stats-card-zoomed').forEach(current=>{
+      if(current!==zoomed)current.classList.remove('stats-card-zoomed');
+    });
+    if(zoomed&&container.contains(zoomed))zoomed.classList.add('stats-card-zoomed');
   });
-  if(zoomed)zoomed.classList.add('stats-card-zoomed');
+}
+
+function bindStatsAutoZoomCards(container,selector){
+  if(!container)return;
+  const cardFromStatsEvent=event=>{
+    const target=event.target;
+    return target&&typeof target.closest==='function'?target.closest(selector):null;
+  };
+  container.addEventListener('pointerover',event=>{
+    if(!statsAutoZoom)return;
+    const card=cardFromStatsEvent(event);
+    if(!card||!container.contains(card))return;
+    if(event.relatedTarget&&card.contains(event.relatedTarget))return;
+    setZoomedStatsCard(card);
+  });
+  container.addEventListener('pointerleave',()=>setZoomedStatsCard(null));
+  container.addEventListener('focusin',event=>{
+    const card=cardFromStatsEvent(event);
+    setZoomedStatsCard(card&&container.contains(card)?card:null);
+  });
+  container.addEventListener('focusout',event=>{
+    if(!container.contains(event.relatedTarget))setZoomedStatsCard(null);
+  });
 }
 
 $('#statsAutoZoomBtn').addEventListener('click',()=>{
@@ -15771,28 +15804,8 @@ if(statsAutoZoomRange){
   syncStatsAutoZoomViewportLimit();
 }
 
-const statsIndicatorStack=$('#statsIndicatorStack');
-if(statsIndicatorStack){
-  const cardFromStatsEvent=event=>{
-    const target=event.target;
-    return target&&typeof target.closest==='function'?target.closest('.stats-indicator-card'):null;
-  };
-  statsIndicatorStack.addEventListener('pointerover',event=>{
-    if(!statsAutoZoom)return;
-    const card=cardFromStatsEvent(event);
-    if(!card||!statsIndicatorStack.contains(card))return;
-    if(event.relatedTarget&&card.contains(event.relatedTarget))return;
-    setZoomedStatsCard(card);
-  });
-  statsIndicatorStack.addEventListener('pointerleave',()=>setZoomedStatsCard(null));
-  statsIndicatorStack.addEventListener('focusin',event=>{
-    const card=cardFromStatsEvent(event);
-    setZoomedStatsCard(card&&statsIndicatorStack.contains(card)?card:null);
-  });
-  statsIndicatorStack.addEventListener('focusout',event=>{
-    if(!statsIndicatorStack.contains(event.relatedTarget))setZoomedStatsCard(null);
-  });
-}
+bindStatsAutoZoomCards($('#statsPrimarySummary'),'.stats-primary-metric');
+bindStatsAutoZoomCards($('#statsIndicatorStack'),'.stats-indicator-card');
 setStatsAutoZoom(statsAutoZoom);
 
 $('#statsAddIndicator').addEventListener('click',()=>{
