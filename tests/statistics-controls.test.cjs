@@ -223,6 +223,7 @@ const scaleContext=vm.createContext({
 });
 vm.runInContext(
   "const STATS_AUTOZOOM_PREFERENCE_KEY='tios_statistics_autozoom_percent_v1'; let statsAutoZoomPercent=125;\n"+
+  extractFunction('statsAutoZoomContainers')+'\n'+
   extractFunction('statsAutoZoomMaxPercent')+'\n'+
   extractFunction('persistStatsAutoZoomPreference')+'\n'+
   extractFunction('setStatsAutoZoomPercent')+'\n'+
