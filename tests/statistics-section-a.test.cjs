@@ -5,6 +5,7 @@ const path=require('node:path');
 const vm=require('node:vm');
 const stats=require('../core/statistics-environments.js');
 const html=fs.readFileSync(path.resolve(__dirname,'../t-ios.html'),'utf8');
+const personalIntelligenceScript=fs.readFileSync(path.resolve(__dirname,'../tios-statistics-personal-intelligence.js'),'utf8');
 
 function extractFunction(name){
   const start=html.indexOf('function '+name+'(');
@@ -25,6 +26,7 @@ const chartStart=html.indexOf('<section class="stats-combined-outcomes"',layoutS
 const summaryStart=html.indexOf('<div class="stats-primary-summary"',sectionStart);
 const personalIntelligenceStart=html.indexOf('<aside class="stats-dashboard-section stats-personal-intelligence"',layoutStart);
 const personalIntelligenceHistoryStart=html.indexOf('id="statsPIHistory"',personalIntelligenceStart);
+const personalIntelligenceHistoryActions=html.indexOf('class="stats-personal-intelligence-history-actions"',personalIntelligenceHistoryStart);
 const optionalStart=html.indexOf('<aside class="stats-dashboard-section" aria-labelledby="statsIndicatorsHeading"',layoutStart);
 assert.ok(sectionStart>=0&&layoutStart>sectionStart,'Section A groups the metrics, chart and optional indicator space.');
 assert.ok(summaryStart>sectionStart&&summaryStart<layoutStart,'the financial summary spans above the horizontal workspace.');
@@ -36,6 +38,12 @@ assert.match(html,/\.stats-combined-outcomes\{grid-column:1;grid-row:1\}/,'Graph
 assert.match(html,/\.stats-personal-intelligence\{grid-column:2;grid-row:1/,'Personal Intelligence occupies the middle column');
 assert.match(html,/\.stats-personal-intelligence-history-section\{grid-column:3;grid-row:1/,'saved chat history occupies the right-hand column');
 assert.match(html,/\.stats-personal-intelligence-history-section\{display:flex;flex-direction:column;min-height:0;max-height:none/,'the saved chat history remains visible in its own column');
+assert.ok(personalIntelligenceHistoryActions>personalIntelligenceHistoryStart&&!html.includes('class="stats-personal-intelligence-toolbar"'),'the Personal Intelligence controls sit at the bottom of the chat-history section');
+const piActions=html.slice(personalIntelligenceHistoryActions,optionalStart);
+assert.ok(piActions.indexOf('data-pi-action="history"')<piActions.indexOf('data-pi-action="new"')&&piActions.indexOf('data-pi-action="new"')<piActions.indexOf('data-pi-action="settings"'),'History, New chat, and Settings appear in the requested order');
+assert.ok(personalIntelligenceScript.includes("historyPanel.querySelectorAll('[data-pi-action]')"),'the moved action buttons remain connected to their handlers');
+assert.match(html,/\.stats-pi-history-delete\{[^}]*border:0;[^}]*background:transparent;[^}]*font-size:13px/,'saved-conversation X controls remain small and have no border or button fill');
+assert.match(html,/\.stats-pi-history-delete:hover,\.stats-pi-history-delete:focus-visible\{color:#eef4fc;opacity:1;transform:scale\(1\.18\)\}/,'the X controls brighten and enlarge slightly on hover or keyboard focus');
 assert.ok(!/<section class="stats-personal-intelligence-panel stats-personal-intelligence-history-section"[^>]*hidden/.test(html),'the saved chat history is visible without opening the chat history menu');
 assert.ok(html.includes('<h3 class="stats-graphs-heading">Graphs</h3>'),'the chart panel is clearly labeled Graphs');
 assert.ok(html.indexOf('</aside>',optionalStart)<html.indexOf('<dialog',optionalStart),'The optional indicator area remains inside Section A, before the indicator picker dialog.');

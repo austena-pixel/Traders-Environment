@@ -7,7 +7,7 @@ if(!panel)return;
 const log=document.getElementById('statsPIMessages'),form=document.getElementById('statsPIForm'),input=document.getElementById('statsPIInput'),send=document.getElementById('statsPISend'),status=document.getElementById('statsPIStatus'),connection=document.getElementById('statsPIConnection');
 const prompts=[...panel.querySelectorAll('[data-pi-prompt]')];
 const historyPanel=document.getElementById('statsPIHistory'),historyList=document.getElementById('statsPIHistoryList'),settingsPanel=document.getElementById('statsPISettings'),settingsNote=document.getElementById('statsPISettingsNote');
-const actions=[...panel.querySelectorAll('[data-pi-action]')];
+const actions=[...historyPanel.querySelectorAll('[data-pi-action]')];
 const defaults={proactive_enabled:false,conversation_frequency:'balanced',investigation_focus:'both',personalization_enabled:true,include_trade_evidence:true,retention_days:365,development_goal:''};
 const engine=window.TIOSPersonalIntelligenceEngine||null;
 let history=[],busy=false,configured=null,openingRow=null,refreshTimer=0,scopePending=false,scopeEpoch=0,currentConversationId=null,currentConversationKind='user';
