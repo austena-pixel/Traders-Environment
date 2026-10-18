@@ -58,8 +58,11 @@ assert.ok(!html.includes('id="instrumentStatsBody"')&&!html.includes('function r
 for(const id of [
   'statEquityHeaderEnding','statEquityHeaderNetPnl','statWinRateGauge','statWinRateGaugeValue',
   'statWinRateReturnLabel','statProfitFactorDiagramValue','statsPrimaryAvgPnlValue',
-  'statsPrimaryAvgProfit','statsPrimaryAvgLoss','statsOutcomeTabEquity','statsIndicatorStack'
+  'statsPrimaryAvgProfit','statsPrimaryAvgLoss','statsPrimaryAvgPnlDiagram',
+  'statsPrimaryAvgProfitBar','statsPrimaryAvgLossBar','statsOutcomeTabEquity','statsIndicatorStack'
 ])assert.ok(html.includes('id="'+id+'"'),'Missing Section A measurement '+id);
+assert.match(html,/stats-primary-pair-track profit/,'the average-profit comparison bar is present');
+assert.match(html,/stats-primary-pair-track loss/,'the average-loss comparison bar is present');
 assert.match(html,/const groups=\['Edge Performance','Execution Quality'\]/,'optional indicators come from the specialist environments');
 assert.match(html,/Latest balance reported by the selected account/,'current balance prefers the selected account value');
 
@@ -69,7 +72,8 @@ const ids=[
   'statProfitFactorProfitFill','statProfitFactorLossFill','statProfitFactorGrossProfit',
   'statProfitFactorGrossLoss','statWinRateGauge','statWinRateGaugeProgress',
   'statWinRateGaugeValue','statWinRateGaugeCount','statWinRateReturnLabel',
-  'statsPrimaryAvgPnlValue','statsPrimaryAvgPnlCount','statsPrimaryAvgProfit','statsPrimaryAvgLoss'
+  'statsPrimaryAvgPnlValue','statsPrimaryAvgPnlCount','statsPrimaryAvgProfit','statsPrimaryAvgLoss',
+  'statsPrimaryAvgPnlDiagram','statsPrimaryAvgProfitBar','statsPrimaryAvgLossBar'
 ];
 const nodes=new Map(ids.map(id=>[id,node()]));
 const context=vm.createContext({
@@ -94,6 +98,9 @@ assert.equal(nodes.get('statProfitFactorDiagramValue').textContent,'6.00×');
 assert.equal(nodes.get('statsPrimaryAvgPnlValue').textContent,'+$33.33');
 assert.equal(nodes.get('statsPrimaryAvgProfit').textContent,'+$60.00');
 assert.equal(nodes.get('statsPrimaryAvgLoss').textContent,'-$20.00');
+assert.equal(nodes.get('statsPrimaryAvgProfitBar').style.width,'100%','the average-profit bar uses the full shared scale');
+assert.ok(Math.abs(parseFloat(nodes.get('statsPrimaryAvgLossBar').style.width)-33.3333)<0.01,'the average-loss bar uses the same proportional scale');
+assert.match(nodes.get('statsPrimaryAvgPnlDiagram').attributes['aria-label'],/\+\$60\.00 compared with average loss -\$20\.00/,'the comparison exposes an accessible summary');
 
 const incompleteTrades=[{pnl:80},{pnl:null}];
 context.renderStatisticsIndicators(null,null,incompleteTrades,{state:'incomplete',value:null,grossProfit:80,grossLoss:0,recordedTradeCount:1,missingPnlCount:1},stats.summarizePnl(incompleteTrades));
@@ -102,6 +109,8 @@ assert.equal(nodes.get('statWinRateReturnLabel').textContent,'— return','unver
 assert.equal(nodes.get('statsPrimaryAvgPnlValue').textContent,'—','missing P&L keeps average trade P&L unavailable');
 assert.equal(nodes.get('statsPrimaryAvgProfit').textContent,'—','incomplete samples do not imply average profit');
 assert.equal(nodes.get('statsPrimaryAvgLoss').textContent,'—','incomplete samples do not imply average loss');
+assert.equal(nodes.get('statsPrimaryAvgProfitBar').style.width,'0%','incomplete samples do not display estimated average-profit bars');
+assert.equal(nodes.get('statsPrimaryAvgLossBar').style.width,'0%','incomplete samples do not display estimated average-loss bars');
 
 const balanceContext=vm.createContext({
   tradingAccount:{current_balance:250,starting_balance:100},
