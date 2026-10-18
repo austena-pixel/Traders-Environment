@@ -2053,11 +2053,11 @@ body.playbook-workspace .main{
 .stats-pi-panel-title{margin:0 0 8px;color:#e4edf8;font-size:11px;font-weight:800}
 .stats-pi-history-list{display:grid;gap:5px}
 .stats-pi-history-empty,.stats-pi-panel-note{margin:0;color:#9cabc0;font-size:10px;line-height:1.45}
-.stats-pi-history-row{display:flex;align-items:center;gap:6px}
-.stats-pi-history-open{flex:1;min-width:0;padding:7px 8px;border:1px solid #202d3e;border-radius:7px;background:#101722;color:#dce6f2;text-align:left;font-size:10px;cursor:pointer}
+.stats-pi-history-row{position:relative;display:block}
+.stats-pi-history-open{display:block;width:100%;min-width:0;padding:7px 44px 7px 8px;border:1px solid #202d3e;border-radius:7px;background:#101722;color:#dce6f2;text-align:left;font-size:10px;cursor:pointer}
 .stats-pi-history-open:hover{border-color:#426086}
 .stats-pi-history-meta{display:block;margin-top:3px;color:#8fa0b5;font-size:9px}
-.stats-pi-history-delete{display:grid;place-items:center;flex:0 0 22px;width:22px;height:22px;padding:0;border:0;background:transparent;color:#9ba9bb;font-size:13px;line-height:1;opacity:.66;cursor:pointer;transform-origin:center;transition:transform .14s ease,color .14s ease,opacity .14s ease}
+.stats-pi-history-delete{position:absolute;top:5px;right:16px;display:grid;place-items:center;width:22px;height:22px;padding:0;border:0;background:transparent;color:#9ba9bb;font-size:13px;line-height:1;opacity:.66;cursor:pointer;transform-origin:center;transition:transform .14s ease,color .14s ease,opacity .14s ease}
 .stats-pi-history-delete:hover,.stats-pi-history-delete:focus-visible{color:#eef4fc;opacity:1;transform:scale(1.18)}
 .stats-pi-settings{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
 .stats-pi-setting{display:flex;flex-direction:column;gap:4px;min-width:0;color:#b9c7d8;font-size:9px;font-weight:750}
