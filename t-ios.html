@@ -2039,6 +2039,30 @@ body.playbook-workspace .main{
 .stats-personal-intelligence-connection::before{content:'';width:7px;height:7px;border-radius:50%;background:#8293a9}
 .stats-personal-intelligence-connection[data-ready="true"]{color:#70e0aa}
 .stats-personal-intelligence-connection[data-ready="true"]::before{background:#45d69a;box-shadow:0 0 8px rgba(69,214,154,.32)}
+.stats-personal-intelligence-toolbar{display:flex;align-items:center;gap:6px;padding:7px 0 2px}
+.stats-personal-intelligence-tool{min-height:27px;padding:5px 9px;border:1px solid #26364a;border-radius:7px;background:#0b1119;color:#c5d2e2;font-size:10px;font-weight:700;cursor:pointer}
+.stats-personal-intelligence-tool:hover{border-color:#426086;background:#111b28;color:#fff}
+.stats-personal-intelligence-panels{position:relative;z-index:5;flex:0 0 auto}
+.stats-personal-intelligence-panel{max-height:220px;overflow:auto;margin:4px 0 7px;padding:10px;border:1px solid #26364a;border-radius:9px;background:#0b1017;box-shadow:0 12px 28px rgba(0,0,0,.32)}
+.stats-personal-intelligence-panel[hidden]{display:none}
+.stats-pi-panel-title{margin:0 0 8px;color:#e4edf8;font-size:11px;font-weight:800}
+.stats-pi-history-list{display:grid;gap:5px}
+.stats-pi-history-empty,.stats-pi-panel-note{margin:0;color:#9cabc0;font-size:10px;line-height:1.45}
+.stats-pi-history-row{display:flex;align-items:center;gap:6px}
+.stats-pi-history-open{flex:1;min-width:0;padding:7px 8px;border:1px solid #202d3e;border-radius:7px;background:#101722;color:#dce6f2;text-align:left;font-size:10px;cursor:pointer}
+.stats-pi-history-open:hover{border-color:#426086}
+.stats-pi-history-meta{display:block;margin-top:3px;color:#8fa0b5;font-size:9px}
+.stats-pi-history-delete{flex:0 0 27px;width:27px;height:27px;border:1px solid #2a3441;border-radius:6px;background:#111720;color:#aeb9c7;font-size:15px;cursor:pointer}
+.stats-pi-settings{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
+.stats-pi-setting{display:flex;flex-direction:column;gap:4px;min-width:0;color:#b9c7d8;font-size:9px;font-weight:750}
+.stats-pi-setting input:not([type="checkbox"]),.stats-pi-setting select,.stats-pi-setting textarea{width:100%;min-height:29px;padding:6px 7px;border:1px solid #28374a;border-radius:6px;background:#111923;color:#e3ebf5;font:inherit}
+.stats-pi-setting textarea{min-height:44px;resize:vertical}
+.stats-pi-setting-check{display:flex;align-items:flex-start;gap:7px;color:#c1cfdf;font-size:9px;line-height:1.4}
+.stats-pi-setting-check input{margin:1px 0 0;accent-color:#59a9ff}
+.stats-pi-setting-wide{grid-column:1/-1}
+.stats-pi-clear-history{min-height:28px;padding:5px 8px;border:1px solid #4a3035;border-radius:6px;background:#191014;color:#e4b6bc;font-size:9px;font-weight:750;cursor:pointer}
+.stats-personal-intelligence-message[data-source="observation"] .stats-personal-intelligence-sender{color:#83bcff}
+.stats-personal-intelligence-time{margin-left:7px;color:#8797ab;font-size:8px;font-weight:500;text-transform:none;letter-spacing:0}
 .stats-personal-intelligence-messages{display:flex;flex:1 1 auto;flex-direction:column;gap:13px;min-height:80px;overflow-y:auto;padding:14px 3px 10px;scrollbar-color:#34445a transparent;scrollbar-width:thin}
 .stats-personal-intelligence-message{display:flex;align-items:flex-start;gap:9px;max-width:100%}
 .stats-personal-intelligence-message[data-role="user"]{justify-content:flex-end}
@@ -2050,6 +2074,12 @@ body.playbook-workspace .main{
 .stats-personal-intelligence-message[data-role="user"] .stats-personal-intelligence-sender{color:#8fcfac}
 .stats-personal-intelligence-bubble{max-width:100%;padding:10px 12px;border:1px solid rgba(78,98,128,.28);border-radius:4px 12px 12px 12px;background:#101720;color:#e1e9f3;font-size:12px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
 .stats-personal-intelligence-message[data-role="user"] .stats-personal-intelligence-bubble{border-color:rgba(84,137,114,.26);border-radius:12px 4px 12px 12px;background:#14231f;color:#e1f3e9}
+.stats-personal-intelligence-evidence{margin-top:5px;color:#9eafc3;font-size:9px;line-height:1.4}
+.stats-personal-intelligence-evidence summary{color:#aabbd0;cursor:pointer}
+.stats-personal-intelligence-evidence ul{margin:5px 0 0;padding-left:16px}
+.stats-personal-intelligence-feedback{display:flex;gap:5px;margin-top:5px}
+.stats-personal-intelligence-feedback button{min-height:23px;padding:3px 7px;border:1px solid #28374a;border-radius:6px;background:#0d141d;color:#aebed1;font-size:8px;cursor:pointer}
+.stats-personal-intelligence-feedback button[aria-pressed="true"]{border-color:#356e5b;background:#10231c;color:#a5e0be}
 .stats-personal-intelligence-prompts{display:flex;flex:0 0 auto;flex-wrap:wrap;gap:6px;padding:0 0 9px}
 .stats-personal-intelligence-prompt{min-height:29px;padding:6px 9px;border:1px solid #27364a;border-radius:999px;background:#0b1017;color:#c2cede;font-size:10px;font-weight:700;line-height:1.25;cursor:pointer;transition:background .14s ease,color .14s ease,border-color .14s ease}
 .stats-personal-intelligence-prompt:hover{border-color:#405a7b;background:#111c29;color:#f0f5fb}
@@ -2075,6 +2105,8 @@ body.playbook-workspace .main{
   .stats-personal-intelligence-bubble{font-size:11px;padding:9px 10px}
   .stats-personal-intelligence-prompt{font-size:9px;padding:6px 8px}
   .stats-personal-intelligence-footnote{font-size:8px}
+  .stats-pi-settings{grid-template-columns:1fr}
+  .stats-pi-setting-wide{grid-column:auto}
 }
 .stats-dashboard-header{align-items:center;margin-bottom:8px}
 .stats-dashboard-title{min-width:0}
@@ -7187,7 +7219,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           </div>
         </details>
         <div class="stats-autozoom-controls" role="group" aria-label="Statistics card auto zoom controls">
-          <button class="stats-autozoom-toggle" id="statsAutoZoomBtn" type="button" aria-pressed="false" aria-controls="statsPrimarySummary" title="Automatically zoom a Statistics card when hovered or focused">
+          <button class="stats-autozoom-toggle" id="statsAutoZoomBtn" type="button" aria-pressed="false" aria-controls="statsPrimarySummary statsIndicatorStack" title="Automatically zoom a Statistics card when hovered or focused">
             <span>Auto Zoom</span>
             <span class="stats-autozoom-track" aria-hidden="true"><span class="stats-autozoom-thumb"></span></span>
             <strong class="stats-autozoom-state" id="statsAutoZoomState">OFF</strong>
@@ -7289,6 +7321,39 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               </div>
               <span class="stats-personal-intelligence-connection" id="statsPIConnection" aria-live="polite">Connecting…</span>
             </div>
+            <div class="stats-personal-intelligence-toolbar" role="group" aria-label="Personal Intelligence controls">
+              <button class="stats-personal-intelligence-tool" type="button" data-pi-action="new">New chat</button>
+              <button class="stats-personal-intelligence-tool" type="button" data-pi-action="history" aria-expanded="false" aria-controls="statsPIHistory">History</button>
+              <button class="stats-personal-intelligence-tool" type="button" data-pi-action="settings" aria-expanded="false" aria-controls="statsPISettings">Settings</button>
+            </div>
+            <div class="stats-personal-intelligence-panels">
+              <section class="stats-personal-intelligence-panel" id="statsPIHistory" aria-label="Saved conversations" hidden>
+                <h4 class="stats-pi-panel-title">Saved conversations for this account</h4>
+                <div class="stats-pi-history-list" id="statsPIHistoryList"><p class="stats-pi-history-empty">Sign in to view saved conversations.</p></div>
+              </section>
+              <section class="stats-personal-intelligence-panel" id="statsPISettings" aria-label="Personal Intelligence settings" hidden>
+                <h4 class="stats-pi-panel-title">Personal Intelligence settings</h4>
+                <div class="stats-pi-settings">
+                  <label class="stats-pi-setting-check stats-pi-setting-wide"><input type="checkbox" id="statsPIProactive"><span>Start in-app conversations when meaningful evidence appears. Checks run while T-IOS is open.</span></label>
+                  <label class="stats-pi-setting">Conversation frequency
+                    <select id="statsPIFrequency"><option value="important">Important developments only</option><option value="balanced">Balanced</option><option value="frequent">More frequent</option></select>
+                  </label>
+                  <label class="stats-pi-setting">Investigation focus
+                    <select id="statsPIFocus"><option value="both">Edge and Execution</option><option value="edge">Edge Performance</option><option value="execution">Execution Quality</option></select>
+                  </label>
+                  <label class="stats-pi-setting-check stats-pi-setting-wide"><input type="checkbox" id="statsPIPersonalization"><span>Use my saved goal, topic history, and feedback to tailor future questions. This does not retrain the model.</span></label>
+                  <label class="stats-pi-setting-check stats-pi-setting-wide"><input type="checkbox" id="statsPIIncludeEvidence"><span>Include the selected period’s trade journal, review, and Trading Day reflection evidence when I send an AI message.</span></label>
+                  <label class="stats-pi-setting">Conversation retention
+                    <select id="statsPIRetention"><option value="30">Delete after 30 days</option><option value="90">Delete after 90 days</option><option value="365">Delete after 1 year</option><option value="0">Keep until I delete</option></select>
+                  </label>
+                  <label class="stats-pi-setting stats-pi-setting-wide">Development goal (optional)
+                    <textarea id="statsPIGoal" maxlength="500" placeholder="What would you like to improve?"></textarea>
+                  </label>
+                  <div class="stats-pi-setting-wide"><button class="stats-pi-clear-history" type="button" id="statsPIClearHistory">Delete saved conversations for this account</button></div>
+                  <p class="stats-pi-panel-note stats-pi-setting-wide" id="statsPISettingsNote">Detailed records are sent only when you send a message. Proactive observations use local rules and make no AI call. Retention cleanup runs when you next open T-IOS.</p>
+                </div>
+              </section>
+            </div>
             <div class="stats-personal-intelligence-messages" id="statsPIMessages" role="log" aria-live="polite" aria-relevant="additions"></div>
             <div class="stats-personal-intelligence-prompts" role="group" aria-label="Suggested questions">
               <button type="button" class="stats-personal-intelligence-prompt" data-pi-prompt="What stands out in these results?">Explore these results</button>
@@ -7300,7 +7365,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               <button class="btn primary stats-personal-intelligence-send" id="statsPISend" type="submit" disabled>Send</button>
             </form>
             <div class="stats-personal-intelligence-status" id="statsPIStatus" role="status" aria-live="polite"></div>
-            <p class="stats-personal-intelligence-footnote">I’ll start with the results shown. AI replies run only when you send a message; this conversation isn’t saved.</p>
+            <p class="stats-personal-intelligence-footnote" id="statsPIFootnote">I’ll start with the results shown. AI runs only after you send a message. When connected, saved conversations are private to your account and can be deleted in Settings.</p>
           </aside>
           <div class="hidden" aria-hidden="true">
             <aside class="stats-dashboard-section" aria-labelledby="statsIndicatorsHeading">
@@ -15687,6 +15752,7 @@ function renderStatistics(){
     setStatisticsText('statsPrimaryBalanceCaption','Account balance unavailable.');
     renderStatisticsIndicators(null,null,[],calculateProfitFactorStats([]),null);
     renderStatisticsIndicatorCards({});
+    window.dispatchEvent(new Event('tios:personal-intelligence-evidence-updated'));
     return;
   }
 
@@ -15735,6 +15801,7 @@ function renderStatistics(){
   renderStatisticsIndicatorCards(lastStatisticsIndicatorSnapshot);
   renderCombinedOutcomeDiagram(series,source);
   renderStatisticsNavigationIndicators(source,returnPct,analytics?.summarizeExpectancy(source),executionStats);
+  window.dispatchEvent(new Event('tios:personal-intelligence-evidence-updated'));
 }
 
 function moveStatsPeriod(direction){
@@ -20626,6 +20693,7 @@ async function saveEdgeReview(){
   syncEdgeReviewActionState();
   publishPlaybookReviewStructuredEvidence(trade.id);
   respondToGoalEvidenceRequest('edge_review_saved');
+  window.dispatchEvent(new Event('tios:dashboard-updated'));
   const score=edgeScoreForTrade(trade.id);
   showStatus(`Playbook review updated • ${edgeRatingForTrade(trade.id)||'—'}${score===null?'':` • ${score.toFixed(1)}%`}`);
 }
@@ -20633,7 +20701,7 @@ async function deleteEdgeReview(){
   if(!selectedEdgeTradeId)return; const review=reviewForTrade(selectedEdgeTradeId); if(!review){alert('This trade does not have a saved review yet.');return}
   const trade=trades.find(t=>t.id===selectedEdgeTradeId); if(!confirm(`Delete the Playbook review for ${trade?.instrument||'this trade'}?`))return;
   const {error}=await db.from('trade_plan_reviews').delete().eq('id',review.id).eq('user_id',currentUser.id); if(error){alert(error.message);return}
-  await loadEdgeData(); renderEdgePlaybook(); renderJournal(); showStatus('Playbook review deleted');
+  await loadEdgeData(); renderEdgePlaybook(); renderJournal(); window.dispatchEvent(new Event('tios:dashboard-updated')); showStatus('Playbook review deleted');
 }
 
 /* ---------- Friendly Playbook Builder ---------- */
@@ -21288,6 +21356,7 @@ async function savePsychSession(){
   }
 
   respondToGoalEvidenceRequest('psychology_session_saved');
+  window.dispatchEvent(new Event('tios:personal-intelligence-evidence-updated'));
   showStatus('Trading Day record saved');
 }
 
@@ -21314,6 +21383,7 @@ async function deletePsychSession(session){
   }
 
   renderPsychology();
+  window.dispatchEvent(new Event('tios:personal-intelligence-evidence-updated'));
   showStatus('Trading Day record deleted');
 }
 
@@ -22631,10 +22701,81 @@ initializeSupabase();
 
 <script>
 // Read-only boundary for the dashboard conversation. Never publishes chat as evidence.
+window.getTiosConversationScope=function(){
+  return {ready:tiosConversationReady,userId:currentUser?.id||null,accountId:tradingAccount?.id||null};
+};
 window.getTiosConversationContext=function(){
   const today=new Date(),monday=new Date(today);
   monday.setDate(today.getDate()-((today.getDay()+6)%7));
   const model=tiosConversationReady?buildExecutionIntelligenceModel():null;
+  const range=tiosConversationReady?dateRangeForStats(statsRange):null;
+  const selectedTrades=range
+    ? buildDailyEquitySeries(range.start,range.end).selectedTrades.slice().sort((a,b)=>String(b.trade_date||'').localeCompare(String(a.trade_date||'')))
+    : [];
+  const tradeReference=new Map(selectedTrades.map((trade,index)=>[trade.id,'T'+String(index+1).padStart(2,'0')]));
+  const edgeReviewsForPeriod=selectedTrades.map(trade=>({trade,review:rawReviewForTrade(trade.id)})).filter(item=>item.review);
+  const edgePerTrade=selectedTrades.map(trade=>({trade,score:edgeScoreForTrade(trade.id)})).filter(item=>item.score!==null&&Number.isFinite(Number(item.score)));
+  const executionPerTrade=selectedTrades.map(trade=>({trade,score:executionScoreForTrade(trade.id)})).filter(item=>item.score!==null&&Number.isFinite(Number(item.score)));
+  const edgeUnits=edgeReviewsForPeriod.flatMap(item=>scoringUnitsForTrade(item.trade.id));
+  const edgePassed=edgeUnits.filter(unit=>unit.passed).length;
+  const executionReviewsForPeriod=selectedTrades.map(trade=>executionReviewForTrade(trade.id)).filter(Boolean);
+  const executionReviewIds=new Set(executionReviewsForPeriod.map(review=>review.id));
+  const executionRows=executionChecks.filter(row=>executionReviewIds.has(row.review_id)&&executionItemTypeFromKey(row.criterion_key)==='check');
+  const executionPassed=executionRows.filter(row=>Boolean(row.complied)).length;
+  const shortContextText=(value,max)=>String(value||'').trim().slice(0,max)||null;
+  const selectedEvidence=selectedTrades.slice(0,6).map(trade=>{
+    const edgeReview=rawReviewForTrade(trade.id);
+    const assignedPlaybook=tradePlaybookMap[String(trade.id)]||null;
+    const assignedPlaybookDocument=assignedPlaybook?playbookById(assignedPlaybook.playbookId):null;
+    const assignedPlaybookSnapshot=assignedPlaybookDocument
+      ? (assignedPlaybookDocument.versions||[]).find(version=>Number(version.version)===Number(assignedPlaybook.version))
+      : null;
+    const assignedPlaybookName=shortContextText(assignedPlaybookDocument?.name,80);
+    const setupEvidence=tradeSetupEvidenceMetadata.filter(row=>row.trade_id===trade.id).slice(0,3).map(row=>({
+      timeframe:shortContextText(row.timeframe,24),responsibility:shortContextText(row.responsibility,80)
+    }));
+    const edgeChecks=edgeReview?scoringRowsForReview(edgeReview.id).slice(0,2).map(row=>({criterion:shortContextText(row.criterion_label||row.criterion_key,70)||'Recorded Playbook check',complied:Boolean(row.complied),comment:shortContextText(row.comment,100)})):[];
+    const executionReview=executionReviewForTrade(trade.id);
+    const executionReviewRows=executionReview?executionChecksForReview(executionReview.id):[];
+    const executionChecksForTrade=executionReviewRows.filter(row=>executionItemTypeFromKey(row.criterion_key)==='check').slice(0,2).map(row=>({criterion:shortContextText(row.criterion_label||row.criterion_key,70)||'Recorded execution check',complied:Boolean(row.complied),comment:shortContextText(row.comment,100)}));
+    const executionNotes=executionReviewRows.filter(row=>executionItemTypeFromKey(row.criterion_key)!=='check'&&!String(row.criterion_key||'').startsWith('text__ti_state__')&&String(row.comment||'').trim()).map(row=>(shortContextText(row.criterion_label,70)||'Reflection')+': '+row.comment);
+    const legacyNotes=executionReview?[executionReview.what_went_well,executionReview.execution_errors,executionReview.next_adjustment,executionReview.notes].filter(value=>String(value||'').trim()):[];
+    const executionNote=shortContextText([...legacyNotes,...executionNotes].join(' · '),160);
+    return {
+      reference:tradeReference.get(trade.id),date:String(trade.trade_date||'').slice(0,10),
+      instrument:shortContextText(trade.instrument,40),direction:shortContextText(trade.direction,16),setup:shortContextText(trade.setup,80),
+      journalNote:shortContextText(trade.notes,160),setupEvidence,
+      playbookVersion:assignedPlaybookSnapshot&&assignedPlaybookName?{name:assignedPlaybookName,version:Number(assignedPlaybookSnapshot.version)}:null,
+      pnl:trade.pnl!==null&&trade.pnl!==undefined&&String(trade.pnl).trim()!==''&&Number.isFinite(Number(trade.pnl))?Number(trade.pnl):null,
+      playbook:edgeReview?{reviewed:true,scorePct:edgeScoreForTrade(trade.id),rating:shortContextText(edgeRatingForTrade(trade.id),24),note:shortContextText(edgeReview.review_notes,160),marketState:shortContextText(edgeReview.market_state,80),entryPattern:shortContextText(edgeReview.entry_pattern,100),exitRule:shortContextText(edgeReview.exit_rule,100),checks:edgeChecks}:null,
+      execution:executionReview?{reviewed:true,scorePct:executionScoreForTrade(trade.id),rating:executionRatingForTrade(trade.id),note:executionNote,marketState:null,entryPattern:null,exitRule:null,checks:executionChecksForTrade}:null
+    };
+  });
+  const psychSessionsForPeriod=tiosConversationReady&&range
+    ? psychologySessions.filter(session=>String(session.session_date||'')>=localDateString(range.start)&&String(session.session_date||'')<=localDateString(range.end)&&(!session.account_id||session.account_id===tradingAccount?.id))
+      .slice().sort((a,b)=>String(b.session_date||'').localeCompare(String(a.session_date||''))||String(b.updated_at||b.created_at||'').localeCompare(String(a.updated_at||a.created_at||'')))
+    : [];
+  const psychEvidenceSessions=psychSessionsForPeriod.slice(0,3).map((session,index)=>({
+    reference:'D'+String(index+1).padStart(2,'0'),date:String(session.session_date||'').slice(0,10),label:shortContextText(session.session_label,60),
+    affirmationBefore:Boolean(session.affirmation_before),affirmationAfter:Boolean(session.affirmation_after),
+    signal:shortContextText(session.signal,80),noise:shortContextText(session.noise,80),strengths:shortContextText(session.strengths,80),
+    weaknesses:shortContextText(session.weaknesses,80),opportunities:shortContextText(session.opportunities,80),threats:shortContextText(session.threats,80),
+    adjustments:shortContextText(session.adjustments,120),comments:shortContextText(session.comments,120),
+    identityScores:sessionIdentityRows(session.id).slice(0,8).map(row=>({topic:shortContextText(row.value_key,40)||'identity',score:Number.isFinite(Number(row.score))?Number(row.score):null})),
+    ruleChecks:sessionRuleRows(session.id).slice(0,6).map(row=>({ruleNumber:Number(row.rule_number),complied:Boolean(row.complied),comment:shortContextText(row.comment,100)}))
+  }));
+  const edgeEvidence={
+    reviewedTrades:edgeReviewsForPeriod.length,scoredTrades:edgePerTrade.length,totalChecks:edgeUnits.length,compliedChecks:edgePassed,missedChecks:edgeUnits.length-edgePassed,
+    adherencePct:edgeUnits.length?roundEvidence(edgePassed/edgeUnits.length*100,1):null,
+    averageScorePct:edgePerTrade.length?roundEvidence(averageFinite(edgePerTrade.map(item=>item.score)),1):null,
+    references:edgeReviewsForPeriod.filter(item=>selectedEvidence.some(trade=>trade.reference===tradeReference.get(item.trade.id))).map(item=>tradeReference.get(item.trade.id)).filter(Boolean).slice(0,20)
+  };
+  const executionEvidence={
+    reviewedTrades:executionReviewsForPeriod.length,scoredTrades:executionPerTrade.length,totalChecks:executionRows.length,compliedChecks:executionPassed,missedChecks:executionRows.length-executionPassed,
+    adherencePct:executionRows.length?roundEvidence(executionPassed/executionRows.length*100,1):null,
+    averageScorePct:executionPerTrade.length?roundEvidence(averageFinite(executionPerTrade.map(item=>item.score)),1):null,
+    references:executionReviewsForPeriod.filter(review=>selectedEvidence.some(trade=>trade.reference===tradeReference.get(review.trade_id))).map(review=>tradeReference.get(review.trade_id)).filter(Boolean).slice(0,20)
+  };
   return {
     ready:tiosConversationReady,
     userId:currentUser?.id||null,
@@ -22646,10 +22787,13 @@ window.getTiosConversationContext=function(){
     today:localDateString(today),weekStart:localDateString(monday),
     month:localDateString(viewDate).slice(0,7),
     monthLabel:viewDate.toLocaleDateString(undefined,{month:'long',year:'numeric'}),
-    trades:tiosConversationReady?trades.filter(t=>!t.is_deleted&&(!t.account_id||t.account_id===tradingAccount.id)&&(!t.user_id||t.user_id===currentUser.id)).map(t=>({
-      date:String(t.trade_date||'').slice(0,10),
-      pnl:t.pnl!==null&&t.pnl!==undefined&&String(t.pnl).trim()!==''&&Number.isFinite(Number(t.pnl))?Number(t.pnl):null
-    })):[],
+    trades:selectedTrades.map(t=>({date:String(t.trade_date||'').slice(0,10),pnl:t.pnl!==null&&t.pnl!==undefined&&String(t.pnl).trim()!==''&&Number.isFinite(Number(t.pnl))?Number(t.pnl):null})),
+    evidence:{
+      periodStart:range?localDateString(range.start):'',periodEnd:range?localDateString(range.end):'',
+      totalTrades:selectedTrades.length,includedTrades:selectedEvidence.length,omittedTrades:Math.max(0,selectedTrades.length-selectedEvidence.length),
+      trades:selectedEvidence,edge:edgeEvidence,execution:executionEvidence,
+      psychology:{totalSessions:psychSessionsForPeriod.length,includedSessions:psychEvidenceSessions.length,omittedSessions:Math.max(0,psychSessionsForPeriod.length-psychEvidenceSessions.length),sessions:psychEvidenceSessions}
+    },
     execution:{
       reviewed:model?.sample.reviewedTrades||0,checks:model?.sample.totalChecks||0,
       adherence:model?.execution.adherencePct??null,averageScore:model?.execution.averageScorePct??null,
@@ -22659,6 +22803,7 @@ window.getTiosConversationContext=function(){
 };
 </script>
 <script src="tios-dashboard.js"></script>
+<script src="tios-personal-intelligence-engine.js"></script>
 <script src="tios-statistics-personal-intelligence.js"></script>
 <script src="technical-instruments/ai-builder-workspace.js"></script>
 <script src="technical-instruments/ai-builder-images.js"></script>
