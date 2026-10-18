@@ -2030,7 +2030,8 @@ body.playbook-workspace .main{
 .stats-combined-outcomes{min-width:0;padding:12px;border:0;border-radius:12px;background:var(--stats-unified-fill,var(--hios-theme-bg,var(--bg)))}
 .stats-graphs-heading{margin:0 0 8px;color:#e1eaf5;font-size:12px;line-height:1.2;font-weight:750}
 .stats-dashboard-section{min-width:0;min-height:0;padding:12px;border:0;border-radius:12px;background:var(--stats-unified-fill,var(--hios-theme-bg,var(--bg)))}
-.stats-personal-intelligence{display:flex;flex-direction:column;min-width:0;min-height:0;height:100%;padding:12px}
+.stats-personal-intelligence{position:relative;display:flex;flex-direction:column;min-width:0;min-height:0;height:100%;padding:12px;transform-origin:center top;transition:transform .18s ease}
+.stats-personal-intelligence.stats-autozoom.stats-card-zoomed{transform:scale(var(--stats-autozoom-scale));z-index:5}
 .stats-personal-intelligence-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-bottom:10px;border-bottom:1px solid rgba(77,96,125,.24)}
 .stats-personal-intelligence-title{display:flex;align-items:center;gap:10px;min-width:0}
 .stats-personal-intelligence-mark{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border-radius:11px;background:linear-gradient(140deg,#1b2d43,#132033);color:#9bc7ff;font-size:16px;font-weight:850;box-shadow:inset 0 0 0 1px rgba(124,165,220,.16)}
@@ -7244,15 +7245,15 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <button class="range-btn" type="button" data-stats-range="all">All</button>
           </div>
         </details>
-        <div class="stats-autozoom-controls" role="group" aria-label="Statistics card auto zoom controls">
-          <button class="stats-autozoom-toggle" id="statsAutoZoomBtn" type="button" aria-pressed="false" aria-controls="statsPrimarySummary statsIndicatorStack" title="Automatically zoom a Statistics card when hovered or focused">
+        <div class="stats-autozoom-controls" role="group" aria-label="Statistics and Personal Intelligence auto zoom controls">
+          <button class="stats-autozoom-toggle" id="statsAutoZoomBtn" type="button" aria-pressed="false" aria-controls="statsPrimarySummary statsIndicatorStack statsPersonalIntelligence" title="Automatically zoom a Statistics card or the Personal Intelligence space when hovered or focused">
             <span>Auto Zoom</span>
             <span class="stats-autozoom-track" aria-hidden="true"><span class="stats-autozoom-thumb"></span></span>
             <strong class="stats-autozoom-state" id="statsAutoZoomState">OFF</strong>
           </button>
           <label class="stats-autozoom-zoom" for="statsAutoZoomRange">
             <span>Zoom</span>
-            <input id="statsAutoZoomRange" type="range" min="100" max="150" step="1" value="125" aria-label="Auto Zoom magnification" aria-controls="statsPrimarySummary" aria-valuetext="125%" title="Adjust the Auto Zoom magnification; the maximum follows the current zoom limit">
+            <input id="statsAutoZoomRange" type="range" min="100" max="150" step="1" value="125" aria-label="Auto Zoom magnification" aria-controls="statsPrimarySummary statsIndicatorStack statsPersonalIntelligence" aria-valuetext="125%" title="Adjust the Auto Zoom magnification; the maximum follows the current zoom limit">
             <output id="statsAutoZoomValue" for="statsAutoZoomRange" aria-live="polite">125%</output>
           </label>
         </div>
@@ -15858,7 +15859,7 @@ function moveStatsPeriod(direction){
 
 /* STATISTICS ANALYTICS AUTO-ZOOM */
 function statsAutoZoomContainers(){
-  return [$('#statsPrimarySummary'),$('#statsIndicatorStack')].filter(Boolean);
+  return [$('#statsPrimarySummary'),$('#statsIndicatorStack'),$('#statsPersonalIntelligence')].filter(Boolean);
 }
 
 function statsAutoZoomMaxPercent(){
@@ -15909,9 +15910,12 @@ function setStatsAutoZoom(enabled){
 
 function setZoomedStatsCard(card){
   const containers=statsAutoZoomContainers();
-  const zoomed=statsAutoZoom&&card&&card.matches('.stats-primary-metric,.stats-indicator-card')
+  const zoomed=statsAutoZoom&&card&&card.matches('.stats-primary-metric,.stats-indicator-card,.stats-personal-intelligence')
     &&containers.some(container=>container.contains(card))?card:null;
   containers.forEach(container=>{
+    if(container.classList.contains('stats-card-zoomed')&&container!==zoomed){
+      container.classList.remove('stats-card-zoomed');
+    }
     container.querySelectorAll('.stats-card-zoomed').forEach(current=>{
       if(current!==zoomed)current.classList.remove('stats-card-zoomed');
     });
@@ -15957,6 +15961,7 @@ if(statsAutoZoomRange){
 
 bindStatsAutoZoomCards($('#statsPrimarySummary'),'.stats-primary-metric');
 bindStatsAutoZoomCards($('#statsIndicatorStack'),'.stats-indicator-card');
+bindStatsAutoZoomCards($('#statsPersonalIntelligence'),'.stats-personal-intelligence');
 setStatsAutoZoom(statsAutoZoom);
 
 $('#statsAddIndicator').addEventListener('click',()=>{
