@@ -47,6 +47,14 @@ assert.match(html,/\.stats-pi-history-delete:hover,\.stats-pi-history-delete:foc
 assert.match(html,/\.stats-pi-history-row\{position:relative;display:block\}/,'each saved conversation row anchors its delete control inside the history card');
 assert.match(html,/\.stats-pi-history-delete\{position:absolute;top:5px;right:16px;[^}]*border:0;[^}]*background:transparent/,'the delete X sits in the upper-right corner inside each history card without a border or fill');
 assert.match(html,/\.stats-pi-history-open\{display:block;width:100%;min-width:0;padding:7px 44px 7px 8px/,'history-card text leaves room for the X in its upper-right corner');
+const personalIntelligenceComposerStart=html.indexOf('<form class="stats-personal-intelligence-composer" id="statsPIForm">');
+const personalIntelligenceComposerEnd=html.indexOf('</form>',personalIntelligenceComposerStart);
+const personalIntelligenceComposer=html.slice(personalIntelligenceComposerStart,personalIntelligenceComposerEnd);
+assert.ok(personalIntelligenceComposer.includes('placeholder="Type here…"')&&personalIntelligenceComposer.indexOf('id="statsPIInput"')<personalIntelligenceComposer.indexOf('id="statsPISend"'),'the user types in the expandable area above the horizontal line, beside the send control');
+assert.ok(personalIntelligenceComposer.includes('Ask anything about your trading')&&personalIntelligenceComposer.includes('<svg viewBox="0 0 24 24"'),'the composer shows the draft hint below the line and uses an icon-only send button');
+assert.match(html,/\.stats-personal-intelligence-composer\{[^}]*border:0\}/,'the composer has no enclosing border');
+assert.match(html,/\.stats-personal-intelligence-composer textarea\{[^}]*border:0;border-bottom:1px solid/,'the typing area has only the requested horizontal line, with no box border');
+assert.match(html,/\.stats-personal-intelligence-send\{[^}]*border:0;[^}]*background:transparent/,'the icon-only send control has no border or button fill');
 assert.match(personalIntelligenceScript,/row\.append\(open,remove\);historyList\.append\(row\)/,'each history X stays immediately beside its corresponding conversation');
 assert.ok(!html.includes('stats-personal-intelligence-prompts')&&!html.includes('data-pi-prompt=')&&!html.includes('stats-personal-intelligence-footnote'),'the fixed question buttons and highlighted explanatory paragraph are removed for more chat space');
 assert.ok(!personalIntelligenceScript.includes('data-pi-prompt'),'the removed suggested questions have no remaining chat handlers');

@@ -2086,11 +2086,16 @@ body.playbook-workspace .main{
 .stats-personal-intelligence-feedback{display:flex;gap:5px;margin-top:5px}
 .stats-personal-intelligence-feedback button{min-height:23px;padding:3px 7px;border:1px solid #28374a;border-radius:6px;background:#0d141d;color:#aebed1;font-size:8px;cursor:pointer}
 .stats-personal-intelligence-feedback button[aria-pressed="true"]{border-color:#356e5b;background:#10231c;color:#a5e0be}
-.stats-personal-intelligence-composer textarea:focus-visible{outline:2px solid #69a8ff;outline-offset:2px}
-.stats-personal-intelligence-composer{display:flex;flex:0 0 auto;align-items:flex-end;gap:8px;padding-top:9px;border-top:1px solid rgba(77,96,125,.24)}
-.stats-personal-intelligence-composer textarea{flex:1 1 auto;min-width:0;min-height:42px;max-height:112px;padding:10px 11px;border:1px solid #2a3749;border-radius:10px;background:#0a0f16;color:#eef4fc;font-size:12px;line-height:1.4;resize:none}
+.stats-personal-intelligence-composer{display:flex;flex:0 0 auto;flex-direction:column;gap:0;padding:0;border:0}
+.stats-personal-intelligence-composer-row{display:flex;align-items:center;gap:8px;min-width:0}
+.stats-personal-intelligence-composer textarea{display:block;flex:1 1 auto;width:100%;min-width:0;min-height:42px;max-height:112px;padding:8px 2px 9px;border:0;border-bottom:1px solid rgba(77,96,125,.38);border-radius:0;background:transparent;color:#eef4fc;font-size:12px;line-height:1.4;resize:none}
+.stats-personal-intelligence-composer textarea:focus-visible{outline:none;border-bottom-color:#69a8ff}
 .stats-personal-intelligence-composer textarea::placeholder{color:#8798ad}
-.stats-personal-intelligence-send{flex:0 0 auto;min-width:68px;min-height:42px;padding:7px 12px;font-size:11px}
+.stats-personal-intelligence-composer-hint{min-height:22px;padding:5px 2px 0;color:#8798ad;font-size:10px;line-height:1.3}
+.stats-personal-intelligence-send{display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;margin:0;padding:0;border:0;border-radius:50%;background:transparent;color:#aebbd0;cursor:pointer;transition:color .14s ease,transform .14s ease,opacity .14s ease}
+.stats-personal-intelligence-send svg{display:block;width:17px;height:17px}
+.stats-personal-intelligence-send:hover:not(:disabled){color:#f1f6fd;transform:scale(1.08)}
+.stats-personal-intelligence-send:focus-visible{outline:none;filter:drop-shadow(0 0 4px rgba(105,168,255,.8))}
 .stats-personal-intelligence-send:disabled{opacity:.42;cursor:not-allowed}
 .stats-personal-intelligence-status{min-height:16px;padding-top:4px;color:#aebbd0;font-size:10px;line-height:1.4}
 .stats-personal-intelligence-status:empty{display:none}
@@ -7361,8 +7366,13 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             </div>
             <div class="stats-personal-intelligence-messages" id="statsPIMessages" role="log" aria-live="polite" aria-relevant="additions"></div>
             <form class="stats-personal-intelligence-composer" id="statsPIForm">
-              <textarea id="statsPIInput" name="message" rows="1" maxlength="2000" aria-label="Message Personal Intelligence" placeholder="Ask about your results, execution, or trading patterns…"></textarea>
-              <button class="btn primary stats-personal-intelligence-send" id="statsPISend" type="submit" disabled>Send</button>
+              <div class="stats-personal-intelligence-composer-row">
+                <textarea id="statsPIInput" name="message" rows="1" maxlength="2000" aria-label="Message Personal Intelligence" placeholder="Type here…"></textarea>
+                <button class="stats-personal-intelligence-send" id="statsPISend" type="submit" aria-label="Send message" title="Send message" disabled>
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M22 2 15 22l-4-9-9-4Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 2 11 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
+              <div class="stats-personal-intelligence-composer-hint">Ask anything about your trading</div>
             </form>
             <div class="stats-personal-intelligence-status" id="statsPIStatus" role="status" aria-live="polite"></div>
           </aside>
