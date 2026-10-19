@@ -1649,9 +1649,10 @@ body.playbook-workspace .main{
 .stats-psychology-view h3{margin:0 0 8px;font-size:18px}
 .stats-psychology-view p{color:#93a2b6;font-size:12px;line-height:1.6}
 .stats-edge-view,.stats-execution-view{padding:16px;min-width:0}
-.stats-environment-heading{margin:0 0 14px}
-.stats-environment-heading h2{margin:0 0 5px;font-size:17px}
+.stats-environment-heading{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px}
+.stats-environment-heading h2{margin:0;font-size:17px}
 .stats-environment-heading p{margin:0;color:#95a4b8;font-size:11px;line-height:1.5}
+.stats-environment-heading .stats-environment-question{display:inline-flex;align-items:center;max-width:100%;padding:5px 10px;border:1px solid rgba(99,151,205,.26);border-radius:999px;background:rgba(38,64,91,.36);color:#b6c8dc;font-size:10px;font-weight:600;font-style:italic;line-height:1.4}
 .stats-environment-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:0 0 10px}
 .stats-environment-kpi{display:grid;align-content:start;gap:5px;min-width:0;padding:12px;border:1px solid #253449;border-radius:12px;background:linear-gradient(145deg,rgba(21,34,50,.82),rgba(11,17,25,.94))}
 .stats-environment-kpi>span{color:#9aabc0;font-size:9px;line-height:1.3}
@@ -7608,7 +7609,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
       <section class="stats-view-panel panel stats-edge-view" id="statsEdgeView" role="tabpanel" aria-labelledby="statsEdgeTab" hidden>
         <div class="stats-environment-heading">
           <h2>Edge Performance</h2>
-          <p>Evaluates whether a defined methodology has an independently demonstrated technical advantage. Statistics records outcomes, Execution Quality examines adherence, and this workspace keeps methodology evidence separate from trader execution.</p>
+          <p class="stats-environment-question">How good is the methodology?</p>
         </div>
         <div class="stats-edge-section-tabs" role="tablist" aria-label="Edge Performance sections">
           <button class="stats-edge-section-tab" type="button" role="tab" id="statsEdgeOverviewTab" aria-controls="statsEdgeOverview" aria-selected="true" tabindex="0" data-edge-performance-tab>Edge Overview</button>
@@ -7806,7 +7807,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
       <section class="stats-view-panel panel stats-execution-view" id="statsExecutionView" role="tabpanel" aria-labelledby="statsExecutionTab" hidden>
   <div class="stats-environment-heading">
     <h2>Execution Quality</h2>
-    <p>Measures recorded execution evidence and investigates where decisions may differ from a methodology. Execution scores remain separate from profitability.</p>
+    <p class="stats-environment-question">How well do you execute your methodology and trading rules?</p>
   </div>
   <div class="stats-execution-sections">
     <div class="stats-execution-section-tabs" role="tablist" aria-label="Execution Quality sections">
