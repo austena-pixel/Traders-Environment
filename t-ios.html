@@ -6846,6 +6846,86 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
   #statsExecutionView .stats-execution-diagnostic-wide{grid-column:auto}
   #statsExecutionView .stats-execution-framework-details .stats-fear-layout{grid-template-columns:1fr 1fr}
 }
+
+#statsEdgeView .stats-edge-section-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:0 0 12px;margin:0 0 14px;border-bottom:1px solid rgba(46,62,81,.55)}
+#statsEdgeView .stats-edge-section-tab{min-width:0;min-height:36px;padding:8px 10px;border:1px solid #253449;border-radius:9px;background:rgba(13,20,29,.72);color:#91a0b3;font-size:10px;font-weight:700;line-height:1.25;cursor:pointer}
+#statsEdgeView .stats-edge-section-tab:hover{border-color:#365579;background:rgba(29,44,62,.55);color:#dbe7f5}
+#statsEdgeView .stats-edge-section-tab[aria-selected=true]{border-color:#365579;background:#17263a;color:#dbeafe;box-shadow:inset 0 0 0 1px rgba(105,168,255,.08)}
+#statsEdgeView .stats-edge-section-tab:focus-visible{outline:2px solid #77a9e8;outline-offset:2px}
+#statsEdgeView .stats-edge-section{min-width:0;padding:0;border:0;border-radius:0;background:transparent}
+#statsEdgeView .stats-edge-section[hidden]{display:none!important}
+#statsEdgeView .stats-edge-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin:0 0 12px}
+#statsEdgeView .stats-edge-section-head>div{min-width:0}
+#statsEdgeView .stats-edge-section-head h3{margin:0 0 5px;color:#e1eaf5;font-size:15px}
+#statsEdgeView .stats-edge-section-head p{margin:0;color:#8fa0b5;font-size:10px;line-height:1.5}
+#statsEdgeView .stats-edge-reference-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+#statsEdgeView .stats-edge-reference-card{min-height:94px;background:rgba(15,23,33,.88)}
+#statsEdgeView .stats-edge-reference-card>strong{color:#c6d2e1;font-size:14px}
+#statsEdgeView .stats-edge-diagram-panel{margin-top:11px}
+#statsEdgeView .stats-edge-diagram-panel h4,#statsEdgeView .stats-edge-coverage-panel h4{margin:0 0 5px;color:#e1eaf5;font-size:11px}
+#statsEdgeView .stats-edge-diagram-select-label{display:grid;grid-template-columns:auto minmax(170px,220px);align-items:center;gap:8px;color:#95a6ba;font-size:9px;white-space:nowrap}
+#statsEdgeView .stats-edge-diagram-select-label select{width:100%;min-height:32px;padding:6px 8px;font-size:10px}
+#statsEdgeView .stats-edge-diagram-empty{display:grid;justify-items:center;gap:6px;min-height:132px;margin-top:9px;padding:18px;text-align:center;background:rgba(8,13,20,.42)}
+#statsEdgeView .stats-edge-diagram-empty>span,#statsEdgeView .stats-edge-status{color:#9bb3ce;font-size:9px;font-weight:750}
+#statsEdgeView .stats-edge-diagram-empty>strong{color:#dbe6f4;font-size:12px}
+#statsEdgeView .stats-edge-diagram-empty>p{margin:0;color:#8293a9;font-size:9px;line-height:1.5}
+#statsEdgeView .stats-edge-observed-details{margin-top:11px;padding:10px 12px;border:1px solid #253449;border-radius:10px;background:rgba(10,16,24,.5)}
+#statsEdgeView .stats-edge-observed-details>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#dce7f4;font-size:11px;font-weight:750;cursor:pointer;list-style:none}
+#statsEdgeView .stats-edge-observed-details>summary::-webkit-details-marker{display:none}
+#statsEdgeView .stats-edge-observed-details>summary::after{content:"+";color:#91a0b3;font-size:16px;font-weight:500}
+#statsEdgeView .stats-edge-observed-details[open]>summary::after{content:"−"}
+#statsEdgeView .stats-edge-observed-details>summary small{margin-left:auto;color:#8293a9;font-size:8px;font-weight:600}
+#statsEdgeView .stats-edge-observed-details[open]>summary{margin-bottom:8px}
+#statsEdgeView .stats-edge-observed-intro{margin:0 0 10px;color:#8fa0b5;font-size:9px;line-height:1.5}
+#statsEdgeView .stats-edge-observed-timeline{margin-top:10px}
+#statsEdgeView .stats-edge-observed-timeline h4{margin:0 0 5px;color:#e1eaf5;font-size:11px}
+#statsEdgeView .stats-edge-research-caveat{margin:0 0 10px;padding:9px 10px;background:rgba(39,54,72,.38);color:#a7b6c9;font-size:9px;line-height:1.5}
+#statsEdgeView .stats-edge-coverage-panel{margin-bottom:10px}
+#statsEdgeView .stats-edge-research-grid,#statsEdgeView .stats-edge-experiment-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#statsEdgeView .stats-edge-research-card,#statsEdgeView .stats-edge-experiment-card,#statsEdgeView .stats-edge-diagnostic-card{min-width:0}
+#statsEdgeView .stats-edge-research-card h4,#statsEdgeView .stats-edge-experiment-card h4,#statsEdgeView .stats-edge-diagnostic-card h4{margin:0 0 6px;color:#e1eaf5;font-size:11px}
+#statsEdgeView .stats-edge-research-card>p,#statsEdgeView .stats-edge-experiment-card>p,#statsEdgeView .stats-edge-diagnostic-card>p{margin:0 0 8px;color:#8fa0b5;font-size:9px;line-height:1.5}
+#statsEdgeView .stats-edge-research-card .table-wrap{max-width:100%;overflow-x:auto;margin-top:8px}
+#statsEdgeView .stats-edge-research-card h5{margin:11px 0 4px;color:#b7c5d7;font-size:9px}
+#statsEdgeView .stats-edge-source{display:block;margin-top:8px;color:#8293a9;font-size:8px;line-height:1.45}
+#statsEdgeView .stats-edge-opportunity-state{display:grid;gap:3px;margin-top:9px;padding:8px;background:rgba(39,54,72,.4)}
+#statsEdgeView .stats-edge-opportunity-state strong{color:#bbc8d8;font-size:9px}
+#statsEdgeView .stats-edge-opportunity-state span{color:#8293a9;font-size:8px;line-height:1.45}
+#statsEdgeView .stats-edge-unavailable{display:grid;gap:5px;min-height:110px;align-content:center;margin-top:10px;padding:12px;background:rgba(8,13,20,.4)}
+#statsEdgeView .stats-edge-unavailable strong{color:#bac7d7;font-size:10px}
+#statsEdgeView .stats-edge-unavailable span{color:#8293a9;font-size:9px;line-height:1.5}
+#statsEdgeView .stats-edge-stage-list{display:grid;gap:0;margin-top:10px}
+#statsEdgeView .stats-edge-stage-list>div{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid rgba(46,62,81,.5)}
+#statsEdgeView .stats-edge-stage-list>div:last-child{border-bottom:0}
+#statsEdgeView .stats-edge-stage-list span{color:#95a6ba;font-size:9px;line-height:1.4}
+#statsEdgeView .stats-edge-stage-list strong{color:#bcc8d7;font-size:9px;text-align:right}
+#statsEdgeView .stats-edge-foundations{margin-top:10px;padding:11px;background:rgba(39,54,72,.38)}
+#statsEdgeView .stats-edge-foundations strong{color:#c4d2e2;font-size:10px}
+#statsEdgeView .stats-edge-foundations p{margin:5px 0 0;color:#8fa0b5;font-size:9px;line-height:1.5}
+#statsEdgeView .stats-edge-diagnostic-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#statsEdgeView .stats-edge-diagnostic-card{display:grid;align-content:start;gap:5px}
+#statsEdgeView .stats-edge-diagnostic-card>small{color:#8293a9;font-size:8px;line-height:1.45}
+#statsEdgeView .stats-edge-version-card{grid-column:1/-1}
+@media(max-width:900px){
+  #statsEdgeView .stats-edge-reference-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #statsEdgeView .stats-edge-research-grid,#statsEdgeView .stats-edge-experiment-grid{grid-template-columns:1fr}
+  #statsEdgeView .stats-edge-version-card{grid-column:auto}
+}
+@media(max-width:560px){
+  #statsEdgeView.stats-edge-view{padding:11px}
+  #statsEdgeView .stats-edge-section-tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding-bottom:10px;margin-bottom:11px}
+  #statsEdgeView .stats-edge-section-tab{padding:8px 7px;font-size:9px}
+  #statsEdgeView .stats-edge-reference-grid{gap:7px}
+  #statsEdgeView .stats-edge-reference-card{min-height:96px;padding:9px}
+  #statsEdgeView .stats-edge-reference-card>strong{font-size:12px}
+  #statsEdgeView .stats-edge-diagram-panel-head{display:block}
+  #statsEdgeView .stats-edge-diagram-select-label{grid-template-columns:1fr;margin-top:8px;white-space:normal}
+  #statsEdgeView .stats-edge-observed-details{padding:9px}
+  #statsEdgeView .stats-edge-observed-details>summary{align-items:flex-start;flex-wrap:wrap}
+  #statsEdgeView .stats-edge-observed-details>summary small{margin-left:0}
+  #statsEdgeView .stats-edge-diagnostic-grid{grid-template-columns:1fr}
+}
+
 @media(max-width:560px){
   #statsExecutionView.stats-execution-view{padding:11px}
   #statsExecutionView .stats-execution-section-tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding-bottom:10px;margin-bottom:11px}
@@ -7321,7 +7401,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             <span class="stats-view-tab-label">Statistics</span><strong class="stats-view-tab-value" id="statNavReturn" aria-live="polite">—</strong>
           </button>
           <button class="range-btn stats-view-tab" type="button" role="tab" id="statsEdgeTab" data-stats-view="edge" aria-selected="false" aria-controls="statsEdgeView" tabindex="-1">
-            <span class="stats-view-tab-label">Edge Performance</span><strong class="stats-view-tab-value" id="statNavExpectancy" aria-live="polite">—</strong>
+            <span class="stats-view-tab-label">Edge Performance</span><strong class="stats-view-tab-value" id="statNavExpectancy" aria-live="polite" aria-label="Observed trade expectancy">—</strong>
           </button>
           <button class="range-btn stats-view-tab" type="button" role="tab" id="statsExecutionTab" data-stats-view="execution" aria-selected="false" aria-controls="statsExecutionView" tabindex="-1">
             <span class="stats-view-tab-label">Execution Quality</span><strong class="stats-view-tab-value" id="statNavExecution" aria-live="polite">—</strong>
@@ -7528,49 +7608,94 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
       <section class="stats-view-panel panel stats-edge-view" id="statsEdgeView" role="tabpanel" aria-labelledby="statsEdgeTab" hidden>
         <div class="stats-environment-heading">
           <h2>Edge Performance</h2>
-          <p>Test recorded methodology results by setup and context. These are descriptive measurements, not proof that a strategy will remain profitable.</p>
+          <p>Evaluates whether a defined methodology has an independently demonstrated technical advantage. Statistics records outcomes, Execution Quality examines adherence, and this workspace keeps methodology evidence separate from trader execution.</p>
         </div>
-        <div class="stats-environment-kpis stats-edge-kpis">
-          <article class="stats-environment-kpi">
-            <span>Expectancy per trade</span>
-            <strong id="statsEdgeExpectancyValue">—</strong>
-            <small id="statsEdgeExpectancyCaption">No closed trades in this period.</small>
-          </article>
-          <article class="stats-environment-kpi">
-            <span>Profit factor</span>
-            <strong id="statsEdgeProfitFactorValue">—</strong>
-            <small id="statsEdgeProfitFactorCaption">Requires complete recorded P&amp;L.</small>
-          </article>
-          <article class="stats-environment-kpi">
-            <span>Qualifying trades</span>
-            <strong id="statsEdgeSampleCount">0</strong>
-            <small id="statsEdgeSampleReliability">Not measured</small>
-          </article>
-          <article class="stats-environment-kpi">
-            <span>Validated 1R coverage</span>
-            <strong id="statsEdgeRiskCoverage">—</strong>
-            <small id="statsEdgeRiskCoverageNote">Uses recorded risk basis, risk amount and R multiple.</small>
-          </article>
+        <div class="stats-edge-section-tabs" role="tablist" aria-label="Edge Performance sections">
+          <button class="stats-edge-section-tab" type="button" role="tab" id="statsEdgeOverviewTab" aria-controls="statsEdgeOverview" aria-selected="true" tabindex="0" data-edge-performance-tab>Edge Overview</button>
+          <button class="stats-edge-section-tab" type="button" role="tab" id="statsEdgeMethodologyTab" aria-controls="statsEdgeMethodology" aria-selected="false" tabindex="-1" data-edge-performance-tab>Methodology Research</button>
+          <button class="stats-edge-section-tab" type="button" role="tab" id="statsEdgeExperimentalTab" aria-controls="statsEdgeExperimental" aria-selected="false" tabindex="-1" data-edge-performance-tab>Experimental Trading</button>
+          <button class="stats-edge-section-tab" type="button" role="tab" id="statsEdgeDiagnosticsTab" aria-controls="statsEdgeDiagnostics" aria-selected="false" tabindex="-1" data-edge-performance-tab>Edge Diagnostics</button>
         </div>
-        <p class="stats-evidence-caveat" id="statsEdgeReliabilityNote">Sample size describes the records available; it does not establish statistical significance or guarantee a future edge.</p>
 
-        <div class="stats-edge-layout">
-          <section class="panel stats-research-panel">
-            <div class="stats-research-panel-head">
-              <div>
-                <h3>Expectancy over time</h3>
-                <p id="statsEdgeTimelineSummary">Grouped by the selected period's calendar intervals.</p>
-              </div>
+        <section class="stats-edge-section" id="statsEdgeOverview" role="tabpanel" aria-labelledby="statsEdgeOverviewTab" tabindex="0">
+          <header class="stats-edge-section-head">
+            <div><h3>Edge Overview</h3><p>Reference measures will describe the methodology itself after independent results are available.</p></div>
+          </header>
+          <div class="stats-edge-reference-grid" aria-label="Independent methodology reference indicators">
+            <article class="stats-environment-kpi stats-edge-reference-card"><span>Reference Expectancy (R)</span><strong>Not yet measured</strong><small>Requires independently generated methodology results.</small></article>
+            <article class="stats-environment-kpi stats-edge-reference-card"><span>Reference Profit Factor</span><strong>Not yet measured</strong><small>No independent reference outcomes are connected.</small></article>
+            <article class="stats-environment-kpi stats-edge-reference-card"><span>Reference Win Rate</span><strong>Not yet measured</strong><small>Actual trade win rate is not used as a reference.</small></article>
+            <article class="stats-environment-kpi stats-edge-reference-card"><span>Evidence Reliability</span><strong>Not yet measured</strong><small>Independent, comparable experiment evidence is unavailable.</small></article>
+          </div>
+          <p class="stats-evidence-caveat">These reference indicators will remain unavailable until methodology results can be generated and evaluated independently of trader execution.</p>
+
+          <section class="panel stats-research-panel stats-edge-diagram-panel" aria-labelledby="statsEdgeDiagramHeading">
+            <div class="stats-research-panel-head stats-edge-diagram-panel-head">
+              <div><h4 id="statsEdgeDiagramHeading">Reference Methodology Diagram</h4><p>Select a future view. No reference results are available to plot yet.</p></div>
+              <label class="stats-edge-diagram-select-label" for="statsEdgeDiagramSelector">Diagram
+                <select id="statsEdgeDiagramSelector" aria-describedby="statsEdgeDiagramNote">
+                  <option value="reference-equity">Reference Equity Curve</option>
+                  <option value="expectancy-time">Expectancy Over Time</option>
+                  <option value="drawdown">Drawdown</option>
+                  <option value="profit-loss">Profit/Loss Distribution</option>
+                  <option value="edge-stability">Edge Stability</option>
+                </select>
+              </label>
             </div>
-            <div class="stats-research-chart-wrap">
-              <canvas id="statsEdgeTimelineChart" role="img" aria-label="Expectancy by chronological period"></canvas>
-              <div class="stats-research-empty" id="statsEdgeTimelineEmpty" hidden>No complete P&amp;L samples are available for this period.</div>
+            <div class="stats-edge-diagram-empty" role="status" aria-live="polite">
+              <span>Awaiting independent reference data</span>
+              <strong id="statsEdgeDiagramEmptyTitle">Reference Equity Curve</strong>
+              <p id="statsEdgeDiagramNote">No independent methodology result series is connected, so this diagram is not drawn.</p>
             </div>
-            <p class="stats-research-note" id="statsEdgeTimelineNote">Each point uses only trades closed within that interval. Incomplete intervals are omitted from the line.</p>
           </section>
-          <section class="panel stats-research-panel">
-            <h3>Evidence coverage</h3>
-            <p>Counts show what is recorded for the selected period. Missing classifications are left unmeasured.</p>
+
+          <details class="stats-edge-observed-details" id="statsEdgeObservedEvidenceDetails" open>
+            <summary><span>Observed Trading Evidence</span><small>Actual closed trades · observational</small></summary>
+            <p class="stats-edge-observed-intro">The following measures retain their existing calculations and selected reporting period. They describe recorded trades and risk data; they do not independently validate the methodology.</p>
+            <div class="stats-environment-kpis stats-edge-kpis">
+              <article class="stats-environment-kpi">
+                <span>Recorded-trade expectancy per trade</span>
+                <strong id="statsEdgeExpectancyValue">—</strong>
+                <small id="statsEdgeExpectancyCaption">No closed trades in this period.</small>
+              </article>
+              <article class="stats-environment-kpi">
+                <span>Recorded-trade profit factor</span>
+                <strong id="statsEdgeProfitFactorValue">—</strong>
+                <small id="statsEdgeProfitFactorCaption">Requires complete recorded P&amp;L.</small>
+              </article>
+              <article class="stats-environment-kpi">
+                <span>Qualifying recorded trades</span>
+                <strong id="statsEdgeSampleCount">0</strong>
+                <small id="statsEdgeSampleReliability">Not measured</small>
+              </article>
+              <article class="stats-environment-kpi">
+                <span>Validated 1R coverage</span>
+                <strong id="statsEdgeRiskCoverage">—</strong>
+                <small id="statsEdgeRiskCoverageNote">Uses recorded risk basis, risk amount and R multiple.</small>
+              </article>
+            </div>
+            <p class="stats-evidence-caveat" id="statsEdgeReliabilityNote">Sample size describes the records available; it does not establish statistical significance or guarantee a future edge.</p>
+            <section class="panel stats-research-panel stats-edge-observed-timeline">
+              <div class="stats-research-panel-head">
+                <div><h4>Observed Expectancy Over Time</h4><p id="statsEdgeTimelineSummary">Grouped by the selected period's calendar intervals.</p></div>
+              </div>
+              <div class="stats-research-chart-wrap">
+                <canvas id="statsEdgeTimelineChart" role="img" aria-label="Recorded-trade expectancy by chronological period"></canvas>
+                <div class="stats-research-empty" id="statsEdgeTimelineEmpty" hidden>No complete P&amp;L samples are available for this period.</div>
+              </div>
+              <p class="stats-research-note" id="statsEdgeTimelineNote">Each point uses only trades closed within that interval. Incomplete intervals are omitted from the line.</p>
+            </section>
+          </details>
+        </section>
+
+        <section class="stats-execution-section stats-edge-section" id="statsEdgeMethodology" role="tabpanel" aria-labelledby="statsEdgeMethodologyTab" tabindex="0" hidden>
+          <header class="stats-edge-section-head">
+            <div><h3>Methodology Research</h3><p>Explore recorded context, setup, entry and timeframe evidence before independent experiment results are available.</p></div>
+          </header>
+          <p class="stats-edge-research-caveat">Results below come from actual closed trades and saved trade reviews. They are observational associations, not independently validated technical edge. H4, H1 and M5 name the intended research layers; existing labels are not guaranteed to have been derived from those timeframe charts.</p>
+          <section class="panel stats-research-panel stats-edge-coverage-panel">
+            <h4>Evidence Coverage · selected period</h4>
+            <p>Counts describe what is recorded for closed trades. They do not count eligible or missed opportunities.</p>
             <div class="stats-evidence-coverage-list">
               <div><span>Trades with a saved setup label</span><strong id="statsEdgeSetupCoverage">0 / 0</strong></div>
               <div><span>Trades with a Playbook review</span><strong id="statsEdgePlaybookCoverage">0 / 0</strong></div>
@@ -7580,50 +7705,102 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             </div>
             <p class="stats-research-note">Attached chart images are counted by saved timeframe and responsibility. T·IOS does not interpret their image content here.</p>
           </section>
-        </div>
+          <div class="stats-edge-research-grid">
+            <section class="panel stats-research-panel stats-edge-research-card">
+              <h4>Market Context — H4</h4>
+              <p>Market-state labels and outcomes from saved trade reviews. H4 structural conditions are not independently verified.</p>
+              <div class="table-wrap"><table class="stats-research-table"><thead><tr><th>Recorded market state</th><th>Trades</th><th>Average net P&amp;L</th><th>Profit factor</th></tr></thead><tbody id="statsEdgeMarketBody"><tr><td colspan="4" class="muted">Not measured — no market-state labels are recorded in this period.</td></tr></tbody></table></div>
+              <small class="stats-edge-source">Source: actual trade outcomes and saved market-state review labels.</small>
+            </section>
+            <section class="panel stats-research-panel stats-edge-research-card">
+              <h4>Setup Quality — H1</h4>
+              <p>Setup classifications and their recorded outcomes; Playbook adherence remains the existing review measure.</p>
+              <div class="table-wrap"><table class="stats-research-table"><thead><tr><th>Recorded setup</th><th>Trades</th><th>Average net P&amp;L</th><th>Profit factor</th><th>Playbook adherence</th></tr></thead><tbody id="statsEdgeSetupBody"><tr><td colspan="5" class="muted">No setup labels recorded in this period.</td></tr></tbody></table></div>
+              <div class="stats-edge-opportunity-state"><strong>Opportunity frequency: Not yet measured</strong><span>Closed-trade counts show trades taken, not every eligible or missed setup.</span></div>
+              <small class="stats-edge-source">Source: actual trade outcomes, saved setup labels and Playbook reviews.</small>
+            </section>
+            <section class="panel stats-research-panel stats-edge-research-card">
+              <h4>Entry Structure — M5</h4>
+              <p>Entry-pattern labels and saved timeframe evidence from actual trade records; these comparisons are observational.</p>
+              <div class="table-wrap"><table class="stats-research-table"><thead><tr><th>Recorded entry pattern</th><th>Trades</th><th>Average net P&amp;L</th><th>Profit factor</th></tr></thead><tbody id="statsEdgeEntryBody"><tr><td colspan="4" class="muted">Not measured — no entry-pattern labels are recorded in this period.</td></tr></tbody></table></div>
+              <h5>Available timeframe evidence</h5>
+              <div class="table-wrap"><table class="stats-research-table"><thead><tr><th>Timeframe · responsibility</th><th>Trades</th><th>Average net P&amp;L</th><th>Profit factor</th></tr></thead><tbody id="statsEdgeTimeframeBody"><tr><td colspan="4" class="muted">No timeframe evidence is recorded in this period.</td></tr></tbody></table></div>
+              <small class="stats-edge-source">Source: actual trade outcomes, saved entry-pattern labels and attached evidence metadata.</small>
+            </section>
+            <section class="panel stats-research-panel stats-edge-research-card stats-edge-version-card">
+              <h4>Methodology Version Comparison</h4>
+              <p>Compare original and modified definitions only when each version has independently comparable experimental results.</p>
+              <div class="stats-edge-unavailable" role="status"><strong>Unavailable</strong><span>Versioned methodology definitions and comparable experimental results are not connected.</span></div>
+            </section>
+          </div>
+        </section>
 
-        <div class="stats-edge-layout stats-edge-tables">
-          <section class="panel stats-research-panel">
-            <h3>Recorded setup outcomes</h3>
-            <p>Setup names are grouped exactly as saved in the trade journal. Playbook adherence uses the existing saved review score.</p>
-            <div class="table-wrap">
-              <table class="stats-research-table">
-                <thead><tr><th>Recorded setup</th><th>Trades</th><th>Average net P&amp;L</th><th>Profit factor</th><th>Playbook adherence</th></tr></thead>
-                <tbody id="statsEdgeSetupBody"><tr><td colspan="5" class="muted">No setup labels recorded in this period.</td></tr></tbody>
-              </table>
-            </div>
-          </section>
-          <section class="panel stats-research-panel">
-            <h3>Market-state outcomes</h3>
-            <p>Uses exact market-state labels saved with the trade's Playbook review.</p>
-            <div class="table-wrap">
-              <table class="stats-research-table">
-                <thead><tr><th>Recorded market state</th><th>Trades</th><th>Average net P&amp;L</th><th>Profit factor</th></tr></thead>
-                <tbody id="statsEdgeMarketBody"><tr><td colspan="4" class="muted">Not measured — no market-state labels are recorded in this period.</td></tr></tbody>
-              </table>
-            </div>
-          </section>
-          <section class="panel stats-research-panel">
-            <h3>Entry-pattern outcomes</h3>
-            <p>Uses exact entry-pattern labels saved with the trade's Playbook review.</p>
-            <div class="table-wrap">
-              <table class="stats-research-table">
-                <thead><tr><th>Recorded entry pattern</th><th>Trades</th><th>Average net P&amp;L</th><th>Profit factor</th></tr></thead>
-                <tbody id="statsEdgeEntryBody"><tr><td colspan="4" class="muted">Not measured — no entry-pattern labels are recorded in this period.</td></tr></tbody>
-              </table>
-            </div>
-          </section>
-          <section class="panel stats-research-panel">
-            <h3>Timeframe evidence outcomes</h3>
-            <p>Shows outcomes for trades with saved H4, H1 or M5 evidence attached. A trade can appear in more than one row.</p>
-            <div class="table-wrap">
-              <table class="stats-research-table">
-                <thead><tr><th>Timeframe · responsibility</th><th>Trades</th><th>Average net P&amp;L</th><th>Profit factor</th></tr></thead>
-                <tbody id="statsEdgeTimeframeBody"><tr><td colspan="4" class="muted">No timeframe evidence is recorded in this period.</td></tr></tbody>
-              </table>
-            </div>
-          </section>
-        </div>
+        <section class="stats-execution-section stats-edge-section" id="statsEdgeExperimental" role="tabpanel" aria-labelledby="statsEdgeExperimentalTab" tabindex="0" hidden>
+          <header class="stats-edge-section-head">
+            <div><h3>Experimental Trading</h3><p>Prepare independent evaluation workspaces for methodology testing. No experiment is running.</p></div>
+          </header>
+          <div class="stats-edge-experiment-grid">
+            <section class="panel stats-research-panel stats-edge-experiment-card">
+              <h4>Historical Backtesting</h4>
+              <p>Reserved for controlled historical methodology tests and reviewable results.</p>
+              <div class="stats-edge-stage-list">
+                <div><span>Methodology selection</span><strong>Not connected</strong></div>
+                <div><span>Historical testing</span><strong>Not started</strong></div>
+                <div><span>Experiment status</span><strong>Not available</strong></div>
+                <div><span>Experimental results</span><strong>Awaiting testing engine</strong></div>
+                <div><span>Validation reports</span><strong>Not available</strong></div>
+              </div>
+            </section>
+            <section class="panel stats-research-panel stats-edge-experiment-card">
+              <h4>Forward Shadow Trading</h4>
+              <p>Reserved for independent opportunity monitoring and reference decisions without placing trades.</p>
+              <div class="stats-edge-stage-list">
+                <div><span>Methodology selection</span><strong>Not connected</strong></div>
+                <div><span>Forward monitoring</span><strong>Not started</strong></div>
+                <div><span>Independent opportunity detection</span><strong>Not connected</strong></div>
+                <div><span>Simulated decisions and reference outcomes</span><strong>Not connected</strong></div>
+                <div><span>Experiment status and results</span><strong>Not available</strong></div>
+              </div>
+            </section>
+          </div>
+          <aside class="stats-edge-foundations" role="note">
+            <strong>Foundational capabilities not yet connected</strong>
+            <p>Versioned methodology definitions, a historical backtesting engine, an independent forward opportunity detector, a shadow decision and outcome recorder, and experimental validation reports are not available in this phase.</p>
+          </aside>
+        </section>
+
+        <section class="stats-execution-section stats-edge-section" id="statsEdgeDiagnostics" role="tabpanel" aria-labelledby="statsEdgeDiagnosticsTab" tabindex="0" hidden>
+          <header class="stats-edge-section-head">
+            <div><h3>Edge Diagnostics</h3><p>Organize potential methodology weaknesses without presenting trade observations as independent validation.</p></div>
+          </header>
+          <div class="stats-edge-diagnostic-grid">
+            <article class="panel stats-research-panel stats-edge-diagnostic-card">
+              <h4>Setup Weaknesses</h4><span class="stats-edge-status">Observational evidence available</span>
+              <p>Setup outcomes can be reviewed under Methodology Research. A recurring weakness needs eligible-opportunity and independent comparison evidence.</p>
+              <small>Source: actual closed trades and saved setup labels for the selected period.</small>
+            </article>
+            <article class="panel stats-research-panel stats-edge-diagnostic-card">
+              <h4>Market Sensitivity</h4><span class="stats-edge-status">Awaiting experimental evidence</span>
+              <p>Recorded market-state comparisons are descriptive. Controlled sensitivity across defined H4 contexts is not measured.</p>
+              <small>Source: actual closed trades and saved review labels, where available.</small>
+            </article>
+            <article class="panel stats-research-panel stats-edge-diagnostic-card">
+              <h4>Entry and Exit Design</h4><span class="stats-edge-status">Awaiting experimental evidence</span>
+              <p>Entry-pattern outcomes are observational; independent entry and exit rule comparisons are not connected.</p>
+              <small>Source: actual closed trades and saved entry-pattern labels, where available.</small>
+            </article>
+            <article class="panel stats-research-panel stats-edge-diagnostic-card">
+              <h4>Risk Structure</h4><span class="stats-edge-status">Observed coverage only</span>
+              <p>Recorded 1R coverage is shown in Observed Trading Evidence. It describes data completeness, not whether the methodology's risk design is suitable.</p>
+              <small>Source: recorded risk basis, risk amount and R multiple.</small>
+            </article>
+            <article class="panel stats-research-panel stats-edge-diagnostic-card">
+              <h4>Robustness Validation</h4><span class="stats-edge-status">Awaiting experimental evidence</span>
+              <p>No comparable out-of-sample, sensitivity, forward shadow or version-comparison results are connected.</p>
+              <small>Source: no independent validation dataset is available yet.</small>
+            </article>
+          </div>
+        </section>
       </section>
 
       <section class="stats-view-panel panel stats-execution-view" id="statsExecutionView" role="tabpanel" aria-labelledby="statsExecutionTab" hidden>
@@ -15703,8 +15880,8 @@ function renderStatisticsNavigationIndicators(source,returnPct,expectancyStats,e
   let edgeValue='—';
   if(expectancyStats&&Number.isFinite(expectancyStats.preferredValue)){
     edgeValue=expectancyStats.preferredUnit==='R'
-      ? 'Exp '+statisticsRLabel(expectancyStats.preferredValue)
-      : 'Exp '+signedMoney(expectancyStats.preferredValue)+'/trade';
+      ? 'Obs. Exp '+statisticsRLabel(expectancyStats.preferredValue)
+      : 'Obs. Exp '+signedMoney(expectancyStats.preferredValue)+'/trade';
   }
   setStatisticsText('statNavExpectancy',edgeValue);
   setStatisticsText('statNavExecution',Number.isFinite(executionStats?.averageScorePct)
@@ -16493,6 +16670,49 @@ function activateExecutionDiagramTab(selectedTab){
     });
   }
 }
+function activateEdgePerformanceTab(selectedTab){
+  const tabs=Array.from(document.querySelectorAll('[data-edge-performance-tab]'));
+  if(!selectedTab||!tabs.includes(selectedTab))return;
+  let activePanel=null;
+  tabs.forEach(tab=>{
+    const active=tab===selectedTab;
+    tab.setAttribute('aria-selected',String(active));
+    tab.tabIndex=active?0:-1;
+    const panel=document.getElementById(tab.getAttribute('aria-controls'));
+    if(panel){
+      panel.hidden=!active;
+      if(active)activePanel=panel;
+    }
+  });
+  if(activePanel?.id==='statsEdgeOverview')requestAnimationFrame(()=>{
+    if(statsEdgeTimelineInstance){statsEdgeTimelineInstance.resize();statsEdgeTimelineInstance.update('none');}
+  });
+}
+function handleEdgePerformanceTabKeydown(selectedTab,event){
+  const tabs=Array.from(document.querySelectorAll('[data-edge-performance-tab]'));
+  const index=tabs.indexOf(selectedTab);
+  if(index<0||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+  event.preventDefault();
+  const targetIndex=event.key==='Home'?0:event.key==='End'?tabs.length-1
+    :(index+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;
+  const target=tabs[targetIndex];
+  activateEdgePerformanceTab(target);
+  target.focus();
+}
+const edgePerformanceTabs=Array.from(document.querySelectorAll('[data-edge-performance-tab]'));
+edgePerformanceTabs.forEach(tab=>{
+  tab.addEventListener('click',()=>activateEdgePerformanceTab(tab));
+  tab.addEventListener('keydown',event=>handleEdgePerformanceTabKeydown(tab,event));
+});
+const edgeDiagramSelector=document.getElementById('statsEdgeDiagramSelector');
+edgeDiagramSelector?.addEventListener('change',()=>{
+  const title=document.getElementById('statsEdgeDiagramEmptyTitle');
+  if(title)title.textContent=edgeDiagramSelector.options[edgeDiagramSelector.selectedIndex]?.textContent||'Reference diagram';
+});
+const edgeObservedEvidenceDetails=document.getElementById('statsEdgeObservedEvidenceDetails');
+edgeObservedEvidenceDetails?.addEventListener('toggle',()=>{
+  if(edgeObservedEvidenceDetails.open&&statsEdgeTimelineInstance)requestAnimationFrame(()=>statsEdgeTimelineInstance.resize());
+});
 function activateExecutionQualityTab(selectedTab){
   const tabs=Array.from(document.querySelectorAll('[data-execution-quality-tab]'));
   if(!selectedTab||!tabs.includes(selectedTab))return;

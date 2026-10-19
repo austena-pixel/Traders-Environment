@@ -101,6 +101,66 @@ executionTabMocks.forEach((tab,selectedIndex)=>{
     executionPanelIds.map((_,index)=>index!==selectedIndex),
     'selecting a top-level tab shows only its matching panel');
 });
+const edgeTabsMarkup=(html.match(/<div class="stats-edge-section-tabs"[\s\S]*?<\/div>/)||[])[0]||'';
+const edgeTabNames=Array.from(edgeTabsMarkup.matchAll(/data-edge-performance-tab>([^<]+)<\/button>/g),match=>match[1]);
+assert.deepEqual(edgeTabNames,[
+  'Edge Overview','Methodology Research','Experimental Trading','Edge Diagnostics'
+],'Edge Performance exposes the four requested top-level views');
+const edgePanelAttributes=Array.from(html.matchAll(/<section class="(?:stats-execution-section )?stats-edge-section"([^>]*)>/g),match=>match[1]);
+assert.equal(edgePanelAttributes.length,4,'the Edge Performance tabs have four content panels');
+assert.equal(edgePanelAttributes.filter(attributes=>!/\shidden(?:\s|$)/.test(attributes)).length,1,
+  'Edge Overview is the only visible Edge Performance panel by default');
+assert.match(edgePanelAttributes[0],/id="statsEdgeOverview"[^>]*role="tabpanel"/);
+for(const id of ['statsEdgeExpectancyValue','statsEdgeProfitFactorValue','statsEdgeSampleCount','statsEdgeRiskCoverage','statsEdgeTimelineChart','statsEdgeSetupBody','statsEdgeMarketBody','statsEdgeEntryBody','statsEdgeTimeframeBody']){
+  assert.equal((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1,'preserved Edge Performance element '+id+' exists once');
+}
+assert.match(html,/Reference Expectancy \(R\)<\/span><strong>Not yet measured/);
+assert.match(html,/Reference Profit Factor<\/span><strong>Not yet measured/);
+assert.match(html,/Reference Win Rate<\/span><strong>Not yet measured/);
+assert.match(html,/Evidence Reliability<\/span><strong>Not yet measured/);
+assert.match(html,/statsEdgeOverview[^]*Observed Trading Evidence/);
+assert.match(html,/Methodology Version Comparison/);
+assert.match(html,/Foundational capabilities not yet connected/);
+assert.deepEqual(Array.from(html.matchAll(/<option value="(?:reference-equity|expectancy-time|drawdown|profit-loss|edge-stability)">([^<]+)<\/option>/g),match=>match[1]),[
+  'Reference Equity Curve','Expectancy Over Time','Drawdown','Profit/Loss Distribution','Edge Stability'
+],'the future reference diagram selector includes all five requested views');
+assert.match(html,/stats-edge-section-tabs\{display:grid;grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/,'Edge Performance tabs stay horizontal at desktop sizes');
+assert.match(html,/#statsEdgeView \.stats-edge-section-tabs\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/,'Edge Performance tabs reflow for mobile');
+
+const edgePanelIds=['statsEdgeOverview','statsEdgeMethodology','statsEdgeExperimental','statsEdgeDiagnostics'];
+const edgePanelMocks=new Map(edgePanelIds.map((id,index)=>[id,{id,hidden:index!==0}]));
+const edgeTabMocks=edgePanelIds.map((id,index)=>({
+  attributes:{'aria-controls':id,'aria-selected':String(index===0)},
+  tabIndex:index===0?0:-1,
+  focused:false,
+  setAttribute(name,value){this.attributes[name]=value;},
+  getAttribute(name){return this.attributes[name];},
+  focus(){this.focused=true;}
+}));
+const edgeTabContext=vm.createContext({
+  document:{querySelectorAll:()=>edgeTabMocks,getElementById:id=>edgePanelMocks.get(id)},
+  requestAnimationFrame:callback=>callback(),
+  statsEdgeTimelineInstance:null
+});
+vm.runInContext(extractFunction('activateEdgePerformanceTab')+'\n'+extractFunction('handleEdgePerformanceTabKeydown'),edgeTabContext);
+edgeTabMocks.forEach((tab,selectedIndex)=>{
+  edgeTabContext.activateEdgePerformanceTab(tab);
+  assert.deepEqual(edgeTabMocks.map(item=>item.attributes['aria-selected']),
+    edgeTabMocks.map((_,index)=>String(index===selectedIndex)),
+    'selecting an Edge Performance tab updates its accessible selected state');
+  assert.deepEqual(edgePanelIds.map(id=>edgePanelMocks.get(id).hidden),
+    edgePanelIds.map((_,index)=>index!==selectedIndex),
+    'selecting an Edge Performance tab shows only its matching panel');
+});
+const edgeArrowEvent={key:'ArrowRight',preventDefault(){this.prevented=true;}};
+edgeTabContext.handleEdgePerformanceTabKeydown(edgeTabMocks[0],edgeArrowEvent);
+assert.equal(edgeArrowEvent.prevented,true,'arrow navigation prevents unwanted page scrolling');
+assert.equal(edgeTabMocks[1].focused,true,'arrow navigation moves focus to the next Edge Performance tab');
+assert.equal(edgeTabMocks[1].attributes['aria-selected'],'true','arrow navigation selects the focused tab');
+const edgeHomeEvent={key:'Home',preventDefault(){}};
+edgeTabContext.handleEdgePerformanceTabKeydown(edgeTabMocks[3],edgeHomeEvent);
+assert.equal(edgeTabMocks[0].focused,true,'Home returns focus to the first Edge Performance tab');
+assert.equal(edgePanelMocks.get('statsEdgeOverview').hidden,false,'keyboard navigation returns to the matching panel');
 const renderedIndicatorStack={innerHTML:''};
 const renderContext=vm.createContext({
   $:selector=>selector==='#statsIndicatorStack'?renderedIndicatorStack:selector==='#statsIndicatorEmpty'?{classList:{toggle(){}}}:null,
@@ -236,3 +296,4 @@ console.log('PASS all five combined outcome selectors are connected to period-fi
 console.log('PASS execution adherence pools only recorded Rules/Playbook evidence and reports full, partial, and missing coverage');
 console.log('PASS Execution Quality uses four accessible top-level tabs with one visible panel at a time');
 console.log('PASS Profit Gap diagram tabs and evidence-backed empty states are present');
+console.log('PASS Edge Performance uses four accessible tabs, honest reference placeholders, and preserved observed-trade evidence');
