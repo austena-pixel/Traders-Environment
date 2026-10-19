@@ -11345,7 +11345,6 @@ function renderCalendar(){
       if(data){
         html+=`<div class="day-pnl ${pnlClass(data.pnl)}">${signedMoney(data.pnl)}</div>`;
         html+=`<div class="day-meta">${data.count} trade${data.count===1?'':'s'} • ${formatReturnPct(returnPctFromPnl(data.pnl))}</div>`;
-        html+=`<div class="tag">${data.pnl>0?'Profit day':data.pnl<0?'Loss day':'Breakeven'}</div>`;
       }else{
         html+=`<div class="day-meta" style="margin-top:18px">No trades</div>`;
       }
