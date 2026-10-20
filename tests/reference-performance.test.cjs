@@ -130,7 +130,7 @@ const page = require('node:fs').readFileSync(require('node:path').resolve(__dirn
 const mainLabels=[...page.matchAll(/<button[^>]*data-edge-performance-tab[^>]*>([^<]+)<\/button>/g)].map(match=>match[1].trim());
 assert.deepEqual(mainLabels,['Edge Overview','Methodology Research','Experimental Trading','Edge Diagnostics']);
 const overviewLabels=[...page.matchAll(/<button[^>]*data-edge-overview-tab[^>]*>([^<]+)<\/button>/g)].map(match=>match[1].trim());
-assert.deepEqual(overviewLabels,['Reference Performance','Observed Trading Evidence']);
+assert.deepEqual(overviewLabels,['Reference Performance','Observed Trading Evidence','Reference Diagrams']);
 for (const value of ['reference-equity','expectancy-time','drawdown','profit-loss','edge-stability']) {
   assert.match(page,new RegExp('<option value="'+value+'"'));
 }
@@ -154,7 +154,11 @@ assert.match(page,/latestReferencePerformanceRecord=record\?\.measurement_status
   'only trusted, validated DB rows feed the Reference Performance interface');
 const referenceSourceStart=page.indexOf('id="statsEdgeReferenceView"');
 const observedSourceStart=page.indexOf('id="statsEdgeObservedView"');
+const diagramsSourceStart=page.indexOf('id="statsEdgeReferenceDiagramsView"');
+const diagramsHeadingStart=page.indexOf('id="statsEdgeDiagramHeading"');
 assert.ok(referenceSourceStart>=0&&observedSourceStart>referenceSourceStart);
+assert.ok(diagramsSourceStart>observedSourceStart&&diagramsHeadingStart>diagramsSourceStart,
+  'Reference Performance diagrams live in their own tab after Observed Trading Evidence');
 for (const name of ['Reference Plan','Market Data','Opportunity Detection','Reference Execution','Execution Verification','Performance Measurement']) {
   const pos=page.indexOf(name);
   assert.ok(pos>referenceSourceStart&&pos<observedSourceStart,'component list stays within Reference Performance');
@@ -231,13 +235,16 @@ const nestedStart=page.indexOf('function activateEdgeOverviewTab(selectedTab){')
 const nestedEnd=page.indexOf('const edgeOverviewTabs=',nestedStart);
 assert.ok(nestedStart>=0&&nestedEnd>nestedStart,'nested Edge Overview tab handlers exist');
 const nestedSource=page.slice(nestedStart,nestedEnd)+'\nglobalThis.activateNested=activateEdgeOverviewTab;globalThis.keyNested=handleEdgeOverviewTabKeydown;';
-const nestedPanels={statsEdgeReferenceView:{hidden:false},statsEdgeObservedView:{hidden:true}};
+const nestedPanels={statsEdgeReferenceView:{hidden:false},statsEdgeObservedView:{hidden:true},statsEdgeReferenceDiagramsView:{hidden:true}};
 const nestedTabs=[
   {id:'statsEdgeReferencePerformanceTab',controls:'statsEdgeReferenceView',attrs:{},tabIndex:0,focused:false,
     getAttribute(name){return this.controls;},setAttribute(name,value){this.attrs[name]=value;},focus(){this.focused=true;}},
   {id:'statsEdgeObservedEvidenceTab',controls:'statsEdgeObservedView',attrs:{},tabIndex:-1,focused:false,
+    getAttribute(name){return this.controls;},setAttribute(name,value){this.attrs[name]=value;},focus(){this.focused=true;}},
+  {id:'statsEdgeReferenceDiagramsTab',controls:'statsEdgeReferenceDiagramsView',attrs:{},tabIndex:-1,focused:false,
     getAttribute(name){return this.controls;},setAttribute(name,value){this.attrs[name]=value;},focus(){this.focused=true;}}
 ];
+let nestedDiagramRenderCount=0;
 const nestedScope={
   document:{
     querySelectorAll(selector){assert.equal(selector,'[data-edge-overview-tab]');return nestedTabs;},
@@ -245,6 +252,7 @@ const nestedScope={
   },
   loadReferenceFoundationStatus(){},
   requestAnimationFrame(callback){callback();},
+  renderReferencePerformanceDiagram(){nestedDiagramRenderCount++;},
   statsEdgeTimelineInstance:null
 };
 new Function('globalThis','scope','with(scope){'+nestedSource+'}')(nestedScope,nestedScope);
@@ -257,6 +265,15 @@ nestedScope.keyNested(nestedTabs[1],{key:'ArrowLeft',preventDefault(){nestedPrev
 assert.equal(nestedPrevented,true);
 assert.equal(nestedPanels.statsEdgeReferenceView.hidden,false);
 assert.equal(nestedPanels.statsEdgeObservedView.hidden,true);
+assert.equal(nestedTabs[0].focused,true);
+nestedScope.activateNested(nestedTabs[2]);
+assert.equal(nestedPanels.statsEdgeReferenceView.hidden,true);
+assert.equal(nestedPanels.statsEdgeObservedView.hidden,true);
+assert.equal(nestedPanels.statsEdgeReferenceDiagramsView.hidden,false);
+assert.equal(nestedDiagramRenderCount,1,'opening the diagram tab refreshes its independent reference view');
+let nestedHomePrevented=false;
+nestedScope.keyNested(nestedTabs[2],{key:'Home',preventDefault(){nestedHomePrevented=true;}});
+assert.equal(nestedHomePrevented,true);
 assert.equal(nestedTabs[0].focused,true);
 
 const mainStart=page.indexOf('function activateEdgePerformanceTab(selectedTab){');
