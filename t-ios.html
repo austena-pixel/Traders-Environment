@@ -7675,6 +7675,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           <div class="stats-edge-overview-tabs" role="tablist" aria-label="Edge Overview views">
             <button class="stats-edge-overview-tab" type="button" role="tab" id="statsEdgeReferencePerformanceTab" aria-controls="statsEdgeReferenceView" aria-selected="true" tabindex="0" data-edge-overview-tab>Reference Performance</button>
             <button class="stats-edge-overview-tab" type="button" role="tab" id="statsEdgeObservedEvidenceTab" aria-controls="statsEdgeObservedView" aria-selected="false" tabindex="-1" data-edge-overview-tab>Observed Trading Evidence</button>
+            <button class="stats-edge-overview-tab" type="button" role="tab" id="statsEdgeReferenceDiagramsTab" aria-controls="statsEdgeReferenceDiagramsView" aria-selected="false" tabindex="-1" data-edge-overview-tab>Reference Diagrams</button>
           </div>
           <section class="stats-edge-overview-panel" id="statsEdgeReferenceView" role="tabpanel" aria-labelledby="statsEdgeReferencePerformanceTab" tabindex="0">
 <section class="stats-edge-reference-system" aria-labelledby="statsEdgeReferenceSystemHeading">
@@ -7744,26 +7745,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           </div>
           <p class="stats-evidence-caveat">These reference indicators will remain unavailable until methodology results can be generated and evaluated independently of trader execution.</p>
 
-          <section class="panel stats-research-panel stats-edge-diagram-panel" aria-labelledby="statsEdgeDiagramHeading">
-            <div class="stats-research-panel-head stats-edge-diagram-panel-head">
-              <div><h4 id="statsEdgeDiagramHeading">Reference Performance Diagrams</h4><p>Only version-linked, verified reference records can populate these views.</p></div>
-              <label class="stats-edge-diagram-select-label" for="statsEdgeDiagramSelector">Diagram
-                <select id="statsEdgeDiagramSelector" aria-describedby="statsEdgeDiagramNote">
-                  <option value="reference-equity">Reference Equity Curve</option>
-                  <option value="expectancy-time">Expectancy Over Time</option>
-                  <option value="drawdown">Drawdown</option>
-                  <option value="profit-loss">Profit/Loss Distribution</option>
-                  <option value="edge-stability">Edge Stability</option>
-                </select>
-              </label>
-            </div>
-            <div class="stats-edge-diagram-empty" role="status" aria-live="polite">
-              <span>Awaiting independent reference data</span>
-              <strong id="statsEdgeDiagramEmptyTitle">Reference Equity Curve</strong>
-              <p id="statsEdgeDiagramNote">No independent methodology result series is connected, so this diagram is not drawn.</p>
-            </div>
-            <div id="statsEdgeDiagramChart" class="stats-edge-diagram-chart" role="img" aria-label="No validated reference series selected" hidden></div>
-          </section>
+
 
                     </section>
           <section class="stats-edge-overview-panel" id="statsEdgeObservedView" role="tabpanel" aria-labelledby="statsEdgeObservedEvidenceTab" tabindex="0" hidden>
@@ -7805,6 +7787,29 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
             </section>
           </details>
                   </section>
+        
+          <section class="stats-edge-overview-panel" id="statsEdgeReferenceDiagramsView" role="tabpanel" aria-labelledby="statsEdgeReferenceDiagramsTab" tabindex="0" hidden>
+          <section class="panel stats-research-panel stats-edge-diagram-panel" aria-labelledby="statsEdgeDiagramHeading">
+            <div class="stats-research-panel-head stats-edge-diagram-panel-head">
+              <div><h4 id="statsEdgeDiagramHeading">Reference Performance Diagrams</h4><p>Only version-linked, verified reference records can populate these views.</p></div>
+              <label class="stats-edge-diagram-select-label" for="statsEdgeDiagramSelector">Diagram
+                <select id="statsEdgeDiagramSelector" aria-describedby="statsEdgeDiagramNote">
+                  <option value="reference-equity">Reference Equity Curve</option>
+                  <option value="expectancy-time">Expectancy Over Time</option>
+                  <option value="drawdown">Drawdown</option>
+                  <option value="profit-loss">Profit/Loss Distribution</option>
+                  <option value="edge-stability">Edge Stability</option>
+                </select>
+              </label>
+            </div>
+            <div class="stats-edge-diagram-empty" role="status" aria-live="polite">
+              <span>Awaiting independent reference data</span>
+              <strong id="statsEdgeDiagramEmptyTitle">Reference Equity Curve</strong>
+              <p id="statsEdgeDiagramNote">No independent methodology result series is connected, so this diagram is not drawn.</p>
+            </div>
+            <div id="statsEdgeDiagramChart" class="stats-edge-diagram-chart" role="img" aria-label="No validated reference series selected" hidden></div>
+          </section>
+          </section>
         </section>
 
 <section class="stats-execution-section stats-edge-section" id="statsEdgeMethodology" role="tabpanel" aria-labelledby="statsEdgeMethodologyTab" tabindex="0" hidden>
@@ -16807,7 +16812,7 @@ function formatReferenceMetric(value,digits=2){
 function renderReferencePerformanceDiagram(record){
   const selector=document.getElementById('statsEdgeDiagramSelector');
   const title=document.getElementById('statsEdgeDiagramEmptyTitle');
-  const empty=document.querySelector('#statsEdgeReferenceView .stats-edge-diagram-empty');
+  const empty=document.querySelector('#statsEdgeReferenceDiagramsView .stats-edge-diagram-empty');
   const chart=document.getElementById('statsEdgeDiagramChart');
   if(!selector||!chart||!empty)return;
   const selected=selector.value;
@@ -17035,6 +17040,7 @@ function activateEdgeOverviewTab(selectedTab){
     if(panel)panel.hidden=!active;
   });
   loadReferenceFoundationStatus();
+  if(selectedTab.id==='statsEdgeReferenceDiagramsTab')renderReferencePerformanceDiagram(latestReferencePerformanceRecord);
   if(selectedTab.id==='statsEdgeObservedEvidenceTab')requestAnimationFrame(()=>{
     if(statsEdgeTimelineInstance){statsEdgeTimelineInstance.resize();statsEdgeTimelineInstance.update('none');}
   });
