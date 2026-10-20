@@ -6942,6 +6942,56 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
   #statsExecutionView .stats-execution-gap-tab{padding:7px 8px;font-size:9px}
 }
 </style>
+<style>
+#statsEdgeView .stats-edge-overview-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px;padding:0 0 8px;border-bottom:1px solid rgba(46,62,81,.45)}
+#statsEdgeView .stats-edge-overview-tab{min-height:34px;padding:7px 11px;border:0;border-radius:7px;background:transparent;color:#94a4b8;font-size:10px;font-weight:750;cursor:pointer}
+#statsEdgeView .stats-edge-overview-tab:hover{color:#e0ebf8;background:rgba(25,40,58,.5)}
+#statsEdgeView .stats-edge-overview-tab[aria-selected=true]{color:#dcecff;background:rgba(44,83,126,.32);box-shadow:inset 0 -2px #72b7ff}
+#statsEdgeView .stats-edge-overview-tab:focus-visible{outline:2px solid #77a9e8;outline-offset:2px}
+#statsEdgeView .stats-edge-overview-panel[hidden]{display:none!important}
+#statsEdgeView .stats-edge-reference-system{margin:0 0 18px}
+#statsEdgeView .stats-edge-reference-system-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 5px}
+#statsEdgeView .stats-edge-plan-snapshot-btn{flex:0 0 auto;min-height:30px;padding:6px 10px;border:1px solid rgba(95,144,194,.55);border-radius:7px;background:rgba(29,56,82,.5);color:#cfe5fb;font-size:9px;font-weight:750;cursor:pointer}
+#statsEdgeView .stats-edge-plan-snapshot-btn:hover:not(:disabled){background:rgba(42,79,115,.68)}
+#statsEdgeView .stats-edge-plan-snapshot-btn:disabled{opacity:.5;cursor:not-allowed}
+#statsEdgeView .stats-edge-reference-system h4,#statsEdgeView .stats-edge-reference-results-head h4{margin:0 0 4px;color:#e1eaf5;font-size:12px}
+#statsEdgeView .stats-edge-reference-system-head p,#statsEdgeView .stats-edge-reference-results-head p{margin:0;color:#8293a9;font-size:9px;line-height:1.5}
+#statsEdgeView .stats-edge-reference-components{list-style:none;margin:0;padding:0}
+#statsEdgeView .stats-edge-reference-component{display:grid;grid-template-columns:minmax(145px,.8fr) minmax(250px,1.5fr) minmax(180px,1fr);align-items:center;gap:10px 16px;padding:9px 0;border-bottom:1px solid rgba(46,62,81,.32)}
+#statsEdgeView .stats-edge-component-name{display:flex;align-items:center;gap:9px;min-width:0}
+#statsEdgeView .stats-edge-component-name>span{color:#77b8f4;font-size:9px;font-weight:800;letter-spacing:.06em}
+#statsEdgeView .stats-edge-component-name h5{margin:0;color:#dce7f4;font-size:10px;font-weight:750}
+#statsEdgeView .stats-edge-reference-component>p{margin:0;color:#91a0b3;font-size:9px;line-height:1.55}
+#statsEdgeView .stats-edge-reference-component>p strong{color:#bdcde0;font-weight:700}
+#statsEdgeView .stats-edge-component-state{display:grid;gap:3px;min-width:0}
+#statsEdgeView .stats-edge-component-status{display:flex;align-items:center;gap:6px;color:#d3b876;font-size:9px;font-weight:750}
+#statsEdgeView .stats-edge-component-status::before{content:"";width:6px;height:6px;border-radius:50%;background:#c59b43;flex:0 0 auto}
+#statsEdgeView .stats-edge-component-status[data-state=available]{color:#8ec8a3}
+#statsEdgeView .stats-edge-component-status[data-state=available]::before{background:#5ba978}
+#statsEdgeView .stats-edge-component-status[data-state=unavailable]{color:#d99a90}
+#statsEdgeView .stats-edge-component-status[data-state=unavailable]::before{background:#bd6355}
+#statsEdgeView .stats-edge-component-state small{color:#798ba0;font-size:8px;line-height:1.45}
+#statsEdgeView .stats-edge-reference-results-head{margin:0 0 8px}
+#statsEdgeView .stats-edge-overview-panel>.stats-edge-reference-grid{margin-top:0}
+#statsEdgeView .stats-edge-diagram-chart{min-height:150px;margin-top:9px;padding:5px 0}
+#statsEdgeView .stats-edge-diagram-chart svg{display:block;width:100%;height:auto;min-height:145px;overflow:visible}
+#statsEdgeView .stats-edge-diagram-chart text{fill:#8293a9;font:10px sans-serif}
+#statsEdgeView .stats-edge-diagram-chart .reference-series{fill:none;stroke:#72b7ff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+#statsEdgeView .stats-edge-diagram-chart .reference-bar{fill:rgba(99,166,229,.72)}
+@media(max-width:850px){
+  #statsEdgeView .stats-edge-reference-component{grid-template-columns:minmax(125px,.8fr) minmax(190px,1.2fr)}
+  #statsEdgeView .stats-edge-component-state{grid-column:2}
+}
+@media(max-width:560px){
+  #statsEdgeView .stats-edge-overview-tabs{gap:3px}
+  #statsEdgeView .stats-edge-overview-tab{flex:1;min-width:145px}
+  #statsEdgeView .stats-edge-reference-component{grid-template-columns:minmax(0,1fr);gap:4px;padding:10px 0}
+  #statsEdgeView .stats-edge-component-state{grid-column:auto}
+  #statsEdgeView .stats-edge-reference-component>p{padding-left:24px}
+  #statsEdgeView .stats-edge-reference-results-head{margin-top:6px}
+}
+</style>
+<script src="core/reference-performance.js"></script>
 </head>
 
 <body>
@@ -7620,19 +7670,83 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 
         <section class="stats-edge-section" id="statsEdgeOverview" role="tabpanel" aria-labelledby="statsEdgeOverviewTab" tabindex="0">
           <header class="stats-edge-section-head">
-            <div><h3>Edge Overview</h3><p>Reference measures will describe the methodology itself after independent results are available.</p></div>
+            <div><h3>Edge Overview</h3><p>Review independently generated results for an approved methodology version, separate from observed trades.</p></div>
           </header>
-          <div class="stats-edge-reference-grid" aria-label="Independent methodology reference indicators">
-            <article class="stats-environment-kpi stats-edge-reference-card"><span>Reference Expectancy (R)</span><strong>Not yet measured</strong><small>Requires independently generated methodology results.</small></article>
-            <article class="stats-environment-kpi stats-edge-reference-card"><span>Reference Profit Factor</span><strong>Not yet measured</strong><small>No independent reference outcomes are connected.</small></article>
-            <article class="stats-environment-kpi stats-edge-reference-card"><span>Reference Win Rate</span><strong>Not yet measured</strong><small>Actual trade win rate is not used as a reference.</small></article>
-            <article class="stats-environment-kpi stats-edge-reference-card"><span>Evidence Reliability</span><strong>Not yet measured</strong><small>Independent, comparable experiment evidence is unavailable.</small></article>
+          <div class="stats-edge-overview-tabs" role="tablist" aria-label="Edge Overview views">
+            <button class="stats-edge-overview-tab" type="button" role="tab" id="statsEdgeReferencePerformanceTab" aria-controls="statsEdgeReferenceView" aria-selected="true" tabindex="0" data-edge-overview-tab>Reference Performance</button>
+            <button class="stats-edge-overview-tab" type="button" role="tab" id="statsEdgeObservedEvidenceTab" aria-controls="statsEdgeObservedView" aria-selected="false" tabindex="-1" data-edge-overview-tab>Observed Trading Evidence</button>
+          </div>
+          <section class="stats-edge-overview-panel" id="statsEdgeReferenceView" role="tabpanel" aria-labelledby="statsEdgeReferencePerformanceTab" tabindex="0">
+<section class="stats-edge-reference-system" aria-labelledby="statsEdgeReferenceSystemHeading">
+            <header class="stats-edge-reference-system-head">
+              <div><h4 id="statsEdgeReferenceSystemHeading">Reference System</h4><p>Each stage receives traceable evidence and passes its output to the next stage.</p></div>
+              <button class="stats-edge-plan-snapshot-btn" type="button" id="statsReferencePlanSnapshotBtn" disabled>Save approved version</button>
+            </header>
+            <ol class="stats-edge-reference-components" aria-label="Six Reference Performance components">
+              <li class="stats-edge-reference-component" data-reference-component="referencePlan">
+                <div class="stats-edge-component-name"><span>01</span><h5>Reference Plan</h5></div>
+                <p><strong>Input</strong> Approved Trading Rules and Playbook<br><strong>Output</strong> Immutable methodology snapshot and version</p>
+                <div class="stats-edge-component-state" aria-live="polite">
+                  <span class="stats-edge-component-status" data-reference-status="referencePlan" data-state="pending">Versioning pending</span>
+                  <small data-reference-detail="referencePlan">Current Rules and Playbook remain in their existing workspaces; no approved reference snapshot is stored.</small>
+                </div>
+              </li>
+              <li class="stats-edge-reference-component" data-reference-component="marketData">
+                <div class="stats-edge-component-name"><span>02</span><h5>Market Data</h5></div>
+                <p><strong>Input</strong> Instrument, timeframe and data source<br><strong>Output</strong> Completeness-checked market-data reference</p>
+                <div class="stats-edge-component-state" aria-live="polite">
+                  <span class="stats-edge-component-status" data-reference-status="marketData" data-state="available">Existing source available</span>
+                  <small data-reference-detail="marketData">Existing MT5 candle storage supports H4, H1 and M5; reference replay linkage is pending.</small>
+                </div>
+              </li>
+              <li class="stats-edge-reference-component" data-reference-component="opportunityDetection">
+                <div class="stats-edge-component-name"><span>03</span><h5>Opportunity Detection</h5></div>
+                <p><strong>Input</strong> Approved version and market conditions<br><strong>Output</strong> Candidate opportunity with supporting evidence</p>
+                <div class="stats-edge-component-state" aria-live="polite">
+                  <span class="stats-edge-component-status" data-reference-status="opportunityDetection" data-state="pending">Detector not connected</span>
+                  <small data-reference-detail="opportunityDetection">The interface can store candidates; no validated opportunity detector is connected.</small>
+                </div>
+              </li>
+              <li class="stats-edge-reference-component" data-reference-component="referenceExecution">
+                <div class="stats-edge-component-name"><span>04</span><h5>Reference Execution</h5></div>
+                <p><strong>Input</strong> Eligible opportunity and approved rules<br><strong>Output</strong> Simulation-only execution attempt</p>
+                <div class="stats-edge-component-state" aria-live="polite">
+                  <span class="stats-edge-component-status" data-reference-status="referenceExecution" data-state="pending">Simulation engine pending</span>
+                  <small data-reference-detail="referenceExecution">Reference attempts are simulation-only. No simulator or live order execution is connected.</small>
+                </div>
+              </li>
+              <li class="stats-edge-reference-component" data-reference-component="executionVerification">
+                <div class="stats-edge-component-name"><span>05</span><h5>Execution Verification</h5></div>
+                <p><strong>Input</strong> Simulated attempt and approved rules<br><strong>Output</strong> Rule checks, detected errors and accuracy</p>
+                <div class="stats-edge-component-state" aria-live="polite">
+                  <span class="stats-edge-component-status" data-reference-status="executionVerification" data-state="pending">Verifier not connected</span>
+                  <small data-reference-detail="executionVerification">Execution accuracy is stored separately from profitability; no verifier is connected.</small>
+                </div>
+              </li>
+              <li class="stats-edge-reference-component" data-reference-component="performanceMeasurement">
+                <div class="stats-edge-component-name"><span>06</span><h5>Performance Measurement</h5></div>
+                <p><strong>Input</strong> Closed, verified simulated outcomes<br><strong>Output</strong> Version-linked reference metrics and series</p>
+                <div class="stats-edge-component-state" aria-live="polite">
+                  <span class="stats-edge-component-status" data-reference-status="performanceMeasurement" data-state="pending">Awaiting verified outcomes</span>
+                  <small data-reference-detail="performanceMeasurement">Only fully verified simulated outcomes can populate reference results.</small>
+                </div>
+              </li>
+            </ol>
+          </section>
+          <div class="stats-edge-reference-results-head">
+            <div><h4>Reference Results</h4><p>These results are independent of the trader’s actual closed trades.</p></div>
+          </div>
+<div class="stats-edge-reference-grid" aria-label="Independent methodology reference indicators">
+            <article class="stats-environment-kpi stats-edge-reference-card"><span>Reference Expectancy (R)</span><strong id="statsReferenceExpectancyValue">Not yet measured</strong><small id="statsReferenceExpectancyNote">Requires independently generated methodology results.</small></article>
+            <article class="stats-environment-kpi stats-edge-reference-card"><span>Reference Profit Factor</span><strong id="statsReferenceProfitFactorValue">Not yet measured</strong><small id="statsReferenceProfitFactorNote">No independent reference outcomes are connected.</small></article>
+            <article class="stats-environment-kpi stats-edge-reference-card"><span>Reference Win Rate</span><strong id="statsReferenceWinRateValue">Not yet measured</strong><small id="statsReferenceWinRateNote">Actual trade win rate is not used as a reference.</small></article>
+            <article class="stats-environment-kpi stats-edge-reference-card"><span>Evidence Reliability</span><strong id="statsReferenceReliabilityValue">Not yet measured</strong><small id="statsReferenceReliabilityNote">Independent, comparable experiment evidence is unavailable.</small></article>
           </div>
           <p class="stats-evidence-caveat">These reference indicators will remain unavailable until methodology results can be generated and evaluated independently of trader execution.</p>
 
           <section class="panel stats-research-panel stats-edge-diagram-panel" aria-labelledby="statsEdgeDiagramHeading">
             <div class="stats-research-panel-head stats-edge-diagram-panel-head">
-              <div><h4 id="statsEdgeDiagramHeading">Reference Methodology Diagram</h4><p>Select a future view. No reference results are available to plot yet.</p></div>
+              <div><h4 id="statsEdgeDiagramHeading">Reference Performance Diagrams</h4><p>Only version-linked, verified reference records can populate these views.</p></div>
               <label class="stats-edge-diagram-select-label" for="statsEdgeDiagramSelector">Diagram
                 <select id="statsEdgeDiagramSelector" aria-describedby="statsEdgeDiagramNote">
                   <option value="reference-equity">Reference Equity Curve</option>
@@ -7648,9 +7762,12 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               <strong id="statsEdgeDiagramEmptyTitle">Reference Equity Curve</strong>
               <p id="statsEdgeDiagramNote">No independent methodology result series is connected, so this diagram is not drawn.</p>
             </div>
+            <div id="statsEdgeDiagramChart" class="stats-edge-diagram-chart" role="img" aria-label="No validated reference series selected" hidden></div>
           </section>
 
-          <details class="stats-edge-observed-details" id="statsEdgeObservedEvidenceDetails" open>
+                    </section>
+          <section class="stats-edge-overview-panel" id="statsEdgeObservedView" role="tabpanel" aria-labelledby="statsEdgeObservedEvidenceTab" tabindex="0" hidden>
+<details class="stats-edge-observed-details" id="statsEdgeObservedEvidenceDetails" open>
             <summary><span>Observed Trading Evidence</span><small>Actual closed trades · observational</small></summary>
             <p class="stats-edge-observed-intro">The following measures retain their existing calculations and selected reporting period. They describe recorded trades and risk data; they do not independently validate the methodology.</p>
             <div class="stats-environment-kpis stats-edge-kpis">
@@ -7687,9 +7804,10 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
               <p class="stats-research-note" id="statsEdgeTimelineNote">Each point uses only trades closed within that interval. Incomplete intervals are omitted from the line.</p>
             </section>
           </details>
+                  </section>
         </section>
 
-        <section class="stats-execution-section stats-edge-section" id="statsEdgeMethodology" role="tabpanel" aria-labelledby="statsEdgeMethodologyTab" tabindex="0" hidden>
+<section class="stats-execution-section stats-edge-section" id="statsEdgeMethodology" role="tabpanel" aria-labelledby="statsEdgeMethodologyTab" tabindex="0" hidden>
           <header class="stats-edge-section-head">
             <div><h3>Methodology Research</h3><p>Explore recorded context, setup, entry and timeframe evidence before independent experiment results are available.</p></div>
           </header>
@@ -16670,6 +16788,205 @@ function activateExecutionDiagramTab(selectedTab){
     });
   }
 }
+let latestReferencePerformanceRecord=null;
+let referenceFoundationLoadFor='';
+let referenceFoundationLastLoad=0;
+function setReferenceComponentStatus(key,status){
+  const label=document.querySelector('[data-reference-status="'+key+'"]');
+  const detail=document.querySelector('[data-reference-detail="'+key+'"]');
+  if(!label)return;
+  label.textContent=String(status?.label||'Status unavailable');
+  label.dataset.state=/available|stored|versioned plan/i.test(label.textContent)?'available'
+    :/unavailable|access unavailable/i.test(label.textContent)?'unavailable':'pending';
+  if(detail)detail.textContent=String(status?.detail||'Component status could not be loaded.');
+}
+function formatReferenceMetric(value,digits=2){
+  const number=Number(value);
+  return Number.isFinite(number)?number.toFixed(digits):'—';
+}
+function renderReferencePerformanceDiagram(record){
+  const selector=document.getElementById('statsEdgeDiagramSelector');
+  const title=document.getElementById('statsEdgeDiagramEmptyTitle');
+  const empty=document.querySelector('#statsEdgeReferenceView .stats-edge-diagram-empty');
+  const chart=document.getElementById('statsEdgeDiagramChart');
+  if(!selector||!chart||!empty)return;
+  const selected=selector.value;
+  const labels={
+    'reference-equity':'Reference Equity Curve',
+    'expectancy-time':'Expectancy Over Time',
+    'drawdown':'Drawdown',
+    'profit-loss':'Profit/Loss Distribution',
+    'edge-stability':'Edge Stability'
+  };
+  if(title)title.textContent=labels[selected]||'Reference diagram';
+  const fields={
+    'reference-equity':['equity_curve','line'],
+    'expectancy-time':['expectancy_series','line'],
+    'drawdown':['drawdown_series','line'],
+    'profit-loss':['profit_loss_distribution','bars'],
+    'edge-stability':['edge_stability_series','line']
+  };
+  const [field,kind]=fields[selected]||fields['reference-equity'];
+  const points=Array.isArray(record?.[field])?record[field]:[];
+  const numeric=points.map(point=>({
+    x:Number(kind==='bars'?(point?.midpoint??point?.trade_index??0):(point?.trade_index??0)),
+    y:Number(kind==='bars'?point?.count:point?.value)
+  })).filter(point=>Number.isFinite(point.x)&&Number.isFinite(point.y));
+  if(record?.measurement_status!=='validated'||!numeric.length){
+    empty.hidden=false;
+    chart.hidden=true;
+    chart.innerHTML='';
+    return;
+  }
+  const chartPoints=kind==='bars'||numeric.length<=400?numeric:(()=>{
+    const step=Math.ceil(numeric.length/400);
+    const sampled=numeric.filter((_,index)=>index%step===0);
+    if(sampled[sampled.length-1]!==numeric[numeric.length-1])sampled.push(numeric[numeric.length-1]);
+    return sampled;
+  })();
+  const width=680,height=190,left=34,right=12,top=12,bottom=26;
+  const plotW=width-left-right,plotH=height-top-bottom;
+  let minY=Math.min(0,...chartPoints.map(point=>point.y));
+  let maxY=Math.max(0,...chartPoints.map(point=>point.y));
+  if(maxY===minY){maxY+=1;minY-=1}
+  const minX=Math.min(...chartPoints.map(point=>point.x));
+  const maxX=Math.max(...chartPoints.map(point=>point.x));
+  const xPos=x=>left+(maxX===minX?plotW/2:(x-minX)/(maxX-minX))*plotW;
+  const yPos=y=>top+(maxY===minY?plotH/2:(maxY-y)/(maxY-minY))*plotH;
+  const zeroY=yPos(0);
+  let drawing='';
+  if(kind==='bars'){
+    const slot=plotW/chartPoints.length;
+    drawing=chartPoints.map(point=>{
+      const x=xPos(point.x)-slot*.34;
+      const y=yPos(point.y);
+      const heightBar=Math.max(1,zeroY-y);
+      return '<rect class="reference-bar" x="'+x.toFixed(2)+'" y="'+y.toFixed(2)+'" width="'+Math.max(2,slot*.68).toFixed(2)+'" height="'+heightBar.toFixed(2)+'" rx="2"><title>'+point.x.toFixed(2)+' R · '+point.y+' trades</title></rect>';
+    }).join('');
+  }else{
+    const path=chartPoints.map((point,index)=>(index?'L':'M')+xPos(point.x).toFixed(2)+' '+yPos(point.y).toFixed(2)).join(' ');
+    drawing='<path class="reference-series" d="'+path+'"></path>';
+  }
+  chart.innerHTML='<svg viewBox="0 0 '+width+' '+height+'" role="img" aria-label="'+(labels[selected]||'Reference diagram')+' based on verified reference outcomes"><line x1="'+left+'" y1="'+zeroY.toFixed(2)+'" x2="'+(width-right)+'" y2="'+zeroY.toFixed(2)+'" stroke="rgba(130,147,169,.45)" stroke-width="1"></line>'+drawing+'<text x="'+left+'" y="'+(height-5)+'">'+(kind==='bars'?'R outcome':'Trade sample')+'</text><text x="2" y="'+(top+8)+'">'+maxY.toFixed(2)+(kind==='bars'?' trades':' R')+'</text></svg>';
+  empty.hidden=true;
+  chart.hidden=false;
+}
+function renderReferencePerformanceResults(record){
+  latestReferencePerformanceRecord=record?.measurement_status==='validated'?record:null;
+  const values={
+    statsReferenceExpectancyValue:latestReferencePerformanceRecord?formatReferenceMetric(record.expectancy_r)+' R':'Not yet measured',
+    statsReferenceProfitFactorValue:latestReferencePerformanceRecord?(record.profit_factor!=null&&Number.isFinite(Number(record.profit_factor))?formatReferenceMetric(record.profit_factor):'Not defined'):'Not yet measured',
+    statsReferenceWinRateValue:latestReferencePerformanceRecord&&Number.isFinite(Number(record.win_rate_pct))?formatReferenceMetric(record.win_rate_pct,1)+'%':'Not yet measured',
+    statsReferenceReliabilityValue:latestReferencePerformanceRecord
+      ?(record.evidence_reliability==='descriptive_sample'?'Larger descriptive sample':'Preliminary sample')
+      :'Not yet measured'
+  };
+  Object.entries(values).forEach(([id,value])=>{const node=document.getElementById(id);if(node)node.textContent=value});
+  const expectancyNote=document.getElementById('statsReferenceExpectancyNote');
+  const factorNote=document.getElementById('statsReferenceProfitFactorNote');
+  const winNote=document.getElementById('statsReferenceWinRateNote');
+  const reliabilityNote=document.getElementById('statsReferenceReliabilityNote');
+  if(latestReferencePerformanceRecord){
+    const n=Number(record.verified_attempt_count||0);
+    if(expectancyNote)expectancyNote.textContent='Mean R across '+n+' closed, verified simulated outcomes.';
+    if(factorNote)factorNote.textContent=record.profit_factor==null?'No losing outcomes in the verified sample.':'Winning R divided by absolute losing R.';
+    if(winNote)winNote.textContent='Winning verified simulated outcomes ÷ all verified outcomes.';
+    if(reliabilityNote)reliabilityNote.textContent='Descriptive sample size only; it does not establish statistical significance.';
+  }else{
+    if(expectancyNote)expectancyNote.textContent='Requires independently generated methodology results.';
+    if(factorNote)factorNote.textContent='No independent reference outcomes are connected.';
+    if(winNote)winNote.textContent='Actual trade win rate is not used as a reference.';
+    if(reliabilityNote)reliabilityNote.textContent='Independent, comparable experiment evidence is unavailable.';
+  }
+  renderReferencePerformanceDiagram(latestReferencePerformanceRecord);
+}
+function currentReferencePlanInputs(){
+  const playbook=currentPlaybookDocument?.()||null;
+  const ruleState=secondaryState('checklist');
+  const activeRules=(Array.isArray(ruleState?.docs)?ruleState.docs:[])
+    .filter(item=>item&&item.instrumentState==='active'&&!item.templateDraft);
+  if(!playbook||playbook.instrumentState!=='active'||playbook.templateDraft)return {playbook:null,rules:[]};
+  return {playbook,rules:activeRules};
+}
+async function saveApprovedReferencePlanVersion(){
+  if(!currentUser?.id||!window.TIOSReferencePerformance||!db)return;
+  const sources=currentReferencePlanInputs();
+  if(!sources.playbook||!sources.rules.length){
+    showStatus('Choose an active saved Playbook and at least one active Trading Rule first.',4500);
+    return;
+  }
+  const sourceNames=sources.rules.map(item=>item.name).join(', ');
+  const approved=window.confirm(
+    'Save an immutable Reference Performance version from this active Playbook and these active Trading Rules?\n\nPlaybook: '+sources.playbook.name+'\nTrading Rules: '+sourceNames+'\n\nThis records your approval of this exact snapshot. It does not edit the source documents.'
+  );
+  if(!approved)return;
+  const button=document.getElementById('statsReferencePlanSnapshotBtn');
+  if(button)button.disabled=true;
+  try{
+    const repository=window.TIOSReferencePerformance.createRepository(db,currentUser.id);
+    const versionNumber=await repository.nextPlanVersionNumber();
+    const playbook=sources.playbook;
+    const rules=sources.rules;
+    await repository.createPlanVersion({
+      name:String(playbook.name||'Approved Reference Methodology')+' · Reference',
+      version_number:versionNumber,
+      approval_status:'approved',
+      approved_at:new Date().toISOString(),
+      playbook:{
+        id:String(playbook.id||''),
+        name:String(playbook.name||''),
+        version:Number(playbook.strategyVersion)||1,
+        approval_status:'approved',
+        description:String(playbook.description||''),
+        tags:Array.isArray(playbook.tags)?playbook.tags:[],
+        document_html:String(playbook.documentHtml||'')
+      },
+      trading_rules:rules.map(rule=>({
+        id:String(rule.id||''),
+        name:String(rule.name||''),
+        version:Number(rule.strategyVersion)||1,
+        approval_status:'approved',
+        rule_scope:String(rule.ruleScope||'trade'),
+        description:String(rule.description||''),
+        tags:Array.isArray(rule.tags)?rule.tags:[],
+        document_html:String(rule.documentHtml||'')
+      }))
+    });
+    showStatus('Approved reference version saved');
+    await loadReferenceFoundationStatus(true);
+  }catch(error){
+    console.error('Could not save an approved reference plan version:',error);
+    showStatus(error?.message||'Could not save the reference version',5000);
+  }finally{
+    if(button)button.disabled=false;
+  }
+}
+async function loadReferenceFoundationStatus(force=false){
+  const userId=currentUser?.id||'';
+  if(!userId||!window.TIOSReferencePerformance||!db)return;
+  const now=Date.now();
+  if(!force&&referenceFoundationLoadFor===userId&&now-referenceFoundationLastLoad<30000)return;
+  referenceFoundationLoadFor=userId;
+  referenceFoundationLastLoad=now;
+  try{
+    const repository=window.TIOSReferencePerformance.createRepository(db,userId);
+    const result=await repository.loadFoundationStatus();
+    Object.entries(result.statuses||{}).forEach(([key,value])=>setReferenceComponentStatus(key,value));
+    const snapshotButton=document.getElementById('statsReferencePlanSnapshotBtn');
+    if(snapshotButton){
+      snapshotButton.disabled=!result.schema_ready;
+      snapshotButton.title=result.schema_ready
+        ?'Snapshot the selected active Rules and Playbook after explicit approval.'
+        :'The Reference Performance schema migration must be available before a version can be saved.';
+    }
+    renderReferencePerformanceResults(result.latest_validated_record);
+  }catch(error){
+    console.warn('Could not load Reference Performance foundation status:',error);
+    ['referencePlan','marketData','opportunityDetection','referenceExecution','executionVerification','performanceMeasurement']
+      .forEach(key=>setReferenceComponentStatus(key,{label:'Status unavailable',detail:'User-scoped component status could not be read.'}));
+    renderReferencePerformanceResults(null);
+  }
+}
 function activateEdgePerformanceTab(selectedTab){
   const tabs=Array.from(document.querySelectorAll('[data-edge-performance-tab]'));
   if(!selectedTab||!tabs.includes(selectedTab))return;
@@ -16684,9 +17001,12 @@ function activateEdgePerformanceTab(selectedTab){
       if(active)activePanel=panel;
     }
   });
-  if(activePanel?.id==='statsEdgeOverview')requestAnimationFrame(()=>{
-    if(statsEdgeTimelineInstance){statsEdgeTimelineInstance.resize();statsEdgeTimelineInstance.update('none');}
-  });
+  if(activePanel?.id==='statsEdgeOverview'){
+    loadReferenceFoundationStatus();
+    if(!document.getElementById('statsEdgeObservedView')?.hidden)requestAnimationFrame(()=>{
+      if(statsEdgeTimelineInstance){statsEdgeTimelineInstance.resize();statsEdgeTimelineInstance.update('none');}
+    });
+  }
 }
 function handleEdgePerformanceTabKeydown(selectedTab,event){
   const tabs=Array.from(document.querySelectorAll('[data-edge-performance-tab]'));
@@ -16704,14 +17024,45 @@ edgePerformanceTabs.forEach(tab=>{
   tab.addEventListener('click',()=>activateEdgePerformanceTab(tab));
   tab.addEventListener('keydown',event=>handleEdgePerformanceTabKeydown(tab,event));
 });
-const edgeDiagramSelector=document.getElementById('statsEdgeDiagramSelector');
-edgeDiagramSelector?.addEventListener('change',()=>{
-  const title=document.getElementById('statsEdgeDiagramEmptyTitle');
-  if(title)title.textContent=edgeDiagramSelector.options[edgeDiagramSelector.selectedIndex]?.textContent||'Reference diagram';
+function activateEdgeOverviewTab(selectedTab){
+  const tabs=Array.from(document.querySelectorAll('[data-edge-overview-tab]'));
+  if(!selectedTab||!tabs.includes(selectedTab))return;
+  tabs.forEach(tab=>{
+    const active=tab===selectedTab;
+    tab.setAttribute('aria-selected',String(active));
+    tab.tabIndex=active?0:-1;
+    const panel=document.getElementById(tab.getAttribute('aria-controls'));
+    if(panel)panel.hidden=!active;
+  });
+  loadReferenceFoundationStatus();
+  if(selectedTab.id==='statsEdgeObservedEvidenceTab')requestAnimationFrame(()=>{
+    if(statsEdgeTimelineInstance){statsEdgeTimelineInstance.resize();statsEdgeTimelineInstance.update('none');}
+  });
+}
+function handleEdgeOverviewTabKeydown(selectedTab,event){
+  const tabs=Array.from(document.querySelectorAll('[data-edge-overview-tab]'));
+  const index=tabs.indexOf(selectedTab);
+  if(index<0||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+  event.preventDefault();
+  const targetIndex=event.key==='Home'?0:event.key==='End'?tabs.length-1
+    :(index+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;
+  const target=tabs[targetIndex];
+  activateEdgeOverviewTab(target);
+  target.focus();
+}
+const edgeOverviewTabs=Array.from(document.querySelectorAll('[data-edge-overview-tab]'));
+edgeOverviewTabs.forEach(tab=>{
+  tab.addEventListener('click',()=>activateEdgeOverviewTab(tab));
+  tab.addEventListener('keydown',event=>handleEdgeOverviewTabKeydown(tab,event));
 });
+document.getElementById('statsReferencePlanSnapshotBtn')?.addEventListener('click',saveApprovedReferencePlanVersion);
+const edgeDiagramSelector=document.getElementById('statsEdgeDiagramSelector');
+edgeDiagramSelector?.addEventListener('change',()=>renderReferencePerformanceDiagram(latestReferencePerformanceRecord));
 const edgeObservedEvidenceDetails=document.getElementById('statsEdgeObservedEvidenceDetails');
 edgeObservedEvidenceDetails?.addEventListener('toggle',()=>{
-  if(edgeObservedEvidenceDetails.open&&statsEdgeTimelineInstance)requestAnimationFrame(()=>statsEdgeTimelineInstance.resize());
+  if(edgeObservedEvidenceDetails.open&&
+      !document.getElementById('statsEdgeObservedView')?.hidden&&
+      statsEdgeTimelineInstance)requestAnimationFrame(()=>statsEdgeTimelineInstance.resize());
 });
 function activateExecutionQualityTab(selectedTab){
   const tabs=Array.from(document.querySelectorAll('[data-execution-quality-tab]'));
