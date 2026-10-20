@@ -46,9 +46,9 @@ async function run(){
     const original=await colors(),storedGoals=await page.evaluate(()=>localStorage.getItem('hios_gios_goals_v2'));
     assert.equal(await page.locator('html').getAttribute('data-hios-theme'),'blue');
     await launch();
-    assert.equal(await page.locator('.hios-theme-choice').count(),5);
+    assert.equal(await page.locator('.hios-theme-choice').count(),6);
     await screenshot('theme-picker.png');
-    for(const id of ['graphite','forest','sand','amethyst','blue']){
+    for(const id of ['light','graphite','forest','sand','amethyst','blue']){
       await choose(id);
       assert.equal(await page.locator('html').getAttribute('data-hios-theme'),id);
       assert.equal(await page.locator('[data-theme-choice][aria-pressed="true"]').count(),1);
@@ -62,6 +62,10 @@ async function run(){
       else{for(const part of ['body','header','calendar','card','button'])assert.notEqual(current[part],original[part],id+' changes '+part)}
       const contrast=(luminance(current.text)+.05)/(luminance(current.card)+.05);
       assert.ok(contrast>=4.5,`${id} intelligence label contrast ${contrast}`);
+      if(id==='light'){
+        const colorScheme=await page.locator('.hios-theme-dialog').evaluate(el=>getComputedStyle(el).colorScheme);
+        assert.equal(colorScheme,'light','theme dialog uses the light browser control palette');
+      }
       if(id!=='blue'){
         const ink=await page.locator('.sidebar-add-product').evaluate(el=>getComputedStyle(el).color);
         for(const stop of current.button.match(/rgba?\([^)]*\)/g))assert.ok((luminance(stop)+.05)/(luminance(ink)+.05)>=4.5,id+' primary action contrast');
