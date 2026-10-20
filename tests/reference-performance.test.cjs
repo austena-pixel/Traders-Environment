@@ -164,6 +164,69 @@ const inlineScriptBlocks=[...page.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script
   .filter(match=>!/type\s*=\s*["']module["']/i.test(match[1]||""));
 inlineScriptBlocks.forEach(match=>new Function(match[2]));
 
+assert.ok(page.includes('<button class="nav-btn" data-page="statistics">'),
+  'top-level Statistics navigation remains present');
+assert.ok(page.includes('<section class="page" id="page-statistics">'));
+
+const statsViewStart=page.indexOf('function setStatisticsView(view){');
+const statsViewEnd=page.indexOf('let statsFearTrendInstance=null;',statsViewStart);
+assert.ok(statsViewStart>=0&&statsViewEnd>statsViewStart,'Statistics, Edge Performance and Execution Quality tab handler exists');
+const statsViewSource=page.slice(statsViewStart,statsViewEnd)
+  .replaceAll('$$','queryAll').replaceAll('$(','query(');
+const statsViewNames=['statistics','edge','execution'];
+const statsViewTabs=statsViewNames.map((name,index)=>({
+  dataset:{statsView:name},attrs:{},tabIndex:index===0?0:-1,
+  classList:{toggle(key,value){this[key]=value;}},
+  setAttribute(key,value){this.attrs[key]=value;}
+}));
+const statsPanels={statsStatisticsView:{hidden:false},statsEdgeView:{hidden:true},statsExecutionView:{hidden:true}};
+const setStatisticsViewForTest=new Function(
+  'queryAll','query','setZoomedStatsCard','requestAnimationFrame',
+  'equityChartInstance','statsOutcomeChartInstance','statsEdgeTimelineInstance','statsExecutionTrendInstance','document',
+  'return ('+statsViewSource+');'
+)(
+  ()=>statsViewTabs,selector=>statsPanels[selector.slice(1)]||null,()=>{},callback=>callback(),
+  null,null,null,null,{getElementById(){return null;}}
+);
+setStatisticsViewForTest('edge');
+assert.equal(statsPanels.statsStatisticsView.hidden,true);
+assert.equal(statsPanels.statsEdgeView.hidden,false);
+setStatisticsViewForTest('execution');
+assert.equal(statsPanels.statsEdgeView.hidden,true);
+assert.equal(statsPanels.statsExecutionView.hidden,false);
+setStatisticsViewForTest('statistics');
+assert.equal(statsPanels.statsStatisticsView.hidden,false);
+
+const rangeStart=page.indexOf("$$('[data-stats-range]').forEach(btn=>{",page.indexOf("syncStatsRangeButtons();\n$$('[data-stats-range]')"));
+const rangeEnd=page.indexOf("\n\n$('#statsPrevPeriod')",rangeStart);
+assert.ok(rangeStart>=0&&rangeEnd>rangeStart,'reporting-period click handlers exist');
+const rangeSource=page.slice(rangeStart,rangeEnd).replaceAll('$$','queryAll').replaceAll('$(','query(');
+const rangeValues=['1d','1w','1m','6m','1y','all'];
+const rangeButtons=rangeValues.map(value=>({
+  dataset:{statsRange:value},handler:null,
+  addEventListener(type,handler){if(type==='click')this.handler=handler;}
+}));
+const rangePersisted=[];
+let rangeRenderCount=0;
+const rangeRuntime=new Function(
+  'queryAll','query','STATS_RANGE_OPTIONS','persistStatsRangePreference',
+  'syncStatsRangeButtons','renderStatistics','rangeButtons','initialAnchor',
+  'let statsRange="1d";let statsAnchorDate=initialAnchor;'+rangeSource+
+    ';return {click(button){button.handler();},getRange(){return statsRange;},getAnchor(){return statsAnchorDate;}};'
+)(
+  ()=>rangeButtons,selector=>selector==='#statsPeriodSelector'?{removeAttribute(){}}:null,
+  rangeValues,value=>rangePersisted.push(value),()=>{},()=>{rangeRenderCount++;},
+  rangeButtons,new Date(2026,9,20,12)
+);
+rangeRuntime.click(rangeButtons.find(button=>button.dataset.statsRange==='6m'));
+assert.equal(rangeRuntime.getRange(),'6m');
+assert.deepEqual(rangePersisted,['6m']);
+assert.equal(rangeRenderCount,1);
+rangeRuntime.click(rangeButtons.find(button=>button.dataset.statsRange==='1m'));
+assert.equal(rangeRuntime.getAnchor().getDate(),1,'month selection keeps the existing month anchor behavior');
+assert.deepEqual(rangePersisted,['6m','1m']);
+assert.equal(rangeRenderCount,2);
+
 const nestedStart=page.indexOf('function activateEdgeOverviewTab(selectedTab){');
 const nestedEnd=page.indexOf('const edgeOverviewTabs=',nestedStart);
 assert.ok(nestedStart>=0&&nestedEnd>nestedStart,'nested Edge Overview tab handlers exist');
