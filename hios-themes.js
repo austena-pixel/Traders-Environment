@@ -6,6 +6,7 @@
   const root=document.documentElement;
   const themes=[
     {id:'blue',name:'Original Blue',description:'The current blue and violet style.',base:[218,.25],primary:[216,.9],secondary:[260,.8],bg:'#07090d',surface:'#111927',accent:'#6ea8ff',accent2:'#8b5cf6'},
+    {id:'light',name:'Light',description:'Bright surfaces with clear text and blue-violet accents.',mode:'light',base:[218,.16],primary:[216,.9],secondary:[260,.8],bg:'#f4f7fb',surface:'#ffffff',accent:'#315fe8',accent2:'#7955d8',line:'#d7e0ea'},
     {id:'graphite',name:'Graphite',description:'Charcoal surfaces with soft silver accents.',base:[0,0],primary:[0,0],secondary:[30,.06],bg:'#0b0b0b',surface:'#1b1b1b',accent:'#c5c5c5',accent2:'#a9a39b'},
     {id:'forest',name:'Forest',description:'Deep green surfaces with mint and gold.',base:[155,.25],primary:[156,.5],secondary:[40,.54],bg:'#080e0b',surface:'#15231d',accent:'#8cdbba',accent2:'#ddc18e'},
     {id:'sand',name:'Warm Sand',description:'Warm brown surfaces with gold and copper.',base:[31,.25],primary:[36,.67],secondary:[17,.42],bg:'#100d09',surface:'#241d15',accent:'#e7c98c',accent2:'#ceaa9b'},
@@ -28,7 +29,7 @@
   }
   try{readPreference(localStorage.getItem(KEY))}catch{persistent=false}
 
-  function parseColor(value){
+  function parseColor(value,role){
     let channels;
     if(value[0]==='#'){
       let hex=value.slice(1);if(hex.length===3||hex.length===4)hex=[...hex].map(c=>c+c).join('');
@@ -43,16 +44,21 @@
     const [r,g,b,alpha]=channels,max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min,light=(max+min)/2;
     let hue=0,saturation=0;
     if(d){saturation=d/(1-Math.abs(2*light-1));hue=60*(max===r?((g-b)/d+6)%6:max===g?(b-r)/d+2:(r-g)/d+4)}
-    // Preserve black shadows, white, and semantic red/amber/green colors.
-    if(light===0||light>=.985)return null;
+    const extreme=light===0||light>=.985;
+    // Keep pure black text, pure white surfaces, and extreme shadow colors intact.
+    if(role==='shadow'&&extreme)return null;
+    if(role==='text'&&light===0)return null;
+    if(role!=='text'&&light>=.985)return null;
     const cool=hue>=180&&hue<=300;
-    if(saturation>.18&&!cool)return null;
-    const slot=light<=.32?'base':saturation<=.18?'text':hue>=255?'secondary':'primary';
-    return {hue,saturation,light,alpha,slot};
+    const semantic=saturation>.18&&!cool;
+    if(semantic&&role!=='text')return null;
+    const slot=role==='text'?'text':light<=.32?'base':saturation<=.18?'text':hue>=255?'secondary':'primary';
+    return {hue,saturation,light,alpha,slot,role,semantic,extreme,source:value};
   }
-  function token(value){
-    const color=parseColor(value);if(!color)return value;
-    const key=value.toLowerCase();
+  function token(value,property){
+    const role=/^(color|fill|stroke|caret-color|accent-color)$/.test(property)?'text':/^(box-shadow|text-shadow)$/.test(property)?'shadow':'surface';
+    const color=parseColor(value,role);if(!color)return value;
+    const key=role+':'+value.toLowerCase();
     if(!colors.has(key))colors.set(key,{...color,name:'--hios-color-'+colors.size});
     return `var(${colors.get(key).name}, ${value})`;
   }
@@ -67,7 +73,7 @@
           if(!property.startsWith('--')&&!/^(color|background|border|outline|box-shadow|text-shadow|fill|stroke|caret-color|accent-color|scrollbar-color)/.test(property))continue;
           const value=rule.style.getPropertyValue(property);
           if(value.includes('url(')||value.includes('--hios-'))continue;
-          const themed=value.replace(/#[\da-f]{8}\b|#[\da-f]{6}\b|#[\da-f]{4}\b|#[\da-f]{3}\b|rgba?\([^()]*\)/gi,token);
+          const themed=value.replace(/#[\da-f]{8}\b|#[\da-f]{6}\b|#[\da-f]{4}\b|#[\da-f]{3}\b|rgba?\([^()]*\)/gi,match=>token(match,property));
           if(themed!==value)rule.style.setProperty(property,themed,rule.style.getPropertyPriority(property));
         }
       }
@@ -87,11 +93,14 @@
     current=id;root.dataset.hiosTheme=id;
     for(const color of colors.values()){
       if(id==='blue'){root.style.removeProperty(color.name);continue}
-      const [h,s]=color.slot==='text'?[theme.base[0],Math.min(theme.base[1],.08)]:theme[color.slot];
-      root.style.setProperty(color.name,`hsl(${h} ${(s*100).toFixed(2)}% ${(color.light*100).toFixed(2)}% / ${color.alpha})`);
+      if(theme.mode!=='light'&&(color.extreme||color.semantic)){root.style.setProperty(color.name,color.source);continue}
+      let [h,s]=color.semantic?[color.hue,color.saturation]:color.slot==='text'?[theme.base[0],Math.min(theme.base[1],.08)]:theme[color.slot];
+      let lightness=theme.mode==='light'?100-color.light*100:color.light*100;
+      if(theme.mode==='light'&&color.role==='text')lightness=Math.min(lightness,38);
+      root.style.setProperty(color.name,`hsl(${h} ${(s*100).toFixed(2)}% ${lightness.toFixed(2)}% / ${color.alpha})`);
     }
     for(const key of ['bg','surface','accent','accent2'])root.style.setProperty('--hios-theme-'+key,theme[key]);
-    root.style.setProperty('--hios-theme-line',id==='blue'?'#34435a':`hsl(${theme.base[0]} ${theme.base[1]*100}% 27%)`);
+    root.style.setProperty('--hios-theme-line',theme.line||(id==='blue'?'#34435a':`hsl(${theme.base[0]} ${theme.base[1]*100}% 27%)`));
     if(save){try{localStorage.setItem(KEY,id==='custom'?JSON.stringify({id,color:customColor}):id);persistent=true}catch{persistent=false}}
     document.querySelectorAll('.hios-theme-button').forEach(button=>{button.title='Color theme: '+theme.name});
     if(dialog){
@@ -115,7 +124,7 @@
   function mount(){
     bridgeStyles();
     dialog=document.createElement('dialog');dialog.className='hios-theme-dialog';dialog.setAttribute('aria-labelledby','hiosThemeTitle');
-    dialog.innerHTML='<div class="hios-theme-heading"><div><h2 id="hiosThemeTitle">Color theme</h2><p>Choose the style of your H-IOS environment.</p></div><button class="hios-theme-close" type="button" aria-label="Close color themes" autofocus>×</button></div><div class="hios-theme-choices">'+themes.map(t=>`<button class="hios-theme-choice" type="button" data-theme-choice="${t.id}" aria-pressed="false"><span class="hios-theme-preview" aria-hidden="true" style="--preview-bg:${t.bg};--preview-surface:${t.surface};--preview-accent:${t.accent};--preview-accent2:${t.accent2}"><i></i><i></i><i></i></span><span><b>${t.name}</b><small>${t.description}</small></span><span class="hios-theme-selected" aria-hidden="true">✓</span></button>`).join('')+'</div><div class="hios-theme-custom"><label for="hiosCustomColor"><b>Custom color</b><small>Pick a color for the whole environment.</small></label><input type="color" id="hiosCustomColor" aria-label="Custom theme color"><label class="hios-theme-hex-label" for="hiosCustomHex">HEX<input id="hiosCustomHex" type="text" maxlength="7" pattern="#[0-9a-fA-F]{6}" spellcheck="false" aria-describedby="hiosColorHelp"></label><small id="hiosColorHelp">Backgrounds stay dark and text stays readable. Your chosen color sets the palette.</small></div><div class="hios-theme-footer"><p class="hios-theme-save-status" role="status"></p><button class="hios-theme-done" type="button">Done</button></div>';
+    dialog.innerHTML='<div class="hios-theme-heading"><div><h2 id="hiosThemeTitle">Color theme</h2><p>Choose the style of your H-IOS environment.</p></div><button class="hios-theme-close" type="button" aria-label="Close color themes" autofocus>×</button></div><div class="hios-theme-choices">'+themes.map(t=>`<button class="hios-theme-choice" type="button" data-theme-choice="${t.id}" aria-pressed="false"><span class="hios-theme-preview" aria-hidden="true" style="--preview-bg:${t.bg};--preview-surface:${t.surface};--preview-accent:${t.accent};--preview-accent2:${t.accent2}"><i></i><i></i><i></i></span><span><b>${t.name}</b><small>${t.description}</small></span><span class="hios-theme-selected" aria-hidden="true">✓</span></button>`).join('')+'</div><div class="hios-theme-custom"><label for="hiosCustomColor"><b>Custom color</b><small>Pick a color for the whole environment.</small></label><input type="color" id="hiosCustomColor" aria-label="Custom theme color"><label class="hios-theme-hex-label" for="hiosCustomHex">HEX<input id="hiosCustomHex" type="text" maxlength="7" pattern="#[0-9a-fA-F]{6}" spellcheck="false" aria-describedby="hiosColorHelp"></label><small id="hiosColorHelp">Palette colors adapt across the H-IOS environment while keeping text readable.</small></div><div class="hios-theme-footer"><p class="hios-theme-save-status" role="status"></p><button class="hios-theme-done" type="button">Done</button></div>';
     document.body.append(dialog);
     const colorInput=dialog.querySelector('#hiosCustomColor'),hexInput=dialog.querySelector('#hiosCustomHex');
     function selectCustom(value){if(!/^#[0-9a-f]{6}$/i.test(value))return;customColor=value.toLowerCase();hexInput.setCustomValidity('');apply('custom',true)}
