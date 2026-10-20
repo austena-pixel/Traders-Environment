@@ -6848,11 +6848,17 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
   #statsExecutionView .stats-execution-framework-details .stats-fear-layout{grid-template-columns:1fr 1fr}
 }
 
-#statsEdgeView .stats-edge-section-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:0 0 12px;margin:0 0 14px;border-bottom:1px solid rgba(46,62,81,.55)}
-#statsEdgeView .stats-edge-section-tab{min-width:0;min-height:36px;padding:8px 10px;border:1px solid #253449;border-radius:9px;background:rgba(13,20,29,.72);color:#91a0b3;font-size:10px;font-weight:700;line-height:1.25;cursor:pointer}
+#statsEdgeView .stats-edge-section-tabs{display:grid;flex:0 1 520px;max-width:520px;min-width:0;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:0 0 0 auto}
+#statsEdgeView .stats-edge-section-tab{min-width:0;min-height:30px;padding:5px 6px;border:1px solid #253449;border-radius:8px;background:rgba(13,20,29,.72);color:#91a0b3;font-size:8px;font-weight:700;line-height:1.2;white-space:nowrap;cursor:pointer}
 #statsEdgeView .stats-edge-section-tab:hover{border-color:#365579;background:rgba(29,44,62,.55);color:#dbe7f5}
 #statsEdgeView .stats-edge-section-tab[aria-selected=true]{border-color:#365579;background:#17263a;color:#dbeafe;box-shadow:inset 0 0 0 1px rgba(105,168,255,.08)}
 #statsEdgeView .stats-edge-section-tab:focus-visible{outline:2px solid #77a9e8;outline-offset:2px}
+@media(max-width:900px){
+  #statsEdgeView .stats-edge-section-tabs{flex:1 1 100%;width:100%;max-width:none;margin-left:0}
+}
+@media(max-width:560px){
+  #statsEdgeView .stats-edge-section-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
 #statsEdgeView .stats-edge-section{min-width:0;padding:0;border:0;border-radius:0;background:transparent}
 #statsEdgeView .stats-edge-section[hidden]{display:none!important}
 #statsEdgeView .stats-edge-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin:0 0 12px}
@@ -7660,18 +7666,16 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
         <div class="stats-environment-heading">
           <h2>Edge Performance</h2>
           <p class="stats-environment-question">How good is the methodology?</p>
-        </div>
-        <div class="stats-edge-section-tabs" role="tablist" aria-label="Edge Performance sections">
-          <button class="stats-edge-section-tab" type="button" role="tab" id="statsEdgeOverviewTab" aria-controls="statsEdgeOverview" aria-selected="true" tabindex="0" data-edge-performance-tab>Edge Overview</button>
-          <button class="stats-edge-section-tab" type="button" role="tab" id="statsEdgeMethodologyTab" aria-controls="statsEdgeMethodology" aria-selected="false" tabindex="-1" data-edge-performance-tab>Methodology Research</button>
-          <button class="stats-edge-section-tab" type="button" role="tab" id="statsEdgeExperimentalTab" aria-controls="statsEdgeExperimental" aria-selected="false" tabindex="-1" data-edge-performance-tab>Experimental Trading</button>
-          <button class="stats-edge-section-tab" type="button" role="tab" id="statsEdgeDiagnosticsTab" aria-controls="statsEdgeDiagnostics" aria-selected="false" tabindex="-1" data-edge-performance-tab>Edge Diagnostics</button>
+          <div class="stats-edge-section-tabs" role="tablist" aria-label="Edge Performance sections">
+            <button class="stats-edge-section-tab" type="button" role="tab" id="statsEdgeOverviewTab" aria-controls="statsEdgeOverview" aria-selected="true" tabindex="0" data-edge-performance-tab>Edge Overview</button>
+            <button class="stats-edge-section-tab" type="button" role="tab" id="statsEdgeMethodologyTab" aria-controls="statsEdgeMethodology" aria-selected="false" tabindex="-1" data-edge-performance-tab>Methodology Research</button>
+            <button class="stats-edge-section-tab" type="button" role="tab" id="statsEdgeExperimentalTab" aria-controls="statsEdgeExperimental" aria-selected="false" tabindex="-1" data-edge-performance-tab>Experimental Trading</button>
+            <button class="stats-edge-section-tab" type="button" role="tab" id="statsEdgeDiagnosticsTab" aria-controls="statsEdgeDiagnostics" aria-selected="false" tabindex="-1" data-edge-performance-tab>Edge Diagnostics</button>
+          </div>
         </div>
 
+
         <section class="stats-edge-section" id="statsEdgeOverview" role="tabpanel" aria-labelledby="statsEdgeOverviewTab" tabindex="0">
-          <header class="stats-edge-section-head">
-            <div><h3>Edge Overview</h3><p>Review independently generated results for an approved methodology version, separate from observed trades.</p></div>
-          </header>
           <div class="stats-edge-overview-tabs" role="tablist" aria-label="Edge Overview views">
             <button class="stats-edge-overview-tab" type="button" role="tab" id="statsEdgeReferencePerformanceTab" aria-controls="statsEdgeReferenceView" aria-selected="true" tabindex="0" data-edge-overview-tab>Reference Performance</button>
             <button class="stats-edge-overview-tab" type="button" role="tab" id="statsEdgeObservedEvidenceTab" aria-controls="statsEdgeObservedView" aria-selected="false" tabindex="-1" data-edge-overview-tab>Observed Trading Evidence</button>
