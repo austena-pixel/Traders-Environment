@@ -16796,7 +16796,7 @@ function setReferenceComponentStatus(key,status){
   const detail=document.querySelector('[data-reference-detail="'+key+'"]');
   if(!label)return;
   label.textContent=String(status?.label||'Status unavailable');
-  label.dataset.state=/available|stored|versioned plan/i.test(label.textContent)?'available'
+  label.dataset.state=/^(Validated|Versioned plan available)/i.test(label.textContent)?'available'
     :/unavailable|access unavailable/i.test(label.textContent)?'unavailable':'pending';
   if(detail)detail.textContent=String(status?.detail||'Component status could not be loaded.');
 }

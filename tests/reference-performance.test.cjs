@@ -148,6 +148,8 @@ for (const id of ['statsEdgeExpectancyValue','statsEdgeProfitFactorValue','stats
 }
 assert.match(page,/<script src="core\/reference-performance\.js"><\/script>/);
 assert.match(page,/async function saveApprovedReferencePlanVersion\(\)/);
+assert.ok(page.includes("label.dataset.state=/^(Validated|Versioned plan available)/i.test"),
+  'empty plan and request states remain pending in the component status treatment');
 assert.match(page,/latestReferencePerformanceRecord=record\?\.measurement_status==='validated'\?record:null/,
   'only trusted, validated DB rows feed the Reference Performance interface');
 const referenceSourceStart=page.indexOf('id="statsEdgeReferenceView"');
