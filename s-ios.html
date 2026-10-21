@@ -131,7 +131,7 @@ form{display:grid;gap:12px}
     </nav>
     <div class="side-foot">
       <div class="user" id="sideUser">Signed in with H-IOS</div>
-      <button class="btn logout" id="logoutButton" type="button">Sign out</button>
+      <button class="btn logout" id="backToHiosButton" type="button">Back to H-IOS</button>
     </div>
   </aside>
   <section class="workspace">
@@ -403,7 +403,7 @@ form{display:grid;gap:12px}
     catch(error){message('#authNote',error.message||'Could not sign in.',true)}
     finally{button.disabled=false}
   });
-  $('#logoutButton').addEventListener('click',async function(){await db.auth.signOut();showLogin()});
+  $('#backToHiosButton').addEventListener('click',function(){window.location.href='index.html'});
   $('#moduleForm').addEventListener('submit',function(event){
     event.preventDefault();const name=$('#moduleName').value.trim();if(!name)return;
     data.modules.push({id:uid(),name:name,code:$('#moduleCode').value.trim(),targetGrade:$('#moduleGoal').value.trim(),createdAt:Date.now()});
