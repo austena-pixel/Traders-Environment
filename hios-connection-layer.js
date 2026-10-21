@@ -20,7 +20,7 @@
   const CHANNEL='hios-communication-centre-v1';
   const CONTRACT_VERSION=1;
   const MAX_LOG_ENTRIES=250;
-  const SOURCES=Object.freeze(['goals-ios','h-ios','t-ios']);
+  const SOURCES=Object.freeze(['goals-ios','h-ios','t-ios','students-ios']);
   const TYPES=Object.freeze([
     'goal.created','goal.updated','goal.completed','goal.deleted',
     'goal.progress.changed','goal.deadline.changed',
@@ -108,6 +108,9 @@
     ]),
     't-ios':Object.freeze([
       'evidence.observed','evidence.responded'
+    ]),
+    'students-ios':Object.freeze([
+      'evidence.observed'
     ])
   });
   const permissionSets=Object.fromEntries(
@@ -162,7 +165,7 @@
   const contracts=modules.contracts;
   if(!contracts)throw new Error('data-contracts.js must load before connection-state.js');
 
-  const sourceProductIds=Object.freeze({'t-ios':'tios'});
+  const sourceProductIds=Object.freeze({'t-ios':'tios','students-ios':'sios'});
 
   function read(){
     const state=contracts.safeParse(localStorage.getItem(contracts.KEYS.connectionState),{});
@@ -407,6 +410,8 @@
     return true;
   }
 
+  const evidenceSourceProductIds=Object.freeze({'t-ios':'tios','students-ios':'sios'});
+
   function route(signal){
     const validation=contracts.validateSignal(signal);
     const errors=[...validation.errors];
@@ -426,8 +431,9 @@
         const evidenceValidation=evidenceContract.validateEvidence(evidence);
         if(!evidenceValidation.valid)errors.push(...evidenceValidation.errors);
       }
-      if(signal.source==='t-ios'&&evidence?.sourceProductId!=='tios'){
-        errors.push('T-IOS evidence source does not match sourceProductId.');
+      const expectedProductId=evidenceSourceProductIds[signal.source];
+      if(expectedProductId&&evidence?.sourceProductId!==expectedProductId){
+        errors.push(`${signal.source} evidence source does not match sourceProductId.`);
       }
     }
     if(validation.valid&&signal.type==='evidence.requested'){
