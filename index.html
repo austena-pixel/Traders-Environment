@@ -2947,7 +2947,11 @@ function receiveHiosStructuredEvidence(incoming=null){
     if(
       !verifyHiosStructuredEvidence(item) ||
       receipts[item.id] ||
-      (item.sourceProductId==='tios'&&!isProductAdded('tios'))
+      (item.sourceProductId&&!isProductAdded(item.sourceProductId)) ||
+      (item.sourceProductId==='sios'&&(
+        !window.HIOSIntelligenceUI?.sessionUser?.() ||
+        item.userId!==window.HIOSIntelligenceUI.sessionUser()
+      ))
     )return;
 
     const receivedAt=new Date().toISOString();
@@ -3132,8 +3136,8 @@ const HIOS_PRODUCT_CATALOG = [
     iconSurface:'#19333c',
     iconBorder:'#3b7180',
     description:'Academic planning, study management and learning intelligence.',
-    url:'',
-    availability:'Planned'
+    url:'s-ios.html',
+    availability:'Available'
   }
 ];
 
@@ -3332,6 +3336,10 @@ hiosBridge.subscribe(signal=>{
   const evidence=signal?.payload?.evidence;
   if(evidence)receiveHiosStructuredEvidence([evidence]);
 },{source:'t-ios',types:['evidence.observed']});
+hiosBridge.subscribe(signal=>{
+  const evidence=signal?.payload?.evidence;
+  if(evidence){receiveHiosStructuredEvidence([evidence]);renderHiosHome();}
+},{source:'students-ios',types:['evidence.observed']});
 hiosBridge.subscribe(receiveGoalEvidenceRequestSignal,{
   source:'goals-ios',
   types:['evidence.requested']
@@ -3610,10 +3618,28 @@ function renderGoalsDashboardViews(){
   }
 }
 
+function latestHiosSiosAcademicSummary(){
+  if(!isProductAdded('sios'))return null;
+  const userId=window.HIOSIntelligenceUI?.sessionUser?.();
+  if(!userId)return null;
+  const rows=readHiosEcosystemJson(HIOS_VERIFIED_EVIDENCE_KEY,{})?.sios||[];
+  const now=Date.now();
+  return rows.filter(item=>
+    item&&item.userId===userId&&
+    item.evidenceType==='academic_state_summary'&&
+    item.context?.sharingConsent===true&&
+    item.context?.scope==='summary_only'&&
+    Number.isFinite(Date.parse(item.context?.expiresAt))&&
+    Date.parse(item.context.expiresAt)>now
+  ).sort((a,b)=>String(b.observedAt||'').localeCompare(String(a.observedAt||'')))[0]||null;
+}
+
 function renderHiosIntelligence(){
   renderGoalsDashboardViews();
   const goals=loadHiosGoals();
   const manualEvents=loadHiosCalendarEvents();
+  const siosEvidence=latestHiosSiosAcademicSummary();
+  const siosSummary=siosEvidence?.observation||null;
   const todayKey=hiosDateKey(new Date());
   const pendingDeletes=pendingGoalIds('delete');
   const active=goals.filter(goal=>
@@ -3651,7 +3677,7 @@ function renderHiosIntelligence(){
   if(connectedMetric) connectedMetric.textContent=connected;
   if(!summary)return;
 
-  if(!goals.length&&!manualEvents.length){
+  if(!goals.length&&!manualEvents.length&&!siosSummary){
     summary.textContent='No dated commitments recorded. Select a calendar day to add one.';
     return;
   }
@@ -3666,6 +3692,13 @@ function renderHiosIntelligence(){
     pieces.push(`Next: “${next.item.title}” · ${next.date.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}.`);
   }else{
     pieces.push('No upcoming dated commitment is currently recorded.');
+  }
+
+  if(siosSummary){
+    const assessmentCount=Array.isArray(siosSummary.upcomingAssessments)?siosSummary.upcomingAssessments.length:0;
+    const moduleCount=Number(siosSummary.moduleCount)||0;
+    const reviewCount=Number(siosSummary.topicsNeedingReview)||0;
+    pieces.push(`Students-IOS: ${moduleCount} module${moduleCount===1?'':'s'} · ${assessmentCount} upcoming assessment${assessmentCount===1?'':'s'} · ${reviewCount} topic${reviewCount===1?'':'s'} to review.`);
   }
 
   summary.textContent=pieces.join(' ');
@@ -3692,7 +3725,12 @@ function renderHiosCalendar(){
     .map(event=>({...event,targetDate:event.date,_date:parseHiosDate(event.date),_source:'hios'}))
     .filter(event=>event._date);
 
-  const events=[...goals,...manual];
+  const siosAssessments=(latestHiosSiosAcademicSummary()?.observation?.upcomingAssessments||[])
+    .filter(item=>item&&item.date&&item.title)
+    .map((item,index)=>({...item,id:`sios_assessment_${index}`,targetDate:item.date,_date:parseHiosDate(item.date),_source:'sios'}))
+    .filter(event=>event._date);
+
+  const events=[...goals,...manual,...siosAssessments];
 
   monthLabel.textContent=hiosCalendarCursor.toLocaleDateString(undefined,{month:'long',year:'numeric'});
 
@@ -3725,6 +3763,10 @@ function renderHiosCalendar(){
         const label=`${hiosEventTypeLabel(type)}: ${event.title}`;
         const eventStatus=isPast?'event-past':(isToday?'event-today':'event-upcoming');
         markup+=`<button type="button" class="calendar-event manual ${hiosEscape(type)} ${eventStatus}" onclick="event.stopPropagation();editCalendarEntry('${hiosEscape(event.id)}')">${hiosEscape(label)}</button>`;
+      }else if(event._source==='sios'){
+        const label=`Students-IOS: ${event.title}`;
+        const eventStatus=isPast?'event-past':(isToday?'event-today':'event-upcoming');
+        markup+=`<button type="button" class="calendar-event manual assessment ${eventStatus}" onclick="event.stopPropagation();openProduct('sios')">${hiosEscape(label)}</button>`;
       }else{
         const priority=['high','medium','low'].includes(String(event.priority).toLowerCase())
           ? String(event.priority).toLowerCase()
