@@ -184,6 +184,14 @@ body.charts-workspace .main{padding:8px 10px}
 #chartsWorkspace .charts-deriv-mapping{grid-column:1/-1;font-size:10px;line-height:1.4;color:var(--muted);overflow-wrap:anywhere}
 #chartsWorkspace .charts-deriv-default{width:100%;white-space:normal;text-align:center;line-height:1.35;min-height:36px}
 #chartsWorkspace .charts-deriv-note{font-size:10px;line-height:1.45;color:var(--muted);margin:0}
+#chartsWorkspace .charts-mt5-launcher{display:grid;gap:8px}
+#chartsWorkspace .charts-mt5-launcher .charts-mt5-copy{margin-top:1px}
+#chartsWorkspace .charts-mt5-minimized{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:10px;line-height:1.4}
+#chartsWorkspace .charts-mt5-minimized input{accent-color:var(--accent);margin:0}
+#chartsWorkspace .charts-mt5-open{color:var(--text);text-decoration:none}
+#chartsWorkspace .charts-mt5-open[aria-disabled=true]{opacity:.55;cursor:not-allowed}
+#chartsWorkspace .charts-mt5-installer{color:var(--muted);text-decoration:none}
+#chartsWorkspace .charts-mt5-sync-status{color:var(--muted)}
 
 /* Optional public quote is separate from the embedded chart's prices. */
 #chartsWorkspace .charts-public-quote{flex-wrap:wrap;gap:8px;padding:8px;border:1px solid var(--line);border-radius:9px;background:var(--panel);margin-bottom:6px}
@@ -488,3 +496,4 @@ body.charts-workspace .main{padding:8px 10px}
 /* Saved markets use the same compact selector pattern as the chart timeframe. */
 #chartsWorkspace .charts-card-actions [data-charts-action="add-market"]{border-color:var(--line2);color:var(--text)}
 #chartsWorkspace .charts-card-actions [data-charts-action="add-market"]:disabled{opacity:.55;cursor:default}
+

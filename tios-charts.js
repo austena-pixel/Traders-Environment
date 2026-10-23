@@ -821,6 +821,16 @@
           <p id="charts-feed-test-note" class="charts-deriv-note">Read-only connection test. On the test page, press Connect public feed. Public prices remain unverified against MT5.</p>
           <button class="btn small charts-deriv-default" type="button" data-charts-action="start-public-quote">Start live Deriv quote</button>
           <p class="charts-deriv-note">Shows a separate public spot quote above your chart. TradingView controls its own candle updates. MT5 price parity remains unverified.</p>
+          <div class="charts-section-title">MT5 desktop</div>
+          <div class="charts-mt5-launcher">
+            <label class="charts-mt5-minimized"><input type="checkbox" data-mt5-minimized checked> Start minimized so Charts stays visible</label>
+            <a class="btn small charts-deriv-default charts-mt5-open" href="tios-mt5://launch?minimized=1" data-charts-action="launch-mt5" aria-describedby="charts-mt5-launch-status">Open MT5 on this computer</a>
+            <a class="btn small charts-deriv-default" href="https://deriv.com/trading-platforms/mt5/download" target="_blank" rel="noopener noreferrer">Install Deriv MT5 ↗</a>
+            <a class="btn small charts-deriv-default charts-mt5-installer" href="mt5/Install-TIOS-MT5-Launcher.ps1" download>Set up local launcher (one time)</a>
+            <p class="charts-deriv-note charts-mt5-copy">MT5 opens in its own desktop window. T-IOS stays open, and you can switch to MT5 during a session. Sign in to MT5 inside the terminal; T-IOS never asks for your MT5 password.</p>
+            <p class="charts-deriv-note" data-charts-mt5-launch-status id="charts-mt5-launch-status" role="status" aria-live="polite">One-time Windows launcher setup is required before this button can open the desktop terminal.</p>
+            <p class="charts-deriv-note charts-mt5-sync-status">Trade sync: this launcher only opens MT5. The current repository has a read-only candle companion, not a verified trade-sync bridge.</p>
+          </div>
           <div class="charts-section-title">Chart setup</div>
           <div class="charts-panel-settings"></div>
           <div class="charts-section-title">Preferences</div>
@@ -847,6 +857,15 @@
         <datalist id="charts-symbols"><option value="FX:EURUSD"><option value="FX:GBPUSD"><option value="OANDA:XAUUSD"><option value="NASDAQ:AAPL"><option value="BINANCE:BTCUSDT"></datalist>`;
       initializeChartsPanelResize();
       host.querySelectorAll('.charts-grid [data-chart-id]').forEach((card,index)=>relocateControls(card,index));
+      const launcherSupported=/Windows/i.test(navigator.userAgent);
+      const launcherLink=host.querySelector('[data-charts-action="launch-mt5"]');
+      const launcherInstaller=host.querySelector('.charts-mt5-installer');
+      const launcherStatus=host.querySelector('[data-charts-mt5-launch-status]');
+      if(!launcherSupported){
+        launcherLink?.setAttribute('aria-disabled','true');
+        launcherInstaller.hidden=true;
+        if(launcherStatus)launcherStatus.textContent='The local launcher currently supports Windows only. On macOS or Linux, install Deriv MT5 from the official download page and open it manually; T-IOS stays open.';
+      }
       updateMarketSelects();
       host.querySelector('.charts-panel').inert=controlsCollapsed;
       changed();refreshWidgets();
@@ -921,6 +940,11 @@
       }
     });
     host.addEventListener('change',event=>{
+      if(event.target.matches('[data-mt5-minimized]')){
+        const link=host.querySelector('[data-charts-action="launch-mt5"]');
+        if(link)link.href='tios-mt5://launch?minimized='+(event.target.checked?'1':'0');
+        return;
+      }
       if(event.target.matches('[data-charts-public-market]')){
         if(quoteActive())return;
         quoteMarket=event.target.value;quoteMarketChosen=true;stopPublicQuote('Public market selection changed. Press Start to receive this separate instrument.',true);return;
@@ -968,6 +992,17 @@
       if(layout&&accountStep==='ready'&&loaded){selectChartCount(layout.dataset.chartsLayout==='single'?1:prefs.charts.multiple.length);return}
       const button=event.target.closest('[data-charts-action]');if(!button)return;
       const action=button.dataset.chartsAction;
+      if(action==='launch-mt5'){
+        if(!/Windows/i.test(navigator.userAgent)){
+          event.preventDefault();
+          const note=host.querySelector('[data-charts-mt5-launch-status]');
+          if(note)note.textContent='The local launcher currently supports Windows only. On macOS or Linux, install Deriv MT5 from the official download page and open it manually.';
+          return;
+        }
+        const note=host.querySelector('[data-charts-mt5-launch-status]');
+        if(note)note.textContent='Launch requested. If your browser asks, allow it to open the T-IOS MT5 launcher. If MT5 does not start, complete the one-time launcher setup below.';
+        return;
+      }
       if(action==='sign-in-charts'){enterCharts();return;}
       if(action==='create-charts-account'){enterCharts(true);return;}
       if(action==='start-tios-charts'){completeFirstTimeChartSetup();return;}
@@ -1041,3 +1076,4 @@
     return api;
   }};
 })();
+
