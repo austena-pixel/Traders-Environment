@@ -14,6 +14,6 @@ The setup does not require administrator access. It stores the terminal executab
 
 This is a Windows launcher only. macOS and Linux users can install and open MT5 manually, but this companion does not launch it for them.
 
-Launching MT5 does not establish live trade synchronization. The current repository contains a separate read-only candle-data companion, but it does not contain a T-IOS trade-sync EA or a verified trade-update connection. T-IOS must not display the terminal as connected or treat account trades as synchronized until that bridge is implemented and validated.
+Launching MT5 does not establish live trade synchronization by itself. T-IOS has a separate read-only trade bridge EA; linking an account and attaching that EA are required before T-IOS can show a live sync. See [T-IOS MT5 Bridge Setup](T-IOS-MT5-Bridge-README.md). A separate candle-data companion is also available.
 
 The user must keep their own computer and MT5 running for any later local bridge to send updates. No real-money order execution is initiated by this launcher.

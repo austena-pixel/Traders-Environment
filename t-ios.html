@@ -9032,8 +9032,13 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
         <div class="connection-panel-head">
           <div>
             <h3>How the Sync Works</h3>
-            <p>MT5 sends account state, positions and deal history to a secure Supabase Edge Function.</p>
+            <p>Only activity from the link start time is sent. Earlier account history is not imported.</p>
           </div>
+        </div>
+
+        <div class="form-actions" style="margin:0 0 14px">
+          <a class="btn primary" href="mt5/TradersEnvironmentBridge.mq5" download="TradersEnvironmentBridge.mq5">Download read-only MT5 bridge</a>
+          <a class="btn" href="mt5/T-IOS-MT5-Bridge-README.md" target="_blank" rel="noopener">Setup guide</a>
         </div>
 
         <div class="bridge-flow">
@@ -9304,7 +9309,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
     </div>
 
     <div class="connection-note">
-      Put these three values into <strong>TradersEnvironmentBridge.mq5</strong> when attaching it to the matching Deriv MT5 account.
+      Put these three values into <strong>TradersEnvironmentBridge.mq5</strong> when attaching it to the matching Deriv MT5 account. The bridge does not request or store your MT5 password.
     </div>
 
     <div class="form-actions">
@@ -10522,9 +10527,46 @@ async function loadExecutionData(){
 function connectionStatusClass(status){
   if(status==='connected') return 'status-connected';
   if(status==='pending') return 'status-pending';
-  if(status==='offline') return 'status-offline';
+  if(status==='offline' || status==='stale') return 'status-offline';
   if(status==='error') return 'status-error';
   return '';
+}
+
+function accountHasFreshMt5Snapshot(account,now=Date.now()){
+  if(
+    !account ||
+    (account.account_type!=='demo' && account.account_type!=='real') ||
+    account.platform!=='MT5' ||
+    account.bridge_enabled!==true ||
+    account.connection_status!=='connected'
+  )return false;
+
+  const lastSync=Date.parse(account.last_sync_at||'');
+  return Number.isFinite(lastSync)&&lastSync<=now+30000&&now-lastSync<=120000;
+}
+
+function connectionStatusForUi(account){
+  if(!account || account.account_type==='manual')return 'manual';
+  if(account.bridge_enabled!==true)return 'offline';
+  if(account.connection_status==='connected'&&!accountHasFreshMt5Snapshot(account))return 'stale';
+  return account.connection_status||'pending';
+}
+
+function refreshMt5StatusLabels(){
+  const switcherStatus=$('#accountSwitcherStatus');
+  if(switcherStatus){
+    switcherStatus.textContent=tradingAccount?.account_type==='manual'
+      ? 'Manual journal account'
+      : `${connectionStatusForUi(tradingAccount)} • ${tradingAccount?.mt5_server || 'server not detected yet'}`;
+  }
+
+  $$('[data-mt5-status-account-id]').forEach(node=>{
+    const account=tradingAccounts.find(item=>item.id===node.dataset.mt5StatusAccountId);
+    if(!account)return;
+    const status=connectionStatusForUi(account);
+    node.className=connectionStatusClass(status);
+    node.textContent=`Status: ${status}`;
+  });
 }
 
 function accountDisplayName(account){
@@ -10564,7 +10606,7 @@ function renderAccountSelector(){
     status.textContent='Manual journal account';
   }else{
     status.textContent=
-      `${tradingAccount?.connection_status || 'pending'} • ${tradingAccount?.mt5_server || 'server not detected yet'}`;
+      `${connectionStatusForUi(tradingAccount)} • ${tradingAccount?.mt5_server || 'server not detected yet'}`;
   }
 }
 
@@ -10820,6 +10862,7 @@ async function toggleBridge(accountId,enabled){
     .update({
       bridge_enabled:enabled,
       connection_status:enabled ? 'pending' : 'offline',
+      sync_error:null,
       updated_at:new Date().toISOString()
     })
     .eq('id',accountId)
@@ -10833,7 +10876,7 @@ async function toggleBridge(accountId,enabled){
   await refreshTradingAccounts();
 }
 
-function renderSettings(){
+function renderSettings(renderConnections=true){
   if(!tradingAccount) return;
 
   const linked=
@@ -10843,10 +10886,10 @@ function renderSettings(){
 
   const list=$('#mt5ConnectionsList');
 
-  if(!linked.length){
+  if(renderConnections && !linked.length){
     list.innerHTML=
       '<div class="empty-state">No linked MT5 accounts yet.</div>';
-  }else{
+  }else if(renderConnections){
     list.innerHTML='';
 
     linked.forEach(account=>{
@@ -10872,8 +10915,8 @@ function renderSettings(){
         <div class="connection-meta">
           <span>Login: ${escapeHtml(account.mt5_login||'—')}</span>
           <span>Server: ${escapeHtml(account.mt5_server||'Not detected yet')}</span>
-          <span class="${connectionStatusClass(account.connection_status)}">
-            Status: ${escapeHtml(account.connection_status||'pending')}
+          <span data-mt5-status-account-id="${account.id}" class="${connectionStatusClass(connectionStatusForUi(account))}">
+            Status: ${escapeHtml(connectionStatusForUi(account))}
           </span>
           <span>Last sync: ${escapeHtml(timeAgoOrDate(account.last_sync_at))}</span>
         </div>
@@ -10886,7 +10929,7 @@ function renderSettings(){
             New Key
           </button>
           <button class="btn small ${account.bridge_enabled?'danger':''} toggle-bridge" data-account-id="${account.id}" data-enabled="${account.bridge_enabled?'0':'1'}">
-            ${account.bridge_enabled?'Disable':'Enable'}
+            ${account.bridge_enabled?'Disconnect':'Reconnect'}
           </button>
         </div>
       `;
@@ -10922,37 +10965,39 @@ function renderSettings(){
   const isLinked=
     tradingAccount.account_type==='demo' ||
     tradingAccount.account_type==='real';
+  const hasLiveSnapshot=accountHasFreshMt5Snapshot(tradingAccount);
+  const displayedStatus=connectionStatusForUi(tradingAccount);
 
   $('#settingsLiveStatus').textContent=
     isLinked
-      ? (tradingAccount.connection_status || 'pending')
+      ? displayedStatus
       : 'Manual';
 
   $('#settingsLiveStatus').className=
-    connectionStatusClass(tradingAccount.connection_status);
+    connectionStatusClass(displayedStatus);
 
   $('#settingsLiveBalance').textContent=
-    isLinked && tradingAccount.current_balance!=null
+    hasLiveSnapshot && tradingAccount.current_balance!=null
       ? money(Number(tradingAccount.current_balance))
       : '—';
 
   $('#settingsLiveEquity').textContent=
-    isLinked && tradingAccount.current_equity!=null
+    hasLiveSnapshot && tradingAccount.current_equity!=null
       ? money(Number(tradingAccount.current_equity))
       : '—';
 
   const floating=Number(tradingAccount.floating_pnl||0);
 
   $('#settingsFloatingPnl').textContent=
-    isLinked
+    hasLiveSnapshot
       ? signedMoney(floating)
       : '—';
 
   $('#settingsFloatingPnl').className=
-    isLinked ? pnlClass(floating) : '';
+    hasLiveSnapshot ? pnlClass(floating) : '';
 
   $('#settingsOpenPositions').textContent=
-    isLinked && tradingAccount.open_positions!=null
+    hasLiveSnapshot && tradingAccount.open_positions!=null
       ? String(tradingAccount.open_positions)
       : '—';
 
@@ -11060,6 +11105,13 @@ function subscribeToMt5Realtime(){
       }
     });
 }
+
+setInterval(()=>{
+  if(!tradingAccount || tradingAccount.account_type==='manual')return;
+  refreshMt5StatusLabels();
+  renderSettings(false);
+  renderMetrics();
+},15000);
 
 
 /* =========================
@@ -11509,6 +11561,7 @@ function renderMetrics(){
 
   const dashboardEquity=
     linkedAccount &&
+    accountHasFreshMt5Snapshot(tradingAccount) &&
     tradingAccount?.current_equity!=null &&
     Number.isFinite(liveEquity)
       ? liveEquity
@@ -23762,7 +23815,7 @@ window.getTiosConversationContext=function(){
     accountName:tradingAccount?accountDisplayName(tradingAccount):'Selected account',
     currency:String(tradingAccount?.currency||'USD').toUpperCase(),
     initialBalance:initialAccountBalance(),
-    equity:tradingAccount?.current_equity!=null&&Number.isFinite(Number(tradingAccount.current_equity))?Number(tradingAccount.current_equity):null,
+    equity:accountHasFreshMt5Snapshot(tradingAccount)&&tradingAccount?.current_equity!=null&&Number.isFinite(Number(tradingAccount.current_equity))?Number(tradingAccount.current_equity):null,
     today:localDateString(today),weekStart:localDateString(monday),
     month:localDateString(viewDate).slice(0,7),
     monthLabel:viewDate.toLocaleDateString(undefined,{month:'long',year:'numeric'}),
