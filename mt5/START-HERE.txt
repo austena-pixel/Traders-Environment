@@ -1,0 +1,9 @@
+T-IOS MT5 Quick Setup
+
+1. In T-IOS, create your Deriv MT5 link and copy the one-time MT5 setup code.
+2. Extract this ZIP and double-click Install-TIOS-MT5-Bridge.cmd. It finds the MT5 data folder, copies the bridge and compiles it when MetaEditor is available.
+3. In MT5, allow https://tmxosoyqflmwqzjgnkez.supabase.co under Tools > Options > Expert Advisors. Attach TradersEnvironmentBridge to a chart and paste the T-IOS code into TE_Setup_Code.
+
+Keep MT5 open while you want T-IOS to sync. The bridge is read-only and does not ask for your MT5 password.
+
+If setup says it cannot find the data folder, open the matching Deriv MT5 account and choose File > Open Data Folder once, then run the installer again.

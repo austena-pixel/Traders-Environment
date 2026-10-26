@@ -1,19 +1,35 @@
 #property strict
-#property version   "1.00"
+#property version   "1.01"
 #property description "Read-only Deriv MT5 account and trade-history sync for T-IOS."
 
 input string TE_Function_URL = "https://tmxosoyqflmwqzjgnkez.supabase.co/functions/v1/mt5-sync";
-input string TE_Connection_ID = "";
-input string TE_Bridge_Key = "";
+input string TE_Setup_Code = "";
 input int    TE_Sync_Interval_Seconds = 30;
 input int    TE_Max_Deals_Per_Request = 50;
 input int    TE_Timeout_Milliseconds = 10000;
+
+string TE_Connection_ID = "";
+string TE_Bridge_Key = "";
 
 struct DealTicketTime
   {
    long  time_msc;
    ulong ticket;
   };
+
+bool ParseSetupCode()
+  {
+   const int separator = StringFind(TE_Setup_Code, ".");
+   if(separator <= 0 || separator >= StringLen(TE_Setup_Code) - 1)
+      return false;
+
+   TE_Connection_ID = StringSubstr(TE_Setup_Code, 0, separator);
+   TE_Bridge_Key = StringSubstr(TE_Setup_Code, separator + 1);
+
+   return StringLen(TE_Connection_ID) == 36 &&
+          StringLen(TE_Bridge_Key) == 67 &&
+          StringFind(TE_Bridge_Key, "te_") == 0;
+  }
 
 string CursorKey()
   {
@@ -430,9 +446,9 @@ void SendReadOnlySync()
 
 int OnInit()
   {
-   if(TE_Function_URL == "" || TE_Connection_ID == "" || TE_Bridge_Key == "")
+   if(TE_Function_URL == "" || !ParseSetupCode())
      {
-      Print("Enter the T-IOS function URL, connection ID and bridge key in the EA inputs.");
+      Print("Paste the one-time setup code from T-IOS into the TE_Setup_Code input.");
       return INIT_PARAMETERS_INCORRECT;
      }
 

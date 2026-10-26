@@ -1987,7 +1987,7 @@ body.playbook-workspace .main{
 .stats-section-a-header>.stats-period-dropdown{flex:0 0 auto}
 .stats-section-a-header>.stats-date-navigation-controls{flex:0 1 auto;justify-content:flex-start;gap:4px;max-width:100%;margin:0;min-width:0}
 .stats-section-a-header .stats-date-navigation-controls .btn{min-height:29px;padding:4px 7px;font-size:8px;white-space:nowrap}
-.stats-section-a-header .stats-date-navigation-controls .stats-date-range{display:inline-flex;align-items:center;min-height:29px;padding:4px 9px;border:1px solid #33445a;border-radius:8px;background:#101925;color:#e2ecfa;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.stats-section-a-header .stats-date-navigation-controls .stats-date-range{color:#8798ad;font-size:8px;white-space:nowrap}
 .stats-section-a-header>.stats-view-tabs{flex:0 0 auto;min-width:0;max-width:100%;width:auto;margin-left:auto;grid-template-columns:repeat(3,max-content)}
 .stats-section-a-header>.stats-view-tabs .range-btn{border-radius:8px}
 .stats-section-a-header .stats-view-tabs .range-btn{flex:0 0 auto;min-height:32px;padding:6px 9px;gap:8px;white-space:nowrap}
@@ -3164,23 +3164,55 @@ body.execution-workspace #executionStructureModal.open{
   margin-top:9px;
   flex-wrap:wrap;
 }
-.bridge-flow{
+.mt5-quick-steps{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin:14px 0 12px;
+}
+.mt5-quick-steps article{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  min-width:0;
+  padding:12px;
+  border:1px solid var(--line2);
+  border-radius:12px;
+  background:var(--panel2);
+}
+.mt5-quick-steps article>span{
+  display:grid;
+  place-items:center;
+  flex:none;
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  color:var(--blue);
+  background:rgba(105,168,255,.14);
+  font-weight:800;
+}
+.mt5-quick-steps article strong,
+.mt5-quick-steps article small{
+  display:block;
+}
+.mt5-quick-steps article strong{font-size:12px;margin:2px 0 5px}
+.mt5-quick-steps article small{color:var(--muted);font-size:11px;line-height:1.5}
+.mt5-webrequest-row{
   display:flex;
   align-items:center;
-  justify-content:center;
-  gap:8px;
-  flex-wrap:wrap;
-  margin:8px 0 0;
+  justify-content:space-between;
+  gap:12px;
+  margin:10px 0;
+  padding:9px 11px;
+  border:1px solid var(--line2);
+  border-radius:10px;
+  background:var(--panel2);
 }
-.bridge-flow span{
-  border:1px solid #2a3a4f;
-  background:#0d1621;
-  border-radius:9px;
-  padding:7px 9px;
-  font-size:9px;
-}
-.bridge-flow b{
-  color:#72849b;
+.mt5-webrequest-row code{overflow-wrap:anywhere;font-size:11px}
+@media(max-width:800px){
+  .mt5-quick-steps{grid-template-columns:1fr}
+  .mt5-webrequest-row{align-items:stretch;flex-direction:column}
+  .mt5-webrequest-row button{align-self:flex-start}
 }
 .mt5-credentials-card{
   width:min(720px,100%);
@@ -3202,7 +3234,7 @@ body.execution-workspace #executionStructureModal.open{
 .credential-copy-row input{
   min-width:0;
   font-family:monospace;
-  font-size:9px;
+  font-size:12px;
 }
 .status-connected{color:var(--green)}
 .status-pending{color:var(--amber)}
@@ -8944,8 +8976,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           <form id="mt5ConnectionForm">
             <div class="form-grid">
               <div class="field">
-                <label>Account Name</label>
-                <input id="mt5AccountName" required placeholder="e.g. Deriv Demo 1">
+                <label>Account Name (optional)</label>
+                <input id="mt5AccountName" placeholder="e.g. My Deriv Demo">
               </div>
 
               <div class="field">
@@ -8960,20 +8992,15 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
                 <label>MT5 Login</label>
                 <input id="mt5Login" inputmode="numeric" required placeholder="MT5 account number">
               </div>
-
-              <div class="field">
-                <label>MT5 Server</label>
-                <input id="mt5Server" placeholder="Optional — detected by the EA">
-              </div>
             </div>
 
             <div class="connection-note">
-              The MT5 account itself verifies whether it is <strong>Demo</strong> or <strong>Real</strong>.
-              If the type selected here does not match MT5, the bridge rejects the sync.
+              Enter the login and choose <strong>Demo</strong> or <strong>Real</strong> as shown in MT5.
+              T-IOS detects the server. You never enter your MT5 password here.
             </div>
 
             <div class="form-actions">
-              <button class="btn primary" id="createMt5ConnectionBtn" type="submit">Create MT5 Link</button>
+              <button class="btn primary" id="createMt5ConnectionBtn" type="submit">Create link &amp; setup code</button>
             </div>
           </form>
         </div>
@@ -9031,31 +9058,30 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
       <section class="panel connection-panel">
         <div class="connection-panel-head">
           <div>
-            <h3>How the Sync Works</h3>
-            <p>Only activity from the link start time is sent. Earlier account history is not imported.</p>
+            <h3>Connect MT5 in 3 steps</h3>
+            <p>One-time setup on this computer. After that, keep MT5 open while you trade.</p>
           </div>
         </div>
 
         <div class="form-actions" style="margin:0 0 14px">
-          <a class="btn primary" href="mt5/TradersEnvironmentBridge.mq5" download="TradersEnvironmentBridge.mq5">Download read-only MT5 bridge</a>
-          <a class="btn" href="mt5/T-IOS-MT5-Bridge-README.md" target="_blank" rel="noopener">Setup guide</a>
+          <a class="btn primary" href="mt5/T-IOS-MT5-Quick-Setup.zip" download>Download Windows quick setup</a>
+          <a class="btn" href="mt5/T-IOS-MT5-Bridge-README.md" target="_blank" rel="noopener">View 3-step guide</a>
+          <a class="btn small" href="mt5/TradersEnvironmentBridge.mq5" download="TradersEnvironmentBridge.mq5">Manual install</a>
         </div>
 
-        <div class="bridge-flow">
-          <span>Deriv MT5</span>
-          <b>→</b>
-          <span>TE Bridge EA</span>
-          <b>→</b>
-          <span>Supabase Edge Function</span>
-          <b>→</b>
-          <span>TE Database</span>
-          <b>→</b>
-          <span>Realtime UI</span>
+        <div class="mt5-quick-steps">
+          <article><span>1</span><div><strong>Create your link</strong><small>Enter your MT5 login and account type above. Copy the setup code shown next.</small></div></article>
+          <article><span>2</span><div><strong>Install the bridge once</strong><small>Extract the download and open <b>Install-TIOS-MT5-Bridge.cmd</b>. It installs and compiles the EA when MetaEditor is available.</small></div></article>
+          <article><span>3</span><div><strong>Allow and attach</strong><small>Allow the T-IOS URL in MT5, attach the EA to one chart, and paste the setup code into <b>TE_Setup_Code</b>.</small></div></article>
+        </div>
+
+        <div class="mt5-webrequest-row">
+          <code id="mt5WebRequestUrl">https://tmxosoyqflmwqzjgnkez.supabase.co</code>
+          <button class="btn small" type="button" id="copyMt5WebRequestUrl">Copy URL for MT5</button>
         </div>
 
         <div class="connection-note">
-          The bridge contains no order placement, position modification, or close-trade commands.
-          It is designed only to read MT5 account/trade information and send it to T·IOS.
+          The bridge is read-only. MT5 still asks you to allow this URL once; T-IOS never receives your MT5 password.
         </div>
       </section>
     </section>
@@ -9275,45 +9301,28 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 <div class="modal" id="mt5CredentialsModal">
   <div class="modal-card mt5-credentials-card">
     <div class="modal-head">
-      <h2>MT5 Bridge Credentials</h2>
+      <h2>Your MT5 setup code</h2>
       <button class="close" id="closeMt5Credentials">×</button>
     </div>
 
     <div class="connection-warning">
-      Save the Bridge Key now. TE stores only its SHA-256 hash, so this raw key is not recoverable later.
-      If you lose it, generate a new key from Settings.
+      Copy this code now. It is private to this connection and cannot be recovered later. If you lose it, choose <strong>New Key</strong> in Settings.
     </div>
 
     <div class="credential-row">
-      <label>Supabase Function URL</label>
+      <label>MT5 setup code</label>
       <div class="credential-copy-row">
-        <input id="mt5FunctionUrl" readonly>
-        <button class="btn small" type="button" data-copy-target="mt5FunctionUrl">Copy</button>
-      </div>
-    </div>
-
-    <div class="credential-row">
-      <label>TE Connection ID</label>
-      <div class="credential-copy-row">
-        <input id="mt5ConnectionIdOut" readonly>
-        <button class="btn small" type="button" data-copy-target="mt5ConnectionIdOut">Copy</button>
-      </div>
-    </div>
-
-    <div class="credential-row">
-      <label>Bridge Key</label>
-      <div class="credential-copy-row">
-        <input id="mt5BridgeKeyOut" readonly>
-        <button class="btn small" type="button" data-copy-target="mt5BridgeKeyOut">Copy</button>
+        <input id="mt5SetupCodeOut" readonly autocomplete="off" spellcheck="false">
+        <button class="btn small" type="button" data-copy-target="mt5SetupCodeOut" data-copy-message="Setup code copied">Copy code</button>
       </div>
     </div>
 
     <div class="connection-note">
-      Put these three values into <strong>TradersEnvironmentBridge.mq5</strong> when attaching it to the matching Deriv MT5 account. The bridge does not request or store your MT5 password.
+      After installing the bridge, paste this single code into <strong>TE_Setup_Code</strong> in MT5. The function URL is already built into the EA.
     </div>
 
     <div class="form-actions">
-      <button class="btn primary" type="button" id="doneMt5Credentials">I Saved Them</button>
+      <button class="btn primary" type="button" id="doneMt5Credentials">I copied the code</button>
     </div>
   </div>
 </div>
@@ -10717,18 +10726,14 @@ function generateBridgeKey(){
 }
 
 function openMt5Credentials(accountId,rawKey){
-  $('#mt5FunctionUrl').value=
-    `${SUPABASE_URL.replace(/\/$/,'')}/functions/v1/mt5-sync`;
-
-  $('#mt5ConnectionIdOut').value=accountId;
-  $('#mt5BridgeKeyOut').value=rawKey;
+  $('#mt5SetupCodeOut').value=`${accountId}.${rawKey}`;
 
   $('#mt5CredentialsModal').classList.add('open');
 }
 
 function closeMt5Credentials(){
   $('#mt5CredentialsModal').classList.remove('open');
-  $('#mt5BridgeKeyOut').value='';
+  $('#mt5SetupCodeOut').value='';
 }
 
 $('#closeMt5Credentials').addEventListener(
@@ -10753,8 +10758,13 @@ $$('[data-copy-target]').forEach(btn=>{
     if(!input) return;
 
     await navigator.clipboard.writeText(input.value);
-    showStatus('Copied');
+    showStatus(btn.dataset.copyMessage||'Copied');
   });
+});
+
+$('#copyMt5WebRequestUrl').addEventListener('click',async()=>{
+  await navigator.clipboard.writeText($('#mt5WebRequestUrl').textContent.trim());
+  showStatus('T-IOS URL copied');
 });
 
 $('#mt5ConnectionForm').addEventListener(
@@ -10765,16 +10775,19 @@ $('#mt5ConnectionForm').addEventListener(
     const rawKey=generateBridgeKey();
     const tokenHash=await sha256HexBrowser(rawKey);
 
+    const accountType=$('#mt5AccountType').value;
+    const login=$('#mt5Login').value.trim();
+    const accountName=$('#mt5AccountName').value.trim()||`Deriv ${accountType==='demo'?'Demo':'Real'} ${login}`;
+
     const payload={
       user_id:currentUser.id,
-      account_name:$('#mt5AccountName').value.trim(),
+      account_name:accountName,
       starting_balance:0,
       currency:'USD',
       broker:'Deriv',
       platform:'MT5',
-      account_type:$('#mt5AccountType').value,
-      mt5_login:$('#mt5Login').value.trim(),
-      mt5_server:$('#mt5Server').value.trim() || null,
+      account_type:accountType,
+      mt5_login:login,
       bridge_token_hash:tokenHash,
       bridge_enabled:true,
       connection_status:'pending'
@@ -10791,7 +10804,7 @@ $('#mt5ConnectionForm').addEventListener(
       .single();
 
     button.disabled=false;
-    button.textContent='Create MT5 Link';
+    button.textContent='Create link & setup code';
 
     if(error){
       alert(error.message);
