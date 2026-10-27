@@ -79,6 +79,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 .auth-mode-toggle{margin-left:4px;padding:0;border:0;background:none;color:#9dc3ff;font:inherit;font-weight:700;cursor:pointer}
 .auth-mode-toggle:hover{text-decoration:underline}
 .auth-mode-toggle:disabled{opacity:.6;cursor:not-allowed}
+.resend-confirmation-link{display:block;margin:12px auto 0}
 .submit,.primary{
   border:0;border-radius:12px;padding:12px 15px;color:white;font-weight:800;cursor:pointer;
   background:linear-gradient(135deg,var(--accent),var(--accent2))
@@ -2449,6 +2450,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 
           <button class="submit" id="signInButton" type="submit">Enter H·IOS</button>
           <div class="notice" id="notice" aria-live="polite"></div>
+          <button class="auth-mode-toggle resend-confirmation-link hidden" id="resendSigninConfirmationButton" type="button">Resend confirmation email</button>
           <p class="auth-switch"><span id="authModePrompt">New to H·IOS?</span><button class="auth-mode-toggle" id="authModeToggle" type="button">Create account</button></p>
         </form>
         <div id="authResult" class="hidden" aria-live="polite">
@@ -4079,6 +4081,7 @@ const signInButton = document.getElementById('signInButton');
 const authModeToggle = document.getElementById('authModeToggle');
 const authModePrompt = document.getElementById('authModePrompt');
 let authMode = 'signin';
+let showResendSigninConfirmation = false;
 
 function setAuthMode(mode){
   const nextMode = mode === 'signup' ? 'signup' : 'signin';
@@ -4101,6 +4104,7 @@ function setAuthMode(mode){
   signInButton.textContent = creatingAccount ? 'Create account' : 'Enter H·IOS';
   authModePrompt.textContent = creatingAccount ? 'Already have an account?' : 'New to H·IOS?';
   authModeToggle.textContent = creatingAccount ? 'Sign in' : 'Create account';
+  document.getElementById('resendSigninConfirmationButton').classList.toggle('hidden', creatingAccount || !showResendSigninConfirmation);
   if(modeChanged){
     passwordInput.value = '';
     confirmPasswordInput.value = '';
@@ -4167,6 +4171,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
       setAuthMode('signin');
       emailInput.value = email;
+      revealResendConfirmationAction();
       setNotice('Sign-up submitted. Check your email for a confirmation link, then sign in here.', 'info');
       return;
     }
@@ -4174,6 +4179,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     const { data, error } = await db.auth.signInWithPassword({ email, password });
 
     if(error){
+      if(/email not confirmed/i.test(error.message || '')) revealResendConfirmationAction();
       setNotice(error.message, 'error');
       return;
     }
@@ -4218,6 +4224,8 @@ document.getElementById('forgotLink').addEventListener('click', async (e) => {
 });
 
 function showApp(user){
+  showResendSigninConfirmation = false;
+  document.getElementById('resendSigninConfirmationButton').classList.add('hidden');
   if(user?.id)window.HIOSIntelligenceUI.setSessionUser(user.id);
   authScreen.classList.add('hidden');
   appScreen.classList.remove('hidden');
@@ -4248,6 +4256,37 @@ function setNotice(message,type){
   notice.textContent = message;
   notice.className = 'notice ' + type;
 }
+
+function revealResendConfirmationAction(){
+  showResendSigninConfirmation = true;
+  document.getElementById('resendSigninConfirmationButton').classList.toggle('hidden', authMode === 'signup');
+}
+
+document.getElementById('resendSigninConfirmationButton').addEventListener('click', async () => {
+  const email = emailInput.value.trim();
+  if(!email){
+    setNotice('Enter your email first, then choose “Resend confirmation email”.', 'error');
+    return;
+  }
+  const button = document.getElementById('resendSigninConfirmationButton');
+  button.disabled = true;
+  try{
+    const { error } = await db.auth.resend({
+      type: 'signup',
+      email,
+      options: { emailRedirectTo: getAuthRedirectUrl() }
+    });
+    if(error){
+      setNotice(error.message, 'error');
+      return;
+    }
+    setNotice('A fresh confirmation email has been sent. Check your inbox.', 'info');
+  }catch(error){
+    setNotice('Could not send a confirmation email. Please try again.', 'error');
+  }finally{
+    button.disabled = false;
+  }
+});
 
 function getAuthRedirectUrl(){
   return window.location.origin + window.location.pathname;
