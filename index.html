@@ -4160,7 +4160,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
       });
 
       if(error){
-        setNotice(error.message, 'error');
+        setNotice(getAuthErrorMessage(error), 'error');
         return;
       }
 
@@ -4180,7 +4180,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
     if(error){
       if(/email not confirmed/i.test(error.message || '')) revealResendConfirmationAction();
-      setNotice(error.message, 'error');
+      setNotice(getAuthErrorMessage(error), 'error');
       return;
     }
 
@@ -4214,7 +4214,7 @@ document.getElementById('forgotLink').addEventListener('click', async (e) => {
   try{
     const { error } = await db.auth.resetPasswordForEmail(email);
     if(error){
-      setNotice(error.message, 'error');
+      setNotice(getAuthErrorMessage(error), 'error');
       return;
     }
     setNotice('Password reset email sent. Check your inbox.', 'info');
@@ -4257,6 +4257,21 @@ function setNotice(message,type){
   notice.className = 'notice ' + type;
 }
 
+function getAuthErrorMessage(error){
+  const code = String(error?.code || '').toLowerCase();
+  const message = String(error?.message || '');
+  if(code === 'over_email_send_rate_limit' || /email rate limit exceeded|too many emails have been sent/i.test(message)){
+    return 'Too many emails have been requested recently. Wait a while before trying again, and check your inbox and spam for an earlier confirmation email.';
+  }
+  if(code === 'over_request_rate_limit' || /too many requests/i.test(message)){
+    return 'Too many requests were made in a short time. Wait a few minutes, then try again.';
+  }
+  if(/email not confirmed/i.test(message)){
+    return 'This email still needs confirmation. Choose “Resend confirmation email” below.';
+  }
+  return message || 'Authentication could not be completed. Please try again.';
+}
+
 function revealResendConfirmationAction(){
   showResendSigninConfirmation = true;
   document.getElementById('resendSigninConfirmationButton').classList.toggle('hidden', authMode === 'signup');
@@ -4277,7 +4292,7 @@ document.getElementById('resendSigninConfirmationButton').addEventListener('clic
       options: { emailRedirectTo: getAuthRedirectUrl() }
     });
     if(error){
-      setNotice(error.message, 'error');
+      setNotice(getAuthErrorMessage(error), 'error');
       return;
     }
     setNotice('A fresh confirmation email has been sent. Check your inbox.', 'info');
@@ -4347,7 +4362,7 @@ document.getElementById('resendConfirmationButton').addEventListener('click', as
       options: { emailRedirectTo: getAuthRedirectUrl() }
     });
     if(error){
-      setResendConfirmationNotice(error.message, 'error');
+      setResendConfirmationNotice(getAuthErrorMessage(error), 'error');
       return;
     }
     setResendConfirmationNotice('A fresh confirmation email has been sent. Check your inbox.', 'info');
