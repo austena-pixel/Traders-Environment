@@ -155,6 +155,12 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   color:#fff !important;
   transform:translateY(-1px);
 }
+.sidebar-admin-link{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;
+  background:rgba(16,20,28,.72);color:#c5d2e5;text-decoration:none;font-size:12px;font-weight:700;transition:.18s ease
+}
+.sidebar-admin-link:hover{border-color:#536c9b;background:var(--panel2);color:#fff;transform:translateY(-1px)}
+.sidebar-admin-icon{width:24px;height:24px;display:grid;place-items:center;border-radius:8px;background:#1b2433;color:#a8c6ff;font-size:13px}
 .product-nav button{
   width:100%;
   display:flex;
@@ -367,6 +373,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
   .app{grid-template-columns:1fr}.sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}
   .nav{grid-template-columns:repeat(4,1fr)}.side-foot{display:none}.main{padding:20px}.grid{grid-template-columns:1fr}.products{grid-template-columns:1fr}
 }
+@media(max-width:950px){.sidebar-admin-link{grid-column:1/-1}}
 @media(max-width:620px){
   #authScreen{padding:12px}.brand-panel,.login-panel{padding-left:20px;padding-right:20px}.hero h2{font-size:35px}
   .topbar{align-items:flex-start;flex-direction:column}.nav{grid-template-columns:repeat(2,1fr)}
@@ -2514,6 +2521,7 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 
         <!-- Area B: products added through Add Product appear here. -->
         <div class="product-nav" id="productSidebarNav"></div>
+        <a class="sidebar-admin-link" href="hios-admin.html"><span class="sidebar-admin-icon" aria-hidden="true">⚙</span><span>Admin Console</span></a>
       </nav>
 
       <div class="side-foot">H·IOS family interface</div>
