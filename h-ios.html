@@ -88,6 +88,8 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 .notice{display:none;margin-top:14px;padding:11px 12px;border-radius:10px;font-size:12px;line-height:1.45}
 .notice.error{display:block;background:rgba(251,113,133,.08);border:1px solid rgba(251,113,133,.25);color:#fda4af}
 .notice.info{display:block;background:rgba(110,168,255,.08);border:1px solid rgba(110,168,255,.25);color:#bfdbfe}
+.auth-result-actions{display:grid;gap:12px;margin-top:16px}
+.auth-result-secondary{display:grid;gap:12px;margin-bottom:16px}
 
 /* ================= H·IOS HOME ================= */
 #appScreen{min-height:100vh}
@@ -2342,6 +2344,22 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
           <div class="notice" id="notice" aria-live="polite"></div>
           <p class="auth-switch"><span id="authModePrompt">New to H·IOS?</span><button class="auth-mode-toggle" id="authModeToggle" type="button">Create account</button></p>
         </form>
+        <div id="authResult" class="hidden" aria-live="polite">
+          <div class="notice info" id="authResultMessage"></div>
+          <div class="auth-result-actions">
+            <div id="authResendPanel" class="auth-result-secondary hidden">
+              <div class="field">
+                <label for="resendConfirmationEmail">Email for a fresh confirmation link</label>
+                <div class="input-wrap">
+                  <input id="resendConfirmationEmail" type="email" autocomplete="email" placeholder="you@example.com">
+                </div>
+              </div>
+              <button class="submit" id="resendConfirmationButton" type="button">Resend confirmation email</button>
+              <div class="notice" id="resendConfirmationNotice" aria-live="polite"></div>
+            </div>
+            <button class="submit" id="confirmationBackButton" type="button">Back to sign in</button>
+          </div>
+        </div>
       </div>
     </section>
   </div>
@@ -2667,6 +2685,15 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 /* SAME SUPABASE AUTH PROJECT USED BY Traders-IOS */
 const SUPABASE_URL = "https://tmxosoyqflmwqzjgnkez.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_meHq49fLyw8PVNPZxWacnw_SQMj5B-h";
+
+/* Capture the auth callback before Supabase consumes its URL parameters. */
+const authCallbackHash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+const authCallbackQuery = new URLSearchParams(window.location.search);
+const authCallbackError = authCallbackHash.get('error_code') || authCallbackQuery.get('error_code') || authCallbackHash.get('error') || authCallbackQuery.get('error');
+const authCallbackType = authCallbackHash.get('type') || authCallbackQuery.get('type');
+const isEmailConfirmationCallback = authCallbackType === 'signup' || authCallbackType === 'email';
+let authReturnPending = !!(authCallbackError || isEmailConfirmationCallback || authCallbackQuery.has('code'));
+let authResultType = '';
 
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
@@ -3578,7 +3605,11 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
   try{
     if(creatingAccount){
-      const { data, error } = await db.auth.signUp({ email, password });
+      const { data, error } = await db.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: getAuthRedirectUrl() }
+      });
 
       if(error){
         setNotice(error.message, 'error');
@@ -3673,6 +3704,77 @@ function setNotice(message,type){
   notice.className = 'notice ' + type;
 }
 
+function getAuthRedirectUrl(){
+  return window.location.origin + window.location.pathname;
+}
+
+function setResendConfirmationNotice(message, type){
+  const resendNotice = document.getElementById('resendConfirmationNotice');
+  resendNotice.textContent = message;
+  resendNotice.className = 'notice ' + type;
+}
+
+function showAuthResult(type, email=''){
+  authResultType = type;
+  document.getElementById('loginForm').classList.add('hidden');
+  document.getElementById('authResult').classList.remove('hidden');
+  document.getElementById('authEyebrow').textContent = type === 'success' ? 'Confirmation complete' : 'Email confirmation';
+  document.getElementById('authTitle').textContent = type === 'success' ? 'Email confirmed' : 'Link expired or used';
+  document.getElementById('authDescription').textContent = type === 'success'
+    ? 'Your H·IOS account is ready. Return to sign in to continue.'
+    : 'This confirmation link may have expired or already been used.';
+  const message = document.getElementById('authResultMessage');
+  message.textContent = type === 'success'
+    ? 'Your email is confirmed. You can now sign in to H·IOS.'
+    : 'If you already confirmed your email, return to sign in. Otherwise, enter your email below to request a fresh confirmation link.';
+  message.className = 'notice ' + (type === 'success' ? 'info' : 'error');
+  document.getElementById('authResendPanel').classList.toggle('hidden', type === 'success');
+  document.getElementById('resendConfirmationEmail').value = email || emailInput.value || '';
+  setResendConfirmationNotice('', '');
+  authScreen.classList.remove('hidden');
+  appScreen.classList.add('hidden');
+}
+
+document.getElementById('confirmationBackButton').addEventListener('click', async () => {
+  if(authResultType === 'success'){
+    try{ await db.auth.signOut({ scope: 'local' }); }catch(error){ console.warn('Could not clear confirmation session:', error); }
+  }
+  authReturnPending = false;
+  window.history.replaceState(null, document.title, window.location.pathname);
+  document.getElementById('authResult').classList.add('hidden');
+  document.getElementById('loginForm').classList.remove('hidden');
+  showLoginScreen();
+  setAuthMode('signin');
+});
+
+document.getElementById('resendConfirmationButton').addEventListener('click', async () => {
+  const email = document.getElementById('resendConfirmationEmail').value.trim();
+  if(!email){
+    setResendConfirmationNotice('Enter your email address first.', 'error');
+    return;
+  }
+  const button = document.getElementById('resendConfirmationButton');
+  button.disabled = true;
+  button.textContent = 'Sending...';
+  try{
+    const { error } = await db.auth.resend({
+      type: 'signup',
+      email,
+      options: { emailRedirectTo: getAuthRedirectUrl() }
+    });
+    if(error){
+      setResendConfirmationNotice(error.message, 'error');
+      return;
+    }
+    setResendConfirmationNotice('A fresh confirmation email has been sent. Check your inbox.', 'info');
+  }catch(error){
+    setResendConfirmationNotice('Could not send a confirmation email. Please try again.', 'error');
+  }finally{
+    button.disabled = false;
+    button.textContent = 'Resend confirmation email';
+  }
+});
+
 /* =========================================================
    SESSION RESTORATION
    Supabase persists the authenticated session in this browser.
@@ -3693,7 +3795,23 @@ async function restoreExistingSession(){
 
     if(error){
       console.warn('Could not restore H·IOS session:', error);
+      if(authReturnPending){
+        showAuthResult('expired');
+        return;
+      }
       showLoginScreen();
+      return;
+    }
+
+    if(authReturnPending){
+      const user = data?.session?.user;
+      if(user?.email_confirmed_at && (authCallbackError || isEmailConfirmationCallback || authCallbackQuery.has('code'))){
+        showAuthResult('success', user.email);
+      }else if(!authCallbackError && user && (isEmailConfirmationCallback || authCallbackQuery.has('code'))){
+        showAuthResult('success', user.email);
+      }else{
+        showAuthResult('expired', user?.email);
+      }
       return;
     }
 
@@ -3712,6 +3830,7 @@ async function restoreExistingSession(){
 
 /* Keep the UI synchronized if Supabase refreshes or clears the session. */
 db.auth.onAuthStateChange((event, session) => {
+  if(authReturnPending) return;
   if(
     (event === 'SIGNED_IN' ||
      event === 'TOKEN_REFRESHED' ||
