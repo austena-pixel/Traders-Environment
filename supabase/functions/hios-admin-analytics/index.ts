@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const ADMIN_EMAILS = new Set(["emmanuelmatome528@gmail.com"]);
+const ADMIN_EMAILS = new Set(["emmanuelmatome528@gmail.com", "austena401@gmail.com"]);
 const ACTIVITY_DAYS = 14;
 const ACTIVITY_LOOKBACK_DAYS = 30;
 
