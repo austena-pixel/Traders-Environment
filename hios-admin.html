@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>H·IOS Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{
+      color-scheme:dark;
+      --bg:#07090d;--panel:#10141c;--panel2:#151b26;--line:#242d3c;
+      --text:#f4f7fb;--muted:#95a1b4;--blue:#72a9ff;--purple:#8b63f6;
+      --green:#5ee0ad;--amber:#f4bd68;--red:#ff8599;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+    body{min-height:100vh;background:radial-gradient(circle at 14% -10%,rgba(111,163,255,.12),transparent 32%),radial-gradient(circle at 92% 0%,rgba(139,99,246,.1),transparent 28%),var(--bg)}
+    button,input{font:inherit}
+    button{color:inherit}
+    .hidden,[hidden]{display:none!important}
+    .admin-shell{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:100vh}
+    .admin-sidebar{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:20px 15px 16px;background:rgba(9,12,18,.93);border-right:1px solid var(--line)}
+    .brand{display:flex;align-items:center;gap:11px;padding:4px 7px 22px;border-bottom:1px solid rgba(49,59,76,.65)}
+    .brand-mark{width:39px;height:39px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(135deg,var(--blue),var(--purple));font-size:17px;font-weight:900}
+    .brand strong{display:block;font-size:14px;letter-spacing:.03em}
+    .brand small{display:block;margin-top:3px;color:var(--muted);font-size:10px}
+    .admin-nav{display:grid;align-content:start;gap:6px;padding-top:17px}
+    .nav-heading{padding:15px 10px 4px;color:#718099;font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+    .nav-item{width:100%;display:flex;align-items:center;gap:10px;padding:10px;border:1px solid transparent;border-radius:11px;background:transparent;color:#aab6c8;text-align:left;cursor:pointer;transition:background .15s,border-color .15s,color .15s}
+    .nav-item:hover{background:#121925;color:#fff}
+    .nav-item.active{border-color:#34476a;background:linear-gradient(120deg,rgba(91,139,218,.2),rgba(114,88,181,.16));color:#fff}
+    .nav-item:disabled{opacity:.5;cursor:not-allowed}
+    .nav-icon{width:29px;height:29px;flex:0 0 auto;display:grid;place-items:center;border:1px solid #334158;border-radius:9px;background:#151d2a;color:#b8d1ff;font-size:11px;font-weight:850}
+    .nav-copy{min-width:0;flex:1}
+    .nav-copy strong{display:block;font-size:11px;font-weight:700}
+    .nav-copy small{display:block;margin-top:3px;color:#7e8ba0;font-size:9px}
+    .nav-status{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 12px rgba(94,224,173,.55)}
+    .nav-status.planned{background:#718099;box-shadow:none}
+    .sidebar-bottom{display:grid;gap:10px;margin-top:auto;padding-top:16px;border-top:1px solid rgba(49,59,76,.65)}
+    .back-link{padding:9px 10px;border:1px solid var(--line);border-radius:10px;color:#c2d6f6;text-decoration:none;font-size:11px}
+    .back-link:hover{border-color:#5379b4;background:#111925}
+    .signed-in{overflow:hidden;color:#78869a;font-size:9px;text-overflow:ellipsis;white-space:nowrap}
+    .signout-btn,.secondary-btn,.refresh-btn{border:1px solid var(--line);border-radius:10px;background:#111722;color:#cbd5e3;cursor:pointer}
+    .signout-btn{padding:8px 10px;text-align:left;font-size:10px}
+    .signout-btn:hover,.secondary-btn:hover,.refresh-btn:hover{border-color:#405a7d;background:#172133}
+    .admin-main{width:100%;max-width:1500px;margin:0 auto;padding:26px clamp(18px,3vw,42px) 44px;min-width:0}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:27px}
+    .topbar-label{color:#8fb9ff;font-size:9px;font-weight:850;letter-spacing:.15em;text-transform:uppercase}
+    .topbar h1{margin:4px 0 0;font-size:20px;letter-spacing:-.025em}
+    .topbar-chip{padding:7px 10px;border:1px solid #26364c;border-radius:999px;background:#0d131d;color:#a5bad8;font-size:9px;white-space:nowrap}
+    .page{display:none;animation:fade-in .18s ease-out}
+    .page.active{display:block}
+    @keyframes fade-in{from{opacity:.5;transform:translateY(3px)}to{opacity:1;transform:none}}
+    .welcome{position:relative;overflow:hidden;display:flex;justify-content:space-between;align-items:flex-end;gap:24px;padding:25px;border:1px solid #27354a;border-radius:20px;background:radial-gradient(circle at 95% 0%,rgba(131,99,246,.2),transparent 36%),linear-gradient(125deg,#111a28,#11131b 65%);box-shadow:0 18px 60px rgba(0,0,0,.16)}
+    .welcome-kicker,.page-kicker{color:#a9c8ff;font-size:9px;font-weight:850;letter-spacing:.13em;text-transform:uppercase}
+    .welcome h2{margin:8px 0 7px;font-size:clamp(22px,3vw,31px);letter-spacing:-.04em}
+    .welcome p{max-width:640px;margin:0;color:#9aa8bc;font-size:12px;line-height:1.65}
+    .welcome-mark{width:68px;height:68px;flex:0 0 auto;display:grid;place-items:center;border:1px solid rgba(142,178,241,.29);border-radius:21px;background:linear-gradient(145deg,rgba(94,148,233,.19),rgba(132,92,211,.18));color:#d5e5ff;font-size:24px;font-weight:850}
+    .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin:26px 0 12px}
+    .section-head h2{margin:0;font-size:15px}
+    .section-head p{margin:4px 0 0;color:#7f8da2;font-size:10px;line-height:1.5}
+    .product-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .product-card{position:relative;min-height:160px;padding:17px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(145deg,rgba(18,25,36,.95),rgba(12,16,23,.95));text-align:left;cursor:pointer;transition:transform .15s,border-color .15s}
+    .product-card:hover{transform:translateY(-2px);border-color:#526b91}
+    .product-card .product-mark{width:35px;height:35px;display:grid;place-items:center;border:1px solid #355271;border-radius:11px;background:#142337;color:#b9d7ff;font-size:12px;font-weight:850}
+    .product-card h3{margin:13px 0 5px;font-size:13px}
+    .product-card p{max-width:480px;margin:0;color:#8998ad;font-size:10px;line-height:1.55}
+    .product-card .card-link{display:inline-block;margin-top:13px;color:#a9c8ff;font-size:10px;font-weight:750}
+    .product-card.disabled{cursor:default;opacity:.65}
+    .product-card.disabled:hover{transform:none;border-color:var(--line)}
+    .page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin:0 0 16px}
+    .page-head h2{margin:6px 0 5px;font-size:clamp(21px,3vw,28px);letter-spacing:-.035em}
+    .page-head p{max-width:730px;margin:0;color:#8998ad;font-size:11px;line-height:1.6}
+    .refresh-btn{display:flex;align-items:center;gap:8px;padding:9px 12px;font-size:10px;white-space:nowrap}
+    .refresh-btn:disabled{opacity:.6;cursor:wait}
+    .notice{margin:0 0 14px;padding:11px 13px;border:1px solid transparent;border-radius:11px;font-size:10px;line-height:1.5}
+    .notice.error{border-color:rgba(255,133,153,.27);background:rgba(255,133,153,.08);color:#ffc0ca}
+    .notice.info{border-color:rgba(114,169,255,.25);background:rgba(114,169,255,.07);color:#bfd6ff}
+    .metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+    .metric{min-width:0;padding:15px;border:1px solid #263449;border-radius:14px;background:linear-gradient(150deg,rgba(19,29,43,.94),rgba(12,16,23,.94))}
+    .metric-label{color:#91a3bc;font-size:9px;line-height:1.35}
+    .metric-value{display:block;margin-top:10px;color:#f3f7ff;font-size:26px;font-weight:800;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+    .metric-note{display:block;margin-top:3px;color:#718198;font-size:8px;line-height:1.4}
+    .analytics-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(260px,.8fr);gap:12px;margin-top:13px}
+    .panel{min-width:0;padding:16px;border:1px solid var(--line);border-radius:15px;background:rgba(13,18,26,.88)}
+    .panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+    .panel h3{margin:0;font-size:11px}
+    .panel-description{margin:4px 0 0;color:#74839a;font-size:8px;line-height:1.45}
+    .chart-legend{display:flex;gap:12px;flex-wrap:wrap;color:#8594aa;font-size:8px}
+    .legend-dot{display:inline-block;width:7px;height:7px;margin-right:4px;border-radius:50%;background:var(--blue)}
+    .legend-dot.trade{background:var(--purple)}
+    .activity-chart{height:180px;display:flex;align-items:stretch;gap:5px;margin-top:18px;padding:0 2px 19px;border-bottom:1px solid #263142}
+    .chart-day{position:relative;display:flex;flex:1;align-items:flex-end;justify-content:center;gap:3px;min-width:0}
+    .chart-bar{width:min(11px,42%);min-height:0;border-radius:4px 4px 1px 1px;background:linear-gradient(180deg,#84b5ff,#477dce);transition:height .25s}
+    .chart-bar.trade{background:linear-gradient(180deg,#a78bfa,#7454c5)}
+    .chart-day-label{position:absolute;left:50%;bottom:-16px;transform:translateX(-50%);color:#75849a;font-size:7px;white-space:nowrap}
+    .chart-empty{height:180px;display:grid;place-items:center;padding:20px;color:#76859a;font-size:9px;text-align:center}
+    .market-list{display:grid;gap:13px;margin-top:17px}
+    .market-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;align-items:center}
+    .market-name{overflow:hidden;color:#c8d4e5;font-size:9px;text-overflow:ellipsis;white-space:nowrap}
+    .market-count{color:#8fa3c0;font-size:9px;font-variant-numeric:tabular-nums}
+    .market-track{grid-column:1/-1;height:5px;overflow:hidden;border-radius:999px;background:#1b2431}
+    .market-fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--blue),var(--purple))}
+    .market-empty{padding:20px 6px;color:#74839a;font-size:9px;line-height:1.5;text-align:center}
+    .data-note{margin-top:12px;padding:11px 12px;border:1px solid rgba(244,189,104,.18);border-radius:11px;background:rgba(244,189,104,.045);color:#aa9a78;font-size:9px;line-height:1.55}
+    .updated-at{margin-top:11px;color:#718098;font-size:8px;text-align:right}
+    #adminGate{min-height:100vh;display:grid;place-items:center;padding:20px}
+    .gate-layout{width:min(930px,100%);display:grid;grid-template-columns:1fr 420px;border:1px solid var(--line);border-radius:23px;overflow:hidden;background:rgba(13,17,24,.94);box-shadow:0 26px 90px rgba(0,0,0,.42)}
+    .gate-intro{display:flex;flex-direction:column;justify-content:space-between;min-height:510px;padding:31px;background:radial-gradient(circle at 15% 15%,rgba(112,166,255,.16),transparent 34%),linear-gradient(150deg,#111925,#0e121a)}
+    .gate-intro h1{max-width:430px;margin:0;font-size:clamp(27px,4vw,42px);line-height:1.08;letter-spacing:-.045em}
+    .gate-intro h1 span{color:#a9bcff}
+    .gate-intro p{max-width:390px;color:#97a6ba;font-size:11px;line-height:1.65}
+    .gate-footer{color:#68768b;font-size:9px}
+    .gate-card{display:flex;flex-direction:column;justify-content:center;padding:34px 30px}
+    .gate-card h2{margin:0;font-size:22px;letter-spacing:-.03em}
+    .gate-card>p{margin:8px 0 20px;color:#8695aa;font-size:10px;line-height:1.55}
+    .gate-field{display:grid;gap:6px;margin:0 0 13px}
+    .gate-field label{color:#b5c1d0;font-size:9px}
+    .gate-field input{width:100%;padding:11px 12px;border:1px solid #2a3545;border-radius:10px;outline:none;background:#090d13;color:var(--text);font-size:11px}
+    .gate-field input:focus{border-color:#5d85c1;box-shadow:0 0 0 3px rgba(114,169,255,.1)}
+    .gate-submit{width:100%;margin-top:4px;padding:11px 13px;border:0;border-radius:10px;background:linear-gradient(130deg,var(--blue),var(--purple));color:#fff;font-size:10px;font-weight:800;cursor:pointer}
+    .gate-submit:disabled{opacity:.6;cursor:wait}
+    .gate-status{margin-top:13px;color:#8593a6;font-size:9px;line-height:1.5}
+    .gate-status.error{color:#ff9dad}
+    .gate-switch{margin-top:10px}
+    .gate-switch button{padding:0;border:0;background:transparent;color:#a9c8ff;font-size:9px;cursor:pointer;text-decoration:underline}
+    @media(max-width:900px){.admin-shell{grid-template-columns:210px minmax(0,1fr)}.admin-sidebar{padding-left:12px;padding-right:12px}.analytics-grid{grid-template-columns:1fr}.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:640px){.admin-shell{grid-template-columns:1fr}.admin-sidebar{position:static;height:auto;padding:10px 12px;border-right:0;border-bottom:1px solid var(--line)}.brand{padding-bottom:10px}.admin-nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding-top:9px}.nav-heading{grid-column:1/-1;padding:8px 5px 2px}.nav-item{padding:8px}.nav-icon{width:25px;height:25px}.nav-copy strong{font-size:9px}.nav-copy small{font-size:7px}.sidebar-bottom{grid-template-columns:1fr auto;align-items:center;gap:7px;margin-top:10px;padding-top:9px}.back-link{grid-column:1/-1}.signed-in{max-width:190px}.admin-main{padding:18px 13px 28px}.topbar{margin-bottom:19px}.welcome{padding:19px}.welcome-mark{width:48px;height:48px;border-radius:15px;font-size:18px}.product-cards{grid-template-columns:1fr}.product-card{min-height:135px}.metric-grid{gap:7px}.metric{padding:11px}.metric-value{font-size:22px}.page-head{align-items:flex-start;flex-direction:column}.refresh-btn{align-self:flex-end}.activity-chart{gap:2px;height:150px}.gate-layout{grid-template-columns:1fr}.gate-intro{min-height:185px;padding:21px}.gate-intro h1{font-size:27px}.gate-intro p{margin-bottom:8px}.gate-footer{display:none}.gate-card{padding:24px 21px}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+  </style>
+</head>
+<body>
+  <section id="adminGate" aria-labelledby="gateTitle">
+    <div class="gate-layout">
+      <div class="gate-intro">
+        <div class="brand"><span class="brand-mark">H</span><span><strong>H·IOS Admin</strong><small>Human Intelligence Operating System</small></span></div>
+        <div>
+          <div class="topbar-label">Product administration</div>
+          <h1>One place to review your <span>H·IOS products.</span></h1>
+          <p>Sign in with your existing H·IOS account. Product analytics are restricted to the H·IOS administrator account.</p>
+        </div>
+        <div class="gate-footer">H·IOS · Administrative access</div>
+      </div>
+      <div class="gate-card">
+        <div class="topbar-label">Secure sign-in</div>
+        <h2 id="gateTitle">Enter H·IOS Admin</h2>
+        <p>Use the same email and password you use for H·IOS.</p>
+        <form id="adminLoginForm">
+          <div class="gate-field"><label for="adminEmail">Email</label><input id="adminEmail" type="email" autocomplete="username" required></div>
+          <div class="gate-field"><label for="adminPassword">Password</label><input id="adminPassword" type="password" autocomplete="current-password" required></div>
+          <button class="gate-submit" id="adminSignInButton" type="submit">Sign in to Admin</button>
+        </form>
+        <div id="gateStatus" class="gate-status" aria-live="polite"></div>
+        <div class="gate-switch"><button id="switchAdminAccount" class="hidden" type="button">Sign out and use another account</button></div>
+      </div>
+    </div>
+  </section>
+
+  <div id="adminShell" class="admin-shell hidden">
+    <aside class="admin-sidebar">
+      <div class="brand"><span class="brand-mark">H</span><span><strong>H·IOS Admin</strong><small>Product control panel</small></span></div>
+      <nav class="admin-nav" aria-label="Admin navigation">
+        <button class="nav-item active" type="button" data-admin-page="overview"><span class="nav-icon">⌂</span><span class="nav-copy"><strong>Overview</strong><small>H·IOS products</small></span></button>
+        <div class="nav-heading">H·IOS Products</div>
+        <button class="nav-item" type="button" data-admin-page="tios"><span class="nav-icon">T</span><span class="nav-copy"><strong>T·IOS</strong><small>Analytics</small></span><span class="nav-status" aria-hidden="true"></span></button>
+        <button class="nav-item" type="button" disabled><span class="nav-icon">G</span><span class="nav-copy"><strong>G·IOS</strong><small>Admin analytics not set up</small></span><span class="nav-status planned" aria-hidden="true"></span></button>
+        <button class="nav-item" type="button" disabled><span class="nav-icon">S</span><span class="nav-copy"><strong>S·IOS</strong><small>Admin analytics not set up</small></span><span class="nav-status planned" aria-hidden="true"></span></button>
+        <button class="nav-item" type="button" disabled><span class="nav-icon">H</span><span class="nav-copy"><strong>Health·IOS</strong><small>Admin analytics not set up</small></span><span class="nav-status planned" aria-hidden="true"></span></button>
+      </nav>
+      <div class="sidebar-bottom">
+        <a class="back-link" href="index.html">← Back to H·IOS</a>
+        <span id="adminSignedInEmail" class="signed-in"></span>
+        <button class="signout-btn" id="adminSignOutButton" type="button">Sign out</button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <header class="topbar">
+        <div><div class="topbar-label">H·IOS / Admin</div><h1 id="pageTitle">Admin overview</h1></div>
+        <div class="topbar-chip">Restricted access</div>
+      </header>
+
+      <section id="overviewPage" class="page active" aria-labelledby="overviewTitle">
+        <div class="welcome">
+          <div><div class="welcome-kicker">H·IOS Product Administration</div><h2 id="overviewTitle">Manage product analytics from one place.</h2><p>The T·IOS analytics panel summarizes trading accounts and records. Choose T·IOS from the sidebar to open its control panel.</p></div>
+          <div class="welcome-mark" aria-hidden="true">H</div>
+        </div>
+        <div class="section-head"><div><h2>Product control panels</h2><p>Only connected product analytics are available here.</p></div></div>
+        <div class="product-cards">
+          <button class="product-card" type="button" data-open-admin-page="tios">
+            <span class="product-mark">T</span><h3>T·IOS Analytics</h3><p>Trading accounts, trade records, MT5 sync and recent activity.</p><span class="card-link">Open T·IOS analytics →</span>
+          </button>
+          <div class="product-card disabled"><span class="product-mark">G</span><h3>G·IOS</h3><p>Admin analytics will appear here when that product is connected.</p><span class="card-link">Not available yet</span></div>
+        </div>
+      </section>
+
+      <section id="tiosPage" class="page" aria-labelledby="tiosTitle">
+        <div class="page-head">
+          <div><div class="page-kicker">Product analytics · T·IOS</div><h2 id="tiosTitle">T·IOS Analytics</h2><p>Aggregate record counts across T·IOS. Individual users, trades, balances and private trade notes are not shown.</p></div>
+          <button class="refresh-btn" id="refreshAnalytics" type="button"><span aria-hidden="true">↻</span> Refresh analytics</button>
+        </div>
+        <div id="analyticsNotice" class="notice info hidden" role="status"></div>
+        <div class="metric-grid" aria-live="polite">
+          <article class="metric"><span class="metric-label">H·IOS profiles</span><strong class="metric-value" id="metricProfiles">—</strong><small class="metric-note">Shared H·IOS user profiles</small></article>
+          <article class="metric"><span class="metric-label">Trading accounts</span><strong class="metric-value" id="metricAccounts">—</strong><small class="metric-note">Manual, demo and connected accounts</small></article>
+          <article class="metric"><span class="metric-label">Trade records</span><strong class="metric-value" id="metricTrades">—</strong><small class="metric-note">Excludes records marked deleted</small></article>
+          <article class="metric"><span class="metric-label">MT5 deals synced</span><strong class="metric-value" id="metricMt5Deals">—</strong><small class="metric-note">Read-only Deriv MT5 history</small></article>
+          <article class="metric"><span class="metric-label">Connected MT5 bridges</span><strong class="metric-value" id="metricConnected">—</strong><small class="metric-note">Enabled and reporting connected</small></article>
+          <article class="metric"><span class="metric-label">Charts workspaces</span><strong class="metric-value" id="metricChartUsers">—</strong><small class="metric-note">Registered T·IOS chart profiles</small></article>
+        </div>
+        <div class="analytics-grid">
+          <section class="panel" aria-labelledby="activityTitle">
+            <div class="panel-head"><div><h3 id="activityTitle">Recent T·IOS activity</h3><p class="panel-description">New H·IOS profiles and trade records created over the last 14 days.</p></div><div class="chart-legend"><span><i class="legend-dot"></i>Profiles</span><span><i class="legend-dot trade"></i>Trades</span></div></div>
+            <div id="activityEmpty" class="chart-empty hidden">No new T·IOS records in this period yet.</div>
+            <div id="activityChart" class="activity-chart" role="img" aria-label="Daily new profiles and trade records over the last 14 days"></div>
+          </section>
+          <section class="panel" aria-labelledby="marketsTitle">
+            <div><h3 id="marketsTitle">Markets recorded</h3><p class="panel-description">Most common instruments in the last 30 days.</p></div>
+            <div id="marketList" class="market-list"></div>
+          </section>
+        </div>
+        <div class="data-note">These are record-based analytics. H·IOS does not yet track page views, unique active users or retention, so those metrics are not inferred from trade data.</div>
+        <div id="analyticsUpdatedAt" class="updated-at"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://tmxosoyqflmwqzjgnkez.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_meHq49fLyw8PVNPZxWacnw_SQMj5B-h";
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+    const adminGate = document.getElementById('adminGate');
+    const adminShell = document.getElementById('adminShell');
+    const gateStatus = document.getElementById('gateStatus');
+    const signInButton = document.getElementById('adminSignInButton');
+    let currentPage = 'overview';
+    let analyticsLoaded = false;
+    let analyticsData = null;
+
+    function setGateStatus(message, type=''){
+      gateStatus.textContent = message;
+      gateStatus.className = 'gate-status' + (type ? ' ' + type : '');
+    }
+
+    function showGate(message='', type=''){
+      adminShell.classList.add('hidden');
+      adminGate.classList.remove('hidden');
+      if(message) setGateStatus(message, type);
+    }
+
+    function showAdmin(user){
+      adminGate.classList.add('hidden');
+      adminShell.classList.remove('hidden');
+      document.getElementById('adminSignedInEmail').textContent = user?.email || 'Administrator';
+      showPage('overview');
+    }
+
+    function setButtonBusy(busy, label){
+      signInButton.disabled = busy;
+      signInButton.textContent = label || (busy ? 'Signing in...' : 'Sign in to Admin');
+    }
+
+    async function authorizeCurrentUser(user){
+      if(!user){ showGate('Sign in with the H·IOS administrator account to continue.', 'error'); return; }
+      setGateStatus('Checking administrator access...', '');
+      const { data, error } = await db.functions.invoke('hios-admin-analytics', { body: {} });
+      if(error){
+        const status = error.context?.status || error.status;
+        if(status === 403){
+          document.getElementById('switchAdminAccount').classList.remove('hidden');
+          showGate('This account does not have H·IOS administrator access. Sign out and use the administrator account.', 'error');
+          return;
+        }
+        showGate(error.message || 'Could not verify admin access. Try again in a moment.', 'error');
+        return;
+      }
+      if(!data || data.error){
+        showGate(data?.error || 'Could not verify admin access.', 'error');
+        return;
+      }
+      analyticsData = data;
+      analyticsLoaded = true;
+      showAdmin(user);
+    }
+
+    async function openAdminSession(){
+      try{
+        const { data, error } = await db.auth.getSession();
+        if(error){ showGate('Could not read your H·IOS session. Sign in again.', 'error'); return; }
+        if(data?.session?.user){ await authorizeCurrentUser(data.session.user); }
+        else showGate('Sign in with the H·IOS administrator account to continue.');
+      }catch(error){
+        console.warn('H·IOS Admin session check failed:', error);
+        showGate('Could not connect to H·IOS authentication. Check your connection and try again.', 'error');
+      }
+    }
+
+    document.getElementById('adminLoginForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const email = document.getElementById('adminEmail').value.trim();
+      const password = document.getElementById('adminPassword').value;
+      setButtonBusy(true);
+      setGateStatus('Signing in and checking administrator access...', '');
+      try{
+        const { data, error } = await db.auth.signInWithPassword({ email, password });
+        if(error){ setGateStatus(error.message, 'error'); return; }
+        await authorizeCurrentUser(data?.user);
+      }catch(error){
+        console.error(error);
+        setGateStatus('Could not connect to H·IOS authentication. Try again.', 'error');
+      }finally{
+        setButtonBusy(false);
+      }
+    });
+
+    async function signOutAndReturnToGate(){
+      try{ await db.auth.signOut({ scope: 'local' }); }catch(error){ console.warn('H·IOS Admin sign-out failed:', error); }
+      document.getElementById('adminPassword').value = '';
+      document.getElementById('switchAdminAccount').classList.add('hidden');
+      showGate('Sign in with the H·IOS administrator account to continue.');
+    }
+
+    document.getElementById('switchAdminAccount').addEventListener('click', signOutAndReturnToGate);
+    document.getElementById('adminSignOutButton').addEventListener('click', signOutAndReturnToGate);
+
+    function showPage(page){
+      currentPage = page === 'tios' ? 'tios' : 'overview';
+      document.querySelectorAll('[data-admin-page]').forEach(button => button.classList.toggle('active', button.dataset.adminPage === currentPage));
+      document.querySelectorAll('.page').forEach(section => section.classList.toggle('active', section.id === (currentPage === 'tios' ? 'tiosPage' : 'overviewPage')));
+      document.getElementById('pageTitle').textContent = currentPage === 'tios' ? 'T·IOS Analytics' : 'Admin overview';
+      if(currentPage === 'tios'){
+        if(analyticsData) renderAnalytics(analyticsData);
+        else if(!analyticsLoaded) loadAnalytics();
+      }
+    }
+
+    document.querySelectorAll('[data-admin-page],[data-open-admin-page]').forEach(button => {
+      button.addEventListener('click', () => showPage(button.dataset.adminPage || button.dataset.openAdminPage));
+    });
+
+    function number(value){ return new Intl.NumberFormat().format(Number(value || 0)); }
+
+    function renderActivity(activity){
+      const chart = document.getElementById('activityChart');
+      const empty = document.getElementById('activityEmpty');
+      chart.replaceChildren();
+      const points = Array.isArray(activity) ? activity : [];
+      const hasActivity = points.some(point => Number(point.signups) + Number(point.trades) > 0);
+      chart.classList.toggle('hidden', !hasActivity);
+      empty.classList.toggle('hidden', hasActivity);
+      if(!hasActivity) return;
+      const max = Math.max(1, ...points.flatMap(point => [Number(point.signups) || 0, Number(point.trades) || 0]));
+      points.forEach(point => {
+        const day = document.createElement('div');
+        day.className = 'chart-day';
+        const signups = document.createElement('i');
+        signups.className = 'chart-bar';
+        signups.style.height = `${Math.max(0, (Number(point.signups) || 0) / max * 100)}%`;
+        signups.title = `${point.day}: ${number(point.signups)} new profiles`;
+        const trades = document.createElement('i');
+        trades.className = 'chart-bar trade';
+        trades.style.height = `${Math.max(0, (Number(point.trades) || 0) / max * 100)}%`;
+        trades.title = `${point.day}: ${number(point.trades)} trade records`;
+        const label = document.createElement('span');
+        label.className = 'chart-day-label';
+        label.textContent = String(point.day || '').slice(5);
+        day.append(signups, trades, label);
+        chart.append(day);
+      });
+    }
+
+    function renderMarkets(markets){
+      const root = document.getElementById('marketList');
+      root.replaceChildren();
+      const values = Array.isArray(markets) ? markets : [];
+      if(!values.length){
+        const empty = document.createElement('div');
+        empty.className = 'market-empty';
+        empty.textContent = 'No trade instruments were recorded in this period yet.';
+        root.append(empty);
+        return;
+      }
+      const max = Math.max(1, ...values.map(item => Number(item.count) || 0));
+      values.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'market-row';
+        const name = document.createElement('span');
+        name.className = 'market-name';
+        name.textContent = item.market || 'Unspecified';
+        const count = document.createElement('span');
+        count.className = 'market-count';
+        count.textContent = number(item.count);
+        const track = document.createElement('div');
+        track.className = 'market-track';
+        const fill = document.createElement('div');
+        fill.className = 'market-fill';
+        fill.style.width = `${Math.min(100, (Number(item.count) || 0) / max * 100)}%`;
+        track.append(fill);
+        row.append(name, count, track);
+        root.append(row);
+      });
+    }
+
+    function renderAnalytics(data){
+      const totals = data?.totals || {};
+      document.getElementById('metricProfiles').textContent = number(totals.profiles);
+      document.getElementById('metricAccounts').textContent = number(totals.accounts);
+      document.getElementById('metricTrades').textContent = number(totals.trades);
+      document.getElementById('metricMt5Deals').textContent = number(totals.mt5Deals);
+      document.getElementById('metricConnected').textContent = number(totals.connectedAccounts);
+      document.getElementById('metricChartUsers').textContent = number(totals.chartUsers);
+      renderActivity(data?.activity);
+      renderMarkets(data?.topMarkets);
+      const updated = data?.generatedAt ? new Date(data.generatedAt) : new Date();
+      document.getElementById('analyticsUpdatedAt').textContent = `Updated ${updated.toLocaleString()}`;
+      analyticsLoaded = true;
+    }
+
+    async function loadAnalytics(force=false){
+      if(analyticsLoaded && !force) return;
+      const refresh = document.getElementById('refreshAnalytics');
+      const notice = document.getElementById('analyticsNotice');
+      refresh.disabled = true;
+      refresh.innerHTML = '<span aria-hidden="true">↻</span> Loading…';
+      notice.className = 'notice info';
+      notice.textContent = 'Loading aggregated T·IOS records…';
+      notice.classList.remove('hidden');
+      try{
+        const { data, error } = await db.functions.invoke('hios-admin-analytics', { body: {} });
+        if(error) throw error;
+        if(!data || data.error) throw new Error(data?.error || 'Analytics are unavailable.');
+        analyticsData = data;
+        renderAnalytics(data);
+        notice.classList.add('hidden');
+      }catch(error){
+        console.error('Could not load T·IOS analytics:', error);
+        notice.className = 'notice error';
+        notice.textContent = error?.message || 'Could not load T·IOS analytics. Try refreshing.';
+        notice.classList.remove('hidden');
+      }finally{
+        refresh.disabled = false;
+        refresh.innerHTML = '<span aria-hidden="true">↻</span> Refresh analytics';
+      }
+    }
+
+    document.getElementById('refreshAnalytics').addEventListener('click', () => loadAnalytics(true));
+    openAdminSession();
+  </script>
+</body>
+</html>
