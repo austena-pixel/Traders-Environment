@@ -75,6 +75,10 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 .remember input{accent-color:#6ea8ff}
 .link{color:#9dc3ff;text-decoration:none;cursor:pointer}
 .link:hover{text-decoration:underline}
+.auth-switch{margin:16px 0 0;color:var(--muted);font-size:12px;text-align:center}
+.auth-mode-toggle{margin-left:4px;padding:0;border:0;background:none;color:#9dc3ff;font:inherit;font-weight:700;cursor:pointer}
+.auth-mode-toggle:hover{text-decoration:underline}
+.auth-mode-toggle:disabled{opacity:.6;cursor:not-allowed}
 .submit,.primary{
   border:0;border-radius:12px;padding:12px 15px;color:white;font-weight:800;cursor:pointer;
   background:linear-gradient(135deg,var(--accent),var(--accent2))
@@ -2409,9 +2413,9 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
 
     <section class="login-panel">
       <div class="login-wrap">
-        <div class="eyebrow">Welcome back</div>
-        <h3>Sign in to H·IOS</h3>
-        <p class="desc">Use the same credentials you already use for Traders-IOS.</p>
+        <div class="eyebrow" id="authEyebrow">Welcome back</div>
+        <h3 id="authTitle">Sign in to H·IOS</h3>
+        <p class="desc" id="authDescription">Sign in with your existing account, or create a separate account to test H·IOS and T·IOS.</p>
 
         <form id="loginForm">
           <div class="field">
@@ -2429,13 +2433,21 @@ input:focus{border-color:#476da9;box-shadow:0 0 0 3px rgba(110,168,255,.09)}
             </div>
           </div>
 
-          <div class="meta">
+          <div class="field hidden" id="confirmPasswordField">
+            <label for="confirmPassword">Confirm password</label>
+            <div class="input-wrap">
+              <input id="confirmPassword" type="password" autocomplete="new-password" disabled>
+            </div>
+          </div>
+
+          <div class="meta" id="signInMeta">
             <label class="remember"><input type="checkbox" id="remember"> Remember me</label>
             <a class="link" href="#" id="forgotLink">Forgot password?</a>
           </div>
 
           <button class="submit" id="signInButton" type="submit">Enter H·IOS</button>
-          <div class="notice" id="notice"></div>
+          <div class="notice" id="notice" aria-live="polite"></div>
+          <p class="auth-switch"><span id="authModePrompt">New to H·IOS?</span><button class="auth-mode-toggle" id="authModeToggle" type="button">Create account</button></p>
         </form>
       </div>
     </section>
@@ -4032,8 +4044,48 @@ document.addEventListener('visibilitychange',()=>{
 const authScreen = document.getElementById('authScreen');
 const appScreen = document.getElementById('appScreen');
 const notice = document.getElementById('notice');
+const emailInput = document.getElementById('email');
 const passwordInput = document.getElementById('password');
+const confirmPasswordInput = document.getElementById('confirmPassword');
+const confirmPasswordField = document.getElementById('confirmPasswordField');
 const signInButton = document.getElementById('signInButton');
+const authModeToggle = document.getElementById('authModeToggle');
+const authModePrompt = document.getElementById('authModePrompt');
+let authMode = 'signin';
+
+function setAuthMode(mode){
+  const nextMode = mode === 'signup' ? 'signup' : 'signin';
+  const modeChanged = authMode !== nextMode;
+  authMode = nextMode;
+  const creatingAccount = authMode === 'signup';
+
+  document.getElementById('authEyebrow').textContent = creatingAccount ? 'Get started' : 'Welcome back';
+  document.getElementById('authTitle').textContent = creatingAccount ? 'Create your H·IOS account' : 'Sign in to H·IOS';
+  document.getElementById('authDescription').textContent = creatingAccount
+    ? 'Create an account to test H·IOS and T·IOS with separate user data.'
+    : 'Sign in with your existing account, or create a separate account to test H·IOS and T·IOS.';
+  confirmPasswordField.classList.toggle('hidden', !creatingAccount);
+  confirmPasswordInput.disabled = !creatingAccount;
+  confirmPasswordInput.required = creatingAccount;
+  confirmPasswordInput.minLength = creatingAccount ? 6 : 0;
+  document.getElementById('signInMeta').classList.toggle('hidden', creatingAccount);
+  passwordInput.autocomplete = creatingAccount ? 'new-password' : 'current-password';
+  passwordInput.minLength = creatingAccount ? 6 : 0;
+  signInButton.textContent = creatingAccount ? 'Create account' : 'Enter H·IOS';
+  authModePrompt.textContent = creatingAccount ? 'Already have an account?' : 'New to H·IOS?';
+  authModeToggle.textContent = creatingAccount ? 'Sign in' : 'Create account';
+  if(modeChanged){
+    passwordInput.value = '';
+    confirmPasswordInput.value = '';
+  }
+  notice.className = 'notice';
+  notice.textContent = '';
+}
+
+authModeToggle.addEventListener('click', () => {
+  setAuthMode(authMode === 'signin' ? 'signup' : 'signin');
+});
+setAuthMode('signin');
 
 document.getElementById('togglePassword').addEventListener('click', () => {
   const visible = passwordInput.type === 'text';
@@ -4044,7 +4096,8 @@ document.getElementById('togglePassword').addEventListener('click', () => {
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  const email = document.getElementById('email').value.trim();
+  const creatingAccount = authMode === 'signup';
+  const email = emailInput.value.trim();
   const password = passwordInput.value;
 
   if(!email || !password){
@@ -4052,11 +4105,41 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     return;
   }
 
+  if(creatingAccount && password.length < 6){
+    setNotice('Choose a password with at least 6 characters.', 'error');
+    return;
+  }
+
+  if(creatingAccount && password !== confirmPasswordInput.value){
+    setNotice('The passwords do not match.', 'error');
+    return;
+  }
+
   signInButton.disabled = true;
-  signInButton.textContent = 'Signing in...';
-  setNotice('Checking your H·IOS account...', 'info');
+  authModeToggle.disabled = true;
+  signInButton.textContent = creatingAccount ? 'Creating account...' : 'Signing in...';
+  setNotice(creatingAccount ? 'Creating your H·IOS account...' : 'Checking your H·IOS account...', 'info');
 
   try{
+    if(creatingAccount){
+      const { data, error } = await db.auth.signUp({ email, password });
+
+      if(error){
+        setNotice(error.message, 'error');
+        return;
+      }
+
+      if(data?.session?.user){
+        showApp(data.user);
+        return;
+      }
+
+      setAuthMode('signin');
+      emailInput.value = email;
+      setNotice('Sign-up submitted. Check your email for a confirmation link, then sign in here.', 'info');
+      return;
+    }
+
     const { data, error } = await db.auth.signInWithPassword({ email, password });
 
     if(error){
@@ -4069,10 +4152,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
       return;
     }
 
-    /* IMPORTANT:
-       NO window.location.href = "h-ios.html"
-       NO redirect at all.
-       We reveal the goals/default H·IOS page in this exact same file. */
+    /* Keep the user in this page after sign-in. */
     showApp(data.user);
 
   }catch(err){
@@ -4080,7 +4160,8 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     setNotice('Could not connect to authentication. Check your connection and try again.', 'error');
   }finally{
     signInButton.disabled = false;
-    signInButton.textContent = 'Enter H·IOS';
+    authModeToggle.disabled = false;
+    signInButton.textContent = authMode === 'signup' ? 'Create account' : 'Enter H·IOS';
   }
 });
 
@@ -4118,6 +4199,7 @@ async function logout(){
   try{ await db.auth.signOut(); }catch(e){}
   showLoginScreen();
   document.getElementById('loginForm').reset();
+  setAuthMode('signin');
   notice.className = 'notice';
   notice.textContent = '';
   window.scrollTo({top:0,behavior:'instant'});
@@ -4148,6 +4230,7 @@ function showLoginScreen(){
   window.HIOSIntelligenceUI.setSessionUser(null);
   appScreen.classList.add('hidden');
   authScreen.classList.remove('hidden');
+  setAuthMode('signin');
 }
 
 async function restoreExistingSession(){
