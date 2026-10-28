@@ -3164,13 +3164,13 @@ body.execution-workspace #executionStructureModal.open{
   margin-top:9px;
   flex-wrap:wrap;
 }
-.mt5-quick-steps{
+.bridge-quick-steps{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
   gap:10px;
   margin:14px 0 12px;
 }
-.mt5-quick-steps article{
+.bridge-quick-steps article{
   display:flex;
   align-items:flex-start;
   gap:10px;
@@ -3180,7 +3180,7 @@ body.execution-workspace #executionStructureModal.open{
   border-radius:12px;
   background:var(--panel2);
 }
-.mt5-quick-steps article>span{
+.bridge-quick-steps article>span{
   display:grid;
   place-items:center;
   flex:none;
@@ -3191,13 +3191,13 @@ body.execution-workspace #executionStructureModal.open{
   background:rgba(105,168,255,.14);
   font-weight:800;
 }
-.mt5-quick-steps article strong,
-.mt5-quick-steps article small{
+.bridge-quick-steps article strong,
+.bridge-quick-steps article small{
   display:block;
 }
-.mt5-quick-steps article strong{font-size:12px;margin:2px 0 5px}
-.mt5-quick-steps article small{color:var(--muted);font-size:11px;line-height:1.5}
-.mt5-webrequest-row{
+.bridge-quick-steps article strong{font-size:12px;margin:2px 0 5px}
+.bridge-quick-steps article small{color:var(--muted);font-size:11px;line-height:1.5}
+.bridge-webrequest-row{
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -3208,11 +3208,11 @@ body.execution-workspace #executionStructureModal.open{
   border-radius:10px;
   background:var(--panel2);
 }
-.mt5-webrequest-row code{overflow-wrap:anywhere;font-size:11px}
+.bridge-webrequest-row code{overflow-wrap:anywhere;font-size:11px}
 @media(max-width:800px){
-  .mt5-quick-steps{grid-template-columns:1fr}
-  .mt5-webrequest-row{align-items:stretch;flex-direction:column}
-  .mt5-webrequest-row button{align-self:flex-start}
+  .bridge-quick-steps{grid-template-columns:1fr}
+  .bridge-webrequest-row{align-items:stretch;flex-direction:column}
+  .bridge-webrequest-row button{align-self:flex-start}
 }
 .mt5-credentials-card{
   width:min(720px,100%);
@@ -8956,7 +8956,7 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
       <header class="page-head">
         <div>
           <h1>Settings & Connections</h1>
-          <p>Manage T·IOS accounts and securely link Deriv MetaTrader 5 demo or real accounts.</p>
+          <p>Manage T·IOS accounts and securely link Deriv MetaTrader 4 or 5 demo and real accounts.</p>
         </div>
         <div class="top-actions">
           <button class="btn" id="refreshConnectionsBtn">Refresh</button>
@@ -9008,6 +9008,52 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
         <div class="panel connection-panel">
           <div class="connection-panel-head">
             <div>
+              <h3>Link Deriv MT4</h3>
+              <p>Create a read-only bridge connection. T·IOS never needs your MT4 password.</p>
+            </div>
+            <span class="connection-security">Read-only</span>
+          </div>
+
+          <form id="mt4ConnectionForm">
+            <div class="form-grid">
+              <div class="field">
+                <label>Account Name (optional)</label>
+                <input id="mt4AccountName" placeholder="e.g. My Deriv MT4 Demo">
+              </div>
+
+              <div class="field">
+                <label>Account Type</label>
+                <select id="mt4AccountType">
+                  <option value="demo">Demo</option>
+                  <option value="real">Real</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label>MT4 Login</label>
+                <input id="mt4Login" inputmode="numeric" required placeholder="MT4 account number">
+              </div>
+
+              <div class="field">
+                <label>Server (optional)</label>
+                <input id="mt4Server" placeholder="Exact Deriv MT4 server name">
+              </div>
+            </div>
+
+            <div class="connection-note">
+              Enter the login and choose <strong>Demo</strong> or <strong>Real</strong> as shown in MT4.
+              You can add the exact server name if known. Never enter your MT4 password here.
+            </div>
+
+            <div class="form-actions">
+              <button class="btn primary" id="createMt4ConnectionBtn" type="submit">Create link &amp; setup code</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel connection-panel">
+          <div class="connection-panel-head">
+            <div>
               <h3>Active Account</h3>
               <p>The rest of TE uses the account selected in the sidebar.</p>
             </div>
@@ -9050,8 +9096,8 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           </div>
         </div>
 
-        <div class="connection-list" id="mt5ConnectionsList">
-          <div class="empty-state">No linked MT5 accounts yet.</div>
+        <div class="connection-list" id="linkedConnectionsList">
+          <div class="empty-state">No linked MT4 or MT5 accounts yet.</div>
         </div>
       </section>
 
@@ -9069,19 +9115,50 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
           <a class="btn small" href="mt5/TradersEnvironmentBridge.mq5" download="TradersEnvironmentBridge.mq5">Manual install</a>
         </div>
 
-        <div class="mt5-quick-steps">
+        <div class="bridge-quick-steps">
           <article><span>1</span><div><strong>Create your link</strong><small>Enter your MT5 login and account type above. Copy the setup code shown next.</small></div></article>
           <article><span>2</span><div><strong>Install the bridge once</strong><small>Extract the download and open <b>Install-TIOS-MT5-Bridge.cmd</b>. It installs and compiles the EA when MetaEditor is available.</small></div></article>
           <article><span>3</span><div><strong>Allow and attach</strong><small>Allow the T-IOS URL in MT5, attach the EA to one chart, and paste the setup code into <b>TE_Setup_Code</b>.</small></div></article>
         </div>
 
-        <div class="mt5-webrequest-row">
+        <div class="bridge-webrequest-row">
           <code id="mt5WebRequestUrl">https://tmxosoyqflmwqzjgnkez.supabase.co</code>
           <button class="btn small" type="button" id="copyMt5WebRequestUrl">Copy URL for MT5</button>
         </div>
 
         <div class="connection-note">
-          The bridge is read-only. MT5 still asks you to allow this URL once; T-IOS never receives your MT5 password.
+          The bridge is read-only. MT5 asks you to allow this URL once; T-IOS never receives your MT5 password.
+        </div>
+      </section>
+
+      <section class="panel connection-panel">
+        <div class="connection-panel-head">
+          <div>
+            <h3>Connect MT4 in 3 steps</h3>
+            <p>Install the read-only Expert Advisor once, then keep MT4 open while you trade.</p>
+          </div>
+          <span class="connection-security">Read-only</span>
+        </div>
+
+        <div class="form-actions" style="margin:0 0 14px">
+          <a class="btn primary" href="mt4/T-IOS-MT4-Quick-Setup.zip" download>Download Windows quick setup</a>
+          <a class="btn" href="mt4/T-IOS-MT4-Bridge-README.md" target="_blank" rel="noopener">View 3-step guide</a>
+          <a class="btn small" href="mt4/TradersEnvironmentBridge.mq4" download="TradersEnvironmentBridge.mq4">Manual install</a>
+        </div>
+
+        <div class="bridge-quick-steps">
+          <article><span>1</span><div><strong>Create your link</strong><small>Enter your MT4 login and account type above. Copy the one-time setup code.</small></div></article>
+          <article><span>2</span><div><strong>Install the bridge once</strong><small>Extract the download and run <b>Install-TIOS-MT4-Bridge.cmd</b>. It compiles the Expert Advisor when MetaEditor is available.</small></div></article>
+          <article><span>3</span><div><strong>Allow and attach</strong><small>Allow the T-IOS URL in MT4, attach the EA to one chart, and paste the code into <b>TE_Setup_Code</b>.</small></div></article>
+        </div>
+
+        <div class="bridge-webrequest-row">
+          <code id="mt4WebRequestUrl">https://tmxosoyqflmwqzjgnkez.supabase.co</code>
+          <button class="btn small" type="button" id="copyMt4WebRequestUrl">Copy URL for MT4</button>
+        </div>
+
+        <div class="connection-note">
+          The bridge reads account status, open positions, and closed orders from the time you link it. It cannot place, modify, or close trades.
         </div>
       </section>
     </section>
@@ -9297,28 +9374,28 @@ body.playbook-workspace .technical-document-page .playbook-preview-body{
 </div>
 
 
-<!-- MT5 BRIDGE CREDENTIALS MODAL -->
+<!-- MT4 / MT5 BRIDGE CREDENTIALS MODAL -->
 <div class="modal" id="mt5CredentialsModal">
   <div class="modal-card mt5-credentials-card">
     <div class="modal-head">
-      <h2>Your MT5 setup code</h2>
+      <h2 id="bridgeCredentialsTitle">Your bridge setup code</h2>
       <button class="close" id="closeMt5Credentials">×</button>
     </div>
 
-    <div class="connection-warning">
+    <div class="connection-warning" id="bridgeCredentialsWarning">
       Copy this code now. It is private to this connection and cannot be recovered later. If you lose it, choose <strong>New Key</strong> in Settings.
     </div>
 
     <div class="credential-row">
-      <label>MT5 setup code</label>
+      <label id="bridgeCredentialsLabel">Bridge setup code</label>
       <div class="credential-copy-row">
         <input id="mt5SetupCodeOut" readonly autocomplete="off" spellcheck="false">
         <button class="btn small" type="button" data-copy-target="mt5SetupCodeOut" data-copy-message="Setup code copied">Copy code</button>
       </div>
     </div>
 
-    <div class="connection-note">
-      After installing the bridge, paste this single code into <strong>TE_Setup_Code</strong> in MT5. The function URL is already built into the EA.
+    <div class="connection-note" id="bridgeCredentialsNote">
+      Paste this code into <strong>TE_Setup_Code</strong> in the MetaTrader Expert Advisor. The function URL is built into the EA.
     </div>
 
     <div class="form-actions">
@@ -10396,10 +10473,10 @@ async function refreshMt5TradesFromHeartbeat(){
       }
 
           renderAll();
-      showStatus('New MT5 trade synced',1800);
+      showStatus('New '+(tradingAccount.platform||'broker')+' trade synced',1800);
     }
   }catch(error){
-    console.warn('Could not refresh MT5 trades from account heartbeat',error);
+    console.warn('Could not refresh broker trades from account heartbeat',error);
   }finally{
     mt5TradeRefreshInFlight=false;
 
@@ -10541,11 +10618,11 @@ function connectionStatusClass(status){
   return '';
 }
 
-function accountHasFreshMt5Snapshot(account,now=Date.now()){
+function accountHasFreshBridgeSnapshot(account,now=Date.now()){
   if(
     !account ||
     (account.account_type!=='demo' && account.account_type!=='real') ||
-    account.platform!=='MT5' ||
+    !(account.platform==='MT5'||account.platform==='MT4') ||
     account.bridge_enabled!==true ||
     account.connection_status!=='connected'
   )return false;
@@ -10557,20 +10634,20 @@ function accountHasFreshMt5Snapshot(account,now=Date.now()){
 function connectionStatusForUi(account){
   if(!account || account.account_type==='manual')return 'manual';
   if(account.bridge_enabled!==true)return 'offline';
-  if(account.connection_status==='connected'&&!accountHasFreshMt5Snapshot(account))return 'stale';
+  if(account.connection_status==='connected'&&!accountHasFreshBridgeSnapshot(account))return 'stale';
   return account.connection_status||'pending';
 }
 
-function refreshMt5StatusLabels(){
+function refreshBridgeStatusLabels(){
   const switcherStatus=$('#accountSwitcherStatus');
   if(switcherStatus){
     switcherStatus.textContent=tradingAccount?.account_type==='manual'
       ? 'Manual journal account'
-      : `${connectionStatusForUi(tradingAccount)} • ${tradingAccount?.mt5_server || 'server not detected yet'}`;
+      : `${connectionStatusForUi(tradingAccount)} • ${(tradingAccount?.mt4_server||tradingAccount?.mt5_server) || 'server not detected yet'}`;
   }
 
-  $$('[data-mt5-status-account-id]').forEach(node=>{
-    const account=tradingAccounts.find(item=>item.id===node.dataset.mt5StatusAccountId);
+  $$('[data-bridge-status-account-id]').forEach(node=>{
+    const account=tradingAccounts.find(item=>item.id===node.dataset.bridgeStatusAccountId);
     if(!account)return;
     const status=connectionStatusForUi(account);
     node.className=connectionStatusClass(status);
@@ -10585,7 +10662,7 @@ function accountDisplayName(account){
     return account.account_name || 'Manual Account';
   }
 
-  return `${account.account_name || 'Deriv MT5'} • ${type}`;
+  return (account.account_name || ('Deriv '+(account.platform||'MT5'))) + ' • ' + (account.platform||'MT5') + ' • ' + type;
 }
 
 function renderAccountSelector(){
@@ -10615,7 +10692,7 @@ function renderAccountSelector(){
     status.textContent='Manual journal account';
   }else{
     status.textContent=
-      `${connectionStatusForUi(tradingAccount)} • ${tradingAccount?.mt5_server || 'server not detected yet'}`;
+      `${connectionStatusForUi(tradingAccount)} • ${(tradingAccount?.mt4_server||tradingAccount?.mt5_server) || 'server not detected yet'}`;
   }
 }
 
@@ -10725,9 +10802,13 @@ function generateBridgeKey(){
     .join('');
 }
 
-function openMt5Credentials(accountId,rawKey){
-  $('#mt5SetupCodeOut').value=`${accountId}.${rawKey}`;
-
+function openBridgeCredentials(platform,accountId,rawKey){
+  const label=platform==='MT4'?'MT4':'MT5';
+  $('#mt5SetupCodeOut').value=accountId+'.'+rawKey;
+  $('#bridgeCredentialsTitle').textContent='Your '+label+' setup code';
+  $('#bridgeCredentialsLabel').textContent=label+' setup code';
+  $('#bridgeCredentialsWarning').innerHTML='Copy this code now. It is private to this connection and cannot be recovered later. If you lose it, choose <strong>New Key</strong> in Settings.';
+  $('#bridgeCredentialsNote').innerHTML='After installing the bridge, paste this code into <strong>TE_Setup_Code</strong> in '+label+'. The function URL is built into the EA.';
   $('#mt5CredentialsModal').classList.add('open');
 }
 
@@ -10762,76 +10843,99 @@ $$('[data-copy-target]').forEach(btn=>{
   });
 });
 
+async function createBridgeConnection(platform,options){
+  const rawKey=generateBridgeKey();
+  const tokenHash=await sha256HexBrowser(rawKey);
+  const prefix=platform.toLowerCase();
+  const accountType=options.accountType;
+  const login=options.login;
+  const payload={
+    user_id:currentUser.id,
+    account_name:options.accountName || ('Deriv '+(accountType==='demo'?'Demo':'Real')+' '+login),
+    starting_balance:0,
+    currency:'USD',
+    broker:'Deriv',
+    platform:platform,
+    account_type:accountType,
+    bridge_token_hash:tokenHash,
+    bridge_enabled:true,
+    connection_status:'pending'
+  };
+  payload[prefix+'_login']=login;
+  if(options.server)payload[prefix+'_server']=options.server;
+
+  const {data,error}=await db
+    .from('trading_accounts')
+    .insert(payload)
+    .select()
+    .single();
+
+  if(error)throw error;
+
+  await refreshTradingAccounts();
+  tradingAccount=data;
+  localStorage.setItem('te_active_account_'+currentUser.id,data.id);
+  renderAccountSelector();
+  await loadTrades();
+  renderAll();
+  renderSettings();
+  openBridgeCredentials(platform,data.id,rawKey);
+  showStatus(platform+' link created');
+}
+
+function bindBridgeConnectionForm(settings){
+  const form=$('#'+settings.formId);
+  form.addEventListener('submit',async e=>{
+    e.preventDefault();
+    const button=$('#'+settings.buttonId);
+    const originalText=button.textContent;
+    button.disabled=true;
+    button.textContent='Creating...';
+    try{
+      await createBridgeConnection(settings.platform,{
+        accountType:$('#'+settings.typeId).value,
+        login:$('#'+settings.loginId).value.trim(),
+        accountName:$('#'+settings.nameId).value.trim(),
+        server:settings.serverId?$('#'+settings.serverId).value.trim():''
+      });
+      form.reset();
+    }catch(error){
+      alert(error.message||String(error));
+    }finally{
+      button.disabled=false;
+      button.textContent=originalText;
+    }
+  });
+}
+
+bindBridgeConnectionForm({
+  platform:'MT5',
+  formId:'mt5ConnectionForm',
+  nameId:'mt5AccountName',
+  typeId:'mt5AccountType',
+  loginId:'mt5Login',
+  buttonId:'createMt5ConnectionBtn'
+});
+
+bindBridgeConnectionForm({
+  platform:'MT4',
+  formId:'mt4ConnectionForm',
+  nameId:'mt4AccountName',
+  typeId:'mt4AccountType',
+  loginId:'mt4Login',
+  serverId:'mt4Server',
+  buttonId:'createMt4ConnectionBtn'
+});
+
 $('#copyMt5WebRequestUrl').addEventListener('click',async()=>{
   await navigator.clipboard.writeText($('#mt5WebRequestUrl').textContent.trim());
   showStatus('T-IOS URL copied');
 });
 
-$('#mt5ConnectionForm').addEventListener(
-  'submit',
-  async e=>{
-    e.preventDefault();
-
-    const rawKey=generateBridgeKey();
-    const tokenHash=await sha256HexBrowser(rawKey);
-
-    const accountType=$('#mt5AccountType').value;
-    const login=$('#mt5Login').value.trim();
-    const accountName=$('#mt5AccountName').value.trim()||`Deriv ${accountType==='demo'?'Demo':'Real'} ${login}`;
-
-    const payload={
-      user_id:currentUser.id,
-      account_name:accountName,
-      starting_balance:0,
-      currency:'USD',
-      broker:'Deriv',
-      platform:'MT5',
-      account_type:accountType,
-      mt5_login:login,
-      bridge_token_hash:tokenHash,
-      bridge_enabled:true,
-      connection_status:'pending'
-    };
-
-    const button=$('#createMt5ConnectionBtn');
-    button.disabled=true;
-    button.textContent='Creating...';
-
-    const {data,error}=await db
-      .from('trading_accounts')
-      .insert(payload)
-      .select()
-      .single();
-
-    button.disabled=false;
-    button.textContent='Create link & setup code';
-
-    if(error){
-      alert(error.message);
-      return;
-    }
-
-    $('#mt5ConnectionForm').reset();
-
-    await refreshTradingAccounts();
-
-    tradingAccount=data;
-    localStorage.setItem(
-      `te_active_account_${currentUser.id}`,
-      data.id
-    );
-
-    renderAccountSelector();
-
-    await loadTrades();
-    renderAll();
-    renderSettings();
-
-    openMt5Credentials(data.id,rawKey);
-
-    showStatus('MT5 link created');
-  }
-);
+$('#copyMt4WebRequestUrl').addEventListener('click',async()=>{
+  await navigator.clipboard.writeText($('#mt4WebRequestUrl').textContent.trim());
+  showStatus('T-IOS URL copied');
+});
 
 async function regenerateBridgeKey(accountId){
   const account=tradingAccounts.find(a=>a.id===accountId);
@@ -10866,7 +10970,7 @@ async function regenerateBridgeKey(accountId){
   }
 
   await refreshTradingAccounts();
-  openMt5Credentials(account.id,rawKey);
+  openBridgeCredentials(account.platform||'MT5',account.id,rawKey);
 }
 
 async function toggleBridge(accountId,enabled){
@@ -10894,14 +10998,14 @@ function renderSettings(renderConnections=true){
 
   const linked=
     tradingAccounts.filter(
-      a=>a.account_type==='demo' || a.account_type==='real'
+      a=>(a.account_type==='demo' || a.account_type==='real') && (a.platform==='MT4' || a.platform==='MT5')
     );
 
-  const list=$('#mt5ConnectionsList');
+  const list=$('#linkedConnectionsList');
 
   if(renderConnections && !linked.length){
     list.innerHTML=
-      '<div class="empty-state">No linked MT5 accounts yet.</div>';
+      '<div class="empty-state">No linked MT4 or MT5 accounts yet.</div>';
   }else if(renderConnections){
     list.innerHTML='';
 
@@ -10918,17 +11022,19 @@ function renderSettings(renderConnections=true){
       card.innerHTML=`
         <div class="connection-card-head">
           <div>
-            <h4>${escapeHtml(account.account_name||'Deriv MT5')}</h4>
+            <h4>${escapeHtml(account.account_name||('Deriv '+(account.platform||'MT5')))}</h4>
           </div>
           <span class="connection-badge ${account.account_type}">
             ${escapeHtml(account.account_type)}
           </span>
+          <span class="connection-badge">${escapeHtml(account.platform||'MT5')}</span>
         </div>
 
         <div class="connection-meta">
-          <span>Login: ${escapeHtml(account.mt5_login||'—')}</span>
-          <span>Server: ${escapeHtml(account.mt5_server||'Not detected yet')}</span>
-          <span data-mt5-status-account-id="${account.id}" class="${connectionStatusClass(connectionStatusForUi(account))}">
+          <span>Platform: ${escapeHtml(account.platform||'MT5')}</span>
+          <span>Login: ${escapeHtml((account.platform==='MT4'?account.mt4_login:account.mt5_login)||'—')}</span>
+          <span>Server: ${escapeHtml((account.platform==='MT4'?account.mt4_server:account.mt5_server)||'Not detected yet')}</span>
+          <span data-bridge-status-account-id="${account.id}" class="${connectionStatusClass(connectionStatusForUi(account))}">
             Status: ${escapeHtml(connectionStatusForUi(account))}
           </span>
           <span>Last sync: ${escapeHtml(timeAgoOrDate(account.last_sync_at))}</span>
@@ -10978,7 +11084,7 @@ function renderSettings(renderConnections=true){
   const isLinked=
     tradingAccount.account_type==='demo' ||
     tradingAccount.account_type==='real';
-  const hasLiveSnapshot=accountHasFreshMt5Snapshot(tradingAccount);
+  const hasLiveSnapshot=accountHasFreshBridgeSnapshot(tradingAccount);
   const displayedStatus=connectionStatusForUi(tradingAccount);
 
   $('#settingsLiveStatus').textContent=
@@ -11121,7 +11227,7 @@ function subscribeToMt5Realtime(){
 
 setInterval(()=>{
   if(!tradingAccount || tradingAccount.account_type==='manual')return;
-  refreshMt5StatusLabels();
+  refreshBridgeStatusLabels();
   renderSettings(false);
   renderMetrics();
 },15000);
@@ -11574,7 +11680,7 @@ function renderMetrics(){
 
   const dashboardEquity=
     linkedAccount &&
-    accountHasFreshMt5Snapshot(tradingAccount) &&
+    accountHasFreshBridgeSnapshot(tradingAccount) &&
     tradingAccount?.current_equity!=null &&
     Number.isFinite(liveEquity)
       ? liveEquity
@@ -12475,11 +12581,13 @@ function renderDayTrades(date){
 }
 
 async function deleteTrade(trade, dayToRefresh=null){
-  const mt5Note = trade.source==='mt5'
-    ? '\n\nThis removes the trade from T·IOS only. It does not delete the broker/MT5 history.'
-    : '';
+  const brokerNote = trade.source==='mt4'
+    ? '\n\nThis removes the trade from T·IOS only. It does not delete the broker/MT4 history.'
+    : trade.source==='mt5'
+      ? '\n\nThis removes the trade from T·IOS only. It does not delete the broker/MT5 history.'
+      : '';
 
-  if(!confirm(`Delete ${trade.instrument} trade on ${formatDate(trade.trade_date)}?${mt5Note}`)){
+  if(!confirm(`Delete ${trade.instrument} trade on ${formatDate(trade.trade_date)}?${brokerNote}`)){
     return;
   }
 
@@ -23828,7 +23936,7 @@ window.getTiosConversationContext=function(){
     accountName:tradingAccount?accountDisplayName(tradingAccount):'Selected account',
     currency:String(tradingAccount?.currency||'USD').toUpperCase(),
     initialBalance:initialAccountBalance(),
-    equity:accountHasFreshMt5Snapshot(tradingAccount)&&tradingAccount?.current_equity!=null&&Number.isFinite(Number(tradingAccount.current_equity))?Number(tradingAccount.current_equity):null,
+    equity:accountHasFreshBridgeSnapshot(tradingAccount)&&tradingAccount?.current_equity!=null&&Number.isFinite(Number(tradingAccount.current_equity))?Number(tradingAccount.current_equity):null,
     today:localDateString(today),weekStart:localDateString(monday),
     month:localDateString(viewDate).slice(0,7),
     monthLabel:viewDate.toLocaleDateString(undefined,{month:'long',year:'numeric'}),
