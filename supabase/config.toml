@@ -1,0 +1,8 @@
+[functions.mt4-sync]
+verify_jwt = false
+
+[functions.mt5-sync]
+verify_jwt = false
+
+[functions.mt5-market-data]
+verify_jwt = false
