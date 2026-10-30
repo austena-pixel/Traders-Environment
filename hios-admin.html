@@ -127,6 +127,23 @@
     @media(max-width:900px){.admin-shell{grid-template-columns:210px minmax(0,1fr)}.admin-sidebar{padding-left:12px;padding-right:12px}.analytics-grid{grid-template-columns:1fr}.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:640px){.admin-shell{grid-template-columns:1fr}.admin-sidebar{position:static;height:auto;padding:10px 12px;border-right:0;border-bottom:1px solid var(--line)}.brand{padding-bottom:10px}.admin-nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding-top:9px}.nav-heading{grid-column:1/-1;padding:8px 5px 2px}.nav-item{padding:8px}.nav-icon{width:25px;height:25px}.nav-copy strong{font-size:9px}.nav-copy small{font-size:7px}.sidebar-bottom{grid-template-columns:1fr auto;align-items:center;gap:7px;margin-top:10px;padding-top:9px}.back-link{grid-column:1/-1}.signed-in{max-width:190px}.admin-main{padding:18px 13px 28px}.topbar{margin-bottom:19px}.welcome{padding:19px}.welcome-mark{width:48px;height:48px;border-radius:15px;font-size:18px}.product-cards{grid-template-columns:1fr}.product-card{min-height:135px}.metric-grid{gap:7px}.metric{padding:11px}.metric-value{font-size:22px}.page-head{align-items:flex-start;flex-direction:column}.refresh-btn{align-self:flex-end}.activity-chart{gap:2px;height:150px}.gate-layout{grid-template-columns:1fr}.gate-intro{min-height:185px;padding:21px}.gate-intro h1{font-size:27px}.gate-intro p{margin-bottom:8px}.gate-footer{display:none}.gate-card{padding:24px 21px}}
     @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+    /* H·IOS account directory */
+    .accounts-panel{margin-top:14px}
+    .account-controls{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+    .account-controls input,.account-controls select{min-width:0;border:1px solid #324052;border-radius:10px;background:#0b111a;color:#e9effa;padding:10px 12px;font:inherit;font-size:12px}
+    .account-controls input{flex:1 1 240px}
+    .account-controls select{flex:0 1 190px}
+    .account-table-scroll{overflow-x:auto;width:100%}
+    .account-table{width:100%;min-width:670px;border-collapse:collapse;text-align:left}
+    .account-table th{padding:12px 10px;border-bottom:1px solid #354053;color:#99a9c0;font-size:10px;font-weight:800;white-space:nowrap}
+    .account-table td{padding:13px 10px;border-bottom:1px solid #263143;color:#dce5f5;font-size:12px}
+    .account-email{font-weight:700;overflow-wrap:anywhere}
+    .account-provider{display:inline-block;border:1px solid #364760;border-radius:999px;padding:4px 8px;color:#a9caff;font-size:10px;white-space:nowrap}
+    .account-provider.google{color:#9ce7ca;border-color:#32644f}
+    .account-muted{color:#99a7ba}
+    .account-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:13px;color:#91a0b5;font-size:11px}
+    .account-footer .refresh-btn{margin-left:auto}
   </style>
 </head>
 <body>
@@ -161,6 +178,8 @@
       <div class="brand"><span class="brand-mark">H</span><span><strong>H·IOS Admin</strong><small>Product control panel</small></span></div>
       <nav class="admin-nav" aria-label="Admin navigation">
         <button class="nav-item active" type="button" data-admin-page="overview"><span class="nav-icon">⌂</span><span class="nav-copy"><strong>Overview</strong><small>H·IOS products</small></span></button>
+        <div class="nav-heading">H·IOS Users</div>
+        <button class="nav-item" type="button" data-admin-page="accounts"><span class="nav-icon">◎</span><span class="nav-copy"><strong>User accounts</strong><small>Registered emails and sign-in methods</small></span></button>
         <div class="nav-heading">H·IOS Products</div>
         <button class="nav-item" type="button" data-admin-page="tios"><span class="nav-icon">T</span><span class="nav-copy"><strong>T·IOS</strong><small>Analytics</small></span><span class="nav-status" aria-hidden="true"></span></button>
         <button class="nav-item" type="button" disabled><span class="nav-icon">G</span><span class="nav-copy"><strong>G·IOS</strong><small>Admin analytics not set up</small></span><span class="nav-status planned" aria-hidden="true"></span></button>
@@ -192,6 +211,36 @@
           </button>
           <div class="product-card disabled"><span class="product-mark">G</span><h3>G·IOS</h3><p>Admin analytics will appear here when that product is connected.</p><span class="card-link">Not available yet</span></div>
         </div>
+      </section>
+
+      <section id="accountsPage" class="page" aria-labelledby="accountsTitle">
+        <div class="page-head">
+          <div><div class="page-kicker">H·IOS · Account management</div><h2 id="accountsTitle">Registered user accounts</h2><p>View accounts registered in H·IOS, their email addresses and how they signed in. A Gmail address alone is not a Google sign-in.</p></div>
+          <button class="refresh-btn" id="refreshAccounts" type="button"><span aria-hidden="true">↻</span> Refresh accounts</button>
+        </div>
+        <div class="metric-grid">
+          <article class="metric"><span class="metric-label">Total registered accounts</span><strong class="metric-value" id="accountTotal">—</strong><small class="metric-note">All H·IOS authentication users</small></article>
+          <article class="metric"><span class="metric-label">Google sign-in</span><strong class="metric-value" id="accountGoogleCount">—</strong><small class="metric-note">Google identities among loaded accounts</small></article>
+          <article class="metric"><span class="metric-label">Gmail addresses</span><strong class="metric-value" id="accountGmailCount">—</strong><small class="metric-note">Gmail or Googlemail emails among loaded accounts</small></article>
+        </div>
+        <section class="panel accounts-panel" aria-label="Account list">
+          <div class="account-controls">
+            <input id="accountSearch" type="search" placeholder="Search loaded email addresses" aria-label="Search email addresses">
+            <select id="accountFilter" aria-label="Filter account type">
+              <option value="all">All accounts</option>
+              <option value="google">Google sign-in</option>
+              <option value="gmail">Gmail addresses</option>
+            </select>
+          </div>
+          <div id="accountsNotice" class="notice info hidden" role="status"></div>
+          <div class="account-table-scroll">
+            <table class="account-table">
+              <thead><tr><th scope="col">Email address</th><th scope="col">Sign-in method</th><th scope="col">Email status</th><th scope="col">Created</th><th scope="col">Last sign-in</th></tr></thead>
+              <tbody id="accountRows"></tbody>
+            </table>
+          </div>
+          <div class="account-footer"><span id="accountResultMeta" aria-live="polite">Open this page to load accounts.</span><button class="refresh-btn hidden" id="accountLoadMore" type="button">Load more accounts</button></div>
+        </section>
       </section>
 
       <section id="tiosPage" class="page" aria-labelledby="tiosTitle">
@@ -236,6 +285,12 @@
     let currentPage = 'overview';
     let analyticsLoaded = false;
     let analyticsData = null;
+    let accountsLoaded = false;
+    let accountUsers = [];
+    let accountPage = 0;
+    let accountTotal = 0;
+    let accountHasMore = false;
+    let accountsBusy = false;
 
     function setGateStatus(message, type=''){
       gateStatus.textContent = message;
@@ -316,6 +371,7 @@
     async function signOutAndReturnToGate(){
       try{ await db.auth.signOut({ scope: 'local' }); }catch(error){ console.warn('H·IOS Admin sign-out failed:', error); }
       document.getElementById('adminPassword').value = '';
+      accountUsers = []; accountPage = 0; accountTotal = 0; accountHasMore = false; accountsLoaded = false;
       document.getElementById('switchAdminAccount').classList.add('hidden');
       showGate('Sign in with the H·IOS administrator account to continue.');
     }
@@ -324,14 +380,17 @@
     document.getElementById('adminSignOutButton').addEventListener('click', signOutAndReturnToGate);
 
     function showPage(page){
-      currentPage = page === 'tios' ? 'tios' : 'overview';
+      currentPage = page === 'tios' || page === 'accounts' ? page : 'overview';
       document.querySelectorAll('[data-admin-page]').forEach(button => button.classList.toggle('active', button.dataset.adminPage === currentPage));
-      document.querySelectorAll('.page').forEach(section => section.classList.toggle('active', section.id === (currentPage === 'tios' ? 'tiosPage' : 'overviewPage')));
-      document.getElementById('pageTitle').textContent = currentPage === 'tios' ? 'T·IOS Analytics' : 'Admin overview';
+      const pageIds = { overview: 'overviewPage', tios: 'tiosPage', accounts: 'accountsPage' };
+      document.querySelectorAll('.page').forEach(section => section.classList.toggle('active', section.id === pageIds[currentPage]));
+      const titles = { overview: 'Admin overview', tios: 'T·IOS Analytics', accounts: 'User accounts' };
+      document.getElementById('pageTitle').textContent = titles[currentPage];
       if(currentPage === 'tios'){
         if(analyticsData) renderAnalytics(analyticsData);
         else if(!analyticsLoaded) loadAnalytics();
       }
+      if(currentPage === 'accounts' && !accountsLoaded) loadAccounts(true);
     }
 
     document.querySelectorAll('[data-admin-page],[data-open-admin-page]').forEach(button => {
@@ -444,6 +503,103 @@
     }
 
     document.getElementById('refreshAnalytics').addEventListener('click', () => loadAnalytics(true));
+
+    function accountHasGoogle(user){
+      return Array.isArray(user.providers) && user.providers.includes('google');
+    }
+
+    function accountIsGmail(user){
+      const email = String(user.email || '').toLowerCase();
+      return email.endsWith('@gmail.com') || email.endsWith('@googlemail.com');
+    }
+
+    function accountDate(value){
+      if(!value) return 'Never';
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? '—' : date.toLocaleDateString();
+    }
+
+    function renderAccounts(){
+      document.getElementById('accountTotal').textContent = number(accountTotal);
+      document.getElementById('accountGoogleCount').textContent = number(accountUsers.filter(accountHasGoogle).length);
+      document.getElementById('accountGmailCount').textContent = number(accountUsers.filter(accountIsGmail).length);
+      const search = document.getElementById('accountSearch').value.trim().toLowerCase();
+      const filter = document.getElementById('accountFilter').value;
+      const visible = accountUsers.filter(user => {
+        const matchesSearch = String(user.email || '').toLowerCase().includes(search);
+        return matchesSearch && (filter === 'google' ? accountHasGoogle(user) : filter === 'gmail' ? accountIsGmail(user) : true);
+      });
+      const rows = document.getElementById('accountRows');
+      rows.replaceChildren();
+      if(!visible.length){
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 5;
+        td.className = 'account-muted';
+        td.textContent = accountUsers.length ? 'No accounts match this filter.' : 'No registered accounts found.';
+        tr.append(td); rows.append(tr);
+      }else{
+        visible.forEach(user => {
+          const tr = document.createElement('tr');
+          const email = document.createElement('td');
+          email.className = 'account-email';
+          email.textContent = user.email || 'No email';
+          const provider = document.createElement('td');
+          const pill = document.createElement('span');
+          pill.className = 'account-provider' + (accountHasGoogle(user) ? ' google' : '');
+          pill.textContent = accountHasGoogle(user) ? 'Google sign-in' : (user.providers || []).includes('email') ? 'Email / password' : (user.providers || []).join(', ') || 'Unknown';
+          provider.append(pill);
+          const verified = document.createElement('td');
+          verified.textContent = user.emailConfirmedAt ? 'Verified' : 'Unverified';
+          const created = document.createElement('td');
+          created.textContent = accountDate(user.createdAt);
+          const signedIn = document.createElement('td');
+          signedIn.textContent = accountDate(user.lastSignInAt);
+          tr.append(email,provider,verified,created,signedIn);
+          rows.append(tr);
+        });
+      }
+      document.getElementById('accountResultMeta').textContent = 'Showing ' + visible.length + ' of ' + accountUsers.length + ' loaded / ' + number(accountTotal) + ' registered accounts' + (accountHasMore ? ' · Load more to search additional accounts.' : '');
+      document.getElementById('accountLoadMore').classList.toggle('hidden', !accountHasMore);
+    }
+
+    async function loadAccounts(reset=false){
+      if(accountsBusy) return;
+      accountsBusy = true;
+      const notice = document.getElementById('accountsNotice');
+      const refresh = document.getElementById('refreshAccounts');
+      const more = document.getElementById('accountLoadMore');
+      refresh.disabled = true; more.disabled = true;
+      notice.className = 'notice info';
+      notice.textContent = 'Loading registered accounts…';
+      notice.classList.remove('hidden');
+      const nextPage = reset ? 1 : accountPage + 1;
+      try{
+        const { data, error } = await db.functions.invoke('hios-admin-analytics', { body: { action: 'list-users', page: nextPage } });
+        if(error) throw error;
+        if(!data || data.error || !Array.isArray(data.users)) throw new Error(data?.error || 'Accounts are unavailable.');
+        accountUsers = reset ? data.users : accountUsers.concat(data.users.filter(user => !accountUsers.some(existing => existing.id === user.id)));
+        accountPage = nextPage;
+        accountTotal = Number(data.total || accountUsers.length);
+        accountHasMore = Boolean(data.hasMore);
+        accountsLoaded = true;
+        renderAccounts();
+        notice.classList.add('hidden');
+      }catch(error){
+        console.error('Could not load H·IOS accounts:', error);
+        notice.className = 'notice error';
+        notice.textContent = error?.message || 'Could not load registered accounts.';
+      }finally{
+        accountsBusy = false;
+        refresh.disabled = false; more.disabled = false;
+      }
+    }
+
+    document.getElementById('accountSearch').addEventListener('input', renderAccounts);
+    document.getElementById('accountFilter').addEventListener('change', renderAccounts);
+    document.getElementById('refreshAccounts').addEventListener('click', () => loadAccounts(true));
+    document.getElementById('accountLoadMore').addEventListener('click', () => loadAccounts(false));
+
     openAdminSession();
   </script>
 </body>
