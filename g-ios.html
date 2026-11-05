@@ -503,6 +503,18 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .nav-note .connected-product-shortcuts{margin:0;padding:0}
 .nav-note .connected-product-btn{margin:0}
 
+
+/* R-IOS research request panel inside the existing progress-evidence environment. */
+.routine-research-panel{margin-top:14px;border:1px solid rgba(103,201,164,.22);border-radius:13px;padding:13px 15px;background:linear-gradient(125deg,rgba(47,113,91,.12),rgba(13,23,31,.88))}
+.routine-research-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px}
+.routine-research-head h4{margin:5px 0 0;font-size:14px;color:var(--text,#eef5f3)}
+.routine-research-head p{max-width:680px;margin:7px 0 0;color:var(--muted,#9aaab1);font-size:10px;line-height:1.55}
+.routine-research-actions{display:flex;align-items:center;gap:9px;margin-top:12px}
+.routine-research-status{margin:11px 0 0;border-radius:8px;padding:9px 10px;background:rgba(5,12,16,.44);color:#b8c8cc;font-size:10px;line-height:1.6}
+.routine-research-status:empty{display:none}
+.routine-research-status .evidence-refs{display:block;margin-top:6px;color:#85969d;font-size:9px}
+@media(max-width:760px){.routine-research-head{display:block}.routine-research-actions{flex-wrap:wrap}}
+
 </style>
 <!-- G-IOS BUILD: FOCUS-CONTEXT-AUTOMATION-V1 | 2026-09-19 -->
 
@@ -892,6 +904,13 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 </style>
 <link rel="stylesheet" href="hios-themes.css" data-hios-theme-sheet>
 <script src="hios-themes.js"></script>
+<style id="rios-goal-responsibility">
+/* G-IOS records goal progress and gaps. Routine discovery is handled in R-IOS. */
+.goal-horizon-tabs [data-setup-level="daily"],#page-daily,.chain-grid [data-level="daily"]{display:none!important}
+.chain-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:960px){.chain-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.chain-grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true" focusable="false">
@@ -1052,6 +1071,18 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
         </div>
       </aside>
     </div>
+    <section class="routine-research-panel" aria-labelledby="routineResearchTitle">
+      <div class="routine-research-head"><div>
+        <div class="eyebrow">BEHAVIOURAL RESEARCH</div>
+        <h4 id="routineResearchTitle">Ask R-IOS to investigate a progress gap</h4>
+        <p>Goals-IOS sends the selected focus area and its incomplete goal progress. R-IOS checks connected behavioural evidence and returns a research summary. It does not create daily tasks.</p>
+      </div></div>
+      <div class="routine-research-actions">
+        <button class="btn" type="button" id="requestRoutineResearch">Request routine research</button>
+        <a class="btn" href="r-ios.html">Open R-IOS</a>
+      </div>
+      <div class="routine-research-status" id="routineResearchStatus" role="status"></div>
+    </section>
   </section>
 
   
@@ -1074,7 +1105,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 
     <section class="page period-page" id="page-set-goals">
       <div class="view-head">
-        <div><div class="eyebrow">Goal setup</div><h2>Set Goals</h2><p>Start with the outcome you want, then connect semester, monthly, weekly and daily tasks beneath it. Daily completion will drive progress upward automatically.</p></div>
+        <div><div class="eyebrow">Goal setup</div><h2>Set Goals</h2><p>Start with the outcome you want, then set measurable targets across weekly, monthly, semester and yearly horizons. G-IOS tracks progress gaps; R-IOS investigates recurring behaviours that may relate to them.</p></div>
         <div class="actions"><button class="btn primary" id="startGoalSetup">+ Advanced Goal Setup</button></div>
       </div>
       <section class="goal-category-panel">
@@ -1250,7 +1281,7 @@ const LEVEL_LABEL={yearly:'Yearly / Long-term',semester:'Semester',monthly:'Mont
 const LEVEL_RANK={yearly:5,semester:4,monthly:3,weekly:2,daily:1};
 const SETUP_CONFIG={
  daily:{label:'Daily',title:'Set Up Daily Tasks',text:'Create concrete actions that produce progress today.',mark:'D',guideTitle:'Turn intention into action',guideText:'Keep each daily task specific enough to mark Done without uncertainty.',nameLabel:'Daily task',placeholder:'e.g. Complete Tutorial 3 questions',parentLabel:'Supports weekly goal',parentHint:'Link the task so its completion updates weekly progress.',dateLabel:'Scheduled day',submit:'Add Daily Task',listTitle:'Daily Tasks',noun:'task'},
- weekly:{label:'Weekly',title:'Set Up Weekly Targets',text:'Define what the daily tasks must collectively achieve this week.',mark:'W',guideTitle:'Build a measurable weekly result',guideText:'A weekly target should be driven by the daily tasks connected beneath it.',nameLabel:'Weekly target',placeholder:'e.g. Complete Test 2 revision this week',parentLabel:'Supports monthly goal',parentHint:'Connect the target to the monthly milestone it advances.',dateLabel:'Week target date',submit:'Add Weekly Target',listTitle:'Weekly Targets',noun:'target'},
+ weekly:{label:'Weekly',title:'Set Up Weekly Targets',text:'Define a measurable outcome for this week and review its progress.',mark:'W',guideTitle:'Set a clear progress measure',guideText:'G-IOS tracks progress against the target. R-IOS can investigate recurring behaviours when a progress gap appears.',nameLabel:'Weekly target',placeholder:'e.g. Complete Test 2 revision this week',parentLabel:'Supports monthly goal',parentHint:'Connect the target to the monthly milestone it advances.',dateLabel:'Week target date',submit:'Add Weekly Target',listTitle:'Weekly Targets',noun:'target'},
  monthly:{label:'Monthly',title:'Set Up Monthly Goals',text:'Create milestones that repeated weekly execution can advance.',mark:'M',guideTitle:'Define meaningful monthly progress',guideText:'Use a milestone that clearly shows whether the month moved the larger plan.',nameLabel:'Monthly milestone',placeholder:'e.g. Complete the current assessment cycle',parentLabel:'Supports 6-month goal',parentHint:'Connect the milestone to the six-month phase it advances.',dateLabel:'Monthly target date',submit:'Add Monthly Goal',listTitle:'Monthly Goals',noun:'goal'},
  semester:{label:'6 Months',title:'Set Up a 6-Month Goal',text:'Organize monthly milestones into one substantial progress phase.',mark:'6M',guideTitle:'Create a major progress phase',guideText:'The six-month goal should bridge monthly execution and the one-year outcome.',nameLabel:'6-month outcome',placeholder:'e.g. Complete Phase 1 and Phase 2 successfully',parentLabel:'Supports 1-year goal',parentHint:'Connect this phase to the yearly outcome it is designed to advance.',dateLabel:'Six-month target date',submit:'Add 6-Month Goal',listTitle:'6-Month Goals',noun:'goal'},
  yearly:{label:'1 Year',title:'Set Up a 1-Year Goal',text:'Define the primary outcome that the entire execution chain will support.',mark:'1Y',guideTitle:'Start with a clear destination',guideText:'Describe the outcome precisely enough that six-month and monthly goals can be built beneath it.',nameLabel:'One-year outcome',placeholder:'e.g. Progress successfully through my engineering studies',parentLabel:'Higher goal',parentHint:'Yearly goals normally begin a new top-level goal chain.',dateLabel:'One-year target date',submit:'Add 1-Year Goal',listTitle:'1-Year Goals',noun:'goal'}
@@ -1273,6 +1304,8 @@ const GIOS_PROGRESS_MODELS_KEY='hios_gios_progress_models_v1';
 const GIOS_EVIDENCE_REQUESTS_KEY='hios_goal_evidence_requests_v1';
 const TIOS_EVIDENCE_RESPONSES_KEY='hios_goal_evidence_responses_v1';
 const GIOS_REORIENTATION_REQUESTS_KEY='hios_goal_reorientation_requests_v1';
+const RIOS_RESEARCH_REQUESTS_KEY='hios_goal_routine_research_requests_v1';
+const RIOS_RESEARCH_RESPONSES_KEY='hios_goal_routine_research_responses_v1';
 
 const PRODUCT_EVIDENCE_CATALOG={
  tios:[
@@ -1372,6 +1405,80 @@ function publishGoalEvidenceRequest(area,model){
  window.dispatchEvent(new CustomEvent('hios:goal-evidence-request',{detail:request}));
  return request;
 }
+function readRiosResearchRequests(){
+ try{const v=JSON.parse(localStorage.getItem(RIOS_RESEARCH_REQUESTS_KEY)||'{}');return v&&typeof v==='object'&&!Array.isArray(v)?v:{}}catch(e){return{}}
+}
+function writeRiosResearchRequests(v){localStorage.setItem(RIOS_RESEARCH_REQUESTS_KEY,JSON.stringify(Object.fromEntries(Object.entries(v||{}).slice(-50))))}
+function readRiosResearchResponses(){
+ try{const v=JSON.parse(localStorage.getItem(RIOS_RESEARCH_RESPONSES_KEY)||'{}');return v&&typeof v==='object'&&!Array.isArray(v)?v:{}}catch(e){return{}}
+}
+function incompleteGoalsForRoutineResearch(area){
+ if(!area)return [];
+ return goals.filter(g=>sameDomain(g.domain,area)&&effectiveProgress(g)<100)
+  .sort((a,b)=>(LEVEL_RANK[b.level]||0)-(LEVEL_RANK[a.level]||0)||priorityScore(b)-priorityScore(a))
+  .slice(0,20).map(g=>({goalId:String(g.id),title:String(g.title),horizon:g.level,
+   progress:Math.round(effectiveProgress(g)),remaining:Math.max(0,100-Math.round(effectiveProgress(g))),
+   priority:g.priority,targetDate:g.targetDate||null}));
+}
+function activeRiosResearchRequest(area){
+ return Object.values(readRiosResearchRequests()).filter(r=>r?.area===area&&['prepared','routed'].includes(r.status))
+  .sort((a,b)=>String(b.requestedAt||'').localeCompare(String(a.requestedAt||'')))[0]||null;
+}
+function renderRoutineResearch(){
+ const area=currentViewArea()||'',button=$('#requestRoutineResearch'),status=$('#routineResearchStatus');
+ if(!button||!status)return;
+ const incomplete=incompleteGoalsForRoutineResearch(area);
+ const latest=Object.values(readRiosResearchRequests()).filter(r=>r?.area===area)
+  .sort((a,b)=>String(b.requestedAt||'').localeCompare(String(a.requestedAt||'')))[0]||null;
+ const response=latest?readRiosResearchResponses()[latest.requestId]||null:null;
+ const pending=activeRiosResearchRequest(area);
+ button.disabled=!area||!incomplete.length||Boolean(pending);
+ button.textContent=pending?'Research request sent':'Request routine research';
+ if(!area)status.textContent='Select a focus area to review its current goal progress.';
+ else if(!incomplete.length)status.textContent='No incomplete goals are recorded for this focus area.';
+ else if(response){
+  const refs=Array.isArray(response.evidence_references)?response.evidence_references:[];
+  status.innerHTML='<b>'+escapeHtml(response.status==='evaluated'?'R-IOS research returned':'R-IOS needs more evidence')+'</b> · '+escapeHtml(response.summary)+
+   '<span class="evidence-refs">'+escapeHtml(response.recommended_next_step||'')+(refs.length?' · '+refs.length+' source references included':'')+'</span>';
+ }else if(pending)status.textContent='Request sent for '+incomplete.length+' incomplete goal'+(incomplete.length===1?'':'s')+' in '+area+'. Open R-IOS to review the evidence and return its findings.';
+ else if(latest?.status==='failed')status.textContent='The last request could not be routed. Check the R-IOS product connection and try again.';
+ else status.textContent=incomplete.length+' incomplete goal'+(incomplete.length===1?'':'s')+' in '+area+' are available for routine research.';
+}
+function requestRiosRoutineResearch(){
+ const area=currentViewArea()||'',goalSummaries=incompleteGoalsForRoutineResearch(area);
+ if(!area||!goalSummaries.length||activeRiosResearchRequest(area))return null;
+ const now=new Date().toISOString();
+ const request={schema:'hios.routine-research-request.v1',source:'goals-ios',targetProductId:'rios',
+  requestId:'routine_req_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),area,
+  gapSummary:goalSummaries.map(g=>g.title+' ('+g.progress+'% complete)').join('; '),goalSummaries,requestedAt:now,status:'prepared'};
+ const requests=readRiosResearchRequests();requests[request.requestId]=request;writeRiosResearchRequests(requests);
+ const routed=goalsBridge.emit('routine.research.requested',{request},{targetProductId:'rios',requestId:request.requestId});
+ if(!routed?.ok){
+  requests[request.requestId]={...request,status:'failed',routingErrors:routed?.errors||[]};writeRiosResearchRequests(requests);
+  renderRoutineResearch();toast('R-IOS did not accept the research request. Check the H-IOS product connection.');return null;
+ }
+ requests[request.requestId]={...request,status:'routed',hiosSignalId:routed.signal.signalId,routedAt:routed.signal.timestamp};
+ writeRiosResearchRequests(requests);renderRoutineResearch();toast('Routine research request sent to R-IOS.');return requests[request.requestId];
+}
+function receiveRiosRoutineResearchResponse(signal){
+ if(signal?.source!=='r-ios'||signal?.type!=='routine.research.responded')return false;
+ const response=signal?.payload?.response,requests=readRiosResearchRequests(),request=response?.requestId?requests[response.requestId]:null;
+ const valid=!!(request&&response.schema==='hios.routine-research-response.v1'&&response.source==='r-ios'&&response.target==='goals-ios'&&
+  response.requestId===request.requestId&&response.area===request.area&&['evaluated','insufficient_evidence'].includes(response.status)&&
+  typeof response.summary==='string'&&Array.isArray(response.evidence_references));
+ if(!valid){if(goalsBridge.acknowledgeRequest)goalsBridge.acknowledgeRequest(signal.signalId,{status:'rejected-by-goals-ios',reason:'routine-research-response-does-not-match-request'},signal);return false}
+ const responses=readRiosResearchResponses();
+ if(responses[response.requestId]?.hiosSignalId===signal.signalId){
+  if(goalsBridge.acknowledgeRequest)goalsBridge.acknowledgeRequest(signal.signalId,{requestId:response.requestId,status:'received-by-goals-ios'},signal);return true;
+ }
+ const now=new Date().toISOString();responses[response.requestId]={...response,hiosSignalId:signal.signalId,receivedAt:now};
+ localStorage.setItem(RIOS_RESEARCH_RESPONSES_KEY,JSON.stringify(responses));
+ requests[response.requestId]={...request,status:'responded',respondedAt:response.respondedAt,hiosResponseSignalId:signal.signalId};
+ writeRiosResearchRequests(requests);
+ if(goalsBridge.acknowledgeRequest)goalsBridge.acknowledgeRequest(signal.signalId,{requestId:response.requestId,status:'received-by-goals-ios'},signal);
+ renderRoutineResearch();toast('R-IOS returned routine research for '+response.area+'.');return true;
+}
+
 function currentEvidenceRequest(area){
  const link=productLinkForArea(area);if(!link)return null;
  try{return (JSON.parse(localStorage.getItem(GIOS_EVIDENCE_REQUESTS_KEY)||'{}')||{})[link.productId]||null}catch(e){return null}
@@ -1812,7 +1919,7 @@ function loadFocusAreas(){
 let focusAreas=loadFocusAreas();
 let setGoalsCategory=localStorage.getItem(SET_GOALS_CATEGORY_KEY)||'';
 let selectedViewArea=localStorage.getItem(VIEW_AREA_KEY)||setGoalsCategory||'';
-let setGoalsLevel='daily';
+let setGoalsLevel='weekly';
 const $=s=>document.querySelector(s);const $$=s=>[...document.querySelectorAll(s)];
 const clamp=(v,a=0,b=100)=>Math.max(a,Math.min(b,Number(v)||0));
 const escapeHtml=v=>String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
@@ -2543,6 +2650,7 @@ function renderAll(){
  renderSelectedCategoryContext();
  renderProductEvidenceReceiver();
  renderPersonalIntelligenceResponse();
+ renderRoutineResearch();
  renderSetGoals();
  renderParentOptions();
  renderDailySystem();
@@ -2553,6 +2661,7 @@ function renderAll(){
 function toast(message){const t=$('#toast');t.textContent=message;t.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),2200)}
 
 $('#configureProgressModel').addEventListener('click',openProgressModelModal);
+$('#requestRoutineResearch').addEventListener('click',requestRiosRoutineResearch);
 $('#closeEvidenceModel').addEventListener('click',closeProgressModelModal);
 $('#cancelEvidenceModel').addEventListener('click',closeProgressModelModal);
 $('#saveEvidenceModel').addEventListener('click',saveProgressModelFromModal);
@@ -2707,7 +2816,7 @@ window.addEventListener('storage',e=>{
   renderConnectedProductShortcuts();
   return;
  }
- if([PRODUCT_GOAL_EVIDENCE_KEY,PRODUCT_FOCUS_LINKS_KEY,'hios_product_connection_status_v1',GIOS_PROGRESS_MODELS_KEY,GIOS_EVIDENCE_REQUESTS_KEY,TIOS_EVIDENCE_RESPONSES_KEY,GIOS_REORIENTATION_REQUESTS_KEY].includes(e.key)){
+ if([PRODUCT_GOAL_EVIDENCE_KEY,PRODUCT_FOCUS_LINKS_KEY,'hios_product_connection_status_v1',GIOS_PROGRESS_MODELS_KEY,GIOS_EVIDENCE_REQUESTS_KEY,TIOS_EVIDENCE_RESPONSES_KEY,GIOS_REORIENTATION_REQUESTS_KEY,RIOS_RESEARCH_REQUESTS_KEY,RIOS_RESEARCH_RESPONSES_KEY].includes(e.key)){
   productFocusLinks=loadProductFocusLinks();
   renderProductFocusSuggestions();
   renderConnectedProductShortcuts();
@@ -2721,6 +2830,7 @@ normalizeViewArea();
 if(selectedViewArea)selectRootForDomain(selectedViewArea);
 goalsBridge.subscribe(processHiosGoalRequest,{source:'h-ios',types:HIOS_GOAL_REQUEST_TYPES});
 goalsBridge.subscribe(receiveTiosGoalEvidenceResponseSignal,{source:'t-ios',types:['evidence.responded']});
+goalsBridge.subscribe(receiveRiosRoutineResearchResponse,{source:'r-ios',types:['routine.research.responded']});
 goalsBridge.subscribe(receiveGoalReorientationRequest,{source:'h-ios',types:['goal.reorientation.requested']});
 goalsBridge.getPendingRequests()
  .filter(signal=>signal?.source==='h-ios'&&HIOS_GOAL_REQUEST_TYPES.includes(signal?.type))
@@ -2728,6 +2838,9 @@ goalsBridge.getPendingRequests()
 goalsBridge.getPendingRequests()
  .filter(signal=>signal?.source==='t-ios'&&signal?.type==='evidence.responded')
  .forEach(receiveTiosGoalEvidenceResponseSignal);
+goalsBridge.getPendingRequests()
+ .filter(signal=>signal?.source==='r-ios'&&signal?.type==='routine.research.responded')
+ .forEach(receiveRiosRoutineResearchResponse);
 goalsBridge.getPendingRequests()
  .filter(signal=>signal?.source==='h-ios'&&signal?.type==='goal.reorientation.requested')
  .forEach(receiveGoalReorientationRequest);

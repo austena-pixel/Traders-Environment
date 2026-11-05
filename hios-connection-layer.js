@@ -15,12 +15,14 @@
     requests:'hios_communication_requests_v1',
     products:'hios_added_products_v1',
     evidenceRequests:'hios_goal_evidence_requests_v1',
+    routineResearchRequests:'hios_goal_routine_research_requests_v1',
+    routineResearchResponses:'hios_goal_routine_research_responses_v1',
     reorientations:'hios_goal_reorientation_requests_v1'
   });
   const CHANNEL='hios-communication-centre-v1';
   const CONTRACT_VERSION=1;
   const MAX_LOG_ENTRIES=250;
-  const SOURCES=Object.freeze(['goals-ios','h-ios','t-ios','students-ios']);
+  const SOURCES=Object.freeze(['goals-ios','h-ios','t-ios','students-ios','r-ios']);
   const TYPES=Object.freeze([
     'goal.created','goal.updated','goal.completed','goal.deleted',
     'goal.progress.changed','goal.deadline.changed',
@@ -30,6 +32,7 @@
     'task.calendar.remove.requested','goal.calendar.remove.requested',
     'task.delete.requested','goal.delete.requested',
     'evidence.observed','evidence.requested','evidence.responded',
+    'routine.research.requested','routine.research.responded',
     'goal.reorientation.requested'
   ]);
   const sourceSet=new Set(SOURCES);
@@ -98,7 +101,7 @@
       'goal.progress.changed','goal.deadline.changed',
       'task.created','task.updated','task.completed','task.deleted',
       'goals.snapshot.updated','goals.state.synchronised',
-      'evidence.requested'
+      'evidence.requested','routine.research.requested'
     ]),
     'h-ios':Object.freeze([
       'calendar.item.created','calendar.item.updated','calendar.item.deleted',
@@ -111,6 +114,9 @@
     ]),
     'students-ios':Object.freeze([
       'evidence.observed'
+    ]),
+    'r-ios':Object.freeze([
+      'routine.research.responded'
     ])
   });
   const permissionSets=Object.fromEntries(
@@ -165,7 +171,7 @@
   const contracts=modules.contracts;
   if(!contracts)throw new Error('data-contracts.js must load before connection-state.js');
 
-  const sourceProductIds=Object.freeze({'t-ios':'tios','students-ios':'sios'});
+  const sourceProductIds=Object.freeze({'t-ios':'tios','students-ios':'sios','r-ios':'rios'});
 
   function read(){
     const state=contracts.safeParse(localStorage.getItem(contracts.KEYS.connectionState),{});
@@ -173,7 +179,7 @@
   }
 
   function isProductEnabled(productId){
-    if(productId==='gios')return true;
+    if(productId==='gios'||productId==='rios')return true;
     const products=contracts.safeParse(localStorage.getItem(contracts.KEYS.products),[]);
     return Array.isArray(products)&&products.includes(productId);
   }
@@ -286,7 +292,7 @@
 
   function queueRequest(signal){
     const type=String(signal?.type||'');
-    if(!type.endsWith('.requested')&&type!=='evidence.responded')return;
+    if(!type.endsWith('.requested')&&!type.endsWith('.responded'))return;
     const requests=readRequests();
     if(requests.some(request=>request.signalId===signal.signalId))return;
     const receiptKey=REQUEST_OUTCOME_PREFIX+signal.signalId;
@@ -309,7 +315,7 @@
     const received=receivedSignal?.signalId===signalId&&
       contracts.validateSignal(receivedSignal).valid&&
       permissions.canEmit(receivedSignal.source,receivedSignal.type)&&
-      (receivedSignal.type.endsWith('.requested')||receivedSignal.type==='evidence.responded');
+      (receivedSignal.type.endsWith('.requested')||receivedSignal.type.endsWith('.responded'));
     // Broadcast delivery may precede visibility of another tab's queue write.
     if(index<0&&receipt?.signalId!==signalId&&!received)return false;
     const handled={
@@ -507,6 +513,54 @@
         }
       }
     }
+    if(validation.valid&&signal.type==='routine.research.requested'){
+      const request=signal.payload?.request;
+      const goals=Array.isArray(request?.goalSummaries)?request.goalSummaries:[];
+      if(!request||typeof request!=='object'||Array.isArray(request)){
+        errors.push('Routine research request must be an object.');
+      }else{
+        if(request.schema!=='hios.routine-research-request.v1')errors.push('Unsupported routine research request schema.');
+        if(request.source!=='goals-ios'||request.source!==signal.source)errors.push('Routine research request source must be Goals-IOS.');
+        if(request.targetProductId!=='rios')errors.push('Routine research request target must be R-IOS.');
+        if(typeof request.requestId!=='string'||!request.requestId.trim())errors.push('Routine research requestId is required.');
+        if(typeof request.area!=='string'||!request.area.trim())errors.push('Routine research focus area is required.');
+        if(typeof request.gapSummary!=='string'||!request.gapSummary.trim())errors.push('Routine research gap summary is required.');
+        if(!goals.length||goals.some(goal=>
+          !goal||typeof goal!=='object'||typeof goal.goalId!=='string'||!goal.goalId.trim()||
+          typeof goal.title!=='string'||!goal.title.trim()||
+          goal.progress===null||goal.progress===undefined||!Number.isFinite(Number(goal.progress))||Number(goal.progress)<0||Number(goal.progress)>=100
+        ))errors.push('Routine research requires valid incomplete goal summaries.');
+        if(!request.requestedAt||Number.isNaN(Date.parse(request.requestedAt)))errors.push('Routine research requestedAt must be a valid timestamp.');
+        if(signal.meta?.targetProductId&&signal.meta.targetProductId!=='rios')errors.push('Routine research target does not match routing metadata.');
+        const requests=contracts.safeParse(localStorage.getItem(contracts.KEYS.routineResearchRequests),{});
+        const saved=requests&&typeof requests==='object'&&!Array.isArray(requests)?requests[request.requestId]:null;
+        if(!saved||saved.schema!==request.schema||saved.requestId!==request.requestId){
+          errors.push('Routine research request does not match a locally stored Goals-IOS request.');
+        }
+      }
+    }
+    if(validation.valid&&signal.type==='routine.research.responded'){
+      const response=signal.payload?.response;
+      if(!response||typeof response!=='object'||Array.isArray(response)){
+        errors.push('Routine research response must be an object.');
+      }else{
+        if(response.schema!=='hios.routine-research-response.v1')errors.push('Unsupported routine research response schema.');
+        if(response.source!=='r-ios'||response.source!==signal.source)errors.push('Routine research response source must be R-IOS.');
+        if(response.target!=='goals-ios')errors.push('Routine research response target must be Goals-IOS.');
+        if(typeof response.requestId!=='string'||!response.requestId.trim())errors.push('Routine research response requestId is required.');
+        if(typeof response.area!=='string'||!response.area.trim())errors.push('Routine research response focus area is required.');
+        if(!['evaluated','insufficient_evidence'].includes(response.status))errors.push('Routine research response status is invalid.');
+        if(typeof response.summary!=='string'||!response.summary.trim())errors.push('Routine research response summary is required.');
+        if(!Array.isArray(response.evidence_references))errors.push('Routine research response evidence_references must be an array.');
+        if(!response.respondedAt||Number.isNaN(Date.parse(response.respondedAt)))errors.push('Routine research response respondedAt must be a valid timestamp.');
+        if(signal.meta?.requestId&&signal.meta.requestId!==response.requestId)errors.push('Routine research response does not match routing metadata.');
+        const requests=contracts.safeParse(localStorage.getItem(contracts.KEYS.routineResearchRequests),{});
+        const saved=requests&&typeof requests==='object'&&!Array.isArray(requests)?requests[response.requestId]:null;
+        if(!saved||saved.targetProductId!=='rios'||saved.area!==response.area){
+          errors.push('Routine research response does not match a stored Goals-IOS request.');
+        }
+      }
+    }
     if(validation.valid&&signal.type==='goal.reorientation.requested'){
       const request=signal.payload?.request;
       const evidenceBasis=Array.isArray(request?.evidenceBasis)?request.evidenceBasis:[];
@@ -646,7 +700,7 @@
       readGoals,
       readSnapshot,
       getPendingRequests:router.getPendingRequests,
-      acknowledgeRequest:(source==='goals-ios'||source==='h-ios')?router.acknowledgeRequest:undefined,
+      acknowledgeRequest:(source==='goals-ios'||source==='h-ios'||source==='r-ios')?router.acknowledgeRequest:undefined,
       writeGoals:source==='goals-ios'?writeGoals:undefined,
       publishSnapshot:source==='goals-ios'?publishSnapshot:undefined,
       getConnectionState:connectionState.read,
