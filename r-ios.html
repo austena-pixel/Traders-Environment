@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090d13">
+  <title>R-IOS — Routines</title>
+  <link rel="stylesheet" href="r-ios.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="hios-connection-layer.js"></script>
+  <script defer src="r-ios-engine.js"></script>
+  <script defer src="r-ios-app.js"></script>
+</head>
+<body>
+  <section class="auth-screen" id="authScreen" hidden>
+    <div class="auth-card">
+      <a class="back-link" href="index.html">← H-IOS</a>
+      <div class="brand-mark">R</div>
+      <p class="eyebrow">H-IOS PRODUCT</p>
+      <h1>R-IOS</h1>
+      <p class="auth-copy">Sign in with your existing H-IOS account to review your routine evidence.</p>
+      <form id="loginForm">
+        <label for="loginEmail">Email</label>
+        <input id="loginEmail" type="email" autocomplete="username" required>
+        <label for="loginPassword">Password</label>
+        <input id="loginPassword" type="password" autocomplete="current-password" required>
+        <button class="button primary full" id="loginSubmit" type="submit">Sign in</button>
+      </form>
+      <p class="auth-notice" id="authNotice" role="status"></p>
+    </div>
+  </section>
+
+  <div class="app-shell" id="rApp" hidden>
+    <aside class="sidebar">
+      <a class="brand" href="index.html" aria-label="Back to H-IOS home">
+        <span class="brand-mark">R</span>
+        <span><strong>R-IOS</strong><small>Routine intelligence</small></span>
+      </a>
+      <div class="sidebar-label">YOUR ENVIRONMENT</div>
+      <nav class="side-nav" aria-label="R-IOS sections">
+        <button data-nav-page="overview" type="button"><span>◫</span>Overview</button>
+        <button data-nav-page="detected" type="button"><span>⌁</span>Detected Routines</button>
+        <button data-nav-page="discoveries" type="button"><span>✳</span>Routine Discoveries</button>
+        <button data-nav-page="research" type="button"><span>⌕</span>Routine Research</button>
+        <button data-nav-page="routines" type="button"><span>↻</span>My Routines</button>
+        <button data-nav-page="sources" type="button"><span>⇄</span>Sources</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="principle"><span class="live-dot"></span><div><b>Observe → improve</b><small>Evidence-led routine research</small></div></div>
+        <a class="back-home" href="index.html">← Return to H-IOS</a>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <div><p class="eyebrow">ROUTINE INTELLIGENCE</p><h1 id="pageTitle">Overview</h1></div>
+        <div class="top-actions">
+          <button class="button" id="refreshData" type="button">Refresh evidence</button>
+          <span class="user-label" id="userLabel">Signed in</span>
+          <button class="icon-button" id="signOut" type="button" aria-label="Sign out" title="Sign out">↪</button>
+        </div>
+      </header>
+
+      <div class="notice" id="runtimeNotice" role="status" hidden></div>
+
+      <section data-page="overview" hidden>
+        <div class="page-intro"><div><h2>Behaviour, understood over time.</h2><p>R-IOS looks for repeated activity in connected products, checks its relationship with outcomes, and proposes routines to test.</p></div><span class="pill accent">No tasks to maintain</span></div>
+        <div class="metric-grid">
+          <article class="metric-card"><span>Repeated patterns</span><b id="metricPatterns">0</b><small>Supported by observed days</small></article>
+          <article class="metric-card"><span>Open discoveries</span><b id="metricDiscoveries">0</b><small>Hypotheses to review</small></article>
+          <article class="metric-card"><span>Routine consistency</span><b id="metricConsistency">—</b><small>Across adopted routines</small></article>
+          <article class="metric-card"><span>Active routines</span><b id="metricRoutines">0</b><small>Accepted for observation</small></article>
+        </div>
+        <div class="overview-grid">
+          <article class="panel"><div class="panel-head"><div><p class="eyebrow">OBSERVED BEHAVIOUR</p><h3>Recently detected patterns</h3></div><button class="text-button" data-nav-page="detected" type="button">View all →</button></div><div id="overviewPatterns" class="stack-list"></div></article>
+          <article class="panel"><div class="panel-head"><div><p class="eyebrow">OUTCOME CHECK</p><h3>Recent evaluations</h3></div><button class="text-button" data-nav-page="research" type="button">Research →</button></div><div id="overviewEvaluations" class="stack-list"></div></article>
+          <article class="panel"><div class="panel-head"><div><p class="eyebrow">RESEARCH LEADS</p><h3>Recent discoveries</h3></div><button class="text-button" data-nav-page="discoveries" type="button">Review →</button></div><div id="overviewDiscoveries" class="stack-list"></div></article>
+          <article class="panel source-panel"><div class="panel-head"><div><p class="eyebrow">EVIDENCE COLLECTION</p><h3>Connected sources</h3></div><span class="pill" id="overviewSourceStatusBadge">Loading</span></div><p id="sourceStatusCard" class="source-summary">Checking source permissions…</p><p id="overviewSourceDetail" class="muted"></p><div class="metric-inline"><span>Stored observations <b id="metricObservations">0</b></span></div><button class="button" data-nav-page="sources" type="button">Manage sources</button></article>
+          <article class="panel"><div class="panel-head"><div><p class="eyebrow">FROM G-IOS</p><h3>Progress-gap research requests</h3></div></div><div id="goalResearchRequests" class="stack-list"></div></article>
+        </div>
+      </section>
+
+      <section data-page="detected" hidden>
+        <div class="page-intro"><div><h2>Detected Routines</h2><p>Repeated sequences R-IOS has found in recorded activity. Open each evidence list to inspect source records.</p></div></div>
+        <div id="detectedRoutinesList" class="card-list"></div>
+      </section>
+
+      <section data-page="discoveries" hidden>
+        <div class="page-intro"><div><h2>Routine Discoveries</h2><p>Evidence-backed hypotheses. An observed association is a research lead, not a promise of results.</p></div></div>
+        <div id="discoveriesList" class="card-list"></div>
+      </section>
+
+      <section data-page="research" hidden>
+        <div class="page-intro"><div><h2>Routine Research</h2><p>Compare recorded outcomes on days when a pattern appeared and days when it did not.</p></div></div>
+        <div id="researchList" class="card-list"></div>
+      </section>
+
+      <section data-page="routines" hidden>
+        <div class="page-intro"><div><h2>My Routines</h2><p>Routines you adopted from discoveries, monitored against future recorded evidence.</p></div></div>
+        <div id="myRoutinesList" class="card-list"></div>
+      </section>
+
+      <section data-page="sources" hidden>
+        <div class="page-intro"><div><h2>Evidence Sources</h2><p>Control which connected product R-IOS may inspect. Turning a source off stops new collection and analysis from it.</p></div></div>
+        <article class="panel source-setting-card">
+          <div class="source-setting-heading"><div class="source-icon">T</div><div><p class="eyebrow">CONNECTED PRODUCT</p><h3>Traders-IOS</h3><p class="muted">Trading journals, playbook links, checklists, execution reviews and recorded execution scores.</p></div><span class="pill" id="sourceStatusBadge">Loading</span></div>
+          <div class="source-setting-row"><div><b>Use T-IOS evidence in R-IOS</b><small id="sourceStatusText">Checking connection…</small></div><label class="switch"><input id="sourceEnabled" type="checkbox"><span class="switch-slider"></span><span class="sr-only">Use T-IOS evidence</span></label></div>
+          <p class="source-detail" id="sourceDetail"></p>
+          <div class="source-setting-footer"><span class="muted">Imported evidence stays private to your account.</span><button class="button danger-quiet" id="clearImportedEvidence" type="button">Delete imported evidence</button></div>
+        </article>
+      </section>
+
+      <footer class="page-footer"><span>R-IOS · H-IOS Product Environment</span><span>Recorded activity only · Associations do not establish cause</span></footer>
+    </main>
+  </div>
+</body>
+</html>
