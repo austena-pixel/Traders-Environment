@@ -3167,6 +3167,18 @@ const HIOS_PRODUCT_CATALOG = [
     availability:'Available'
   },
   {
+    id:'rios',
+    name:'R-IOS — Routines',
+    icon:{name:'routine-loop',markup:'<path d="M20 8v5h-5M4 16v-5h5"/><path d="M6.2 9a6.5 6.5 0 0 1 11-2L20 8M4 16l2.8 1a6.5 6.5 0 0 0 11-2"/>'},
+    accent:'112 223 183',
+    iconSurface:'#17372d',
+    iconBorder:'#397c67',
+    description:'Detects repeated behaviour, evaluates outcomes and helps test evidence-backed routines.',
+    url:'r-ios.html',
+    availability:'Core · Included by default',
+    core:true
+  },
+  {
     id:'healthios',
     name:'Health-IOS',
     icon:{name:'pulse',markup:'<path d="M2 12h5l3-8 4 16 3-8h5"/>'},
@@ -3203,17 +3215,17 @@ function loadAddedProducts(){
       : [];
 
     // Goals-IOS is a foundational H-IOS system, not an optional product.
-    return [...new Set(['gios', ...valid])];
+    return [...new Set(['gios', 'rios', ...valid])];
   }catch(error){
     console.warn('Could not load H·IOS products:', error);
-    return ['gios'];
+    return ['gios', 'rios'];
   }
 }
 
 function saveAddedProducts(){
   // Keep Goals-IOS permanently included even if old storage or external code
   // attempts to write a product list without it.
-  addedProductIds = [...new Set(['gios', ...addedProductIds.filter(Boolean)])];
+  addedProductIds = [...new Set(['gios', 'rios', ...addedProductIds.filter(Boolean)])];
   localStorage.setItem(HIOS_PRODUCT_STORAGE_KEY, JSON.stringify(addedProductIds));
 }
 
