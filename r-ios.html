@@ -101,13 +101,17 @@
       </section>
 
       <section data-page="sources" hidden>
-        <div class="page-intro"><div><h2>Evidence Sources</h2><p>Control which connected product R-IOS may inspect. Turning a source off stops new collection and analysis from it.</p></div></div>
-        <article class="panel source-setting-card">
-          <div class="source-setting-heading"><div class="source-icon">T</div><div><p class="eyebrow">CONNECTED PRODUCT</p><h3>Traders-IOS</h3><p class="muted">Trading journals, playbook links, checklists, execution reviews and recorded execution scores.</p></div><span class="pill" id="sourceStatusBadge">Loading</span></div>
-          <div class="source-setting-row"><div><b>Use T-IOS evidence in R-IOS</b><small id="sourceStatusText">Checking connection…</small></div><label class="switch"><input id="sourceEnabled" type="checkbox"><span class="switch-slider"></span><span class="sr-only">Use T-IOS evidence</span></label></div>
-          <p class="source-detail" id="sourceDetail"></p>
-          <div class="source-setting-footer"><span class="muted">Imported evidence stays private to your account.</span><button class="button danger-quiet" id="clearImportedEvidence" type="button">Delete imported evidence</button></div>
-        </article>
+        <div class="page-intro source-page-intro">
+          <div><h2>Evidence Sources</h2><p>Choose which H-IOS products R-IOS may inspect. Each source can be paused at any time.</p></div>
+          <details class="source-picker" id="sourcePicker">
+            <summary class="button">+ Add another product</summary>
+            <div class="source-picker-panel">
+              <p class="muted">Add a product from your H-IOS environment, then choose whether R-IOS may use its activity to detect repeated routines.</p>
+              <div id="sourcePickerList"></div>
+            </div>
+          </details>
+        </div>
+        <div class="source-card-list" id="sourceCards" aria-live="polite"></div>
       </section>
 
       <footer class="page-footer"><span>R-IOS · H-IOS Product Environment</span><span>Recorded activity only · Associations do not establish cause</span></footer>
