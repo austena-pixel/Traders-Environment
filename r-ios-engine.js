@@ -8,7 +8,14 @@
     plan_checklist_review: 'Plan checklist review',
     trade_execution_review: 'Trade-execution review',
     execution_checklist_review: 'Execution checklist review',
-    session_rule_review: 'Session rule review'
+    session_rule_review: 'Session rule review',
+    gios_progress_update: 'Goal progress update',
+    health_hydration_logged: 'Hydration logged',
+    health_sleep_logged: 'Sleep logged',
+    health_movement_logged: 'Movement logged',
+    health_checkin_saved: 'Wellbeing check-in saved',
+    health_habit_completed: 'Health habit completed',
+    sios_study_session: 'Study session logged'
   });
   const MAX_SEQUENCE_LENGTH = 3;
   const MIN_DAYS_FOR_EARLY_SIGNAL = 3;
@@ -327,7 +334,7 @@
     return {
       status,
       direction,
-      outcome_metric: 'execution_score',
+      outcome_metric: asRows(outcomes).length ? 'execution_score' : 'none',
       with_pattern_days: withScores.length,
       without_pattern_days: withoutScores.length,
       with_pattern_mean: withMean,
@@ -372,9 +379,12 @@
   function discoveryCopy(pattern) {
     const evaluation = pattern?.evaluation || {};
     const count = Number(pattern?.observation_count) || 0;
+    const hasComparableOutcomes = evaluation.outcome_metric !== 'none' &&
+      evaluation.with_pattern_mean !== null && evaluation.with_pattern_mean !== undefined &&
+      evaluation.without_pattern_mean !== null && evaluation.without_pattern_mean !== undefined;
     let summary;
-    if (evaluation.status === 'insufficient_evidence') {
-      summary = `This recorded sequence appeared on ${count} distinct days. There are ${evaluation.with_pattern_days} days with it and ${evaluation.without_pattern_days} comparable days without it that have an execution score, so its relationship to outcomes is not established yet.`;
+    if (!hasComparableOutcomes) {
+      summary = `This repeated activity sequence appeared on ${count} distinct days. R-IOS needs more comparable outcome records before it can evaluate a relationship.`;
     } else {
       const withMean = Number(evaluation.with_pattern_mean).toFixed(2);
       const withoutMean = Number(evaluation.without_pattern_mean).toFixed(2);
@@ -383,11 +393,12 @@
         : evaluation.direction === 'negative'
           ? 'lower'
           : 'similar';
-      summary = `Recorded execution scores were ${relationship} on days with this sequence (average ${withMean}) than on comparable days without it (average ${withoutMean}). This is an association in the recorded sample, not proof that the sequence caused the difference.`;
+      const metric = evaluation.outcome_metric === 'execution_score' ? 'recorded execution scores' : 'recorded outcomes';
+      summary = `Recorded ${metric} were ${relationship} on days with this sequence (average ${withMean}) than on comparable days without it (average ${withoutMean}). This is an association in the recorded sample, not proof that the sequence caused the difference.`;
     }
     return {
       summary,
-      recommended_test: 'Test this sequence across future comparable sessions, keep recording T-IOS evidence, and review the outcome again when more observations are available.'
+      recommended_test: 'Observe this sequence over future comparable days, keep its source product connected, and review the evidence again as it grows.'
     };
   }
 
