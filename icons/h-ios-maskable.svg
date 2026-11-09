@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Existing H-IOS blue/purple H mark. Full-bleed opaque background;
+       the H remains inside the central 80%-diameter maskable safe circle. -->
+  <defs>
+    <linearGradient id="brand" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#6ea8ff"/>
+      <stop offset="1" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#brand)" d="M0 0h512v512H0z"/>
+  <path fill="#fff" d="M148 134h52v98h112v-98h52v244h-52v-98H200v98h-52z"/>
+</svg>
