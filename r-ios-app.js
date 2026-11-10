@@ -8,7 +8,8 @@
     gios: { id: 'gios', name: 'Goals-IOS', mark: 'G', description: 'Repeated goal progress updates. Goal titles and notes are not imported.' },
     tios: { id: 'tios', name: 'Traders-IOS', mark: 'T', description: 'Trading journals, playbook links, checklists, execution reviews and recorded execution scores.' },
     healthios: { id: 'healthios', name: 'Health-IOS', mark: 'H', description: 'Hydration, sleep, movement, wellbeing check-ins and completed habit indicators. Notes are not imported.' },
-    sios: { id: 'sios', name: 'Students-IOS', mark: 'S', description: 'Study session dates and durations. Module names, topic text and notes are not imported.' }
+    sios: { id: 'sios', name: 'Students-IOS', mark: 'S', description: 'Study session dates and durations. Module names, topic text and notes are not imported.' },
+    rios: { id: 'rios', name: 'Deliberate Routines', mark: 'R', description: 'User-recorded execution of routines they deliberately designed.' }
   });
   const SOURCE_ORDER = Object.freeze(['tios', 'gios', 'healthios', 'sios']);
   const USER_TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
@@ -80,6 +81,12 @@
     $('#rApp').hidden = false;
     const email = state.user?.email || state.user?.phone || 'Signed in';
     $('#userLabel').textContent = email;
+    window.RIOSDeliberateRoutines?.init({
+      db,
+      user: state.user,
+      showNotice,
+      refreshEvidence: refreshData
+    });
   }
 
   function setPage(page) {
@@ -140,6 +147,12 @@
     return pattern?.evaluation?.outcome_metric === 'none'
       ? 'Repeated activity'
       : statusLabel(pattern?.evaluation?.status);
+  }
+
+  function activityLabel(activityKey) {
+    return engine.ACTIVITY_LABELS[activityKey] ||
+      state.observations.find(row => row.activity_key === activityKey)?.label ||
+      activityKey;
   }
 
   async function readAll(table, columns, orderBy = 'created_at', filters = []) {
@@ -301,12 +314,20 @@
   }
 
   async function upsertObservations(observations, sourceProductId) {
+    if (sourceProductId === 'rios') {
+      const { error } = await db.from('routine_observations').delete()
+        .eq('user_id', state.user.id)
+        .eq('source_product_id', 'rios')
+        .in('source_table', ['deliberate_routine_session_activities', 'deliberate_routine_sessions']);
+      if (error) throw error;
+    }
     const rows = observations.map(row => ({
       ...row,
       user_id: state.user.id,
       source_product_id: sourceProductId,
       updated_at: new Date().toISOString()
     }));
+    if (!rows.length) return;
     for (let offset = 0; offset < rows.length; offset += 200) {
       const chunk = rows.slice(offset, offset + 200);
       const { error } = await db.from('routine_observations').upsert(chunk, {
@@ -343,7 +364,9 @@
     }
     const now = new Date().toISOString();
     const sourceName = SOURCE_CATALOG[sourceProductId]?.name || sourceProductId;
-    const method = sourceProductId === 'tios'
+    const method = sourceProductId === 'rios'
+      ? 'Counts completed, partially completed, and skipped user-recorded routine activities on distinct calendar days. It does not infer psychological resistance or prove that an activity caused an outcome.'
+      : sourceProductId === 'tios'
       ? 'Compares mean recorded T-IOS execution scores by distinct trading day, grouped by whether the recorded activity sequence appeared.'
       : 'Counts source-referenced ' + sourceName + ' activity across distinct calendar days. It does not infer a cause or compare unrelated outcomes.';
     const patternRows = detected.map(pattern => ({
@@ -484,9 +507,9 @@
       const connected = new Set(connectedProducts());
       state.sourceConnected = connected.has('tios');
       state.sourceEnabled = Boolean(state.sourceSettings.tios?.enabled);
-      const activeSources = SOURCE_ORDER.filter(id =>
+      const activeSources = [...SOURCE_ORDER.filter(id =>
         state.sourceSettings[id]?.enabled && connected.has(id)
-      );
+      ), 'rios'];
 
       for (const sourceProductId of activeSources) {
         try {
@@ -494,6 +517,11 @@
           if (sourceProductId === 'tios') {
             const sources = await loadTiosSource();
             built = engine.buildObservations(sources);
+          } else if (sourceProductId === 'rios') {
+            built = {
+              observations: await window.RIOSDeliberateRoutines?.buildObservations(db, state.user.id, engine) || [],
+              outcomes: []
+            };
           } else {
             built = { observations: loadLocalProductSource(sourceProductId), outcomes: [] };
           }
@@ -511,12 +539,13 @@
       }
 
       const checkedCount = state.observations.length;
-      state.sourceStatus = activeSources.length
-        ? activeSources.length + ' product source' + (activeSources.length === 1 ? ' is' : 's are') +
-          ' connected; ' + checkedCount + ' current activity records were checked.'
-        : 'No evidence sources are active. Add a product below to begin routine detection.';
+      const connectedSourceCount = activeSources.length - 1;
+      state.sourceStatus = connectedSourceCount
+        ? 'Deliberate execution is observed with ' + connectedSourceCount + ' connected product source' + (connectedSourceCount === 1 ? '' : 's') + '; ' + checkedCount + ' current activity records were checked.'
+        : 'Deliberate routine execution is observed automatically; no external product evidence sources are connected.';
       await loadOwnedRows();
       await loadRoutineRequests();
+      await window.RIOSDeliberateRoutines?.refresh?.();
       renderAll();
       showNotice(state.sourceErrors.length
         ? 'Some product evidence sources are unavailable. Available source activity is still shown.'
@@ -714,7 +743,7 @@
       ? state.patterns.map(pattern => `
         <article class="ri-card">
           <div class="ri-card-head"><div><span class="ri-kicker">${escapeHtml(SOURCE_CATALOG[pattern.source_product_id]?.name || pattern.source_product_id)}</span><h3>${escapeHtml(pattern.title)}</h3></div><span class="ri-badge">${escapeHtml(patternStatusLabel(pattern))}</span></div>
-          <div class="ri-sequence">${pattern.sequence.map(key => `<span>${escapeHtml(engine.ACTIVITY_LABELS[key] || key)}</span>`).join('<b aria-hidden="true">→</b>')}</div>
+          <div class="ri-sequence">${pattern.sequence.map(key => `<span>${escapeHtml(activityLabel(key))}</span>`).join('<b aria-hidden="true">→</b>')}</div>
           <div class="ri-facts"><div><small>Recorded days</small><b>${pattern.observation_count}</b></div><div><small>Consistency</small><b>${numberLabel(pattern.consistency_percent)}%</b></div><div><small>First detected</small><b>${escapeHtml(dateLabel(pattern.first_observed_on))}</b></div><div><small>Last occurrence</small><b>${escapeHtml(dateLabel(pattern.last_observed_on))}</b></div></div>
           <details class="ri-evidence"><summary>Inspect source evidence</summary><div>${pattern.evidence_references.slice(-8).map(ref => `<div class="ri-reference"><b>${escapeHtml(dateLabel(ref.observed_on))}</b><span>${ref.source_references.map(source => `${escapeHtml(source.table || source.source_table)} · ${escapeHtml(source.record_id || source.source_record_id)}`).join(' · ')}</span></div>`).join('')}</div></details>
         </article>`).join('')
@@ -731,7 +760,9 @@
           <p class="ri-body">${escapeHtml(discovery.summary)}</p>
           <div class="ri-hypothesis"><b>Test suggestion</b><p>${escapeHtml(discovery.recommended_test)}</p></div>
           <div class="ri-card-actions">
-            <button class="ri-button primary" type="button" data-action="adopt" data-id="${escapeHtml(discovery.id)}">Adopt for observation</button>
+            ${discovery.source_product_id === 'rios'
+              ? `<button class="ri-button primary" type="button" data-action="open-deliberate" data-id="${escapeHtml(discovery.id)}">View deliberate performance</button>`
+              : `<button class="ri-button primary" type="button" data-action="adopt" data-id="${escapeHtml(discovery.id)}">Adopt for observation</button>`}
             <button class="ri-button" type="button" data-action="investigate" data-id="${escapeHtml(discovery.id)}">Investigate evidence</button>
             <button class="ri-button quiet" type="button" data-action="dismiss" data-id="${escapeHtml(discovery.id)}">Dismiss</button>
           </div>
@@ -1153,6 +1184,7 @@
       const { action, id } = button.dataset;
       const actions = {
         adopt: () => adoptDiscovery(id),
+        'open-deliberate': () => { setPage('deliberate'); window.RIOSDeliberateRoutines?.setView('development'); },
         dismiss: () => dismissDiscovery(id),
         investigate: () => investigateDiscovery(id),
         'start-experiment': () => startExperiment(id),
@@ -1252,6 +1284,7 @@
   db.auth.onAuthStateChange((_event, session) => {
     if (!session?.user) {
       state.user = null;
+      window.RIOSDeliberateRoutines?.reset();
       showAuth();
     }
   });

@@ -59,6 +59,11 @@
     return Number.isFinite(number) ? number : null;
   }
 
+  function eventLabel(event) {
+    const key = text(event?.activity_key);
+    return ACTIVITY_LABELS[key] || text(event?.label);
+  }
+
   function makeObservation({ table, id, activityKey, label, observedAt, observedOn, details = {}, sourceReference = {} }) {
     const recordId = id === null || id === undefined ? '' : String(id);
     const day = observedDay(observedOn, observedAt);
@@ -259,7 +264,7 @@
     asRows(observations).forEach(event => {
       const day = dateOnly(event.observed_on);
       const key = text(event.activity_key);
-      if (!day || !ACTIVITY_LABELS[key]) return;
+      if (!day || !eventLabel(event)) return;
       if (!days.has(day)) days.set(day, []);
       days.get(day).push(event);
     });
@@ -358,7 +363,11 @@
           })
         }));
         const evaluation = evaluatePattern(matchedDays, activeDays, outcomes);
-        const sequenceLabels = item.sequence.map(key => ACTIVITY_LABELS[key]);
+        const sampleEvents = item.days.get(matchedDays[0]) || [];
+        const sequenceLabels = item.sequence.map(key => {
+          const event = sampleEvents.find(row => row.activity_key === key);
+          return ACTIVITY_LABELS[key] || eventLabel(event) || key;
+        });
         const title = sequenceLabels.join(' → ');
         return {
           pattern_key: patternKey,
