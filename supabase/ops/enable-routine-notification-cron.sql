@@ -5,7 +5,7 @@
 -- The SQL deliberately refuses to schedule a job if either Vault secret is absent.
 
 create extension if not exists pg_cron;
-create extension if not exists pg_net with schema extensions;
+create extension if not exists pg_net;
 
 do $$
 declare
