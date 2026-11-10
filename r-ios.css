@@ -259,3 +259,18 @@ a{color:inherit;text-decoration:none}
 @media(max-width:900px){.dr-performance-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.dr-performance-subgrid{grid-template-columns:1fr 1fr}.dr-toolbar{align-items:flex-start;flex-direction:column}.dr-toolbar-actions{justify-content:flex-start}}
 @media(max-width:800px){.deliberate-principle{grid-template-columns:1fr;gap:4px}.dr-routine-card-head,.dr-session-head,.dr-performance-head,.dr-review-card-head{align-items:flex-start}.dr-performance-head{flex-direction:column}.dr-performance-head .ri-button{align-self:flex-start}.dr-toolbar-actions{width:100%}.dr-toolbar-actions .button{flex:1 1 auto}.dr-subnav{margin-top:12px}.dr-quick-start-panel{padding:11px}}
 @media(max-width:520px){.dr-routine-card,.dr-session-card,.dr-performance-card,.dr-review-card{padding:12px}.dr-routine-card-head .ri-badge,.dr-session-head .ri-badge,.dr-review-card-head .ri-badge{font-size:7px}.dr-routine-copy{grid-template-columns:1fr;gap:3px}.dr-routine-actions .ri-button{flex:1 1 42%}.dr-performance-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.dr-trend-summary{grid-template-columns:1fr}.dr-performance-subgrid{grid-template-columns:1fr}.dr-resistance-fields{grid-template-columns:1fr}.dr-resistance-fields .wide{grid-column:auto}.dr-dialog{width:calc(100vw - 14px);max-height:94vh;border-radius:12px}.dr-dialog form{padding:13px}.dr-form-grid,.dr-builder-grid{grid-template-columns:1fr}.dr-form-grid .wide,.dr-builder-grid .wide{grid-column:auto}.dr-builder-heading{align-items:flex-start;flex-direction:column}.dr-builder-heading .button{align-self:flex-start}.dr-dialog-actions .button{flex:1}.dr-session-history summary{align-items:flex-start}.dr-activity-preview{align-items:flex-start;flex-direction:column;gap:4px}.dr-activity-preview small{text-align:left}.dr-quick-start{align-items:flex-start}.dr-review-card>p{grid-template-columns:1fr;gap:3px}}
+.dr-reminder-settings{margin:18px 0 8px;padding:13px;border:1px solid rgba(112,223,183,.2);border-radius:12px;background:rgba(112,223,183,.035)}
+.dr-reminder-settings>.dr-builder-heading{margin:0 0 10px}
+.dr-reminder-settings .dr-reminder-toggle,.dr-reminder-settings .dr-check-label{display:flex;align-items:center;gap:8px;min-height:34px;color:#c8d5d7;font-size:9px;font-weight:650}
+.dr-reminder-settings input[type="checkbox"]{width:15px;height:15px;min-height:15px;margin:0;accent-color:var(--accent);flex:0 0 auto}
+.dr-reminder-settings .dr-reminder-toggle{padding:8px 10px;border-radius:8px;background:rgba(112,223,183,.08)}
+.dr-reminder-global{margin-top:13px;padding-top:11px;border-top:1px solid var(--line)}
+.dr-reminder-global>b{font-size:10px;color:#d7e4e3}
+.dr-reminder-global .dr-form-grid{margin-top:6px}
+.dr-reminder-device{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+.dr-reminder-status{display:grid;gap:4px;color:var(--muted);font-size:9px}
+.dr-reminder-status span{display:block}
+.dr-reminder-device>div{display:flex;gap:5px;flex-wrap:wrap}
+.dr-reminder-footnote{margin:8px 0 0;color:var(--quiet);font-size:8px;line-height:1.5}
+@media(max-width:520px){.dr-reminder-settings{padding:10px}.dr-reminder-device>div{width:100%}.dr-reminder-device .ri-button{flex:1}.dr-reminder-global .dr-check-label{align-items:flex-start}}
+

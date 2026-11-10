@@ -4,12 +4,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#090d13">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>R-IOS — Routines</title>
+  <link rel="manifest" href="/hios.webmanifest">
   <link rel="stylesheet" href="r-ios.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="hios-connection-layer.js"></script>
   <script defer src="r-ios-engine.js"></script>
   <script defer src="r-ios-deliberate.js"></script>
+  <script defer src="rios-reminders.js"></script>
   <script defer src="r-ios-app.js"></script>
 </head>
 <body>
@@ -164,8 +168,37 @@
               <label>Repeat interval<input id="drScheduleInterval" type="number" min="1" max="365" value="1"></label>
               <fieldset class="dr-weekdays wide" id="drWeekdaysField"><legend>Days of the week</legend><label><input type="checkbox" value="1">Mon</label><label><input type="checkbox" value="2">Tue</label><label><input type="checkbox" value="3">Wed</label><label><input type="checkbox" value="4">Thu</label><label><input type="checkbox" value="5">Fri</label><label><input type="checkbox" value="6">Sat</label><label><input type="checkbox" value="7">Sun</label></fieldset>
               <label class="wide" id="drMonthDaysField" hidden>Days of the month<input id="drMonthDays" type="text" placeholder="1, 15, 28"><small>Enter one or more day numbers from 1 to 31.</small></label>
-              <label class="wide" id="drCustomScheduleField" hidden>Custom schedule description<input id="drCustomSchedule" maxlength="160" placeholder="For example, every second weekday"></label>
+              <div class="dr-form-grid wide" id="drCustomScheduleField" hidden><label class="wide">Custom schedule description<input id="drCustomSchedule" maxlength="160" placeholder="Describe when this routine repeats"></label><label>Custom repeat unit<select id="drCustomFrequency"><option value="days">Every N days</option><option value="weeks">Every N weeks</option><option value="months">Every N months</option></select></label><label>Repeat interval<input id="drCustomInterval" type="number" min="1" max="365" value="1"></label></div>
+              <label class="wide">Routine time zone<input id="drRoutineTimezone" maxlength="80" placeholder="Africa/Johannesburg" autocomplete="off"><small>Use an IANA time zone. The current device time zone is filled in by default.</small></label>
             </div>
+            <section class="dr-reminder-settings" aria-labelledby="drReminderHeading">
+              <div class="dr-builder-heading"><div><h4 id="drReminderHeading">Notifications &amp; Reminders</h4><p>Choose how this routine should prompt you. Notifications never mark activities complete.</p></div></div>
+              <label class="dr-reminder-toggle"><input id="drNotificationsEnabled" type="checkbox"> Enable reminders for this routine</label>
+              <div class="dr-form-grid dr-reminder-grid">
+                <label>Start reminder<input id="drStartReminderTime" type="time"><small>Leave blank to use the routine start time.</small></label>
+                <label class="dr-check-label"><input id="drStartReminderEnabled" type="checkbox"> Notify at routine start</label>
+                <label>Completion review time<input id="drReviewReminderTime" type="time"><small>Leave blank to use the routine end time.</small></label>
+                <label class="dr-check-label"><input id="drReviewReminderEnabled" type="checkbox"> Notify for completion review</label>
+                <label class="dr-check-label"><input id="drFollowUpEnabled" type="checkbox"> Send one follow-up if no session has started</label>
+                <label>Follow-up delay in minutes<input id="drFollowUpDelay" type="number" min="5" max="240" step="5" value="15"></label>
+                <label class="dr-check-label wide"><input id="drAutoPopupEnabled" type="checkbox" checked> Show an automatic in-app checklist popup when due</label>
+              </div>
+              <div class="dr-reminder-global">
+                <b>Account reminder controls</b>
+                <div class="dr-form-grid">
+                  <label class="dr-check-label"><input id="drGlobalNotificationsEnabled" type="checkbox" checked> Allow routine reminders on this account</label>
+                  <label class="dr-check-label"><input id="drQuietHoursEnabled" type="checkbox"> Use quiet hours across routines</label>
+                  <label>Quiet hours start<input id="drQuietHoursStart" type="time" value="22:00"></label>
+                  <label>Quiet hours end<input id="drQuietHoursEnd" type="time" value="06:00"></label>
+                  <label class="wide">Quiet hours time zone<input id="drQuietHoursTimezone" maxlength="80" placeholder="Africa/Johannesburg" autocomplete="off"></label>
+                </div>
+              </div>
+              <div class="dr-reminder-device">
+                <div class="dr-reminder-status"><span id="drNotificationPermission" role="status">Checking this device…</span><span id="drReminderStorageStatus" role="status">Checking reminder storage…</span></div>
+                <div><button class="ri-button" type="button" data-routine-action="enable-device-push">Enable on this device</button><button class="ri-button" type="button" data-routine-action="disable-device-push">Disable on this device</button><button class="ri-button" type="button" data-routine-action="test-device-push">Test notification</button></div>
+              </div>
+              <p class="dr-reminder-footnote">Phone delivery depends on browser and device support. On iPhone, Web Push requires an installed Home Screen web app and permission from this button.</p>
+            </section>
             <div class="dr-builder-heading"><div><h4>Activities and time blocks</h4><p>Add any number of activities, group activities into time blocks, and move them with the arrows.</p></div><button class="button" type="button" data-routine-action="add-activity">+ Add activity</button></div>
             <div id="drActivityBuilder" class="dr-activity-builder"></div>
             <div class="dr-dialog-actions"><button class="button" type="button" data-routine-action="close-routine-dialog">Cancel</button><button class="button primary" type="submit" id="drRoutineSave">Save routine</button></div>
@@ -208,3 +241,4 @@
   </div>
 </body>
 </html>
+

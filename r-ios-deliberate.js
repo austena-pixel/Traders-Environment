@@ -22,6 +22,7 @@
     sessions: [],
     sessionActivities: [],
     reviews: [],
+    reminderPreferences: { enabled: true, quiet_hours_enabled: false, quiet_hours_start: '22:00', quiet_hours_end: '06:00' },
     period: 'daily',
     view: 'routines',
     loading: false,
@@ -47,6 +48,38 @@
   function localDate(value = new Date()) {
     const date = value instanceof Date ? value : new Date(value);
     return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
+  }
+
+  function dateInZone(value = new Date(), timeZone = 'UTC') {
+    const parts = new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(value);
+    const part = type => parts.find(row => row.type === type)?.value || '';
+    return `${part('year')}-${part('month')}-${part('day')}`;
+  }
+
+  function timestampInZone(dateString, time, timeZone = 'UTC', dayOffset = 0) {
+    if (!dateString || !time) return null;
+    const date = addDays(dateString, dayOffset);
+    const [year, month, day] = date.split('-').map(Number);
+    const [hour, minute] = String(time).slice(0, 5).split(':').map(Number);
+    if (![year, month, day, hour, minute].every(Number.isFinite)) return null;
+    const target = Date.UTC(year, month - 1, day, hour, minute, 0);
+    try {
+      for (let shift = 0; shift <= 180; shift += 1) {
+        const shiftedTarget = target + shift * 60000;
+        let guess = shiftedTarget;
+        for (let step = 0; step < 5; step += 1) {
+          const parts = new Intl.DateTimeFormat('en-US', {
+            timeZone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+          }).formatToParts(new Date(guess));
+          const get = type => Number(parts.find(part => part.type === type)?.value);
+          const represented = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'));
+          const difference = shiftedTarget - represented;
+          if (!difference) return new Date(guess).toISOString();
+          guess += difference;
+        }
+      }
+      return null;
+    } catch (_) { return null; }
   }
 
   function timeLabel(value) {
@@ -78,12 +111,8 @@
     return localDate(value);
   }
 
-  function timestampAt(dateString, time, dayOffset = 0) {
-    if (!dateString || !time) return null;
-    const value = new Date(`${dateString}T${String(time).slice(0, 5)}:00`);
-    if (!Number.isFinite(value.getTime())) return null;
-    value.setDate(value.getDate() + dayOffset);
-    return value.toISOString();
+  function timestampAt(dateString, time, dayOffset = 0, timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC') {
+    return timestampInZone(dateString, time, timeZone, dayOffset);
   }
 
   function isMissingSchema(error) {
@@ -234,6 +263,14 @@
       state.sessions = sessions;
       state.sessionActivities = sessionActivities;
       state.reviews = reviews;
+      try {
+        const { data: preferences, error: preferenceError } = await state.db.from('deliberate_routine_notification_preferences')
+          .select('*').eq('user_id', state.user.id).maybeSingle();
+        if (preferenceError && !isMissingSchema(preferenceError)) throw preferenceError;
+        state.reminderPreferences = preferences || { enabled: true, quiet_hours_enabled: false, quiet_hours_start: '22:00', quiet_hours_end: '06:00' };
+      } catch (preferenceError) {
+        if (!isMissingSchema(preferenceError)) console.warn('R-IOS notification preferences could not load:', preferenceError);
+      }
       state.available = true;
     } catch (error) {
       state.available = false;
@@ -254,6 +291,7 @@
     state.sessions = [];
     state.sessionActivities = [];
     state.reviews = [];
+    state.reminderPreferences = { enabled: true, quiet_hours_enabled: false, quiet_hours_start: '22:00', quiet_hours_end: '06:00' };
     state.available = false;
     state.error = '';
     renderAll();
@@ -684,6 +722,22 @@
     field('#drScheduleInterval').value = '1';
     field('#drMonthDays').value = '1';
     field('#drCustomSchedule').value = '';
+    field('#drCustomFrequency').value = 'days';
+    field('#drCustomInterval').value = '1';
+    field('#drRoutineTimezone').value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    field('#drNotificationsEnabled').checked = false;
+    field('#drStartReminderEnabled').checked = false;
+    field('#drStartReminderTime').value = '';
+    field('#drReviewReminderEnabled').checked = false;
+    field('#drReviewReminderTime').value = '';
+    field('#drFollowUpEnabled').checked = false;
+    field('#drFollowUpDelay').value = '15';
+    field('#drAutoPopupEnabled').checked = true;
+    field('#drGlobalNotificationsEnabled').checked = state.reminderPreferences.enabled !== false;
+    field('#drQuietHoursEnabled').checked = Boolean(state.reminderPreferences.quiet_hours_enabled);
+    field('#drQuietHoursStart').value = timeLabel(state.reminderPreferences.quiet_hours_start || '22:00');
+    field('#drQuietHoursEnd').value = timeLabel(state.reminderPreferences.quiet_hours_end || '06:00');
+    field('#drQuietHoursTimezone').value = state.reminderPreferences.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
     $('#drWeekdaysField')?.querySelectorAll('input[type="checkbox"]').forEach(box => { box.checked = false; });
     activityEditorRows([]);
     setScheduleFields();
@@ -704,11 +758,23 @@
       field('#drRoutineStart').value = timeLabel(routine.start_time || '');
       field('#drRoutineEnd').value = timeLabel(routine.end_time || '');
       field('#drRoutineDuration').value = routine.duration_minutes ?? '';
+      field('#drRoutineTimezone').value = routine.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
       field('#drScheduleKind').value = routine.schedule_kind || 'daily';
       const data = routine.schedule_data || {};
+      const reminders = data.notifications || {};
+      field('#drNotificationsEnabled').checked = Boolean(reminders.enabled);
+      field('#drStartReminderEnabled').checked = Boolean(reminders.start?.enabled);
+      field('#drStartReminderTime').value = timeLabel(reminders.start?.time || '');
+      field('#drReviewReminderEnabled').checked = Boolean(reminders.review?.enabled);
+      field('#drReviewReminderTime').value = timeLabel(reminders.review?.time || '');
+      field('#drFollowUpEnabled').checked = Boolean(reminders.followUp?.enabled);
+      field('#drFollowUpDelay').value = String(reminders.followUp?.delayMinutes || 15);
+      field('#drAutoPopupEnabled').checked = reminders.autoPopup !== false;
       field('#drScheduleInterval').value = String(data.interval || 1);
       field('#drMonthDays').value = asArray(data.monthDays).join(', ') || '1';
       field('#drCustomSchedule').value = data.description || '';
+      field('#drCustomFrequency').value = data.customFrequency || 'days';
+      field('#drCustomInterval').value = String(data.customInterval || data.interval || 1);
       const selectedDays = new Set(asArray(data.weekdays).map(String));
       $('#drWeekdaysField')?.querySelectorAll('input[type="checkbox"]').forEach(box => { box.checked = selectedDays.has(box.value); });
       activityEditorRows(routineActivityRows(routine.id));
@@ -735,8 +801,45 @@
     if (kind === 'custom') {
       data.description = field('#drCustomSchedule').value.trim();
       if (!data.description) throw new Error('Describe when this custom recurring routine should happen.');
+      const customInterval = Number(field('#drCustomInterval').value || 1);
+      if (!Number.isInteger(customInterval) || customInterval < 1 || customInterval > 365) throw new Error('Custom repeat interval must be a whole number from 1 to 365.');
+      data.customFrequency = field('#drCustomFrequency').value || 'days';
+      data.customInterval = customInterval;
     }
+    const followUpDelay = Number(field('#drFollowUpDelay').value || 15);
+    if (!Number.isInteger(followUpDelay) || followUpDelay < 5 || followUpDelay > 240) throw new Error('Follow-up delay must be between 5 and 240 minutes.');
+    data.notifications = {
+      enabled: field('#drNotificationsEnabled').checked,
+      autoPopup: field('#drAutoPopupEnabled').checked,
+      start: { enabled: field('#drStartReminderEnabled').checked, time: field('#drStartReminderTime').value || null },
+      review: { enabled: field('#drReviewReminderEnabled').checked, time: field('#drReviewReminderTime').value || null },
+      followUp: { enabled: field('#drFollowUpEnabled').checked, delayMinutes: followUpDelay }
+    };
     return { schedule_kind: kind, schedule_data: data };
+  }
+
+  async function saveReminderPreferences() {
+    if (!state.user || !state.db) return false;
+    const timezone = field('#drQuietHoursTimezone').value.trim() || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    try { new Intl.DateTimeFormat('en', { timeZone: timezone }); }
+    catch (_) { throw new Error('Enter a valid IANA time zone for quiet hours.'); }
+    const preferences = {
+      user_id: state.user.id,
+      enabled: field('#drGlobalNotificationsEnabled').checked,
+      quiet_hours_enabled: field('#drQuietHoursEnabled').checked,
+      quiet_hours_start: field('#drQuietHoursStart').value || '22:00',
+      quiet_hours_end: field('#drQuietHoursEnd').value || '06:00',
+      timezone,
+      updated_at: new Date().toISOString()
+    };
+    const { data, error } = await state.db.from('deliberate_routine_notification_preferences')
+      .upsert(preferences, { onConflict: 'user_id' }).select('*').single();
+    if (error) {
+      if (isMissingSchema(error)) return false;
+      throw error;
+    }
+    state.reminderPreferences = data || preferences;
+    return true;
   }
 
   function readActivityRows(routineId, userId) {
@@ -787,6 +890,9 @@
         throw new Error('Routine duration must be a whole number from 0 to 1440 minutes.');
       }
       const routineId = existingId || makeId();
+      const timezone = field('#drRoutineTimezone').value.trim() || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+      try { new Intl.DateTimeFormat('en', { timeZone: timezone }); }
+      catch (_) { throw new Error('Enter a valid IANA time zone, such as Africa/Johannesburg.'); }
       const routineRow = {
         id: routineId,
         user_id: state.user.id,
@@ -799,7 +905,7 @@
         duration_minutes: durationBetween(start, end) ?? enteredDuration,
         schedule_kind: schedule.schedule_kind,
         schedule_data: schedule.schedule_data,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+        timezone,
         status: field('#drRoutineStatus').value,
         updated_at: new Date().toISOString()
       };
@@ -824,9 +930,17 @@
       if (keepIds.length) deletion = deletion.not('id', 'in', `(${keepIds.join(',')})`);
       const deleted = await deletion;
       if (deleted.error) throw deleted.error;
+      let preferencesSaved = true;
+      try { preferencesSaved = await saveReminderPreferences(); }
+      catch (preferenceError) {
+        console.warn('Routine saved, but account notification preferences could not be saved:', preferenceError);
+        preferencesSaved = false;
+      }
       closeDialog(field('#drRoutineDialog'));
       await refresh();
-      notify(existingId ? 'Routine updated. Previous session snapshots remain available.' : 'Routine created.', 'good');
+      notify(!preferencesSaved
+        ? 'Routine saved. Account reminder controls need the notification migration before they can sync.'
+        : existingId ? 'Routine updated. Previous session snapshots remain available.' : 'Routine created.', preferencesSaved ? 'good' : 'warning');
       setView('routines');
     } catch (error) {
       console.error('Could not save deliberate routine:', error);
@@ -853,7 +967,7 @@
     addGroup(eveningId, 'Self-discovery', '21:30', 15, ['Investigate possible causes and recurring patterns']);
     addGroup(eveningId, 'Conscious development', '21:45', 15, ['Identify improvements and reinforce effective behaviours', 'Prepare an experiment for the following day']);
     const routines = [
-      { id: morningId, user_id: state.user.id, name: 'Morning Routine', description: 'Prepare physically, organize the environment, and establish a clear intention for the day.', purpose: 'Build a deliberate foundation for the day.', desired_outcome: 'Begin the day prepared and with a clear execution plan.', start_time: '06:00', end_time: '09:00', duration_minutes: 180, schedule_kind: 'daily', schedule_data: { interval: 1 }, status: 'active' },
+      { id: morningId, user_id: state.user.id, name: 'Morning Routine', description: 'Prepare physically, organize the environment, and establish a clear intention for the day.', purpose: 'Build a deliberate foundation for the day.', desired_outcome: 'Begin the day prepared and with a clear execution plan.', start_time: '06:00', end_time: '09:00', duration_minutes: 180, schedule_kind: 'daily', schedule_data: { interval: 1, notifications: { enabled: true, autoPopup: true, start: { enabled: true, time: '06:00' }, review: { enabled: true, time: '09:00' }, followUp: { enabled: false, delayMinutes: 15 } } }, status: 'active' },
       { id: daytimeId, user_id: state.user.id, name: 'Daytime Execution', description: 'Translate intention into observable behaviour and record significant deviations or distractions.', purpose: 'Carry the morning intention into the day.', desired_outcome: 'Act on the daily plan and capture meaningful changes in behaviour.', start_time: '09:00', end_time: '21:00', duration_minutes: 720, schedule_kind: 'daily', schedule_data: { interval: 1 }, status: 'active' },
       { id: eveningId, user_id: state.user.id, name: 'Evening Routine', description: 'Review actual outcomes, understand execution gaps, and prepare a conscious development experiment.', purpose: 'Turn the day’s evidence into learning for tomorrow.', desired_outcome: 'Understand what happened and choose a practical next step.', start_time: '21:00', end_time: '22:00', duration_minutes: 60, schedule_kind: 'daily', schedule_data: { interval: 1 }, status: 'active' }
     ].map(row => ({ ...row, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC', created_at: new Date().toISOString(), updated_at: new Date().toISOString() }));
@@ -888,15 +1002,17 @@
   async function startRoutine(routineId) {
     const routine = routineById(routineId);
     if (!routine || routine.status !== 'active') return;
-    if (inProgressSession(routineId)) return setView('execution');
+    const active = inProgressSession(routineId);
+    if (active) { setView('execution'); return active.id; }
     const existingInterrupted = interruptedSession(routineId);
-    if (existingInterrupted) return resumeSession(existingInterrupted.id);
+    if (existingInterrupted) { await resumeSession(existingInterrupted.id); return existingInterrupted.id; }
     const activities = routineActivityRows(routineId);
     if (!activities.some(row => row.activity_kind === 'activity')) return notify('Add at least one activity before starting this routine.', 'warning');
-    const today = localDate();
-    const plannedStart = timestampAt(today, routine.start_time);
-    let plannedEnd = timestampAt(today, routine.end_time);
-    if (plannedEnd && plannedStart && Date.parse(plannedEnd) < Date.parse(plannedStart)) plannedEnd = timestampAt(today, routine.end_time, 1);
+    const timezone = routine.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    const today = dateInZone(new Date(), timezone);
+    const plannedStart = timestampInZone(today, routine.start_time, timezone);
+    let plannedEnd = timestampInZone(today, routine.end_time, timezone);
+    if (plannedEnd && plannedStart && Date.parse(plannedEnd) < Date.parse(plannedStart)) plannedEnd = timestampInZone(today, routine.end_time, timezone, 1);
     const now = new Date().toISOString();
     const sessionId = makeId();
     const session = {
@@ -932,6 +1048,7 @@
     await refresh();
     setView('execution');
     notify(`${routine.name} started. R-IOS will record each activity only when you update it.`, 'good');
+    return sessionId;
   }
 
   async function resumeSession(sessionId) {
@@ -951,11 +1068,13 @@
     if (!routine || routine.status !== 'active') return;
     if (!root.confirm('Record today’s planned session as missed? R-IOS does not create missed records automatically.')) return;
     const now = new Date().toISOString();
-    let plannedStart = timestampAt(localDate(), routine.start_time);
-    let plannedEnd = timestampAt(localDate(), routine.end_time);
-    if (plannedEnd && plannedStart && Date.parse(plannedEnd) < Date.parse(plannedStart)) plannedEnd = timestampAt(localDate(), routine.end_time, 1);
+    const timezone = routine.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    const scheduledDate = dateInZone(new Date(), timezone);
+    let plannedStart = timestampAt(scheduledDate, routine.start_time, 0, timezone);
+    let plannedEnd = timestampAt(scheduledDate, routine.end_time, 0, timezone);
+    if (plannedEnd && plannedStart && Date.parse(plannedEnd) < Date.parse(plannedStart)) plannedEnd = timestampAt(scheduledDate, routine.end_time, 1, timezone);
     const { error } = await state.db.from('deliberate_routine_sessions').insert({
-      user_id: state.user.id, routine_id: routine.id, scheduled_for: localDate(),
+      user_id: state.user.id, routine_id: routine.id, scheduled_for: scheduledDate,
       planned_start_at: plannedStart, planned_end_at: plannedEnd,
       status: 'missed', missed_recorded_at: now, updated_at: now
     });
@@ -1052,6 +1171,65 @@
     if (error) throw error;
     await refresh();
     notify('Session saved. You can resume it from the Execution view.', 'good');
+  }
+
+  function getChecklistData(routineId, scheduledFor = '', sessionId = '') {
+    const routine = routineById(routineId);
+    if (!routine) return null;
+    let session = sessionId ? state.sessions.find(row => row.id === sessionId && row.routine_id === routineId) : null;
+    if (!session) session = inProgressSession(routineId) || interruptedSession(routineId);
+    if (!session && scheduledFor) {
+      session = state.sessions.filter(row => row.routine_id === routineId && row.scheduled_for === scheduledFor)
+        .sort((a, b) => String(b.updated_at || '').localeCompare(String(a.updated_at || '')))[0] || null;
+    }
+    return {
+      routine,
+      session,
+      activities: session ? sessionItems(session.id) : routineActivityRows(routineId)
+    };
+  }
+
+  function checklistResistanceFields(itemId) {
+    const card = root.document.querySelector(`[data-checklist-item][data-checklist-item="${CSS.escape(itemId)}"]`);
+    if (!card) return {};
+    const value = key => card.querySelector(`[data-resistance="${key}"]`)?.value ?? '';
+    const occurred = value('occurred'), influenced = value('influenced'), intensityText = value('intensity');
+    const intensity = intensityText === '' ? null : Number(intensityText);
+    if (intensity !== null && (!Number.isInteger(intensity) || intensity < 0 || intensity > 10)) throw new Error('Resistance intensity must be a whole number from 0 to 10.');
+    return {
+      resistance_occurred: occurred === 'yes' ? true : occurred === 'no' ? false : null,
+      resistance_nature: value('nature').trim(), resistance_intensity: intensity,
+      resistance_influenced_execution: influenced === 'yes' ? true : influenced === 'no' ? false : null,
+      resistance_response: value('response').trim()
+    };
+  }
+
+  async function setChecklistActivityStatus(activityId, status, executionNote = '', resistance = {}) {
+    if (!TERMINAL_ACTIVITY_STATES.has(status)) throw new Error('Choose completed, partially completed or skipped.');
+    const activity = state.sessionActivities.find(row => row.id === activityId);
+    if (!activity) throw new Error('This checklist activity is no longer available. Refresh and reopen the routine.');
+    const now = new Date().toISOString();
+    const { error } = await state.db.from('deliberate_routine_session_activities').update({
+      status,
+      actual_started_at: activity.actual_started_at || (status === 'skipped' ? null : now),
+      actual_completed_at: status === 'completed' ? now : null,
+      status_recorded_at: now,
+      execution_note: String(executionNote || '').trim(),
+      ...checklistResistanceFields(activityId), ...resistance,
+      updated_at: now
+    }).eq('user_id', state.user.id).eq('session_id', activity.session_id).eq('id', activityId);
+    if (error) throw error;
+    await refresh();
+    if (typeof state.refreshEvidence === 'function') await state.refreshEvidence();
+  }
+
+  async function saveChecklistNote(activityId, executionNote = '', resistance = null) {
+    const fields = resistance || checklistResistanceFields(activityId);
+    const { error } = await state.db.from('deliberate_routine_session_activities').update({
+      execution_note: String(executionNote || '').trim(), ...fields, updated_at: new Date().toISOString()
+    }).eq('user_id', state.user.id).eq('id', activityId);
+    if (error) throw error;
+    await refresh();
   }
 
   async function toggleRoutineStatus(routineId) {
@@ -1172,6 +1350,9 @@
         'save-item-notes': () => saveItemNotes(id),
         'finish-session': () => finishSession(id),
         'interrupt-session': () => interruptSession(id),
+        'enable-device-push': () => root.RIOSRoutineReminders?.enablePush(),
+        'disable-device-push': () => root.RIOSRoutineReminders?.disablePush(),
+        'test-device-push': () => root.RIOSRoutineReminders?.testPush(),
         'toggle-routine-status': () => toggleRoutineStatus(id),
         'open-review': () => openReview(id, button.dataset.reviewType || 'daily', button.dataset.reviewId || '')
       };
@@ -1203,6 +1384,15 @@
     refresh,
     reset,
     setView,
+    startRoutine,
+    startActivity,
+    resumeSession,
+    finishSession,
+    getChecklistData,
+    setChecklistActivityStatus,
+    saveChecklistNote,
+    isReady: () => state.available,
+    getReminderPreferences: () => ({ ...state.reminderPreferences }),
     buildObservations,
     durationBetween,
     periodBounds,
@@ -1213,3 +1403,4 @@
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.RIOSDeliberateRoutines = api;
 })(typeof globalThis === 'object' ? globalThis : this);
+

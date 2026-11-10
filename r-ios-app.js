@@ -98,6 +98,7 @@
       }
       console.error('R-IOS deliberate routines module did not load before the authenticated app.');
     }
+    window.RIOSRoutineReminders?.init({ db, user: state.user, mode: 'rios', showNotice });
   }
 
   function setPage(page) {
@@ -1296,8 +1297,10 @@
     if (!session?.user) {
       state.user = null;
       window.RIOSDeliberateRoutines?.reset();
+      window.RIOSRoutineReminders?.reset();
       showAuth();
     }
   });
   init();
 })();
+
