@@ -81,12 +81,23 @@
     $('#rApp').hidden = false;
     const email = state.user?.email || state.user?.phone || 'Signed in';
     $('#userLabel').textContent = email;
-    window.RIOSDeliberateRoutines?.init({
-      db,
-      user: state.user,
-      showNotice,
-      refreshEvidence: refreshData
-    });
+    const deliberateRoutines = window.RIOSDeliberateRoutines;
+    if (typeof deliberateRoutines?.init === 'function') {
+      deliberateRoutines.init({
+        db,
+        user: state.user,
+        showNotice,
+        refreshEvidence: refreshData
+      });
+    } else {
+      const notice = $('#drStorageNotice');
+      if (notice) {
+        notice.textContent = 'Deliberate Routines could not start because its script did not load. Refresh the page and try again.';
+        notice.hidden = false;
+        notice.classList.add('warning');
+      }
+      console.error('R-IOS deliberate routines module did not load before the authenticated app.');
+    }
   }
 
   function setPage(page) {

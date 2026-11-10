@@ -118,3 +118,12 @@ test('new deliberate data uses owner-scoped RLS policies and keeps intention sep
   assert.match(migration, /'rios'/);
   assert.match(migration, /on delete set null \(source_activity_id\)/);
 });
+
+test('Deliberate Routines loads before the authenticated R-IOS app bootstrap', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'r-ios.html'), 'utf8');
+  const deliberateModule = html.indexOf('<script defer src="r-ios-deliberate.js"></script>');
+  const authenticatedApp = html.indexOf('<script defer src="r-ios-app.js"></script>');
+  assert.notEqual(deliberateModule, -1, 'the deliberate routines module script must exist');
+  assert.notEqual(authenticatedApp, -1, 'the R-IOS app script must exist');
+  assert.ok(deliberateModule < authenticatedApp, 'the routines module must register before the app calls its initializer');
+});
