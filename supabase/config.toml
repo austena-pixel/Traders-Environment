@@ -6,3 +6,5 @@ verify_jwt = false
 
 [functions.mt5-market-data]
 verify_jwt = false
+[functions.rios-routine-notifications]
+verify_jwt = false
