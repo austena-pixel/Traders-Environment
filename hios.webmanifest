@@ -1,0 +1,14 @@
+{
+  "id": "/",
+  "name": "H-IOS",
+  "short_name": "H-IOS",
+  "description": "H-IOS personal intelligence environments",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#07090d",
+  "theme_color": "#07090d",
+  "icons": [
+    { "src": "/hios-app-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
