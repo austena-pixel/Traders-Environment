@@ -77,7 +77,7 @@ async function insertOccurrence(service, routine, preferences, kind, time, local
     title: text.title, body: text.body, auto_popup: silentStart ? false : reminderSettings.autoPopup !== false,
     in_app_state: silentStart ? 'opened' : 'pending',
     follow_up_due_at: kind === 'start' && reminderSettings.followUp?.enabled
-      ? new Date(scheduled.getTime() + Math.max(5, Number(reminderSettings.followUp.delayMinutes || 15)) * 60000).toISOString()
+      ? new Date(deliveryTime.getTime() + Math.max(5, Number(reminderSettings.followUp.delayMinutes || 15)) * 60000).toISOString()
       : null,
     push_state: silentStart || stalePush ? 'suppressed' : 'pending',
     push_dispatched_at: silentStart || stalePush ? now.toISOString() : null,
