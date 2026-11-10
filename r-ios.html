@@ -10,6 +10,7 @@
   <script defer src="hios-connection-layer.js"></script>
   <script defer src="r-ios-engine.js"></script>
   <script defer src="r-ios-app.js"></script>
+  <script defer src="r-ios-deliberate.js"></script>
 </head>
 <body>
   <section class="auth-screen" id="authScreen" hidden>
@@ -43,6 +44,7 @@
         <button data-nav-page="discoveries" type="button"><span>✳</span>Routine Discoveries</button>
         <button data-nav-page="research" type="button"><span>⌕</span>Routine Research</button>
         <button data-nav-page="routines" type="button"><span>↻</span>My Routines</button>
+        <button data-nav-page="deliberate" type="button"><span>✦</span>Deliberate Routines</button>
         <button data-nav-page="sources" type="button"><span>⇄</span>Sources</button>
       </nav>
       <div class="sidebar-bottom">
@@ -98,6 +100,93 @@
       <section data-page="routines" hidden>
         <div class="page-intro"><div><h2>My Routines</h2><p>Routines you adopted from discoveries, monitored against future recorded evidence.</p></div></div>
         <div id="myRoutinesList" class="card-list"></div>
+      </section>
+
+      <section data-page="deliberate" id="deliberateRoutinesRoot" hidden>
+        <div class="page-intro deliberate-intro">
+          <div><h2>Deliberate Routines</h2><p>Design the behaviour you intend to practise. R-IOS records what happens, compares it with your intention, and uses the evidence to support reflection and development.</p></div>
+          <span class="pill accent">Intention → execution → observation</span>
+        </div>
+        <div class="deliberate-principle"><b>Intention and observation stay distinct.</b><span>Your plan describes what you intend to do. Execution records capture what you actually did. A delay or skipped activity is not labelled psychological resistance unless you record that experience.</span></div>
+        <div class="dr-storage-notice" id="drStorageNotice" role="status" hidden></div>
+        <div class="dr-subnav" role="tablist" aria-label="Deliberate routines views">
+          <button class="active" type="button" role="tab" aria-selected="true" data-deliberate-view="routines">My routines</button>
+          <button type="button" role="tab" aria-selected="false" data-deliberate-view="execution">Execution</button>
+          <button type="button" role="tab" aria-selected="false" data-deliberate-view="development">Performance &amp; development</button>
+        </div>
+
+        <div class="dr-view" data-deliberate-panel="routines">
+          <div class="dr-toolbar">
+            <div><h3>Routines you designed</h3><p>Create independent schedules for morning, daytime, evening, weekly, monthly or custom recurring routines.</p></div>
+            <div class="dr-toolbar-actions">
+              <button class="button" type="button" data-routine-action="add-example">Add Daily Operating System example</button>
+              <button class="button primary" type="button" data-routine-action="new-routine">+ Create routine</button>
+            </div>
+          </div>
+          <div class="dr-routine-list" id="drRoutineList" aria-live="polite"></div>
+        </div>
+
+        <div class="dr-view" data-deliberate-panel="execution" hidden>
+          <div class="dr-toolbar"><div><h3>Today's execution</h3><p>Start a routine when you are ready, resume an interrupted session, and record each activity as it happens.</p></div></div>
+          <div id="drExecutionList" class="dr-execution-list" aria-live="polite"></div>
+          <div class="dr-section-heading"><div><h3>Recent sessions</h3><p>Review actual execution records. Scheduled time passing never completes or misses a session automatically.</p></div></div>
+          <div id="drRecentSessions" class="dr-session-list"></div>
+        </div>
+
+        <div class="dr-view" data-deliberate-panel="development" hidden>
+          <div class="dr-toolbar">
+            <div><h3>Performance &amp; development</h3><p>Compare recorded execution with your plan. These summaries describe the evidence you recorded; subjective resistance ratings are self-reports.</p></div>
+            <div class="dr-period-picker" role="group" aria-label="Evaluation period">
+              <button class="active" type="button" data-routine-period="daily">Daily</button>
+              <button type="button" data-routine-period="weekly">Weekly</button>
+              <button type="button" data-routine-period="monthly">Monthly</button>
+            </div>
+          </div>
+          <div id="drPerformanceList" class="dr-performance-list"></div>
+          <div class="dr-section-heading"><div><h3>Development reviews</h3><p>Record progress, execution gaps, possible explanations and a small experiment for a future routine.</p></div></div>
+          <div id="drReviewsList" class="dr-review-list"></div>
+        </div>
+
+        <dialog class="dr-dialog" id="drRoutineDialog" aria-labelledby="drRoutineDialogTitle">
+          <form id="drRoutineForm">
+            <div class="dr-dialog-head"><div><p class="eyebrow">DELIBERATE ROUTINE BUILDER</p><h3 id="drRoutineDialogTitle">Create routine</h3></div><button class="icon-button" type="button" data-routine-action="close-routine-dialog" aria-label="Close routine builder">×</button></div>
+            <input type="hidden" id="drRoutineId">
+            <div class="dr-form-grid">
+              <label>Routine name<input id="drRoutineName" maxlength="120" required placeholder="Morning routine"></label>
+              <label>Routine status<select id="drRoutineStatus"><option value="active">Active</option><option value="paused">Paused</option><option value="archived">Archived</option></select></label>
+              <label class="wide">Description<textarea id="drRoutineDescription" rows="2" maxlength="800" placeholder="What does this routine look like?"></textarea></label>
+              <label class="wide">Purpose<textarea id="drRoutinePurpose" rows="2" maxlength="800" placeholder="Why is this routine important to you?"></textarea></label>
+              <label class="wide">Desired outcome<textarea id="drRoutineOutcome" rows="2" maxlength="800" placeholder="What result do you intend this routine to support?"></textarea></label>
+              <label>Start time<input id="drRoutineStart" type="time"></label>
+              <label>End time<input id="drRoutineEnd" type="time"></label>
+              <label>Duration in minutes<input id="drRoutineDuration" type="number" min="0" max="1440" placeholder="Use if no end time is set"></label>
+              <label>Repeat<select id="drScheduleKind"><option value="daily">Every day</option><option value="weekly">Selected weekdays</option><option value="monthly">Selected days of the month</option><option value="custom">Custom recurring</option></select></label>
+              <label>Repeat interval<input id="drScheduleInterval" type="number" min="1" max="365" value="1"></label>
+              <fieldset class="dr-weekdays wide" id="drWeekdaysField"><legend>Days of the week</legend><label><input type="checkbox" value="1">Mon</label><label><input type="checkbox" value="2">Tue</label><label><input type="checkbox" value="3">Wed</label><label><input type="checkbox" value="4">Thu</label><label><input type="checkbox" value="5">Fri</label><label><input type="checkbox" value="6">Sat</label><label><input type="checkbox" value="7">Sun</label></fieldset>
+              <label class="wide" id="drMonthDaysField" hidden>Days of the month<input id="drMonthDays" type="text" placeholder="1, 15, 28"><small>Enter one or more day numbers from 1 to 31.</small></label>
+              <label class="wide" id="drCustomScheduleField" hidden>Custom schedule description<input id="drCustomSchedule" maxlength="160" placeholder="For example, every second weekday"></label>
+            </div>
+            <div class="dr-builder-heading"><div><h4>Activities and time blocks</h4><p>Add any number of activities, group activities into time blocks, and move them with the arrows.</p></div><button class="button" type="button" data-routine-action="add-activity">+ Add activity</button></div>
+            <div id="drActivityBuilder" class="dr-activity-builder"></div>
+            <div class="dr-dialog-actions"><button class="button" type="button" data-routine-action="close-routine-dialog">Cancel</button><button class="button primary" type="submit" id="drRoutineSave">Save routine</button></div>
+          </form>
+        </dialog>
+
+        <dialog class="dr-dialog dr-review-dialog" id="drReviewDialog" aria-labelledby="drReviewDialogTitle">
+          <form id="drReviewForm">
+            <div class="dr-dialog-head"><div><p class="eyebrow">CONSCIOUS DEVELOPMENT</p><h3 id="drReviewDialogTitle">Routine review</h3></div><button class="icon-button" type="button" data-routine-action="close-review-dialog" aria-label="Close routine review">×</button></div>
+            <input type="hidden" id="drReviewRoutineId">
+            <label>Review period<select id="drReviewType"><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></label>
+            <div class="dr-form-grid"><label>From<input id="drReviewStart" type="date" required></label><label>Through<input id="drReviewEnd" type="date" required></label></div>
+            <label>Planned outcomes<textarea id="drReviewPlanned" rows="2" maxlength="1000"></textarea></label>
+            <label>Actual achievements<textarea id="drReviewActual" rows="2" maxlength="1000" placeholder="What happened in practice?"></textarea></label>
+            <label>Execution gaps<textarea id="drReviewGaps" rows="2" maxlength="1000" placeholder="Where did intended and actual behaviour differ?"></textarea></label>
+            <label>Self-discovery<textarea id="drReviewDiscovery" rows="2" maxlength="1000" placeholder="What might explain the gap? Keep observations separate from guesses."></textarea></label>
+            <label>Conscious development<textarea id="drReviewDevelopment" rows="2" maxlength="1000" placeholder="What will you reinforce or adjust?"></textarea></label>
+            <label>Next experiment<textarea id="drReviewExperiment" rows="2" maxlength="1000" placeholder="Choose a small change you can evaluate."></textarea></label>
+            <div class="dr-dialog-actions"><button class="button" type="button" data-routine-action="close-review-dialog">Cancel</button><button class="button primary" type="submit">Save review</button></div>
+          </form>
+        </dialog>
       </section>
 
       <section data-page="sources" hidden>
