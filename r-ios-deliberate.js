@@ -1385,6 +1385,7 @@
     reset,
     setView,
     startRoutine,
+    startActivity,
     resumeSession,
     finishSession,
     getChecklistData,
